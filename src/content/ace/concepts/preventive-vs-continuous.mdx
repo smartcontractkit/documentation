@@ -1,0 +1,70 @@
+---
+section: ace
+title: "Preventive and Continuous Compliance"
+date: Last Modified
+metadata:
+  description: "Understand the two ways Chainlink ACE enforces compliance: preventive enforcement at transaction time with Policy Manager, and continuous monitoring of deployed tokens with Active Monitoring."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+ACE enforces compliance in two ways: it can block a transaction while it executes, and it can keep watching addresses and act after their risk changes. This page explains the two modes, so you can choose the one that fits your token, or use both.
+
+## Two modes
+
+**Preventive enforcement** runs inside the transaction. A protected function asks a PolicyEngine to evaluate your policies, and the transaction reverts if a policy rejects it. It is provided by [Policy Management](/ace/concepts/policy-management) and, for identity checks, [Cross-Chain Identity](/ace/concepts/cross-chain-identity). Your contract must integrate with ACE: it inherits `PolicyProtected` or is upgraded to do so.
+
+**Continuous monitoring** runs outside the transaction. [Active Monitoring](/ace/active-monitoring/overview) screens a watchlist of addresses against TRM on a schedule, applies a rule you define when an address's risk level changes, and calls an existing function on your token, such as a freeze or a blocklist entry. Your contract does not change.
+
+|                                      | Preventive (Policy Manager, Identity Manager)                                                | Continuous (Active Monitoring)                                                    |
+| :----------------------------------- | :------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| **When it acts**                     | While the transaction executes                                                               | After a screening run detects a risk change                                       |
+| **What it does**                     | Reverts a transaction that breaks a policy                                                   | Calls an admin function on your token, flags a decision for review, or records it |
+| **Contract changes**                 | Yes: `PolicyProtected` or an upgrade                                                         | None: you provide the ABI and grant an onchain role                               |
+| **Works on tokens already deployed** | Only if you can upgrade them or place a contract in front                                    | Yes, if the token has admin functions you can grant a role for                    |
+| **Data it uses**                     | Transaction data, onchain state, credentials, and optionally a permit from an offchain check | TRM risk levels of the addresses on your watchlist, and balances                  |
+| **Timing**                           | Immediate: no violating transaction gets through                                             | Bounded by your screening interval: a change is seen at the next run              |
+| **Evidence**                         | `PolicyRunComplete` events and the [Reporting API](/ace/concepts/reporting)                  | The Decisions log, the TRM result, and the operation history                      |
+
+## What each mode cannot do
+
+A preventive policy cannot act on a token whose contract you cannot change, and it cannot react to something that happens outside a transaction, such as an address that is added to a sanctions list after it received tokens.
+
+Continuous monitoring cannot stop a transaction. Between a risk change at TRM and the next screening run, an address can still transact. You reduce the window with a shorter screening interval.
+
+## Choose a mode
+
+| Your situation                                                                                              | Use                                                                           |
+| :---------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
+| You build a contract, or can upgrade it, and must block non-compliant transactions                          | [Policy Manager](/ace/getting-started/policy-manager)                         |
+| You must check who can hold or transfer a token, based on KYC or accreditation                              | [Identity Manager](/ace/getting-started/identity-manager) with Policy Manager |
+| Your token is already deployed and cannot be changed, and you want to react when a holder becomes high risk | [Active Monitoring](/ace/active-monitoring/quick-start)                       |
+| You need both blocking at transaction time and a reaction to holders whose risk changes later               | Both                                                                          |
+
+The two modes complement each other. Preventive policies stop a violating transaction at the moment it happens. Active Monitoring covers the holders who were compliant when they received the token and changed risk level afterward.
+
+## TRM in each mode
+
+ACE uses TRM Wallet Screening in two separate features. They use separate credentials and separate guides:
+
+|                         | Managed offchain risk policy (preventive)                                                                 | Active Monitoring (continuous)                                                                        |
+| :---------------------- | :-------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------- |
+| **When TRM is called**  | Once per transaction request, before the user submits it                                                  | On a schedule, for every address on the watchlist                                                     |
+| **Result**              | A permit that the transaction consumes onchain                                                            | A decision that follows your rule                                                                     |
+| **Where the key lives** | In the Vault DON, uploaded with the CRE CLI                                                               | In the Platform, under **General settings > API access**                                              |
+| **Guide**               | [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies) | [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening) |
+
+## What both modes share
+
+Both modes use your organization's onboarding, your [CRE Connect Wallet](/ace/concepts/signing-ownership) on each network, the same [signing models](/ace/concepts/signing-ownership), the [Coordinator API](/ace/reference/apis), and the ACE Platform. You can adopt Active Monitoring without using Policy Manager or Identity Manager.
+
+## Next steps
+
+- [What is Active Monitoring?](/ace/active-monitoring/overview): the continuous mode in detail.
+- [Policy Management](/ace/concepts/policy-management): the preventive mode in detail.
+- [Getting Started with ACE](/ace/getting-started): choose where to begin.

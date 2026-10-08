@@ -1792,10 +1792,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 ### Running the Example
 
 1. Create a file named auth-example.go with the example code shown below
-2. Set your API credentials as environment variables:
+2. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run with go run auth-example.go
 
@@ -1883,7 +1883,7 @@ func FetchSingleReport(ctx context.Context, feedID string) (*SingleReport, error
     }
 
     // API connection details
-    host := "api.testnet-dataengine.chain.link"
+    host := "api.dataengine.chain.link"
     path := "/api/v1/reports/latest"
 
     // Build query parameters
@@ -1942,7 +1942,7 @@ func main() {
     defer cancel()
 
     // Example feed ID (ETH/USD)
-    feedID := "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+    feedID := "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"
 
     fmt.Printf("Fetching latest report for feed ID: %s\n", feedID)
 
@@ -1964,9 +1964,9 @@ func main() {
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747921357
   Observations Timestamp: 1747921357
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c[...]bffd8feddabf120e14bf
@@ -2009,10 +2009,10 @@ For production use, consider using the [Go SDK](/data-streams/reference/data-str
 
 3. Create a file named ws-auth-example.go with the example code shown below
 
-4. Set your API credentials as environment variables:
+4. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 
 5. Install the required dependencies:
@@ -2122,9 +2122,9 @@ func main() {
     }
 
     // WebSocket connection details
-    host := "ws.testnet-dataengine.chain.link"
+    host := "ws.dataengine.chain.link"
     path := "/api/v1/ws"
-    feedIDs := []string{"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"} // ETH/USD
+    feedIDs := []string{"0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"} // ETH/USD
 
     // Validate feed IDs
     if len(feedIDs) == 0 {
@@ -2241,18 +2241,18 @@ func main() {
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 2025/05/22 08:34:20 Sending ping to keep connection alive...
 2025/05/22 08:34:20 Received pong from server
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 ```
 
 ### Production Considerations
@@ -2303,13 +2303,13 @@ These headers authenticate your request and ensure data integrity.
 
 ### Authorization Header
 
-The `Authorization` header contains your API key, which is provided to you when you sign up for Chainlink Data Streams access. It follows this format:
+The `Authorization` header contains your **Data Streams Username**, which is provided to you when you sign up for Chainlink Data Streams access. It follows this format:
 
 ```
-Authorization: YOUR_API_KEY
+Authorization: YOUR_DATA_STREAMS_USERNAME
 ```
 
-Your API key is a UUID string that identifies your account. Keep it secure and do not share it publicly.
+Your username is a UUID string that identifies your account. It is the same value used as the API key in the examples below. Keep it secure and do not share it publicly.
 
 ### X-Authorization-Timestamp Header
 
@@ -2371,6 +2371,23 @@ Even for GET requests and WebSocket connections, you need to include a body hash
 ## Authentication Examples
 
 Below are complete examples for authenticating with the Data Streams API in various languages. Each example shows how to properly generate the required headers and make a request.
+
+> **NOTE: Testnet vs. mainnet endpoints**
+>
+> The examples use the mainnet endpoints (`api.dataengine.chain.link` and `ws.dataengine.chain.link`). If you are using
+> testnet credentials, change the host to the testnet endpoints (`api.testnet-dataengine.chain.link` and
+> `ws.testnet-dataengine.chain.link`). Credentials are environment-specific: mainnet credentials only work against the
+> mainnet endpoints, and testnet credentials only work against the testnet endpoints. See the [REST
+> API](/data-streams/reference/data-streams-api/interface-api#domains) and [WebSocket
+> API](/data-streams/reference/data-streams-api/interface-ws#domains) references for the full endpoint list.
+
+> **NOTE: Feed IDs and subscriptions**
+>
+> The examples use the mainnet ETH/USD feed ID (`0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9`).
+> Your account must be subscribed to a feed to retrieve its reports; otherwise the API returns `401 feeds not
+>   authorized`. Replace the feed ID with one your account is subscribed to. You can list the feeds you are entitled to
+> with the authenticated [Discovery
+> endpoint](/data-streams/reference/data-streams-api/discovery-endpoint#hidden-streams).
 
 - [JavaScript examples](/data-streams/reference/data-streams-api/authentication/javascript-examples)
 - [TypeScript examples](/data-streams/reference/data-streams-api/authentication/typescript-examples)
@@ -2439,10 +2456,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 ### Running the Example
 
 1. Create a file named auth-example.js with the example code shown below
-2. Set your API credentials as environment variables:
+2. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run the example:
    ```bash
@@ -2565,7 +2582,7 @@ async function fetchSingleReport(feedID) {
 
   // API connection details
   const method = "GET"
-  const host = "api.testnet-dataengine.chain.link"
+  const host = "api.dataengine.chain.link"
   const path = "/api/v1/reports/latest"
   const queryString = `?feedID=${feedID}`
   const fullPath = path + queryString
@@ -2595,7 +2612,7 @@ async function fetchSingleReport(feedID) {
 async function main() {
   try {
     // Example feed ID (ETH/USD)
-    const feedID = "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+    const feedID = "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"
 
     console.log(`Fetching latest report for feed ID: ${feedID}`)
 
@@ -2621,9 +2638,9 @@ main()
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747922906
   Observations Timestamp: 1747922906
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f183[...]31208430b586890eff87d12750
@@ -2666,10 +2683,10 @@ While this example demonstrates the authentication mechanism, production applica
 ### Running the Example
 
 1. Create a file named ws-auth-example.js with the example code shown below
-2. Set your API credentials as environment variables:
+2. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run the example:
    ```bash
@@ -2738,7 +2755,7 @@ function setupWebSocketConnection(apiKey, apiSecret, feedIDs) {
     }
 
     // WebSocket connection details
-    const host = "ws.testnet-dataengine.chain.link"
+    const host = "ws.dataengine.chain.link"
     const path = "/api/v1/ws"
     const queryString = `?feedIDs=${feedIDs.join(",")}`
     const fullPath = path + queryString
@@ -2863,7 +2880,7 @@ async function main() {
     }
 
     // Example feed ID (ETH/USD)
-    const feedIDs = ["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"]
+    const feedIDs = ["0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"]
 
     // Set up WebSocket connection
     const ws = await setupWebSocketConnection(apiKey, apiSecret, feedIDs)
@@ -2902,17 +2919,17 @@ main()
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747929684
   Observations Timestamp: 1747929684
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747929685
   Observations Timestamp: 1747929685
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -3076,7 +3093,7 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 
        // API connection details
        let method = "GET";
-       let host = "api.testnet-dataengine.chain.link";
+       let host = "api.dataengine.chain.link";
        let path = "/api/v1/reports/latest";
        let full_path = format!("{}?feedID={}", path, feed_id);
 
@@ -3107,7 +3124,7 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
    #[tokio::main]
    async fn main() -> Result<(), Box<dyn Error>> {
        // Example feed ID (ETH/USD)
-       let feed_id = "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782";
+       let feed_id = "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9";
 
        println!("Fetching latest report for feed ID: {}", feed_id);
 
@@ -3132,10 +3149,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
    }
    ```
 
-3. Set your API credentials as environment variables:
+3. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 
 4. Run with cargo run
@@ -3143,9 +3160,9 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747933113
   Observations Timestamp: 1747933113
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -3276,7 +3293,7 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
        }
 
        // WebSocket connection details
-       let host = "ws.testnet-dataengine.chain.link";
+       let host = "ws.dataengine.chain.link";
        let path = "/api/v1/ws";
        let feed_ids_joined = feed_ids.join(",");
        let full_path = format!("{}?feedIDs={}", path, feed_ids_joined);
@@ -3399,7 +3416,7 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
            )?;
 
        // Example feed IDs (ETH/USD)
-       let feed_ids = vec!["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"];
+       let feed_ids = vec!["0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"];
 
        // Set up WebSocket connection
        let ws_stream = setup_websocket_connection(&api_key, &api_secret, &feed_ids).await?;
@@ -3418,10 +3435,10 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
    }
    ```
 
-3. Set your API credentials as environment variables:
+3. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 
 4. Run with cargo run
@@ -3429,19 +3446,19 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
 Waiting for incoming messages... (press Ctrl+C to exit)
 Received ping, sending pong response
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747934358
   Observations Timestamp: 1747934358
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747934359
   Observations Timestamp: 1747934359
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -3519,10 +3536,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 ### Running the Example
 
 1. Create a file named auth-example.ts with the example code shown below
-2. Set your API credentials as environment variables:
+2. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run the example:
    ```bash
@@ -3659,7 +3676,7 @@ async function fetchSingleReport(feedID: string): Promise<SingleReport> {
 
   // API connection details
   const method = "GET"
-  const host = "api.testnet-dataengine.chain.link"
+  const host = "api.dataengine.chain.link"
   const path = "/api/v1/reports/latest"
   const queryString = `?feedID=${feedID}`
   const fullPath = path + queryString
@@ -3691,7 +3708,7 @@ async function fetchSingleReport(feedID: string): Promise<SingleReport> {
 async function main(): Promise<void> {
   try {
     // Example feed ID (ETH/USD)
-    const feedID = "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+    const feedID = "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"
 
     console.log(`Fetching latest report for feed ID: ${feedID}`)
 
@@ -3717,9 +3734,9 @@ main()
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747929367
   Observations Timestamp: 1747929367
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8d69000000[...]79dd065e3f83ca7c0ca4aaa
@@ -3783,10 +3800,10 @@ While this example demonstrates the authentication mechanism, production applica
 ### Running the Example
 
 1. Create a file named ws-auth-example.ts with the example code shown below
-2. Set your API credentials as environment variables (if not already set):
+2. Set your API credentials as environment variables (if not already set). Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run the example:
    ```bash
@@ -3874,7 +3891,7 @@ function setupWebSocketConnection(apiKey: string, apiSecret: string, feedIDs: st
     }
 
     // WebSocket connection details
-    const host = "ws.testnet-dataengine.chain.link"
+    const host = "ws.dataengine.chain.link"
     const path = "/api/v1/ws"
     const queryString = `?feedIDs=${feedIDs.join(",")}`
     const fullPath = path + queryString
@@ -3999,7 +4016,7 @@ async function main(): Promise<void> {
     }
 
     // Example feed ID (ETH/USD)
-    const feedIDs = ["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"]
+    const feedIDs = ["0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"]
 
     // Set up WebSocket connection
     const ws = await setupWebSocketConnection(apiKey, apiSecret, feedIDs)
@@ -4038,11 +4055,11 @@ main()
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747930054
   Observations Timestamp: 1747930054
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -4050,7 +4067,7 @@ Received new report:
 [...]
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747930059
   Observations Timestamp: 1747930059
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -4058,7 +4075,7 @@ Sending ping to keep connection alive...
 Received pong from server
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747930060
   Observations Timestamp: 1747930060
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -10912,7 +10929,6 @@ Before you begin, you should have:
   - [RPC Clients](https://solana.com/docs/rpc) and network interaction
   - [Transactions](https://solana.com/docs/core/transactions) and signing
   - [Keypairs](https://solana.com/docs/intro/wallets#keypair) and account management
-- An allowlisted account in the Data Streams Access Controller ([contact us](https://chain.link/contact?ref_id=datastreams) to get started)
 
 ### Requirements
 
@@ -11273,7 +11289,6 @@ Before you begin, you should have:
   - [Instructions](https://solana.com/docs/core/transactions#instruction)
   - [Program Derived Addresses (PDAs)](https://solana.com/docs/core/pda)
 - Knowledge of the [Anchor](https://www.anchor-lang.com/) framework
-- An allowlisted account in the Data Streams Access Controller. ([contact us](https://chain.link/contact?ref_id=datastreams) to get started).
 
 ### Requirements
 

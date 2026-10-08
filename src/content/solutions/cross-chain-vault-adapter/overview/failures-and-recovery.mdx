@@ -1,0 +1,192 @@
+---
+title: "Failures and recovery"
+description: "What happens when a cross-chain deposit or redemption fails, how users get their tokens back with a cross-chain refund or local recovery, and how to read a message's status."
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from.
+
+In this guide, “vault operator” refers to the team that operates and configures the vault and its adapter, not Chainlink Labs, the Chainlink Foundation, or Chainlink node operators.
+
+When a cross-chain deposit or redemption fails on the hub chain, the user gets the tokens back with a cross-chain refund to the source chain or a local recovery on the hub chain. The adapter, which is how users on other chains reach the vault, calls the vault inside the transaction that receives the CCIP message, so a failure leaves the tokens in the adapter, not in the vault. The adapter records the failure and holds the tokens until someone recovers them. Some failures happen inside CCIP before the adapter records anything. Most of those are fixed with CCIP manual execution. Two sender mistakes have no recovery path, and their tokens are permanently lost, as described in [Failures with no recovery path](#failures-with-no-recovery-path).
+
+## What counts as a failure
+
+A request fails when anything reverts while the adapter processes the message. `ccipReceive` calls `processMessage` inside a `try/catch`, so every revert in the following table becomes a failed message. The [errors reference](/solutions/cross-chain-vault-adapter/reference/adapter-contract#errors) lists every error with its parameters.
+
+| <div style="min-width: 180px;">Error</div>    | Trigger                                                                                                                                                                                                                 |
+| :-------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `InvalidChain`                                | The source chain is not configured on the adapter (its chain type is `NONE`)                                                                                                                                            |
+| `InvalidTokenCount`                           | The message carries no token, or more than one                                                                                                                                                                          |
+| `InvalidPayloadLength`                        | `message.data` is not exactly 128 bytes                                                                                                                                                                                 |
+| `InvalidTarget`                               | The payload's `target` vault is not allowlisted                                                                                                                                                                         |
+| `InvalidTargetToken`                          | The token is neither the vault's asset nor its share token                                                                                                                                                              |
+| `AmountIsZero`                                | The token amount is 0                                                                                                                                                                                                   |
+| `DepositsDisabled`, `RedeemsDisabled`         | Deposits or redemptions are disabled                                                                                                                                                                                    |
+| `FeeExceedsAmount`                            | The adapter fee is greater than or equal to the amount it is taken from (return to the source chain only)                                                                                                               |
+| The vault's own error                         | The vault's `deposit` or `redeem` call reverts                                                                                                                                                                          |
+| `NoOutputReceived`                            | The vault returns zero shares or zero assets                                                                                                                                                                            |
+| `MinimumOutputNotMet`                         | The output, after the adapter fee, is below the payload's `minimumOut`                                                                                                                                                  |
+| `InvalidEVMAddress`                           | The beneficiary is not a valid EVM address (its upper 12 bytes are not zero)                                                                                                                                            |
+| The token's own error                         | The transfer to a local beneficiary reverts                                                                                                                                                                             |
+| `InsufficientNativeBalance`                   | The adapter's native gas token balance does not cover the CCIP fee for the return leg                                                                                                                                   |
+| The router's, OnRamp's, or token pool's error | The CCIP Router rejects the return leg, for example because the lane is not supported, the token has no pool on the lane, an outbound rate limit is exhausted, or the lane does not accept the configured return format |
+
+When one of these happens:
+
+- Every effect of the processing rolls back: the vault call, the adapter fee, and any return leg.
+- The adapter holds the inbound tokens: the asset for a failed deposit, the shares for a failed redemption.
+- The adapter sets the message's state to `BASIC` and stores a failure record with the source chain selector, the sender, the token amounts, and the local refund address from the payload.
+- The adapter emits `MessageFailed(messageId)`.
+
+The adapter never refunds a failed message on its own and never retries it. Fixing the cause, for example by enabling deposits, allowlisting the vault, or funding the adapter, does not reprocess the message. The tokens leave the adapter only through a cross-chain refund or a local recovery.
+
+<Aside type="caution" title="Disabling processing is not a pause">
+  Calling `setProcessingEnabled(false, false)`, disabling a vault with `setTargetEnabled`, or setting a chain's type to
+  `NONE` does not stop CCIP from delivering messages. Messages already in flight, and messages sent afterward, still
+  arrive and become failed messages that someone must refund or recover.
+</Aside>
+
+## Why the CCIP Explorer shows Success
+
+The adapter catches the error, so `ccipReceive` returns normally and CCIP execution succeeds. The [CCIP Explorer](https://ccip.chain.link) shows such a message as **Success**. That status only means CCIP delivered the tokens to the adapter. The vault call may not have happened.
+
+To learn what the adapter did, look up the message on the hub chain by its CCIP message ID. This is the ID that `ccipSend` returned on the source chain and that the CCIP Explorer displays. Check either:
+
+- The adapter's events in the delivery transaction: `MessageSucceeded(messageId)` or `MessageFailed(messageId)`.
+- The adapter's [`messageErrorCode`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#state-variables) value for the message ID: `0` is `NONE`, `1` is `BASIC` (failed, tokens waiting to be recovered), `2` is `RESOLVED`.
+
+The following command reads the adapter's state for a message with Foundry's `cast`. Replace the variables with your adapter address, the CCIP message ID, and an RPC URL for the hub chain:
+
+```bash
+cast call $ADAPTER "messageErrorCode(bytes32)(uint8)" $MESSAGE_ID --rpc-url $HUB_CHAIN_RPC_URL
+```
+
+When processing succeeds, the same transaction also shows where the output went. `LocalTokenDelivered` means the beneficiary received the shares or assets on the hub chain. `MessageSent` means the adapter started a return leg. Its first field is the return leg's own CCIP message ID, which you track separately in the CCIP Explorer. [Deposit from a source chain](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain#check-the-result) runs these checks on a real deposit and follows its return leg.
+
+## Cross-chain refund
+
+[`refundFailedMessage`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#refundfailedmessage) sends the inbound tokens back over CCIP to the address that sent the original message.
+
+- **Who can call it:** Anyone. The recipient comes from the stored failure record, not from the caller, so the user, the vault team's support desk, or a relayer can trigger it.
+- **What comes back:** The original inbound tokens at the amount the adapter received: the asset for a failed deposit, the shares for a failed redemption. The adapter fee is not charged.
+- **Where it goes:** The original `message.sender` on the original source chain. It does not go to the beneficiary or the local refund address.
+- **Who pays:** The caller, in the native gas token through `msg.value`. The adapter's own native gas token balance is not used. If `msg.value` does not cover the fees actually paid, the call reverts with `InsufficientRecoveryFee` or `InsufficientNativeBalance`. The adapter returns any excess to the caller in the same transaction. The refund reverts with `RefundFailed` if the caller cannot receive the native gas token.
+- **Result:** The state becomes `RESOLVED`. The adapter emits `MessageRefunded` and a `MessageSent` event that carries the refund's CCIP message ID.
+
+A refund of shares works only if the share token is a [CCIP cross-chain token (CCT)](/ccip/concepts/cross-chain-token/overview) on the lane back to the source chain. Returning shares to the source chain has the same requirement.
+
+### Refund sequence
+
+A refund takes three calls on the hub chain, each with the failed message's CCIP message ID:
+
+1. [`checkRefundEligibility(messageId)`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#checkrefundeligibility) returns `canRefund`, the recipient, the token, the amount, and a fee estimate. It returns `canRefund = false` when the message is not in the `BASIC` state, when the stored sender is not exactly 32 bytes, or when no token amount is above zero. It can also revert when the CCIP Router cannot quote the refund, for example when the lane is not supported or the token has no pool on it. Treat that revert as "not refundable right now".
+2. [`estimateRefundFee(messageId)`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#estimaterefundfee) returns the fee estimate on its own. The estimate can be lower than the actual cost, because each refund send quotes its fee again when it executes.
+3. `refundFailedMessage(messageId)`, sent with a `msg.value` of the estimate plus a margin. The unused amount comes back to the caller.
+
+### Refunds to contracts
+
+If a contract sent the original message, such as a sender contract or a smart account on the source chain, that contract receives the refund. The refund is a token-only transfer with empty data and a gas limit of 0, so CCIP does not call `ccipReceive` on the recipient. The contract must be able to move or use tokens it receives without a callback, or the tokens stay in that contract.
+
+### When a refund is unavailable
+
+A refund uses the same settings as a return leg to that chain: the return format set with `setEvmReturnLaneFormat` and the requested finality set with `setEvmReturnRequestedFinality` for the inbound token. If the lane, the token pool, or a rate limit cannot carry the token at that moment, the refund transaction reverts. The message stays `BASIC`, and anyone can try again later.
+
+Refunds keep working after the vault operator sets the source chain's type to `NONE`. The adapter records the source chain's family when the message fails, and infers it from the sender address if the chain was not configured at that time.
+
+## Local recovery
+
+[`recoverFailedMessageLocally`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#recoverfailedmessagelocally) transfers the inbound tokens to the local refund address on the hub chain.
+
+- **Who can call it:** Only the local refund address stored from the payload. Any other caller gets `UnauthorizedLocalRefund`. The address must be able to send that transaction, so use an account the user controls, not a contract that cannot make arbitrary calls.
+- **What it needs:** A non-zero `localRefundAddress` in bits 1 to 160 of the payload's `deliveryAndRefund` field, set when the message is sent. See [What a user sends](/solutions/cross-chain-vault-adapter/overview/how-it-works#what-a-user-sends). It cannot be added after the message is sent. If it is zero, the call reverts with `NoLocalRefundAddress`. If the payload is not exactly 128 bytes, the adapter cannot read it and stores no local refund address.
+- **What comes back:** The inbound tokens on the hub chain: the asset for a failed deposit, the shares for a failed redemption. The user can then deposit into or redeem from the vault directly.
+- **Who pays:** No CCIP fee. The caller pays only hub-chain gas.
+- **Result:** The state becomes `RESOLVED` and the adapter emits `MessageRecoveredLocally`.
+
+A local recovery takes two calls on the hub chain, each with the failed message's CCIP message ID:
+
+1. [`checkLocalRecoveryEligibility(messageId)`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#checklocalrecoveryeligibility) returns `canRecover`, the local refund address, the token, and the amount. It never reverts, and it does not check who the caller is.
+2. `recoverFailedMessageLocally(messageId)`, sent from the local refund address with no `msg.value`.
+
+The following table compares the two recovery paths:
+
+|                 | Cross-chain refund                                                        | Local recovery                                        |
+| :-------------- | :------------------------------------------------------------------------ | :---------------------------------------------------- |
+| Function        | `refundFailedMessage`                                                     | `recoverFailedMessageLocally`                         |
+| Who can call    | Anyone                                                                    | Only the local refund address                         |
+| Where tokens go | The original sender on the source chain                                   | The local refund address on the hub chain             |
+| Who pays        | The caller pays the CCIP fees in the native gas token through `msg.value` | The caller pays hub-chain gas only                    |
+| Set in advance  | Nothing in the payload; the sender must be exactly 32 bytes               | A non-zero `localRefundAddress` in a 128-byte payload |
+| Depends on      | The lane and token pool back to the source chain being available          | The hub chain only                                    |
+| Event           | `MessageRefunded`                                                         | `MessageRecoveredLocally`                             |
+
+Both paths stay open while the message is `BASIC`. Whichever succeeds first resolves the message, and the other then reverts with `MessageNotFailed`.
+
+Setting a local refund address on every message gives the user a recovery path that does not depend on the lane back to the source chain. The trade-off is that recovered tokens arrive on the hub chain, not the source chain.
+
+## Failures the adapter can't catch
+
+Some failures happen inside CCIP, before the adapter's `try/catch` can record anything. In the cases in the following table, the adapter emits no event, its state for the message stays `NONE`, and the tokens are not released on the hub chain. The CCIP Explorer shows the message as failed, usually as **Ready for manual execution**. After the cause is fixed, anyone can retry the message with [manual execution](/ccip/concepts/manual-execution).
+
+| Cause                                                                                                                                                                   | Recovery                                                                                  |
+| :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| The gas limit in the user's message is too low, so `ccipReceive` runs out of gas, usually before the adapter can record a failure                                       | Manual execution with a higher gas limit                                                  |
+| On a CCIP 2.0 lane, the message requests a finality that the adapter's inbound finality setting does not allow                                                          | The vault operator updates `setInboundFinality`, then manual execution                    |
+| On a CCIP 2.0 lane, the message lacks attestations from a required [Cross-Chain Verifier (CCV)](/ccip/concepts/ccvs/overview), or the optional CCV threshold is not met | The verifier attests or the vault operator updates `setCCVsConfig`, then manual execution |
+| A token pool rate limit on the hub chain is exhausted, or the token's pool on the hub chain is missing or incompatible                                                  | Wait for the rate limit to refill or for the pool to be configured, then manual execution |
+
+The adapter's default inbound finality is `0x00000000`, which means wait for finality. On a CCIP 2.0 lane, CCIP rejects a [faster-than-finality](/ccip/concepts/execution-latency/ftf-dapps) message from a source chain until the vault operator allows it, and waiting for the source chain to finalize does not help. CCIP 1.6 lanes do not read the adapter's CCV or finality settings.
+
+A return leg or a refund is a separate CCIP message from the hub chain to the source chain. If it fails on the source chain, for example on a token pool rate limit, recover it with manual execution using the CCIP message ID from the adapter's `MessageSent` event.
+
+### Failures with no recovery path
+
+Two sender mistakes have no recovery path: a message with empty data and a gas limit of 0, and a malformed payload. Neither the adapter nor CCIP manual execution can return these tokens to the user, so the tokens are permanently lost.
+
+CCIP treats a message with empty data and a gas limit of 0 as a token-only transfer and delivers the tokens to the adapter without calling `ccipReceive`. The adapter records nothing and has no function that returns those tokens.
+
+<Aside type="caution" title="A malformed payload loses the tokens permanently">
+  A payload can be exactly 128 bytes and still be malformed when its `target` word has non-zero upper 12 bytes, so it is not a valid ABI-encoded address. `processMessage` reverts when it decodes the payload, and the adapter catches that revert. While recording the failure, the adapter decodes the same bytes again to read the local refund address. That second decode runs outside the `try/catch`, so `ccipReceive` itself reverts. CCIP then reverts the destination-side token release together with the receiver call and marks the message failed. Manual execution can raise the gas limit but cannot change the message, so every attempt reverts, with `NoStateProgressMade` on a CCIP 2.0 lane or `ExecutionError` on a CCIP 1.6 lane. The tokens are never released or minted on the hub chain. They stay locked in, or burned by, the token pool on the source chain.
+
+Standard ABI encoders (Solidity `abi.encode`, ethers, viem, `cast`) cannot produce this payload; only hand-built encoders can. Before the user signs, build the payload with a standard ABI encoder and check it against the [payload checklist](/solutions/cross-chain-vault-adapter/overview/how-it-works#what-a-user-sends). Also set a non-zero local refund address. Without one, a failed request whose cross-chain refund is also impossible leaves the tokens in the adapter permanently.
+
+</Aside>
+
+## Message lifecycle
+
+The following diagram shows the states a message can reach after CCIP delivers it to the adapter, and the CCIP-level branch where the adapter records nothing:
+
+<ClickToZoom
+  src="/images/solutions/cross-chain-vault-adapter/message-lifecycle.svg"
+  alt="Message lifecycle: CCIP delivers the message, and processing either succeeds (state NONE, MessageSucceeded) or fails (state BASIC, MessageFailed). From BASIC, a cross-chain refund (anyone calls, caller pays CCIP fees) or a local recovery (local refund address only, no fee) moves the message to RESOLVED. A dashed branch shows a CCIP-level failure, where ccipReceive reverts or the message is rejected before the adapter records anything, followed by manual execution after the cause is fixed, which is not possible for a malformed payload."
+/>
+
+The adapter tracks each message ID in `messageErrorCode` with three states:
+
+| <div style="min-width: 100px;">State</div> | Value | Meaning                                                                                      | Related events                                 |
+| :----------------------------------------- | :---- | :------------------------------------------------------------------------------------------- | :--------------------------------------------- |
+| `NONE`                                     | `0`   | The message has not arrived yet, or it was processed successfully                            | `MessageSucceeded` when processed              |
+| `BASIC`                                    | `1`   | Processing failed and the adapter holds the inbound tokens; refund or local recovery is open | `MessageFailed`                                |
+| `RESOLVED`                                 | `2`   | The failed message was returned through a refund or a local recovery                         | `MessageRefunded` or `MessageRecoveredLocally` |
+
+`MessageSucceeded` tells the two meanings of `NONE` apart, and `MessageRefunded` or `MessageRecoveredLocally` shows which recovery path produced `RESOLVED`. While a message is `BASIC`, [`getFailedMessageRecord`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#getfailedmessagerecord) returns its stored source chain selector, sender, token amounts, and local refund address.
+
+To find the next action for a request, combine the CCIP Explorer status with the adapter's state:
+
+| CCIP Explorer status       | <div style="min-width: 190px;">Adapter state and event</div> | Meaning                                                                                        | Action                                                                                                                               |
+| :------------------------- | :----------------------------------------------------------- | :--------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| Any status before Success  | `NONE`, no event                                             | CCIP has not delivered the message yet                                                         | Wait for CCIP                                                                                                                        |
+| Success                    | `NONE`, `MessageSucceeded`                                   | The request completed                                                                          | For local delivery, nothing. For a return, track the return leg from `MessageSent`                                                   |
+| Success                    | `BASIC`, `MessageFailed`                                     | The adapter rejected the request and holds the tokens                                          | Refund to the source chain or recover locally                                                                                        |
+| Success                    | `RESOLVED`, `MessageRefunded`                                | The tokens were sent back to the source chain                                                  | Track the refund's CCIP message ID from `MessageSent`                                                                                |
+| Success                    | `RESOLVED`, `MessageRecoveredLocally`                        | The local refund address received the tokens on the hub chain                                  | Nothing                                                                                                                              |
+| Success                    | `NONE`, no adapter event                                     | The message had empty data and a gas limit of 0, so the tokens reached the adapter unprocessed | None. The tokens are permanently lost, because the adapter has no function that returns them                                         |
+| Ready for manual execution | `NONE`, no event                                             | CCIP execution failed and the adapter recorded nothing                                         | Fix the cause, then use manual execution. For a malformed payload, manual execution always fails and the tokens are permanently lost |
+
+## Where to go next
+
+- [Limitations](/solutions/cross-chain-vault-adapter/reference/limitations): what the adapter does not do, and every case where funds can get stuck.
+- [Adapter contract recovery functions](/solutions/cross-chain-vault-adapter/reference/adapter-contract#recovery-functions): signatures, return values, and errors for refunds and local recovery.
+- [CCIP message lifecycle](/ccip/concepts/message-lifecycle): how CCIP verifies and executes a message before the adapter runs.

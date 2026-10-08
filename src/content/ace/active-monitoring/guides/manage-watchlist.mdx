@@ -1,0 +1,162 @@
+---
+section: ace
+title: "Manage the Watchlist"
+date: Last Modified
+metadata:
+  description: "Add wallet addresses to the Chainlink ACE Active Monitoring watchlist from a CSV file or an identity registry, and view them, using the Platform UI or the Coordinator API."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-07"
+---
+
+import { Aside, MethodTabs } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+The **watchlist** is the set of wallet addresses that Active Monitoring screens with TRM. This guide covers the three watchlist operations: add addresses from a CSV file, add addresses from an identity registry, and view the list. For how screening uses the watchlist, see [Watchlist and Screening](/ace/active-monitoring/concepts/screening).
+
+The watchlist belongs to your organization and is shared by all your monitored tokens. Add the addresses you want to watch, such as holders of your token. Each address is listed with one or more networks, identified by **chain selector**: the unique ID that Chainlink assigns to a network. Find selectors in [Supported Networks](/ace/supported-networks).
+
+The watchlist has no fixed size limit. The Platform UI accepts up to 100 rows per CSV upload: upload several files to add more. The API does not enforce this limit per request.
+
+## Prerequisites
+
+- To upload a file, a CSV with one row per address. The format is described in the next section.
+- To import from a registry, an [identity registry](/ace/guides/identity-manager/manage-registries) in your organization that contains registered identities. Only organizations that use the Identity Manager can use this option.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
+
+## Add addresses from a CSV file
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring** and open **Monitoring configuration > Watchlist**.
+    1. Click **Add address**, then **Upload a CSV**.
+    1. Drop your file in the **Upload address list** panel. The panel lists every row with its address and network. Rows with an error show the reason.
+    1. Fix any error in the file and upload it again. **Save** is available only when every row is valid.
+    1. Click **Save**. The addresses appear in the watchlist.
+
+  </Fragment>
+  <Fragment slot="api">
+    Add addresses with a `POST` request to `/active-monitoring/monitored-addresses`. Set `source` to `list` to send the addresses yourself, in `addresses`. Each entry has the `address`, and the `chain_selectors` of its networks. `title` is optional and defaults to the address.
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/monitored-addresses \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "source": "list",
+        "addresses": [
+          {
+            "title": "Holder 1",
+            "address": "0x5555555555555555555555555555555555555555",
+            "chain_selectors": ["16015286601757825753"]
+          },
+          {
+            "address": "0x6666666666666666666666666666666666666666",
+            "chain_selectors": ["16015286601757825753", "3478487238524512106"]
+          }
+        ]
+      }'
+    ```
+
+    The response lists the created addresses. `monitored_address_trm_score` is `null` until the address is screened for the first time.
+
+    ```json
+    {
+      "results": [
+        {
+          "id": "0d4f6c1e-7b2a-4c55-9e0b-3f1a8d2c4b10",
+          "title": "Holder 1",
+          "address": "0x5555555555555555555555555555555555555555",
+          "chain_selectors": ["16015286601757825753"],
+          "source_reference_id": null,
+          "monitored_address_trm_score": null
+        }
+        // ... one entry per address
+      ]
+    }
+    ```
+
+    The request fails with `409` when an address is already on the watchlist.
+
+  </Fragment>
+</MethodTabs>
+
+### CSV format
+
+The file needs two columns, with these exact header names (case-insensitive): `address` and `chain_selector`.
+
+- Use one row per address.
+- Set `chain_selector` to the chain selector of the network, not its name. Find selectors in [Supported Networks](/ace/supported-networks).
+- To list several networks for one address, wrap the selectors in quotes and separate them with commas.
+
+The following file adds two addresses. The second address is listed on two networks:
+
+```csv
+address,chain_selector
+0x5555555555555555555555555555555555555555,16015286601757825753
+0x6666666666666666666666666666666666666666,"16015286601757825753,3478487238524512106"
+```
+
+The Platform UI checks the file before it sends anything: the headers, the address format, that each network is supported, and the 100-row limit. It does not check for duplicates. If an address appears twice in the file, or is already on the watchlist, the whole upload fails and no address is added.
+
+The networks you list for an address do not change what is screened or where decisions are created. TRM screens an address across all the networks it covers, and Active Monitoring evaluates a risk event on every network of each monitored token.
+
+## Add addresses from an identity registry
+
+An identity registry holds the wallet addresses of your registered identities. Importing a registry adds every active onchain address of its identities to the watchlist, so you do not maintain a separate list.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In **Monitoring configuration > Watchlist**, click **Add address**, then **Reference an identity registry**. The option is disabled when your organization has no active identity registry.
+    1. Select the registry in the **Identity registry** list.
+    1. Click **Save**.
+
+  </Fragment>
+  <Fragment slot="api">
+    Send a `POST` request with `source` set to `registry`, to import from a registry instead of sending addresses. Put the ID of the registry in `registry_id` and do not send `addresses`:
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/monitored-addresses \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "source": "registry",
+        "registry_id": "<REGISTRY_ID>"
+      }'
+    ```
+
+    Each imported address has `source_reference_id` set to the registry ID. To get registry IDs, see [Managing Registries](/ace/guides/identity-manager/manage-registries).
+
+  </Fragment>
+</MethodTabs>
+
+The import is a snapshot of the registry at the time you import it. Addresses you add to the registry later are not added to the watchlist.
+
+## View the watchlist
+
+<MethodTabs>
+  <Fragment slot="ui">
+    In **Monitoring configuration > Watchlist**, the table shows each address and its networks. Use the **Networks** filter or search by address to narrow the list.
+  </Fragment>
+  <Fragment slot="api">
+    List the watchlist with `GET /active-monitoring/monitored-addresses`. Use `page` and `page_size` (up to 100). To read the whole watchlist, page through the results:
+
+    ```bash
+    curl "https://ace.api.chain.link/v1/active-monitoring/monitored-addresses?page=1&page_size=100" \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    After the first screening, each address includes `monitored_address_trm_score` with the latest `risk_score_level` and `last_screened_at`.
+
+  </Fragment>
+</MethodTabs>
+
+## Remove addresses
+
+You cannot remove an address from the watchlist in Beta, in the Platform UI or in the API.
+
+## Next steps
+
+- [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening): start screening the watchlist.
+- [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions): see the decisions that screening produces.

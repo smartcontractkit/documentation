@@ -12,6 +12,9 @@ import generalLogo from "../../assets/product-logos/general-logo.svg"
 import nodesLogo from "../../assets/product-logos/node-logo.svg"
 import quickstartLogo from "../../assets/product-logos/quickstart-logo.svg"
 import { SIDEBAR as sidebar } from "../../config/sidebar.ts"
+import type { SectionEntry } from "../../config/sidebar.ts"
+import type { Sections } from "../../content.config.ts"
+import { getSolutionsSection } from "../../config/sidebar/solutions.ts"
 import type { ChainType } from "../../config/types.js"
 import { propagateChainTypes } from "../../utils/chainType.js"
 
@@ -55,8 +58,14 @@ const mapContents = (contents: SidebarContent[], pageSdkLangMap: Map<string, str
   })
 }
 
-export const getSubProducts = (sectionData, pageSdkLangMap: Map<string, string>) => {
-  const structuredData = sectionData.map((item) => {
+export const getSubProducts = (
+  sectionData: SectionEntry[] | undefined,
+  pageSdkLangMap: Map<string, string>,
+  product?: Sections
+) => {
+  const solutionsSection = product ? getSolutionsSection(product) : undefined
+  const sections = [...(sectionData ?? []), ...(solutionsSection ? [solutionsSection] : [])]
+  const structuredData = sections.map((item) => {
     // Propagate chainTypes from parent to children for consistent filtering
     const contentsWithPropagatedChainTypes = propagateChainTypes(item.contents)
     return {
@@ -170,68 +179,68 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         label: "CRE",
         href: "/cre",
         icon: creLogo.src,
-        subProducts: getSubProducts(sidebar.cre, pageSdkLangMap),
+        subProducts: getSubProducts(sidebar.cre, pageSdkLangMap, "cre"),
       },
       {
         label: "Data Feeds",
         href: "/data-feeds",
         icon: dataFeedsLogo.src,
-        subProducts: getSubProducts(sidebar.dataFeeds, new Map()),
+        subProducts: getSubProducts(sidebar.dataFeeds, new Map(), "dataFeeds"),
       },
       {
         label: "Data Streams",
         href: "/data-streams",
         icon: dataStreamsLogo.src,
-        subProducts: getSubProducts(sidebar.dataStreams, new Map()),
+        subProducts: getSubProducts(sidebar.dataStreams, new Map(), "dataStreams"),
       },
       {
         label: "ACE",
         href: "/ace",
         icon: aceLogo.src,
-        subProducts: getSubProducts(sidebar.ace, new Map()),
+        subProducts: getSubProducts(sidebar.ace, new Map(), "ace"),
       },
       {
         label: "CRE Connect",
         href: "/crec",
         icon: crecLogo.src,
-        subProducts: getSubProducts(sidebar.crec, new Map()),
+        subProducts: getSubProducts(sidebar.crec, new Map(), "crec"),
       },
       {
         label: "DataLink",
         href: "/datalink",
         icon: dataLinkLogo.src,
-        subProducts: getSubProducts(sidebar.dataLink, new Map()),
+        subProducts: getSubProducts(sidebar.dataLink, new Map(), "dataLink"),
       },
       {
         label: "CCIP",
         href: "/ccip",
         icon: ccipLogo.src,
-        subProducts: getSubProducts(sidebar.ccip, new Map()),
+        subProducts: getSubProducts(sidebar.ccip, new Map(), "ccip"),
       },
       {
         label: "VRF",
         href: "/vrf",
         icon: vrfLogo.src,
-        subProducts: getSubProducts(sidebar.vrf, new Map()),
+        subProducts: getSubProducts(sidebar.vrf, new Map(), "vrf"),
         divider: true,
       },
       {
         label: "Chainlink Local",
         href: "/chainlink-local",
         icon: chainlinkLocal.src,
-        subProducts: getSubProducts(sidebar.chainlinkLocal, new Map()),
+        subProducts: getSubProducts(sidebar.chainlinkLocal, new Map(), "chainlinkLocal"),
       },
       {
         label: "Nodes",
         href: "/chainlink-nodes",
         icon: nodesLogo.src,
-        subProducts: getSubProducts(sidebar.nodeOperator, new Map()),
+        subProducts: getSubProducts(sidebar.nodeOperator, new Map(), "nodeOperator"),
       },
       {
         label: "General",
         href: "/resources",
         icon: generalLogo.src,
-        subProducts: getSubProducts(sidebar.global, new Map()),
+        subProducts: getSubProducts(sidebar.global, new Map(), "global"),
       },
     ],
   },

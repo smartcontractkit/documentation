@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 970" width="800" height="970" role="img" font-family="Arial, Helvetica, sans-serif">
+  <title>Deposit flow through the Cross-Chain Vault Adapter</title>
+  <desc>Numbered steps of a deposit. 1: on the source chain, the user sends the asset and the payload to the adapter through the CCIP Router. 2: CCIP verifies and delivers the message; on CCIP 2.0 lanes the verifier and finality policy are checked first. On the hub chain, in one transaction: 3: the adapter validates the source chain, the token count, and the 128-byte payload. 4: the asset was received, so the request is a deposit; the vault must be allowlisted, the amount above zero, and deposits enabled. 5: only when returning, the adapter fee is deducted from the asset. 6: the adapter deposits into the vault and receives the shares. 7: the adapter checks that the shares are above zero and at least minimumOut. 8: either local delivery of the shares to the beneficiary on the hub chain, or, dashed, the adapter sends the shares back over CCIP and pays the CCIP fee in the native gas token. 9, dashed: the beneficiary receives the shares on the source chain through a second CCIP message.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#000000"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="800" height="970" fill="#FFFFFF"/>
+
+  <g font-family="Arial, Helvetica, sans-serif" fill="#000000">
+    <!-- Source chain region (send) -->
+    <rect x="20" y="20" width="760" height="110" fill="none" stroke="#000000" stroke-width="1.5"/>
+    <text x="36" y="42" font-size="12">Source chain</text>
+
+    <rect x="160" y="58" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="400" y="83" font-size="14" text-anchor="middle">1. User sends the asset and the payload</text>
+    <text x="400" y="103" font-size="12" text-anchor="middle">One CCIP message to the adapter through the CCIP Router</text>
+
+    <line x1="400" y1="118" x2="400" y2="150" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- CCIP -->
+    <rect x="160" y="150" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="400" y="175" font-size="14" text-anchor="middle">2. CCIP verifies and delivers the message</text>
+    <text x="400" y="195" font-size="12" text-anchor="middle">CCIP 2.0 lanes: verifier and finality policy checked first</text>
+
+    <line x1="400" y1="210" x2="400" y2="268" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- Hub chain region -->
+    <rect x="20" y="230" width="760" height="554" fill="none" stroke="#000000" stroke-width="1.5"/>
+    <text x="36" y="252" font-size="12">Hub chain (one transaction)</text>
+
+    <rect x="160" y="268" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="400" y="293" font-size="14" text-anchor="middle">3. Adapter validates the message</text>
+    <text x="400" y="313" font-size="12" text-anchor="middle">Source chain configured, exactly one token, 128-byte payload</text>
+
+    <line x1="400" y1="328" x2="400" y2="354" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="160" y="354" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="400" y="379" font-size="14" text-anchor="middle">4. Asset received, so the request is a deposit</text>
+    <text x="400" y="399" font-size="12" text-anchor="middle">Vault allowlisted, amount above zero, deposits enabled</text>
+
+    <line x1="400" y1="414" x2="400" y2="440" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="160" y="440" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="400" y="465" font-size="14" text-anchor="middle">5. Adapter fee deducted (return only)</text>
+    <text x="400" y="485" font-size="12" text-anchor="middle">Flat fee in asset units, taken before the deposit</text>
+
+    <line x1="400" y1="500" x2="400" y2="526" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="160" y="526" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="400" y="551" font-size="14" text-anchor="middle">6. Adapter deposits into the vault</text>
+    <text x="400" y="571" font-size="12" text-anchor="middle">vault.deposit(amount, adapter): the adapter receives the shares</text>
+
+    <line x1="400" y1="586" x2="400" y2="612" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <rect x="160" y="612" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="400" y="637" font-size="14" text-anchor="middle">7. Adapter checks the output</text>
+    <text x="400" y="657" font-size="12" text-anchor="middle">Shares above zero and at least minimumOut</text>
+
+    <!-- Branch -->
+    <line x1="400" y1="672" x2="400" y2="684" stroke="#000000" stroke-width="1.5"/>
+    <path d="M400 684 H210 V704" fill="none" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M400 684 H590 V704" fill="none" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+
+    <rect x="40" y="704" width="340" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="210" y="729" font-size="14" text-anchor="middle">8. Local delivery</text>
+    <text x="210" y="749" font-size="12" text-anchor="middle">Shares sent to the beneficiary on this chain</text>
+
+    <rect x="420" y="704" width="340" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="590" y="729" font-size="14" text-anchor="middle">8. Return to the source chain</text>
+    <text x="590" y="749" font-size="12" text-anchor="middle">Adapter pays the CCIP fee in the native gas token</text>
+
+    <line x1="590" y1="764" x2="590" y2="842" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+
+    <!-- Source chain region (return) -->
+    <rect x="20" y="804" width="760" height="116" fill="none" stroke="#000000" stroke-width="1.5"/>
+    <text x="36" y="826" font-size="12">Source chain</text>
+
+    <rect x="420" y="842" width="340" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="590" y="867" font-size="14" text-anchor="middle">9. Beneficiary receives the shares</text>
+    <text x="590" y="887" font-size="12" text-anchor="middle">Delivered by a second CCIP message</text>
+
+    <!-- Legend -->
+    <line x1="40" y1="946" x2="90" y2="946" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="100" y="950" font-size="12">Dashed: only when the payload requests return to the source chain</text>
+  </g>
+</svg>
