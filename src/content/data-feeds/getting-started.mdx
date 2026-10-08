@@ -101,7 +101,13 @@ Read the decimals so you can scale the answer:
 cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
 ```
 
-The BTC / USD feed returns `8` for decimals. Divide the raw integer answer by `10 ** decimals` to get the human-readable price. For example, an answer of `3030914000000` with 8 decimals is `30309.14` USD.
+The BTC / USD feed returns `8` for decimals. To convert the raw integer answer into a human-readable price, pass it together with the decimals to `cast format-units`:
+
+```bash
+cast format-units 3030914000000 8
+```
+
+This prints `30309.14000000`. `cast format-units` does the decimal scaling for you, so an answer of `100000001` with 8 decimals correctly prints `1.00000001`.
 
 </Accordion>
 
@@ -253,6 +259,10 @@ import {console2} from "forge-std/console2.sol";
  *     --rpc-url $SEPOLIA_RPC_URL \
  *     --broadcast \
  *     --private-key $PRIVATE_KEY
+ *
+ * To format the raw answer as a human-readable price, pass it together with
+ * the feed's decimals to cast:
+ *   cast format-units <answer> <decimals>
  */
 contract DeployAndReadDataConsumerV3 is Script {
   // Sepolia BTC / USD price feed proxy address
@@ -269,25 +279,11 @@ contract DeployAndReadDataConsumerV3 is Script {
 
     // 2. Read the latest price through the consumer
     int256 answer = consumer.getChainlinkDataFeedLatestAnswer();
-    console2.log("Latest answer (raw):", uint256(answer));
+    console2.log("Latest answer (raw):", answer);
 
-    // 3. Read decimals directly from the feed to scale the answer
+    // 3. Read the feed's decimals so you can scale the answer offchain
     uint8 decimals = AggregatorV3Interface(SEPOLIA_BTC_USD).decimals();
     console2.log("Decimals:", decimals);
-    console2.log("Latest price (scaled): %s", _scale(answer, decimals));
-  }
-
-  function _scale(
-    int256 answer,
-    uint8 decimals
-  ) internal pure returns (string memory) {
-    // Convert the integer answer to a human-readable price string.
-    // For 8 decimals, 3030914000000 -> "30309.14000000"
-    uint256 magnitude = uint256(answer);
-    uint256 base = 10 ** decimals;
-    uint256 whole = magnitude / base;
-    uint256 fraction = magnitude % base;
-    return string.concat(vm.toString(whole), ".", vm.toString(fraction));
   }
 }
 ```
@@ -301,7 +297,11 @@ forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
   --private-key $PRIVATE_KEY
 ```
 
-The script logs the deployed contract address, the raw integer answer, the feed's decimals, and the human-readable price.
+The script logs the deployed contract address, the raw integer answer, and the feed's decimals. To see the human-readable price, pass the logged answer and decimals to `cast format-units`:
+
+```bash
+cast format-units 3030914000000 8
+```
 
 Save the deployed contract address for the next step.
 
@@ -327,7 +327,7 @@ Read the feed's decimals directly to scale the answer yourself:
 cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
 ```
 
-The BTC / USD feed returns `8` for decimals. Scale the raw answer by `10 ** decimals` as shown in [step 1](#fetching-price-data-offchain).
+The BTC / USD feed returns `8` for decimals. Convert the raw answer to a human-readable price with `cast format-units <answer> <decimals>` as shown in [step 1](#fetching-price-data-offchain).
 
 {/* prettier-ignore */}
 <Aside type="tip" title="Always scale by `decimals()`">

@@ -898,6 +898,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Getting Started",
           url: "data-feeds/getting-started",
+          highlightAsCurrent: ["data-feeds/getting-started-hardhat", "data-feeds/getting-started-remix"],
         },
         {
           title: "Developer Responsibilities",

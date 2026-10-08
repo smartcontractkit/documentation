@@ -20,6 +20,10 @@ import {console2} from "forge-std/console2.sol";
  *     --rpc-url $SEPOLIA_RPC_URL \
  *     --broadcast \
  *     --private-key $PRIVATE_KEY
+ *
+ * To format the raw answer as a human-readable price, pass it together with
+ * the feed's decimals to cast:
+ *   cast format-units <answer> <decimals>
  */
 contract DeployAndReadDataConsumerV3 is Script {
   // Sepolia BTC / USD price feed proxy address
@@ -36,24 +40,10 @@ contract DeployAndReadDataConsumerV3 is Script {
 
     // 2. Read the latest price through the consumer
     int256 answer = consumer.getChainlinkDataFeedLatestAnswer();
-    console2.log("Latest answer (raw):", uint256(answer));
+    console2.log("Latest answer (raw):", answer);
 
-    // 3. Read decimals directly from the feed to scale the answer
+    // 3. Read the feed's decimals so you can scale the answer offchain
     uint8 decimals = AggregatorV3Interface(SEPOLIA_BTC_USD).decimals();
     console2.log("Decimals:", decimals);
-    console2.log("Latest price (scaled): %s", _scale(answer, decimals));
-  }
-
-  function _scale(
-    int256 answer,
-    uint8 decimals
-  ) internal pure returns (string memory) {
-    // Convert the integer answer to a human-readable price string.
-    // For 8 decimals, 3030914000000 -> "30309.14000000"
-    uint256 magnitude = uint256(answer);
-    uint256 base = 10 ** decimals;
-    uint256 whole = magnitude / base;
-    uint256 fraction = magnitude % base;
-    return string.concat(vm.toString(whole), ".", vm.toString(fraction));
   }
 }

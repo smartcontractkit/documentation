@@ -37,8 +37,7 @@ async function main() {
   console.log("Decimals:", decimals)
 
   // 4. Scale and print the human-readable price
-  const scaled = Number(answer) / 10 ** Number(decimals)
-  console.log("Latest price (USD):", scaled)
+  console.log("Latest price (USD):", ethers.formatUnits(answer, decimals))
 }
 
 main().catch((error) => {
