@@ -17,10 +17,10 @@ You might occasionally need to restart the system that the Chainlink node runs o
   Node](/chainlink-nodes/v1/running-a-chainlink-node) page for instructions on how to set it up.
 </Aside>
 
-First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.11.0:
+First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 2.66.0:
 
 ```shell
-docker pull smartcontract/chainlink:1.11.0
+docker pull smartcontract/chainlink:2.66.0
 ```
 
 Then, check what port the existing container is running on:
@@ -46,14 +46,12 @@ Now start the second instance of the node. The local port option has been modifi
   <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
-    cd ~/.chainlink-sepolia && docker run -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it
-    --env-file=.env smartcontract/chainlink local n
+    cd ~/.chainlink-sepolia && docker run -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
   <Fragment slot="panel.2">
     ```shell Mainnet
-    cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
-    smartcontract/chainlink local n
+    cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
 </Tabs>
@@ -78,14 +76,12 @@ Next, run the container again with the local port 6688 in order to go back to no
   <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
-    cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it
-    --env-file=.env smartcontract/chainlink local n
+    cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
   <Fragment slot="panel.2">
     ```shell Mainnet
-    cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
-    smartcontract/chainlink local n
+    cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
 </Tabs>
@@ -111,14 +107,12 @@ Run the Chainlink node with a name option specified:
   <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
-    cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v
-    ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+    cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
   <Fragment slot="panel.2">
     ```shell Mainnet
-    cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it
-    --env-file=.env smartcontract/chainlink local n
+    cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
 </Tabs>
@@ -144,14 +138,12 @@ This will remain your primary Chainlink container, and should always use port 66
   <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
-    cd ~/.chainlink-sepolia && docker run --name secondary -p 6687:6688 -v
-    ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+    cd ~/.chainlink-sepolia && docker run --name secondary -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
   <Fragment slot="panel.2">
     ```shell Mainnet
-    cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it
-    --env-file=.env smartcontract/chainlink local n
+    cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
 </Tabs>

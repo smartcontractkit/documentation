@@ -56,23 +56,16 @@ openssl req -x509 -out  ~/.chainlink/tls/server.crt  -keyout ~/.chainlink/tls/se
 </Fragment>
 </Tabs>
 
-Next, add the `TLS_CERT_PATH` and `TLS_KEY_PATH` environment variables to your `.env` file.
+Next, add the certificate and key paths to the `[WebServer.TLS]` section of your `config.toml` file. Set `SecureCookies` to `true` and `HTTPSPort` to the HTTPS port:
 
-```shell Shell
-echo "TLS_CERT_PATH=/chainlink/tls/server.crt
-TLS_KEY_PATH=/chainlink/tls/server.key" >> .env
-```
+```toml config.toml
+[WebServer]
+SecureCookies = true
 
-If `CHAINLINK_TLS_PORT=0` is present in your `.env` file, remove it by running:
-
-```shell Shell
-sed -i '/CHAINLINK_TLS_PORT=0/d' .env
-```
-
-Also remove the line that disables `SECURE_COOKIES` by running:
-
-```shell Shell
-code": "sed -i '/SECURE_COOKIES=false/d' .env
+[WebServer.TLS]
+CertPath = '/chainlink/tls/server.crt'
+KeyPath = '/chainlink/tls/server.key'
+HTTPSPort = 6689
 ```
 
 Finally, update your run command to forward port 6689 to the container instead of 6688:
@@ -83,14 +76,12 @@ Finally, update your run command to forward port 6689 to the container instead o
   <Fragment slot="tab.2">Mainnet</Fragment>
   <Fragment slot="panel.1">
     ```shell Sepolia
-    cd ~/.chainlink-sepolia && docker run -p 6689:6689 -v ~/.chainlink-sepolia:/chainlink -it
-    --env-file=.env smartcontract/chainlink local n
+    cd ~/.chainlink-sepolia && docker run -p 6689:6689 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
   <Fragment slot="panel.2">
     ```shell Mainnet
-    cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it --env-file=.env
-    smartcontract/chainlink local n
+    cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
     ```
   </Fragment>
 </Tabs>
