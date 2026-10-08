@@ -116,7 +116,7 @@ Test your node to verify that it works as intended. If you are using a VPS, open
 
 ## Using multiple config files
 
-You can use multiple config and secrets files. The config settings from each file are applied in the order that you specify when you run your node. Duplicated fields override values specified in earlier config files. This allows you to create a common config that applies to many nodes with specific configs for nodes that need unique configuration settings. Specifying multiple secrets files is invalid.
+You can use multiple config and secrets files. The config settings from each file are applied in the order that you specify when you run your node. Duplicated fields override values specified in earlier config files. This allows you to create a common config that applies to many nodes with specific configs for nodes that need unique configuration settings. Secrets files are merged instead of overridden: you can specify several `-secrets` flags, but specifying the same field in more than one secrets file is an error.
 
 To specify multiple config files, add additional `-config` flags to the `docker run` command:
 
@@ -128,6 +128,10 @@ docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink:/chainlin
 
 # Contract addresses
 Source: https://docs.chain.link/chainlink-nodes/contracts/addresses
+
+> **NOTE: Not used by this node**
+>
+> The operator factory is not used by this node. These addresses are kept as a historical reference.
 
 This page lists the [operator factory](/chainlink-nodes/contracts/operatorfactory) addresses for different networks.
 
@@ -202,6 +206,23 @@ Forward a call to another contract.
 | to   | address | address     |
 | data | bytes   | to forward  |
 
+#### multiForward
+
+```solidity
+function multiForward(address[] tos, bytes[] datas) external
+```
+
+Forward multiple calls to other contracts in a multicall style.
+
+*Only callable by an authorized sender*
+
+##### Parameters
+
+| Name  | Type       | Description                                               |
+| ----- | ---------- | --------------------------------------------------------- |
+| tos   | address[] | An array of addresses to forward the calls to             |
+| datas | bytes[]   | An array of data to forward to each corresponding address |
+
 #### ownerForward
 
 ```solidity
@@ -246,6 +267,11 @@ event OwnershipTransferRequestedWithMessage(address from, address to, bytes mess
 
 # Operator
 Source: https://docs.chain.link/chainlink-nodes/contracts/operator
+
+> **NOTE: Not used by this node**
+>
+> This contract is not used by this node. Direct request jobs have been removed, so the node no longer reads
+> `OracleRequest` events or calls the fulfillment functions. This page is kept as a historical reference.
 
 Oracles must deploy an onchain contract to handle requests made through the LINK token (Read [Basic Request Model](/architecture-overview/architecture-request-model) to learn more).
 
@@ -626,6 +652,10 @@ event TargetsUpdatedAuthorizedSenders(address[] targets, address[] senders, addr
 # Operator Factory
 Source: https://docs.chain.link/chainlink-nodes/contracts/operatorfactory
 
+> **NOTE: Not used by this node**
+>
+> This contract is not used by this node. The reference is kept as historical documentation.
+
 The [factory](https://www.youtube.com/watch?v=Q1zZo4O_Ong) design pattern is a well know programming pattern: Rather than compiling and creating instances of a contract yourself, the *factory* does it for you.
 As explained in the [operator guide](/chainlink-nodes/contracts/operator), the `OperatorFactory` contract comes with these benefits:
 
@@ -838,6 +868,12 @@ event AuthorizedSendersChanged(address[] senders, address changedBy)
 # Building External Initiators
 Source: https://docs.chain.link/chainlink-nodes/external-initiators/building-external-initiators
 
+> **CAUTION: Not supported**
+>
+> External initiators no longer start job runs in this node, because the `webhook` job type they authenticated against
+> is not supported. The node has no replacement job type for externally triggered jobs. The rest of this page is kept
+> for reference.
+
 An external initiator can trigger a run for any webhook job that it has been linked to.
 
 The URL for triggering a run is such:
@@ -891,6 +927,12 @@ And have this job run on the same machine as your node.
 
 # Adding External Initiators to Nodes
 Source: https://docs.chain.link/chainlink-nodes/external-initiators/external-initiators-in-nodes
+
+> **CAUTION: Not supported**
+>
+> External initiators no longer start job runs in this node, because the `webhook` job type they authenticated against
+> is not supported. The node has no replacement job type for externally triggered jobs. The rest of this page is kept
+> for reference.
 
 > **NOTE**
 >
@@ -1011,6 +1053,12 @@ chainlink initiators list
 # Introduction
 Source: https://docs.chain.link/chainlink-nodes/external-initiators/external-initiators-introduction
 
+> **CAUTION: Not supported**
+>
+> External initiators no longer start job runs in this node, because the `webhook` job type they authenticated against
+> is not supported. The node has no replacement job type for externally triggered jobs. The rest of this page is kept
+> for reference.
+
 External initiators allow jobs in a node to be initiated depending on some external condition. The ability to create and add external initiators to Chainlink nodes enables blockchain agnostic cross-chain compatibility.
 
 > **NOTE**
@@ -1040,6 +1088,11 @@ For how to create an external initiator see [adding external initiators to nodes
 
 # Existing Job Example specs
 Source: https://docs.chain.link/chainlink-nodes/job-specs/direct-request-existing-job
+
+> **CAUTION: Not supported**
+>
+> The `directrequest` job type used in this example is not supported in this node. A spec with `type = "directrequest"`
+> does not start. See [Job Types](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for details.
 
 This is an example v2 (TOML) job spec for returning gas price using [etherscan](https://docs.etherscan.io/api-endpoints/gas-tracker#get-gas-oracle) in one Chainlink API Call. Note that the job :
 
@@ -1099,6 +1152,11 @@ observationSource = """
 # GET > Bool Example Job Spec
 Source: https://docs.chain.link/chainlink-nodes/job-specs/direct-request-get-bool
 
+> **CAUTION: Not supported**
+>
+> The `directrequest` job type used in this example is not supported in this node. A spec with `type = "directrequest"`
+> does not start. See [Job Types](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for details.
+
 This is an example v2 (TOML) job spec for calling any public API, parsing the result then returning a *bool* in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol) with this job.
 
 ```toml
@@ -1132,6 +1190,11 @@ observationSource = """
 
 # GET > Bytes Example Job Spec
 Source: https://docs.chain.link/chainlink-nodes/job-specs/direct-request-get-bytes
+
+> **CAUTION: Not supported**
+>
+> The `directrequest` job type used in this example is not supported in this node. A spec with `type = "directrequest"`
+> does not start. See [Job Types](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for details.
 
 This is an example v2 (TOML) job spec for returning *bytes* in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol) with this job.
 To test it from a smart contract, see this [Example](/any-api/get-request/examples/large-responses).
@@ -1213,6 +1276,11 @@ This is an example legacy v1 job spec for returning large responses in one Chain
 # GET > Int256 Example Job Spec
 Source: https://docs.chain.link/chainlink-nodes/job-specs/direct-request-get-int256
 
+> **CAUTION: Not supported**
+>
+> The `directrequest` job type used in this example is not supported in this node. A spec with `type = "directrequest"`
+> does not start. See [Job Types](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for details.
+
 This is an example v2 (TOML) job spec for calling any public API, retrieving a number , removing its decimals then returning *int256* in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol) with this job.
 
 ```toml
@@ -1249,6 +1317,11 @@ observationSource = """
 
 # GET > String Example Job Spec
 Source: https://docs.chain.link/chainlink-nodes/job-specs/direct-request-get-string
+
+> **CAUTION: Not supported**
+>
+> The `directrequest` job type used in this example is not supported in this node. A spec with `type = "directrequest"`
+> does not start. See [Job Types](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for details.
 
 This is an example v2 (TOML) job spec for returning a *string* in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol) with this job.
 To test it from a smart contract, see this [Example](/any-api/get-request/examples/array-response).
@@ -1291,6 +1364,11 @@ observationSource = """
 # GET > Uint256 Example Job Spec
 Source: https://docs.chain.link/chainlink-nodes/job-specs/direct-request-get-uint256
 
+> **CAUTION: Not supported**
+>
+> The `directrequest` job type used in this example is not supported in this node. A spec with `type = "directrequest"`
+> does not start. See [Job Types](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for details.
+
 This is an example v2 (TOML) job spec for calling any public API, retrieving a number , removing its decimals then returning *uint256* in one Chainlink API Call. Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol) with this job.
 To test it from a smart contract, see this [Example](/any-api/get-request/examples/single-word-response).
 
@@ -1328,6 +1406,11 @@ observationSource = """
 
 # MultiWord Example Job Spec
 Source: https://docs.chain.link/chainlink-nodes/job-specs/multi-word-job
+
+> **CAUTION: Not supported**
+>
+> The `directrequest` job type used in this example is not supported in this node. A spec with `type = "directrequest"`
+> does not start. See [Job Types](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for details.
 
 This is an example v2 (TOML) job spec for returning multiple responses in 1 Chainlink API Call.Note that the job calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol) with this job.
 To test it from a smart contract, see this [Example](/any-api/get-request/examples/multi-variable-responses).
@@ -1434,14 +1517,11 @@ For all supported schedules, please refer to the [cron library documentation](ht
 
 ## Direct request jobs
 
-> **CAUTION: Deprecation**
+> **CAUTION: Not supported**
 >
-> After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Direct Request and Run Log job
-> types. These job types will no longer be supported in Chainlink node releases. Node operators and developers that
-> continue to rely on them can choose to remain on the last compatible release, but should not expect ongoing
-> development support, including maintenance, bug fixes, security patches, or compatibility with future releases. Teams
-> using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an
-> alternative.
+> The `directrequest` job type is not supported in this node. The node fails the job with `job type "directrequest" has
+>   been removed and is no longer supported`, so a spec with `type = "directrequest"` does not start. The node has no
+> replacement job type for it. The spec format below is kept for reference.
 
 Executes a job upon receipt of an explicit request made by a user. The request is detected via a log emitted by an Oracle or Operator contract. This is similar to the legacy ethlog/runlog style of jobs.
 
@@ -1550,14 +1630,11 @@ Using an *existing* Oracle Job makes your smart contract code more succinct. Let
 
 ## Flux Monitor Jobs
 
-> **CAUTION: Deprecation**
+> **CAUTION: Not supported**
 >
-> After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Flux Monitor, Direct Request, and
-> Run Log job types. These job types will no longer be supported in Chainlink node releases. Node operators and
-> developers that continue to rely on them can choose to remain on the last compatible release, but should not expect
-> ongoing development support, including maintenance, bug fixes, security patches, or compatibility with future
-> releases. Teams using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment
-> (CRE)](/cre) as an alternative.
+> The `fluxmonitor` job type is not supported in this node. The node fails the job with `job type "fluxmonitor" has been
+>   removed and is no longer supported`, so a spec with `type = "fluxmonitor"` does not start. The node has no replacement
+> job type for it. The spec format below is kept for reference.
 
 The Flux Monitor job type is for continually-updating data feeds that aggregate responses from multiple oracles. The oracles servicing the feed submit rounds based on several triggers:
 
@@ -1634,6 +1711,10 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 
 ## Keeper jobs
 
+> **CAUTION: Not supported**
+>
+> The `keeper` job type is not supported in this node. The node does not register it as a job type, so a spec with `type   = "keeper"` does not start. The node has no replacement job type for it. The spec format below is kept for reference.
+
 Keeper jobs occasionally poll a smart contract method that expresses whether something in the contract is ready for some onchain action to be performed. When it's ready, the job executes that onchain action.
 
 Examples:
@@ -1670,7 +1751,7 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 
 Offchain Reporting (OCR) jobs are used very similarly to Flux Monitor jobs. They update data feeds with aggregated data from many Chainlink oracle nodes. However, they do this aggregation using a cryptographically-secure offchain protocol that makes it possible for only a single node to submit all answers from all participating nodes during each round (with proofs that the other nodes' answers were legitimately provided by those nodes), which saves a significant amount of gas.
 
-Offchain reporting jobs require the `FEATURE_OFFCHAIN_REPORTING=true` environment variable.
+The node starts `offchainreporting` jobs only when `OCR.Enabled` is `true`. The default is `false`, and the node then logs `Off-chain reporting disabled` and registers no delegate.
 
 ### Bootstrap node
 
@@ -1806,19 +1887,18 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 
 ## Webhook Jobs
 
-> **CAUTION: Deprecation**
+> **CAUTION: Not supported**
 >
-> After Chainlink Node version 2.49, Chainlink is deprecating support for the legacy Webhook job type. This job type
-> will no longer be supported in Chainlink node releases. Node operators and developers that continue to rely on it can
-> choose to remain on the last compatible release, but should not expect ongoing development support, including
-> maintenance, bug fixes, security patches, or compatibility with future releases. Teams using this legacy job type
-> should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an alternative.
+> The `webhook` job type is not supported in this node. The node fails the job with `job type "webhook" has been removed
+>   and is no longer supported`, so a spec with `type = "webhook"` does not start. The node has no replacement job type
+> for it. The spec format below is kept for reference.
 
 Webhook jobs can be initiated by HTTP request, either by a user or external initiator.
 
 > **NOTE**
 >
-> You must have `ExternalInitiatorsEnabled = true` in your config to enable these jobs. See&#x20;
+> The `ExternalInitiatorsEnabled` config key is unused. It is retained for the legacy external initiator feature that
+> fed the `webhook` job type. See&#x20;
 > [ExternalInitiatorsEnabled](/chainlink-nodes/v1/node-config#externalinitiatorsenabled) in the config
 > reference for details.
 
@@ -1860,12 +1940,430 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 - `$(jobRun.meta)`: a map of metadata that can be sent to a bridge, etc.
 - `$(jobRun.requestBody)`: the body of the request that initiated the job run.
 
+## VRF jobs
+
+The `vrf` job type watches a VRF coordinator contract for randomness requests and fulfills them by submitting the verifiable random proof. It covers both VRF v2 and VRF v2plus. The job pipeline uses the [VRF V2 task](/chainlink-nodes/oracle-jobs/all-tasks/#vrf-v2-task) or [VRF V2Plus task](/chainlink-nodes/oracle-jobs/all-tasks/#vrf-v2plus-task) to generate the proof.
+
+### Spec format
+
+```toml
+type                     = "vrf"
+schemaVersion            = 1
+name                     = "VRF"
+coordinatorAddress       = "0x..."
+evmChainID               = "1"
+minIncomingConfirmations = 3
+publicKey                = "0x..."
+fromAddresses            = ["0x1111111111111111111111111111111111111111"]
+pollPeriod               = "5s"
+observationSource        = """
+decode_log   [type=ethabidecodelog
+              abi="RandomWordsRequested(bytes32 indexed keyHash,uint256 requestId,uint256 preSeed,uint64 indexed subId,uint16 minimumRequestConfirmations,uint32 callbackGasLimit,uint32 numWords,address indexed sender)"
+              data="$(jobRun.logData)"
+              topics="$(jobRun.logTopics)"]
+vrf          [type=vrfv2
+              publicKey="$(jobSpec.publicKey)"
+              requestBlockHash="$(jobRun.logBlockHash)"
+              requestBlockNumber="$(jobRun.logBlockNumber)"
+              topics="$(jobRun.logTopics)"]
+estimate_gas [type=estimategaslimit
+              to="0x..."
+              multiplier="1.1"
+              data="$(vrf.output)"]
+simulate     [type=ethcall
+              to="0x..."
+              gas="$(estimate_gas)"
+              gasPrice="$(jobSpec.maxGasPrice)"
+              extractRevertReason=true
+              contract="0x..."
+              data="$(vrf.output)"]
+decode_log -> vrf -> estimate_gas -> simulate
+"""
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `coordinatorAddress`: the address of the VRF coordinator contract to watch for requests.
+- `publicKey`: the public key of the VRF key that this job uses to generate proofs.
+- `minIncomingConfirmations`: the minimum number of block confirmations before a request is fulfilled.
+- `evmChainID`: the chain ID of the EVM chain in which the job will operate.
+- `fromAddresses`: one or more addresses from which to submit fulfillment transactions. If left blank, a random address is selected on every send for the given chain ID.
+- `pollPeriod`: how often the job polls for new VRF requests.
+- `requestedConfsDelay`: optional. The number of blocks to wait, in addition to `minIncomingConfirmations`, before fulfilling a request. Defaults to `0`.
+- `requestTimeout`: optional. The timeout for a request. Defaults to 24 hours.
+- `gasLanePrice`: optional. The gas lane price for this job. If the keys in `fromAddresses` do not have the given gas price, the job does not start.
+- `chunkSize`: optional. The number of pending VRF v2 requests to process in parallel. Defaults to `20`.
+- `backoffInitialDelay`: the amount of time to wait before retrying a failed request after the first failure.
+- `backoffMaxDelay`: the maximum amount of time to wait before retrying a failed request.
+- `batchCoordinatorAddress`: the address of the batch VRF coordinator to use. Required if `batchFulfillmentEnabled` is `true`.
+- `batchFulfillmentEnabled`: whether the job uses the batch VRF coordinator to fulfill requests.
+- `batchFulfillmentGasMultiplier`: the multiplier used to determine the final gas estimate for batch fulfillment.
+- `customRevertsPipelineEnabled`: whether the job runs the custom reverted transactions pipeline alongside the VRF listener.
+- `vrfOwnerAddress`: the address of the `VRFOwner` contract to use. VRF v2 only.
+
+### Job type specific pipeline variables
+
+- `$(jobSpec.publicKey)`: the public key of the VRF key that this job uses.
+- `$(jobSpec.maxGasPrice)`: the maximum gas price configured for the job.
+- `$(jobRun.logBlockHash)`: the block hash in which the initiating log was received.
+- `$(jobRun.logBlockNumber)`: the block number in which the initiating log was received.
+- `$(jobRun.logTopics)`: the log's topics (`indexed` fields).
+
+## Blockhash store jobs
+
+The `blockhashstore` job type watches VRF coordinator contracts for unfulfilled requests and stores the blockhashes they need into a `BlockhashStore` contract. This lets a request still be fulfilled after its request block leaves the EVM blockhash window.
+
+### Spec format
+
+```toml
+type                         = "blockhashstore"
+schemaVersion                = 1
+name                         = "blockhashstore"
+coordinatorV2Address         = "0x..."
+waitBlocks                   = 59
+lookbackBlocks               = 159
+blockhashStoreAddress        = "0x..."
+trustedBlockhashStoreAddress = "0x..."
+trustedBlockhashStoreBatchSize = 20
+heartbeatPeriod              = "1h"
+pollPeriod                   = "23s"
+runTimeout                   = "10s"
+evmChainID                   = "1"
+fromAddresses                = ["0x1111111111111111111111111111111111111111"]
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `coordinatorV1Address`: a legacy VRF v1 field, kept for API and database compatibility. Non-zero values are rejected at spec validation.
+- `coordinatorV2Address`: the VRF v2 coordinator to watch for unfulfilled requests. If empty, no v2 coordinator is watched.
+- `coordinatorV2PlusAddress`: the VRF v2plus coordinator to watch for unfulfilled requests. If empty, no v2plus coordinator is watched.
+- `waitBlocks`: the minimum age of blocks whose hashes should be stored.
+- `lookbackBlocks`: the maximum age of blocks whose hashes should be stored.
+- `blockhashStoreAddress`: the address of the `BlockhashStore` contract to store blockhashes into.
+- `trustedBlockhashStoreAddress`: the address of the trusted `BlockhashStore` contract to store blockhashes into.
+- `trustedBlockhashStoreBatchSize`: the number of blockhashes to store in a single batch.
+- `heartbeatPeriod`: the period at which a blockhash is stored into the blockhash store contract even when nothing needs it, so that a blockhash is always available to anchor to.
+- `pollPeriod`: how often recent blocks are scanned for blockhash storage.
+- `runTimeout`: the timeout for a single run of the blockhash store feeder.
+- `evmChainID`: the chain ID for monitoring and storing blockhashes.
+- `fromAddresses`: the sender addresses used to store blockhashes.
+
+## Block header feeder jobs
+
+The `blockheaderfeeder` job type stores blockhashes for a batch of recent blocks into a `BatchBlockhashStore` contract, so that blockhashes remain available after the EVM blockhash window.
+
+### Spec format
+
+```toml
+type                       = "blockheaderfeeder"
+schemaVersion              = 1
+name                       = "blockheaderfeeder"
+coordinatorV2Address       = "0x..."
+waitBlocks                 = 59
+lookbackBlocks             = 159
+blockhashStoreAddress      = "0x..."
+batchBlockhashStoreAddress = "0x..."
+getBlockhashesBatchSize    = 20
+storeBlockhashesBatchSize  = 20
+pollPeriod                 = "23s"
+runTimeout                 = "10s"
+evmChainID                 = "1"
+fromAddresses              = ["0x1111111111111111111111111111111111111111"]
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `coordinatorV1Address`: a legacy VRF v1 field, kept for API and database compatibility. Non-zero values are rejected at spec validation.
+- `coordinatorV2Address`: the VRF v2 coordinator to watch for unfulfilled requests. If empty, no v2 coordinator is watched.
+- `coordinatorV2PlusAddress`: the VRF v2plus coordinator to watch for unfulfilled requests. If empty, no v2plus coordinator is watched.
+- `waitBlocks`: the minimum age of blocks whose hashes should be stored.
+- `lookbackBlocks`: the maximum age of blocks whose hashes should be stored.
+- `blockhashStoreAddress`: the address of the `BlockhashStore` contract to store blockhashes into.
+- `batchBlockhashStoreAddress`: the address of the `BatchBlockhashStore` contract to store blockhashes into.
+- `getBlockhashesBatchSize`: the RPC call batch size for retrieving blockhashes.
+- `storeBlockhashesBatchSize`: the RPC call batch size for storing blockhashes.
+- `pollPeriod`: how often recent blocks are scanned for blockhash storage.
+- `runTimeout`: the timeout for a single run of the block header feeder.
+- `evmChainID`: the chain ID for monitoring and storing blockhashes.
+- `fromAddresses`: the sender addresses used to store blockhashes.
+
+## Offchain reporting 2 jobs
+
+Offchain Reporting 2 (OCR2) jobs use the second generation of the offchain reporting protocol. The job type is `offchainreporting2`. The protocol details, such as the plugin that consumes the reports, are selected by the job itself rather than by the node.
+
+The node starts `offchainreporting2` jobs only when `OCR2.Enabled` is `true`. The default is `false`, and the node then logs `Off-chain reporting v2 disabled`.
+
+### Spec format
+
+```toml
+type               = "offchainreporting2"
+schemaVersion      = 1
+name               = "OCR2: ETH/USD"
+relay              = "evm"
+contractID         = "0x613a38AC1659769640aaE063C651F48E0250454C"
+p2pv2Bootstrappers = ["12D3KooWApUJaQB2saFjyEUfq6BmysnsSnhLnY5CF9tURYVKgoXK@10.0.0.1:9999"]
+transmitterID      = "0xF67D0290337bca0847005C7ffD1BC75BA9AAE6e4"
+pluginType         = "median"
+observationSource  = """
+    ds          [type=http method=GET url="https://chain.link/ETH-USD"];
+    ds_parse    [type=jsonparse path="data.price" separator="."];
+    ds_multiply [type=multiply times=100];
+    ds -> ds_parse -> ds_multiply;
+"""
+
+[relayConfig]
+chainID = "1"
+
+[pluginConfig]
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `relay`: the relay identifier in `RelayID.Network` form, for example `evm`.
+- `contractID`: the address of the contract that the DON reports on.
+- `feedID`: optional. The feed ID that the job reports on.
+- `chainID`: the chain ID. This field is deprecated in favor of the `chainID` key inside `relayConfig`.
+- `relayConfig`: relay-specific configuration.
+- `p2pv2Bootstrappers`: a list of `peer_id@ip_address:port` strings that identify the bootstrap nodes of the P2P network.
+- `ocrKeyBundleID`: the OCR key bundle that this node uses to sign reports.
+- `transmitterID`: the address from which to submit aggregated reports.
+- `monitoringEndpoint`: the URL of the telemetry endpoint to send OCR metrics to.
+- `blockchainTimeout`: the maximum duration to wait before an onchain request for data is considered to be failed or unfulfillable.
+- `contractConfigTrackerPollInterval`: the interval at which to proactively poll the onchain config for changes.
+- `contractConfigConfirmations`: the number of blocks to wait after an onchain config change before considering it worthy of acting upon.
+- `onchainSigningStrategy`: the strategy used to select the onchain signing key.
+- `pluginType`: the OCR2 plugin that consumes the reports, for example `median`.
+- `pluginConfig`: plugin-specific configuration.
+- `captureEATelemetry`: whether to capture telemetry for the external adapter calls made by the pipeline.
+- `allowNoBootstrappers`: whether the job may start without any bootstrappers. Useful where the node is not configured to conduct consensus.
+
+## Bootstrap jobs
+
+A `bootstrap` job configures a node as a bootstrap peer. A bootstrap node does not take part in the aggregation protocol; it lets the other nodes of a DON find one another. The `bootstrap` job type is used for OCR2, CCIP, and other DONs that use the offchain reporting protocol.
+
+The node starts `bootstrap` jobs only when `OCR2.Enabled` is `true`. The default is `false`.
+
+### Spec format
+
+```toml
+type               = "bootstrap"
+schemaVersion      = 1
+name               = "bootstrap"
+relay              = "evm"
+contractID         = "0x613a38AC1659769640aaE063C651F48E0250454C"
+
+[relayConfig]
+chainID = "1"
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `relay`: the relay identifier in `RelayID.Network` form, for example `evm`.
+- `contractID`: the contract that the DON reports on.
+- `feedID`: optional. The feed ID that the DON reports on.
+- `relayConfig`: relay-specific configuration.
+- `monitoringEndpoint`: the URL of the telemetry endpoint to send OCR metrics to.
+- `blockchainTimeout`: the maximum duration to wait before an onchain request for data is considered to be failed or unfulfillable.
+- `contractConfigTrackerPollInterval`: the interval at which to proactively poll the onchain config for changes.
+- `contractConfigConfirmations`: the number of blocks to wait after an onchain config change before considering it worthy of acting upon.
+
+## Stream jobs
+
+A `stream` job runs a pipeline on demand and publishes the results to a Data Streams feed. Each run must produce at least one stream ID, either from the top-level `streamID` field or from a `streamID` tag on a task in the pipeline.
+
+### Spec format
+
+```toml
+type              = "stream"
+schemaVersion     = 1
+name              = "ETH-USD stream"
+streamID          = 1234
+observationSource = """
+    ds          [type=http method=GET url="https://chain.link/ETH-USD"];
+    ds_parse    [type=jsonparse path="data.price" separator="."];
+    ds_multiply [type=multiply times=100];
+    ds -> ds_parse -> ds_multiply;
+"""
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `streamID`: optional. The stream ID that receives the final output of the pipeline run. Tasks in the pipeline may also carry a `streamID` tag. At least one stream ID must be present.
+
+## Gateway jobs
+
+A `gateway` job configures the node's gateway, which brokers connections between workflow nodes and external services. The `gatewayConfig` block holds the gateway settings. See [Gateway configuration](/cre) for the meaning of each setting.
+
+### Spec format
+
+```toml
+type          = "gateway"
+schemaVersion = 1
+name          = "Gateway"
+
+[gatewayConfig.ConnectionManagerConfig]
+AuthGatewayId            = "gateway"
+AuthChallengeLen         = 10
+AuthTimestampToleranceSec = 5
+HeartbeatIntervalSec     = 20
+
+[gatewayConfig.NodeServerConfig]
+Path                 = "/node"
+Port                 = 8080
+HandshakeTimeoutMillis = 1000
+MaxRequestBytes      = 100000
+ReadTimeoutMillis    = 1000
+RequestTimeoutMillis = 10000
+WriteTimeoutMillis   = 1000
+
+[gatewayConfig.UserServerConfig]
+Path                 = "/user"
+Port                 = 8081
+ContentTypeHeader    = "application/jsonrpc"
+MaxRequestBytes      = 100000
+ReadTimeoutMillis    = 1000
+RequestTimeoutMillis = 10000
+WriteTimeoutMillis   = 1000
+CORSEnabled          = false
+CORSAllowedOrigins   = []
+
+[gatewayConfig.HTTPClientConfig]
+MaxResponseBytes = 100000000
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `gatewayConfig`: the gateway configuration. It holds a `ConnectionManagerConfig` block, a `NodeServerConfig` block, a `UserServerConfig` block, an `HTTPClientConfig` block, and a list of `Dons`.
+
+## Standard capabilities jobs
+
+A `standardcapabilities` job starts a capability binary that the node hosts. The node launches the command in `command` and passes it the value of `config`.
+
+### Spec format
+
+```toml
+type                = "standardcapabilities"
+schemaVersion       = 1
+name                = "some-capability"
+forwardingAllowed   = false
+command             = "/home/capabilities/some_capability_linux_amd64"
+config              = ""
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `command`: the path to the capability binary that the node launches.
+- `config`: the configuration passed to the capability.
+- `oracle_factory`: the oracle factory configuration for the capability.
+
+## CCIP jobs
+
+The `ccip` job type starts a CCIP capability DON. Its configuration is defined by the CCIP capability, which is documented with the product rather than here.
+
+The node starts `ccip` jobs only when `OCR2.Enabled` is `true`. The default is `false`.
+
+### Unique fields
+
+- `p2pV2Bootstrappers`: a list of `peer_id@ip_address:port` strings that identify the bootstrap nodes of the P2P network. These bootstrappers are used to bootstrap all CCIP DONs.
+- `capabilityVersion`: the semantic version of the CCIP capability. This version must exist in the onchain capability registry.
+- `capabilityLabelledName`: the labelled name of the CCIP capability. It corresponds to the labelled name of the capability in the onchain capability registry.
+- `ocrKeyBundleIDs`: a mapping from chain type to OCR key bundle ID, for example `{"evm": "evm_key_bundle_id"}`.
+- `relayConfigs`: relay-specific configuration, keyed by chain family.
+- `p2pKeyID`: the ID of the node's P2P key. It must be present in the capability registry, otherwise the job does not start correctly.
+- `pluginConfig`: plugin-specific configuration.
+
+## CCV committee verifier jobs
+
+The `ccvcommitteeverifier` job type starts a CCV committee verifier capability. Its configuration is defined by the CCV capability, which is documented with the product rather than here.
+
+### Unique fields
+
+- `committeeVerifierConfig`: the TOML configuration for the CCV committee verifier. The configuration is multichain, using chain selectors as keys where applicable.
+
+## CCV executor jobs
+
+The `ccvexecutor` job type starts a CCV executor capability. Its configuration is defined by the CCV capability, which is documented with the product rather than here.
+
+### Unique fields
+
+- `executorConfig`: the TOML configuration for the CCV executor. The configuration is multichain, using chain selectors as keys where applicable.
+
+## CRE settings jobs
+
+The `cresettings` job type carries the settings for the Chainlink Runtime Environment on this node. It is managed by the product rather than written by node operators.
+
+### Unique fields
+
+- `hash`: the hash of the settings payload.
+- `settings`: the settings payload.
+
 ---
 
 # Task Types
 Source: https://docs.chain.link/chainlink-nodes/oracle-jobs/all-tasks
 
 This guide outlines different task types.
+
+## Anchor task
+
+Rebases a lower or upper sample stream onto a pre-winsorized reference stream, then returns the weighted mean. For each surviving source, the task derives a displacement from the spread between the low and high samples and applies it to the reference value. Sources missing from the low or high stream are dropped. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `reference`: an array of samples to anchor to. This stream should already be winsorized.
+- `low`: an array of lower samples, one per source.
+- `high`: an array of upper samples, one per source.
+- `select`: optional. Whether to anchor to the low or the high stream. Use `low` or `high`. Defaults to `low`.
+- `minWeightMass`: optional. The minimum surviving weight mass required for the task to return a result. Defaults to `0`.
+- `precision`: optional. The number of decimal places to retain in the result.
+
+**Outputs**
+
+The weighted mean of the anchored samples.
+
+**Example**
+
+```toml
+anchor [type="anchor"
+        reference="$(winsorized)"
+        low="$(low_samples)"
+        high="$(high_samples)"
+        select="low"
+        minWeightMass="0"
+        precision=8]
+```
 
 ## 'Any' task
 
@@ -1996,6 +2494,51 @@ parse [type="jsonparse" path="$(decode_cbor.jsonPath)" data="$(fetch)"]
 
 See the [Direct Request page](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for a more comprehensive example.
 
+## Coalesce task
+
+Returns the first input that is neither an error nor nil, or nil if there are none.
+
+**Parameters**
+
+None.
+
+**Inputs**
+
+One or more inputs.
+
+**Outputs**
+
+The value of the first input that did not error and is not nil. Returns nil when every input errored or was nil.
+
+**Example**
+
+```toml
+primary   [type="http" method=GET url="https://primary.example.com"]
+secondary [type="http" method=GET url="https://secondary.example.com"]
+pick      [type="coalesce"]
+
+primary -> pick
+secondary -> pick
+```
+
+## Conditional task
+
+Fails the run unless `data` resolves to true.
+
+**Parameters**
+
+- `data`: the boolean to check. Can be a literal, a `$(variable)`, or the single pipeline input.
+
+**Outputs**
+
+`true` when the condition is satisfied. The task errors with `conditional was not satisfied` when it is not.
+
+**Example**
+
+```toml
+check [type="conditional" data="$(should_continue)"]
+```
+
 ## Divide task
 
 Divides the provided `input` by the `divisor` and returns the result with a number of decimal places defined in the `precision` value.
@@ -2032,6 +2575,32 @@ my_divide_task [type="divide"
 ```
 
 Given the input `10`, this example returns `3.33`.
+
+## Estimate Gas Limit task
+
+Estimates the gas required for a transaction and returns the estimate as a `uint64`. If the estimate cannot be obtained, the task falls back to the configured maximum gas limit for the job.
+
+**Parameters**
+
+- `from`: the address the transaction would be sent from. Defaults to the zero address.
+- `to`: the address of the contract to call.
+- `data`: the data to attach to the call, including the function selector.
+- `multiplier`: optional. The multiplier applied to the estimated gas. Defaults to `1`.
+- `evmChainID`: optional. The chain on which to estimate. Defaults to the chain ID of the job.
+- `block`: optional. The block at which to estimate, for example `latest`.
+
+**Outputs**
+
+The estimated gas limit as a `uint64`.
+
+**Example**
+
+```toml
+estimate_gas [type="estimategaslimit"
+              to="0x613a38AC1659769640aaE063C651F48E0250454C"
+              multiplier="1.1"
+              data="$(vrf.output)"]
+```
 
 ## ETH ABI Decode Log task
 
@@ -2137,6 +2706,28 @@ encode [type="ethabiencode"
         ]
 ```
 
+## ETH ABI Encode 2 task
+
+Encodes a bytes payload according to ETH ABI encoding, using a JSON method definition for the ABI. Unlike the [ETH ABI Encode task](#eth-abi-encode-task), which takes a Solidity signature string, this task takes the ABI as a JSON object with `name` and `inputs`. When `name` is set, the 4-byte method signature is prepended to the result.
+
+**Parameters**
+
+- `abi`: a JSON object describing the method, with a `name` and a list of `inputs`. Each input has a `name` and a `type`. Example:
+  - `{"name":"fulfillRequest","inputs":[{"name":"requestID","type":"bytes32"},{"name":"answer","type":"uint256"}]}`
+- `data`: a map of the values to be encoded.
+
+**Outputs**
+
+A byte array.
+
+**Example**
+
+```toml
+encode [type="ethabiencode2"
+        abi="{\\"name\\":\\"fulfillRequest\\",\\"inputs\\":[{\\"name\\":\\"requestID\\",\\"type\\":\\"bytes32\\"},{\\"name\\":\\"answer\\",\\"type\\":\\"uint256\\"}]}"
+        data="{\\"requestID\\": $(decode_log.requestId), \\"answer\\": $(parse)}"]
+```
+
 ## ETH Call task
 
 Makes a non-mutating contract call to the specified contract with the specified data payload.
@@ -2208,6 +2799,24 @@ submit_tx    [type="ethtx"
                failOnRevert="true"]
 
 encode_tx -> submit_tx
+```
+
+## Fail task
+
+Returns an error with the configured message. This task is marked as testing only in the node source.
+
+**Parameters**
+
+- `msg`: the error message.
+
+**Outputs**
+
+The task always errors with `msg`.
+
+**Example**
+
+```toml
+fail [type="fail" msg="stopping here"]
 ```
 
 ## Hex Decode task
@@ -2361,6 +2970,28 @@ my_lessthan_task [type="lessthan" left="3" right="10"]
 
 the task will return true which is the result of `3 LESS_THAN 10`
 
+## Lookup task
+
+Looks up a key in a map input and returns the value at that key.
+
+**Parameters**
+
+- `key`: the key to look up in the input map.
+
+**Inputs**
+
+A single map input.
+
+**Outputs**
+
+The value at `key`. The value is nil when the key is not present.
+
+**Example**
+
+```toml
+lookup [type="lookup" key="ethusd"]
+```
+
 ## Lowercase task
 
 Accepts a string and returns a lowercase string.
@@ -2380,6 +3011,30 @@ my_lowercase_task [type="lowercase" input="Hello World!"]
 ```
 
 Given the input `Hello World!`, the task will return `hello world!`.
+
+## Max task
+
+Accepts multiple numerical inputs and returns the maximum of them.
+
+**Parameters**
+
+- `values`: an array of values from which to select the maximum.
+- `allowedFaults` (optional): the maximum number of input tasks that can error without the Max task erroring. If not specified, this value defaults to `N - 1`, where `N` is the number of inputs.
+- `lax` (optional): when disabled (the default), the task errors if there are no input values or if the input includes nil values. When enabled, the task returns nil with no error if there are no valid input values, and nil values are excluded from the calculation and do not count as a fault.
+
+**Outputs**
+
+The maximum of the values in the `values` array.
+
+**Example**
+
+```toml
+my_max_task [type="max"
+             values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
+             allowedFaults=1]
+```
+
+Given the inputs `2`, `5`, and `20`, the task will return `20`.
 
 ## Mean task
 
@@ -2479,6 +3134,30 @@ This example task returns the following map:
 { "foo": "abc", "bar": "xyz", "biz": "buzz" }
 ```
 
+## Min task
+
+Accepts multiple numerical inputs and returns the minimum of them.
+
+**Parameters**
+
+- `values`: an array of values from which to select the minimum.
+- `allowedFaults` (optional): the maximum number of input tasks that can error without the Min task erroring. If not specified, this value defaults to `N - 1`, where `N` is the number of inputs.
+- `lax` (optional): when disabled (the default), the task errors if there are no input values or if the input includes nil values. When enabled, the task returns nil with no error if there are no valid input values, and nil values are excluded from the calculation and do not count as a fault.
+
+**Outputs**
+
+The minimum of the values in the `values` array.
+
+**Example**
+
+```toml
+my_min_task [type="min"
+             values=<[ $(fetch1), $(fetch2), $(fetch3) ]>
+             allowedFaults=1]
+```
+
+Given the inputs `2`, `5`, and `20`, the task will return `2`.
+
 ## Mode task
 
 Accepts multiple numerical inputs and returns the mode (most common) of them. If more than one value occur the maximum number of times, it returns all of them.
@@ -2564,6 +3243,73 @@ my_multiply_task [type="multiply" input="$(json_parse_result)" times=3]
 
 Given the input `10`, the task will return `30`.
 
+## Normalize task
+
+Converts sample values onto a common unit using a unit to factor map. Samples that are already in the target unit, or that carry no unit, pass through unchanged. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `samples`: an array of samples, or the pipeline input.
+- `unitMap`: an optional map of unit names to factors. Each factor may be a raw number or a sample. Required when `enabled` is true.
+- `targetUnit`: the unit that the output samples are converted to.
+- `enabled`: optional. Defaults to `true`.
+- `onMissingRate`: optional. What to do when a sample's unit has no factor in `unitMap`. Defaults to `drop`. Any other value makes the task error instead.
+
+**Outputs**
+
+An array of samples with all values expressed in `targetUnit`. Unconvertible samples are dropped, or cause an error, depending on `onMissingRate`.
+
+## Panic task
+
+Panics with the configured message. This task is marked as testing only in the node source.
+
+**Parameters**
+
+- `msg`: the panic message.
+
+**Example**
+
+```toml
+panic [type="panic" msg="stopping here"]
+```
+
+## Sample task
+
+Wraps an upstream result into a sample. A sample bundles a value with the metadata (source, weight, unit, timestamp) that the aggregation tasks consume. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `input`: the upstream result to read the value from. Defaults to the single pipeline input.
+- `source`: the source name. Used for grouping and weighting.
+- `weight`: optional. The nominal weight of the sample. Defaults to `1`.
+- `unit`: optional. The unit of the value. An empty value means the value is already in the common unit.
+- `tag`: optional. A free label, used for diagnostics only.
+- `valuePath`: the JSON path to the value inside `input`.
+- `tsPath`: the JSON path to the timestamp inside `input`.
+- `tsUnit`: optional. The unit of the timestamp. Defaults to `ms`.
+- `decimals`: optional. The number of decimals to scale the value by.
+
+**Outputs**
+
+A sample with the fields `source`, `value`, `ts_ms`, `weight`, `unit`, and `tag`.
+
+## Staleness task
+
+Decays the weight of each sample by its age, so that older samples count for less in downstream aggregation. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `samples`: an array of samples, or the pipeline input.
+- `method`: the decay method to apply.
+- `threshold`: optional. The age beyond which a sample is considered stale.
+- `halfLife`: optional. The age at which a sample's weight is halved. Defaults to `0s`.
+- `cutoff`: optional. The maximum age of a sample.
+- `decayThreshold`: optional. The weight below which a sample is dropped.
+
+**Outputs**
+
+An array of samples with adjusted `weight` values.
+
 ## Sum Task
 
 Accepts multiple numerical inputs and returns the sum of them.
@@ -2607,6 +3353,82 @@ my_uppercase_task [type="uppercase" input="Hello World!"]
 
 Given the input `Hello World!`, the task will return `HELLO WORLD!`.
 
+## VRF V2 task
+
+Generates a VRF v2 proof from a request log. It takes the decoded log as its single input and returns the encoded proof.
+
+**Parameters**
+
+- `publicKey`: the public key of the VRF key that this node uses to generate the proof.
+- `requestBlockHash`: the hash of the block in which the request log was received. Usually set to `$(jobRun.logBlockHash)`.
+- `requestBlockNumber`: the number of the block in which the request log was received. Usually set to `$(jobRun.logBlockNumber)`.
+- `topics`: the log's topics. Usually set to `$(jobRun.logTopics)`.
+
+**Inputs**
+
+A single decoded request log, normally from an [ETH ABI Decode Log task](#eth-abi-decode-log-task).
+
+**Outputs**
+
+A map with an `output` key that holds the encoded proof.
+
+**Example**
+
+```toml
+vrf [type="vrfv2"
+     publicKey="$(jobSpec.publicKey)"
+     requestBlockHash="$(jobRun.logBlockHash)"
+     requestBlockNumber="$(jobRun.logBlockNumber)"
+     topics="$(jobRun.logTopics)"]
+```
+
+## VRF V2Plus task
+
+Generates a VRF v2plus proof from a request log. It is identical to the [VRF V2 task](#vrf-v2-task), except that it uses the V2Plus request commitment, which includes a flag that indicates whether the request is paid in native tokens or in LINK.
+
+**Parameters**
+
+- `publicKey`: the public key of the VRF key that this node uses to generate the proof.
+- `requestBlockHash`: the hash of the block in which the request log was received. Usually set to `$(jobRun.logBlockHash)`.
+- `requestBlockNumber`: the number of the block in which the request log was received. Usually set to `$(jobRun.logBlockNumber)`.
+- `topics`: the log's topics. Usually set to `$(jobRun.logTopics)`.
+
+**Inputs**
+
+A single decoded request log, normally from an [ETH ABI Decode Log task](#eth-abi-decode-log-task).
+
+**Outputs**
+
+A map with an `output` key that holds the encoded proof.
+
+**Example**
+
+```toml
+vrf [type="vrfv2plus"
+     publicKey="$(jobSpec.publicKey)"
+     requestBlockHash="$(jobRun.logBlockHash)"
+     requestBlockNumber="$(jobRun.logBlockNumber)"
+     topics="$(jobRun.logTopics)"]
+```
+
+## Weighted Mean task
+
+Gates on a minimum weight mass, optionally clamps each sample's value into a band around the cross-sectional median, then returns the weighted mean. With no `method` set it computes a plain weighted mean with no clamping. This task is marked experimental in the node source.
+
+**Parameters**
+
+- `samples`: an array of samples, or the pipeline input. Normally the output of a [Staleness task](#staleness-task), one sample per source.
+- `reference`: optional. An array of samples to derive the clamp band from.
+- `band`: optional. The width of the clamp band. Defaults to `0.03`.
+- `minWeightMass`: optional. The minimum surviving weight mass required for the task to return a result. Defaults to `0`.
+- `method`: optional. The winsorization method to apply. Empty, the default, means no clamping.
+- `winsorRef`: optional. The reference used for winsorization. Defaults to `median`.
+- `precision`: optional. The number of decimal places to retain in the result.
+
+**Outputs**
+
+The weighted mean as a decimal, winsorized when `method` is set. The task fails with `insufficient weight mass` when the surviving mass is below `minWeightMass`.
+
 ---
 
 # v2 Jobs
@@ -2623,11 +3445,27 @@ Source: https://docs.chain.link/chainlink-nodes/oracle-jobs/jobs
 
 Chainlink nodes require jobs to do anything useful. For example, posting asset price data onchain requires jobs. Chainlink nodes support the following job types:
 
+- [`blockhashstore`](/chainlink-nodes/oracle-jobs/all-jobs/#blockhash-store-jobs)
+- [`blockheaderfeeder`](/chainlink-nodes/oracle-jobs/all-jobs/#block-header-feeder-jobs)
+- [`bootstrap`](/chainlink-nodes/oracle-jobs/all-jobs/#bootstrap-jobs) (requires `OCR2.Enabled = true`)
+- [`ccip`](/chainlink-nodes/oracle-jobs/all-jobs/#ccip-jobs) (requires `OCR2.Enabled = true`)
+- [`ccvcommitteeverifier`](/chainlink-nodes/oracle-jobs/all-jobs/#ccv-committee-verifier-jobs)
+- [`ccvexecutor`](/chainlink-nodes/oracle-jobs/all-jobs/#ccv-executor-jobs)
+- [`cresettings`](/chainlink-nodes/oracle-jobs/all-jobs/#cre-settings-jobs)
 - [`cron`](/chainlink-nodes/oracle-jobs/all-jobs/#solidity-cron-jobs)
+- [`gateway`](/chainlink-nodes/oracle-jobs/all-jobs/#gateway-jobs)
+- [`offchainreporting`](/chainlink-nodes/oracle-jobs/all-jobs/#offchain-reporting-jobs) (requires `OCR.Enabled = true`)
+- [`offchainreporting2`](/chainlink-nodes/oracle-jobs/all-jobs/#offchain-reporting-2-jobs) (requires `OCR2.Enabled = true`)
+- [`standardcapabilities`](/chainlink-nodes/oracle-jobs/all-jobs/#standard-capabilities-jobs)
+- [`stream`](/chainlink-nodes/oracle-jobs/all-jobs/#stream-jobs)
+- [`vrf`](/chainlink-nodes/oracle-jobs/all-jobs/#vrf-jobs)
+
+The following job types are no longer supported. A spec that uses one of them does not start:
+
 - [`directrequest`](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs)
 - [`fluxmonitor`](/chainlink-nodes/oracle-jobs/all-jobs/#flux-monitor-jobs)
 - [`keeper`](/chainlink-nodes/oracle-jobs/all-jobs/#keeper-jobs)
-- [`offchainreporting`](/chainlink-nodes/oracle-jobs/all-jobs/#offchain-reporting-jobs)
+- `workflow`
 - [`webhook`](/chainlink-nodes/oracle-jobs/all-jobs/#webhook-jobs)
 
 Jobs are represented by TOML specifications.
@@ -2656,17 +3494,25 @@ Every job type supported by a node shares the following TOML fields:
 
 - `name`: The name of the job in the Operator UI
 - `type`: Specifies the v2 job type, which can be one of the following:
+  - `blockhashstore`
+  - `blockheaderfeeder`
+  - `bootstrap`
+  - `ccip`
+  - `ccvcommitteeverifier`
+  - `ccvexecutor`
+  - `cresettings`
   - `cron`
-  - `directrequest`
-  - `fluxmonitor`
-  - `keeper`
+  - `gateway`
   - `offchainreporting`
-  - `webhook`
+  - `offchainreporting2`
+  - `standardcapabilities`
+  - `stream`
+  - `vrf`
 - `schemaVersion`: Must be present and set to a value of `1`. This field will handle progressive iterations of the job spec format gracefully with backwards-compatibility.
 - `observationSource`: The v2 pipeline task DAG, which is specified in DOT syntax. See below for information on writing pipeline DAGs.
 - `maxTaskDuration`: The default maximum duration that any task is allowed to run. If the duration is exceeded, the task is errored. This value can be overridden on a per-task basis using the `timeout` attribute. See the [Shared attributes](/chainlink-nodes/oracle-jobs/tasks#shared-attributes) section for details.
-- `externalJobID`: An optional way for a user to deterministically provide the ID of a job. The ID must be unique. For example, you can specify an `externalJobID` if you want to run the same `directrequest` job on two different Chainlink nodes with different bridge names. The spec contents differ slightly, but you can use the same `externalJobID` on both jobs, specify that in your onchain requests, and both nodes will pick it up. If you do not provide an `externalJobID`, the node generates the ID for you.
-- `gasLimit`: Optional gas limit for any outgoing transactions spawned by this job. When specified, it overrides `ETH_GAS_LIMIT_DEFAULT` env variable.
+- `externalJobID`: An optional way for a user to deterministically provide the ID of a job. The ID must be unique. For example, you can run the same `cron` job on two different Chainlink nodes and use the same `externalJobID` on both. The spec contents can differ, but the `externalJobID` identifies the job on either node. If you do not provide an `externalJobID`, the node generates the ID for you.
+- `gasLimit`: Optional gas limit for any outgoing transactions spawned by this job. When specified, it overrides `EVM.GasEstimator.LimitJobType` for the job's type, and `EVM.GasEstimator.LimitDefault` when no job-type limit is set.
 - `forwardingAllowed`: Optional. When `true`, it allows forwarding transactions submitted by the job.
 
 ---
@@ -2740,6 +3586,12 @@ submit_btcusd [type="bridge"
 ***
 
 ## Example Migrations
+
+> **CAUTION: Not supported**
+>
+> The v2 job types used in these examples (`directrequest` and `webhook`) are not supported in this node, so a spec with
+> either type does not start. See [Job Types](/chainlink-nodes/oracle-jobs/all-jobs/#direct-request-jobs) for details.
+> The examples are kept as a record of the v1 to v2 migration.
 
 ### Runlog with ETH ABI encoding
 
@@ -3012,7 +3864,9 @@ All tasks share a few common attributes:
 ```toml
 data_1 [type="http" method=GET url="https://chain.link/eth_usd"       index=0]
 data_2 [type="http" method=GET url="https://chain.link/eth_dominance" index=1]
-multiword_abi_encode [type="eth_abi_encode" method="fulfill(uint256,uint256)"]
+multiword_abi_encode [type="ethabiencode"
+                      abi="fulfill(uint256 ethUsd, uint256 ethDominance)"
+                      data="{\\"ethUsd\\": $(data_1), \\"ethDominance\\": $(data_2)}"]
 
 data_1 -> multiword_abi_encode
 data_2 -> multiword_abi_encode
@@ -3167,12 +4021,13 @@ In order to connect to a remote database, you must obtain information about the 
 
 The user must be the owner of the desired database. On first run, the migrations will create the tables necessary for the Chainlink node.
 
-## Set Your DATABASE_URL environment variable
+## Set the database URL
 
-Below is an example for setting the `DATABASE_URL` environment variable for your Chainlink Node's `.env` configuration file:
+Below is an example for setting the database URL in the `[Database]` section of your `secrets.toml` file:
 
-```text DATABASE_URL
-DATABASE_URL=postgresql://[USERNAME]:[PASSWORD]@[SERVER]:[PORT]/[DATABASE]?sslmode=[SSL_MODE]
+```toml secrets.toml
+[Database]
+URL = 'postgresql://[USERNAME]:[PASSWORD]@[SERVER]:[PORT]/[DATABASE]?sslmode=[SSL_MODE]'
 ```
 
 Change the following placeholders to their real values:
@@ -3229,23 +4084,16 @@ openssl req -x509 -out  ~/.chainlink/tls/server.crt  -keyout ~/.chainlink/tls/se
    printf "[dn]\nCN=localhost\n[req]\ndistinguished_name = dn\n[EXT]\nsubjectAltName=DNS:localhost\nkeyUsage=digitalSignature\nextendedKeyUsage=serverAuth")
 ```
 
-Next, add the `TLS_CERT_PATH` and `TLS_KEY_PATH` environment variables to your `.env` file.
+Next, add the certificate and key paths to the `[WebServer.TLS]` section of your `config.toml` file. Set `SecureCookies` to `true` and `HTTPSPort` to the HTTPS port:
 
-```shell Shell
-echo "TLS_CERT_PATH=/chainlink/tls/server.crt
-TLS_KEY_PATH=/chainlink/tls/server.key" >> .env
-```
+```toml config.toml
+[WebServer]
+SecureCookies = true
 
-If `CHAINLINK_TLS_PORT=0` is present in your `.env` file, remove it by running:
-
-```shell Shell
-sed -i '/CHAINLINK_TLS_PORT=0/d' .env
-```
-
-Also remove the line that disables `SECURE_COOKIES` by running:
-
-```shell Shell
-code": "sed -i '/SECURE_COOKIES=false/d' .env
+[WebServer.TLS]
+CertPath = '/chainlink/tls/server.crt'
+KeyPath = '/chainlink/tls/server.key'
+HTTPSPort = 6689
 ```
 
 Finally, update your run command to forward port 6689 to the container instead of 6688:
@@ -3253,15 +4101,13 @@ Finally, update your run command to forward port 6689 to the container instead o
 ### Sepolia
 
 ```shell Sepolia
-cd ~/.chainlink-sepolia && docker run -p 6689:6689 -v ~/.chainlink-sepolia:/chainlink -it
---env-file=.env smartcontract/chainlink local n
+cd ~/.chainlink-sepolia && docker run -p 6689:6689 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 ### Mainnet
 
 ```shell Mainnet
-cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it --env-file=.env
-smartcontract/chainlink local n
+cd ~/.chainlink && docker run -p 6689:6689 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 Now when running the node, you can access it by navigating to [https://localhost:6689](https://localhost:6689) if running on the same machine or with a ssh tunnel.
@@ -3386,28 +4232,28 @@ Before you make any changes to your Chainlink configuration, you must ensure tha
 > configurations of other RPC nodes. If you are unable to distribute transmission load across multiple keys, try the
 > following options to increase throughput.
 
-### Increase `ETH_MAX_QUEUED_TRANSACTIONS`
+### Increase `EVM.Transactions.MaxQueued`
 
-You can increase `ETH_MAX_QUEUED_TRANSACTIONS` if you require high burst throughput. Setting this variable to `0` disables any limit and ensures that no transaction are ever dropped. The default is set automatically based on the chain ID and usually is `250`. Overriding this value does not require any RPC changes and only affects the Chainlink side.
+You can increase `EVM.Transactions.MaxQueued` if you require high burst throughput. Setting this value to `0` disables any limit and ensures that no transaction are ever dropped. The default is set automatically based on the chain ID and usually is `250`. Overriding this value does not require any RPC changes and only affects the Chainlink side.
 
 This represents the maximum number of unbroadcast transactions per key that are allowed to be enqueued before jobs start failing and refusing to send further transactions. It acts as a "buffer" for transactions waiting to be sent. If the buffer is exceeded, transactions will be permanently dropped.
 
-Do not set `ETH_MAX_QUEUED_TRANSACTIONS` too high. It acts as a sanity limit and the queue can grow unbounded if you are trying to send transactions consistently faster than they can be confirmed. If you have an issue that must be recovered later, you will have to churn through all the enqueued transactions. As a best practice, set `ETH_MAX_QUEUED_TRANSACTIONS` to the minimum possible value that supports your burst requirements or represents the maximum number of transactions that could be sent in a given 15 minute window.
+Do not set `EVM.Transactions.MaxQueued` too high. It acts as a sanity limit and the queue can grow unbounded if you are trying to send transactions consistently faster than they can be confirmed. If you have an issue that must be recovered later, you will have to churn through all the enqueued transactions. As a best practice, set `EVM.Transactions.MaxQueued` to the minimum possible value that supports your burst requirements or represents the maximum number of transactions that could be sent in a given 15 minute window.
 
-`ETH_MAX_QUEUED_TRANSACTIONS=10000` might be an example where very high burst throughput is needed.
+`MaxQueued = 10000` in the `[EVM.Transactions]` section might be an example where very high burst throughput is needed.
 
-### Increase `ETH_MAX_IN_FLIGHT_TRANSACTIONS`
+### Increase `EVM.Transactions.MaxInFlight`
 
-`ETH_MAX_IN_FLIGHT_TRANSACTIONS` is another variable that you can increase if you require higher constant transaction throughput. Setting this variable to `0` disables any kind of limit. The default value is `16`.
+`EVM.Transactions.MaxInFlight` is another value that you can increase if you require higher constant transaction throughput. Setting this value to `0` disables any kind of limit. The default value is `16`.
 
-`ETH_MAX_IN_FLIGHT_TRANSACTIONS` controls how many transactions are allowed to be broadcast but unconfirmed at any one time. This is a form of transaction throttling.
+`EVM.Transactions.MaxInFlight` controls how many transactions are allowed to be broadcast but unconfirmed at any one time. This is a form of transaction throttling.
 
 The default is set conservatively at `16` because this is a pessimistic minimum that go-ethereum will hold without evicting local transactions. If your node is falling behind and not able to get transactions in as fast as they are created, you can increase this setting.
 
 > **CAUTION**
 >
-> If you increase `ETH_MAX_IN_FLIGHT_TRANSACTIONS` you must make sure that your ETH node is configured properly
-> otherwise you can get nonce-gapped and your node will get stuck.
+> If you increase `EVM.Transactions.MaxInFlight` you must make sure that your ETH node is configured properly otherwise
+> you can get nonce-gapped and your node will get stuck.
 
 ## Optimizing RPC nodes
 
@@ -3419,15 +4265,15 @@ Locals = ["0xYourNodeAddress1", "0xYourNodeAddress2"]  # Add your node addresses
 NoLocals = false # Disabled by default but might as well make sure
 Journal = "transactions.rlp" # Make sure you set a journal file
 Rejournal = 3600000000000 # Default 1h, it might make sense to reduce this to e.g. 5m
-PriceBump = 10 # Must be set less than or equal to Chainlink's ETH_GAS_BUMP_PERCENT
-AccountSlots = 16 # Highly recommended to increase this, must be greater than or equal to Chainlink's ETH_MAX_IN_FLIGHT_TRANSACTIONS setting
+PriceBump = 10 # Must be set less than or equal to Chainlink's EVM.Transactions.BumpPercent
+AccountSlots = 16 # Highly recommended to increase this, must be greater than or equal to Chainlink's EVM.Transactions.MaxInFlight setting
 GlobalSlots = 4096 # Increase this as necessary
 AccountQueue = 64 # Increase this as necessary
 GlobalQueue = 1024 # Increase this as necessary
 Lifetime = 10800000000000 # Default 3h, this is probably ok, you might even consider reducing it
 ```
 
-If you are using another RPC node, such as Besu or Nethermind, you must look at the documentation for that node to ensure that it will keep at least as many transactions in the mempool for the Chainlink node keys as you have set in `ETH_MAX_IN_FLIGHT_TRANSACTIONS`.
+If you are using another RPC node, such as Besu or Nethermind, you must look at the documentation for that node to ensure that it will keep at least as many transactions in the mempool for the Chainlink node keys as you have set in `EVM.Transactions.MaxInFlight`.
 
 The recommended way to scale is to use more keys rather than increasing throughput for one key.
 
@@ -3462,19 +4308,20 @@ Note that this only affects the presentation of jobs, and whether they are marke
 > **CAUTION**
 >
 > Do not confuse `minConfirmations` set on the task with transaction inclusion. The transaction manager always attempts
-> to get every transaction mined up to `EVMFinalityDepth`. `minConfirmations` on the task is a task-specific view of
-> when the transaction that can be considered final, which might be fewer blocks than `EVMFinalityDepth`.
+> to get every transaction mined up to `EVM.FinalityDepth`. `minConfirmations` on the task is a task-specific view of
+> when the transaction that can be considered final, which might be fewer blocks than `EVM.FinalityDepth`.
 
-## Increase `ORM_MAX_OPEN_CONNS` and `ORM_MAX_IDLE_CONNS`
+## Increase `Database.MaxOpenConns` and `Database.MaxIdleConns`
 
-Chainlink can be configured to allow more concurrent database connections than the default. This might improve performance, but be careful not to exceed postgres connection limits. These variables have the following default values:
+Chainlink can be configured to allow more concurrent database connections than the default. This might improve performance, but be careful not to exceed postgres connection limits. These settings have the following default values:
 
-```text
-ORM_MAX_OPEN_CONNS=20
-ORM_MAX_IDLE_CONNS=10
+```toml
+[Database]
+MaxOpenConns = 100
+MaxIdleConns = 10
 ```
 
-You might increase these values to `ORM_MAX_OPEN_CONNS=50` and `ORM_MAX_IDLE_CONNS=25` if you have a large and powerful database server with high connection count headroom.
+You might increase `MaxIdleConns` to `25` if you have a large and powerful database server with high connection count headroom.
 
 ---
 
@@ -3539,7 +4386,7 @@ If no jobs have been added, you will receive the following output, otherwise, th
 To transfer funds from the node wallet to another address, use the following CLI command:
 
 ```shell
-chainlink txs create <amount> <your-cl-node-address> <send-to-address>
+chainlink txs evm create <amount> <your-cl-node-address> <send-to-address>
 ```
 
 This method is the preferred way to interact with your node wallet. Using other methods to manually interact with the node wallet can cause nonce issues.
@@ -3714,7 +4561,7 @@ Max Gas Price Wei: <nil>
 ## Full example in detached mode
 
 ```shell
-cd ~/.chainlink-sepolia && docker run --restart=always  -p 6688:6688 -d --name sepolia-primary -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink:1.0.0 node start -p /chainlink/.password
+cd ~/.chainlink-sepolia && docker run --restart=always -p 6688:6688 -d --name sepolia-primary -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start -p /chainlink/.password
 ```
 
 ---
@@ -3731,10 +4578,10 @@ You might occasionally need to restart the system that the Chainlink node runs o
 > This example uses Docker to run the Chainlink node, see the [Running a Chainlink
 > Node](/chainlink-nodes/v1/running-a-chainlink-node) page for instructions on how to set it up.
 
-First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 1.11.0:
+First, find the most recent Chainlink image on [Docker Hub](https://hub.docker.com/r/smartcontract/chainlink/) and pull that Docker image. For version 2.66.0:
 
 ```shell
-docker pull smartcontract/chainlink:1.11.0
+docker pull smartcontract/chainlink:2.66.0
 ```
 
 Then, check what port the existing container is running on:
@@ -3757,15 +4604,13 @@ Now start the second instance of the node. The local port option has been modifi
 ### Sepolia
 
 ```shell Sepolia
-cd ~/.chainlink-sepolia && docker run -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it
---env-file=.env smartcontract/chainlink local n
+cd ~/.chainlink-sepolia && docker run -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 ### Mainnet
 
 ```shell Mainnet
-cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
-smartcontract/chainlink local n
+cd ~/.chainlink && docker run -p 6687:6688 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 The log messages on the second node instance inform you that it is waiting for the database lock.
@@ -3785,15 +4630,13 @@ Next, run the container again with the local port 6688 in order to go back to no
 ### Sepolia
 
 ```shell Sepolia
-cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it
---env-file=.env smartcontract/chainlink local n
+cd ~/.chainlink-sepolia && docker run -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 ### Mainnet
 
 ```shell Mainnet
-cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it --env-file=.env
-smartcontract/chainlink local n
+cd ~/.chainlink && docker run -p 6688:6688 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 When the log messages on the first node indicate that it is waiting for the database lock, shut down the second instance of the node. The original instance automatically obtains a lock and resumes normal operation.
@@ -3814,15 +4657,13 @@ Run the Chainlink node with a name option specified:
 ### Sepolia
 
 ```shell Sepolia
-cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v
-~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+cd ~/.chainlink-sepolia && docker run --name chainlink -p 6688:6688 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 ### Mainnet
 
 ```shell Mainnet
-cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it
---env-file=.env smartcontract/chainlink local n
+cd ~/.chainlink && docker run --name chainlink -p 6688:6688 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 You will now notice that you no longer receive a randomly generated name from Docker:
@@ -3843,15 +4684,13 @@ This will remain your primary Chainlink container, and should always use port 66
 ### Sepolia
 
 ```shell Sepolia
-cd ~/.chainlink-sepolia && docker run --name secondary -p 6687:6688 -v
-~/.chainlink-sepolia:/chainlink -it --env-file=.env smartcontract/chainlink local n
+cd ~/.chainlink-sepolia && docker run --name secondary -p 6687:6688 -v ~/.chainlink-sepolia:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 ### Mainnet
 
 ```shell Mainnet
-cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it
---env-file=.env smartcontract/chainlink local n
+cd ~/.chainlink && docker run --name secondary -p 6687:6688 -v ~/.chainlink:/chainlink -it smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
 ```
 
 Notice the `--name secondary` was used for this container and the local port is 6687. Be sure to add this port to your SSH tunnel as well so that you can access the secondary node's GUI if it has become active (it will not function until the primary container goes down).
@@ -3909,7 +4748,7 @@ Chainlink nodes have the following software dependencies:
 - Operating System: Linux, MacOS, or the [WSL](https://learn.microsoft.com/en-us/windows/wsl/about) (Windows Subsystem for Linux)
   - For production environments, Linux is recommended.
 - Docker: Although it is possible to [build Chainlink nodes from source](https://github.com/smartcontractkit/chainlink), the best practice is to use the [Chainlink Docker Images](https://hub.docker.com/r/smartcontract/chainlink/tags) without `-root`.
-- [PostgreSQL](https://wiki.postgresql.org/wiki/Detailed_installation_guides) versions `>= 15` and `< 18` (Versions 15 through 17).
+- [PostgreSQL](https://wiki.postgresql.org/wiki/Detailed_installation_guides) versions `>= 15` (versions 15 and later, including 18).
   - If you use a database as a service, your database host must provide access to logs.
   - If you run the database on a separate system, [secure the TCP/IP connection with SSL](https://www.postgresql.org/docs/15/ssl-tcp.html).
 
@@ -3995,6 +4834,12 @@ Return to [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-nod
 
 You can use the [Nethermind client](https://docs.nethermind.io) for the Ethereum Mainnet. See the [Nethermind supported network configurations](https://docs.nethermind.io/get-started/installing-nethermind#supported-networks) page for a list of supported networks.
 
+> **NOTE: Nethermind support status**
+>
+> The Chainlink node [README](https://github.com/smartcontractkit/chainlink#ethereum-execution-client-requirements)
+> lists Nethermind as supported but known to have bugs that prevent reliable operation. Geth and Besu are the officially
+> supported execution clients.
+
 Download the latest version:
 
 ```shell
@@ -4055,6 +4900,8 @@ Return to [Running a Chainlink Node](/chainlink-nodes/v1/running-a-chainlink-nod
 
 The following services offer Ethereum clients with websockets connectivity known to work with the Chainlink node.
 
+Each example shows the WebSocket endpoint that the provider gives you. Set it as `WSURL` in an `[[EVM.Nodes]]` block of your `config.toml`, together with the `HTTPURL` that the same provider gives you. `HTTPURL` is required for every node.
+
 ## [Alchemy](https://www.alchemyapi.io)
 
 Example connection setting:
@@ -4062,13 +4909,13 @@ Example connection setting:
 ### Sepolia
 
 ```text Sepolia
-ETH_URL=wss://eth-sepolia.alchemyapi.io/v2/YOUR_PROJECT_ID
+WSURL = 'wss://eth-sepolia.alchemyapi.io/v2/YOUR_PROJECT_ID'
 ```
 
 ### Mainnet
 
 ```text Mainnet
-ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
+WSURL = 'wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID'
 ```
 
 ## [Chainstack](https://support.chainstack.com/hc/en-us/articles/900001664463-Setting-up-a-Chainlink-node-with-an-Ethereum-node-provided-by-Chainstack)
@@ -4076,7 +4923,7 @@ ETH_URL=wss://eth-mainnet.alchemyapi.io/v2/YOUR_PROJECT_ID
 Example connection setting:
 
 ```text Mainnet
-ETH_URL=wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.com
+WSURL = 'wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.com'
 ```
 
 ## [Fiews](https://docs.fiews.io/docs/getting-started)
@@ -4084,7 +4931,7 @@ ETH_URL=wss://user-name:pass-word-pass-word-pass-word@ws-nd-123-456-789.p2pify.c
 Example connection setting:
 
 ```text Mainnet
-ETH_URL=wss://cl-main.fiews.io/v2/YOUR_API_KEY
+WSURL = 'wss://cl-main.fiews.io/v2/YOUR_API_KEY'
 ```
 
 ## [GetBlock](https://getblock.io/)
@@ -4094,13 +4941,13 @@ Example connection setting:
 ### Sepolia
 
 ```text Sepolia
-ETH_URL=wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY
+WSURL = 'wss://eth.getblock.io/sepolia/?api_key=YOUR_API_KEY'
 ```
 
 ### Mainnet
 
 ```text Mainnet
-ETH_URL=wss://eth.getblock.io/mainnet/?api_key=YOUR_API_KEY
+WSURL = 'wss://eth.getblock.io/mainnet/?api_key=YOUR_API_KEY'
 ```
 
 ## [Infura](https://infura.io/docs/ethereum/wss/introduction.md)
@@ -4110,13 +4957,13 @@ Example connection setting. Replace YOUR_PROJECT_ID with the ID Infura provides 
 ### Sepolia
 
 ```text Sepolia
-ETH_URL=wss://sepolia.infura.io/ws/v3/YOUR_PROJECT_ID
+WSURL = 'wss://sepolia.infura.io/ws/v3/YOUR_PROJECT_ID'
 ```
 
 ### Mainnet
 
 ```text Mainnet
-ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
+WSURL = 'wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID'
 ```
 
 ## [LinkPool](https://docs.linkpool.io/docs/general_public_rpc_nodes)
@@ -4124,7 +4971,7 @@ ETH_URL=wss://mainnet.infura.io/ws/v3/YOUR_PROJECT_ID
 Example connection setting:
 
 ```text Mainnet
-ETH_URL=wss://main-rpc.linkpool.io/ws
+WSURL = 'wss://main-rpc.linkpool.io/ws'
 ```
 
 ## [QuikNode](https://www.quiknode.io)
@@ -4134,13 +4981,13 @@ Example connection setting:
 ### Sepolia
 
 ```text Sepolia
-ETH_URL=wss://your-node-name.sepolia.quiknode.pro/security-hash/
+WSURL = 'wss://your-node-name.sepolia.quiknode.pro/security-hash/'
 ```
 
 ### Mainnet
 
 ```text Mainnet
-ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
+WSURL = 'wss://your-node-name.quiknode.pro/security-hash/'
 ```
 
 ## Configuring your ETH node
@@ -4162,6 +5009,11 @@ The flags in this section are the ETH node settings. Chainlink node settings are
 
 # Fulfilling Requests
 Source: https://docs.chain.link/chainlink-nodes/v1/fulfilling-requests
+
+> **CAUTION: Direct request jobs are no longer supported**
+>
+> Chainlink nodes reject new direct request jobs. The DirectRequest job type was removed in Chainlink v2.48.0, so the
+> steps on this page do not run on this node. The page is kept for reference only.
 
 > **NOTE: Run a Chainlink node**
 >
@@ -4359,7 +5211,7 @@ The [Configuring Nodes page](/chainlink-nodes/configuring-nodes) explains how to
 # Node Config (TOML)
 Source: https://docs.chain.link/chainlink-nodes/v1/node-config
 
-[//]: # "Documentation generated from docs/*.toml in smartcontractkit/chainlink@v2.66.0 - DO NOT EDIT."
+[//]: # "Documentation generated from docs/*.toml in smartcontractkit/chainlink develop@ec8baa5296 - DO NOT EDIT."
 
 This document describes the TOML format for configuration.
 
@@ -8179,7 +9031,7 @@ PriceMin = '1 gwei'
 LimitDefault = 500000
 LimitMax = 500000
 LimitMultiplier = '1'
-LimitTransfer = 21000
+LimitTransfer = 200000
 EstimateLimit = false
 BumpMin = '5 gwei'
 BumpPercent = 20
@@ -14228,6 +15080,124 @@ PollPeriod = '2s'
 AcceptanceTimeout = '30s'
 ```
 
+### Tempo Mainnet (4217)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 50
+SafeDepth = 0
+FinalityTagEnabled = true
+SafeTagSupported = true
+LogBackfillBatchSize = 1000
+LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
+LogKeepBlocksDepth = 100000
+LogPrunePageSize = 0
+BackupLogPollerBlockDelay = 100
+MinIncomingConfirmations = 1
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '3m0s'
+LogBroadcasterEnabled = false
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 2
+FinalizedBlockOffset = 0
+NoNewFinalizedHeadsThreshold = '0s'
+
+[Transactions]
+Enabled = true
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+ConfirmationTimeout = '1m0s'
+
+[Transactions.AutoPurge]
+Enabled = false
+
+[Transactions.TransactionManagerV2]
+Enabled = false
+
+[BalanceMonitor]
+Enabled = true
+ERC20TokenAddress = '0x20C0000000000000000000000000000000000000'
+
+[GasEstimator]
+Mode = 'FeeHistory'
+PriceDefault = '1 gwei'
+PriceMax = '1 micro'
+PriceMin = '1 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '1'
+LimitTransfer = 21000
+EstimateLimit = false
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 30
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 8
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[GasEstimator.FeeHistory]
+CacheTimeout = '4s'
+
+[HeadTracker]
+HistoryDepth = 100
+MaxBufferSize = 3
+SamplingInterval = '1s'
+MaxAllowedFinalityDepth = 10000
+FinalityTagBypass = false
+PersistenceEnabled = false
+PersistenceBatchSize = 100
+
+[NodePool]
+PollFailureThreshold = 5
+PollSuccessThreshold = 0
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 15
+LeaseDuration = '0s'
+NodeIsSyncingEnabled = false
+FinalizedBlockPollInterval = '5s'
+HistoricalBalanceCheckAddress = '0x0000000000000000000000000000000000000000'
+FinalizedStateCheckFailureThreshold = 0
+EnforceRepeatableRead = true
+DeathDeclarationDelay = '1m0s'
+NewHeadsPollInterval = '1s'
+VerifyChainID = true
+ExternalRequestMaxResponseSize = 1000000
+
+[NodePool.Errors]
+FinalizedStateUnavailable = '(: |^)(missing trie node|state not available|historical state unavailable)'
+
+[OCR]
+ContractConfirmations = 1
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+DeltaCOverride = '168h0m0s'
+DeltaCJitterOverride = '1h0m0s'
+ObservationGracePeriod = '1s'
+
+[Workflow]
+GasLimitDefault = 400000
+TxAcceptanceState = 2
+PollPeriod = '2s'
+AcceptanceTimeout = '30s'
+```
+
 ### Worldchain Testnet (4801)
 
 ```toml
@@ -15785,6 +16755,124 @@ FinalizedStateCheckFailureThreshold = 0
 EnforceRepeatableRead = true
 DeathDeclarationDelay = '1m0s'
 NewHeadsPollInterval = '0s'
+VerifyChainID = true
+ExternalRequestMaxResponseSize = 1000000
+
+[NodePool.Errors]
+FinalizedStateUnavailable = '(: |^)(missing trie node|state not available|historical state unavailable)'
+
+[OCR]
+ContractConfirmations = 1
+ContractTransmitterTransmitTimeout = '10s'
+DatabaseTimeout = '10s'
+DeltaCOverride = '168h0m0s'
+DeltaCJitterOverride = '1h0m0s'
+ObservationGracePeriod = '1s'
+
+[Workflow]
+GasLimitDefault = 400000
+TxAcceptanceState = 2
+PollPeriod = '2s'
+AcceptanceTimeout = '30s'
+```
+
+### Tempo Testnet Moderato (42431)
+
+```toml
+AutoCreateKey = true
+BlockBackfillDepth = 10
+BlockBackfillSkip = false
+FinalityDepth = 50
+SafeDepth = 0
+FinalityTagEnabled = true
+SafeTagSupported = true
+LogBackfillBatchSize = 1000
+LogPollInterval = '1s'
+LogPollerSkipEmptyBlocks = false
+LogKeepBlocksDepth = 100000
+LogPrunePageSize = 0
+BackupLogPollerBlockDelay = 100
+MinIncomingConfirmations = 1
+MinContractPayment = '0.00001 link'
+NonceAutoSync = true
+NoNewHeadsThreshold = '3m0s'
+LogBroadcasterEnabled = false
+RPCDefaultBatchSize = 250
+RPCBlockQueryDelay = 2
+FinalizedBlockOffset = 0
+NoNewFinalizedHeadsThreshold = '0s'
+
+[Transactions]
+Enabled = true
+ForwardersEnabled = false
+MaxInFlight = 16
+MaxQueued = 250
+ReaperInterval = '1h0m0s'
+ReaperThreshold = '168h0m0s'
+ResendAfterThreshold = '1m0s'
+ConfirmationTimeout = '1m0s'
+
+[Transactions.AutoPurge]
+Enabled = false
+
+[Transactions.TransactionManagerV2]
+Enabled = false
+
+[BalanceMonitor]
+Enabled = true
+ERC20TokenAddress = '0x20C0000000000000000000000000000000000000'
+
+[GasEstimator]
+Mode = 'FeeHistory'
+PriceDefault = '1 gwei'
+PriceMax = '1 micro'
+PriceMin = '1 gwei'
+LimitDefault = 500000
+LimitMax = 500000
+LimitMultiplier = '4'
+LimitTransfer = 21000
+EstimateLimit = false
+BumpMin = '5 gwei'
+BumpPercent = 20
+BumpThreshold = 30
+EIP1559DynamicFees = false
+FeeCapDefault = '100 gwei'
+TipCapDefault = '1 wei'
+TipCapMin = '1 wei'
+
+[GasEstimator.BlockHistory]
+BatchSize = 25
+BlockHistorySize = 8
+CheckInclusionBlocks = 12
+CheckInclusionPercentile = 90
+TransactionPercentile = 60
+
+[GasEstimator.FeeHistory]
+CacheTimeout = '4s'
+
+[HeadTracker]
+HistoryDepth = 100
+MaxBufferSize = 3
+SamplingInterval = '1s'
+MaxAllowedFinalityDepth = 10000
+FinalityTagBypass = false
+PersistenceEnabled = false
+PersistenceBatchSize = 100
+
+[NodePool]
+PollFailureThreshold = 5
+PollSuccessThreshold = 0
+PollInterval = '10s'
+SelectionMode = 'HighestHead'
+SyncThreshold = 15
+LeaseDuration = '0s'
+NodeIsSyncingEnabled = false
+FinalizedBlockPollInterval = '5s'
+HistoricalBalanceCheckAddress = '0x0000000000000000000000000000000000000000'
+FinalizedStateCheckFailureThreshold = 0
+EnforceRepeatableRead = true
+DeathDeclarationDelay = '1m0s'
+NewHeadsPollInterval = '1s'
 VerifyChainID = true
 ExternalRequestMaxResponseSize = 1000000
 
@@ -20083,7 +21171,7 @@ PriceMin = '1 gwei'
 LimitDefault = 500000
 LimitMax = 500000
 LimitMultiplier = '1'
-LimitTransfer = 21000
+LimitTransfer = 200000
 EstimateLimit = false
 BumpMin = '5 gwei'
 BumpPercent = 20
@@ -21400,6 +22488,7 @@ FeeBoost enables node to immediately boost txs to the max gas price configured
 ```toml
 [EVM.BalanceMonitor]
 Enabled = true # Default
+ERC20TokenAddress = "0x20C0000000000000000000000000000000000000" # Example
 ```
 
 ### Enabled
@@ -21409,6 +22498,14 @@ Enabled = true # Default
 ```
 
 Enabled balance monitoring for all keys.
+
+### ERC20TokenAddress
+
+```toml
+ERC20TokenAddress = "0x20C0000000000000000000000000000000000000" # Example
+```
+
+ERC20TokenAddress is the address of an ERC-20 type token that a chain supports as a fee token.
 
 ## EVM.GasEstimator
 
@@ -23227,61 +24324,60 @@ chainlink admin users delete -h
 
 Specific actions are enabled to check role-based access before they execute. The following table lists the actions that have role-based access and the role that is required to run that action:
 
-| Action                                        | View | Run | Edit | Admin |
-| :-------------------------------------------- | :--: | :-: | :--: | :---: |
-| Update password                               |   X  |  X  |   X  |   X   |
-| Create self API token                         |   X  |  X  |   X  |   X   |
-| Delete self API token                         |   X  |  X  |   X  |   X   |
-| List external initiators                      |   X  |  X  |   X  |   X   |
-| Create external initiator                     |      |     |   X  |   X   |
-| Delete external initiator                     |      |     |   X  |   X   |
-| List bridges                                  |   X  |  X  |   X  |   X   |
-| View bridge                                   |   X  |  X  |   X  |   X   |
-| Create bridge                                 |      |     |   X  |   X   |
-| Edit bridge                                   |      |     |   X  |   X   |
-| Delete bridge                                 |      |     |   X  |   X   |
-| View config                                   |   X  |  X  |   X  |   X   |
-| Update config                                 |      |     |      |   X   |
-| Dump env/config                               |      |     |      |   X   |
-| View transaction attempts                     |   X  |  X  |   X  |   X   |
-| View transaction attempts EVM                 |   X  |  X  |   X  |   X   |
-| View transactions                             |   X  |  X  |   X  |   X   |
-| Replay a specific block number                |      |  X  |   X  |   X   |
-| List keys (CSA,ETH,OCR(2),P2P,Solana,Terra)   |   X  |  X  |   X  |   X   |
-| Create keys (CSA,ETH,OCR(2),P2P,Solana,Terra) |      |     |   X  |   X   |
-| Delete keys (CSA,ETH,OCR(2),P2P,Solana,Terra) |      |     |      |   X   |
-| Import keys (CSA,ETH,OCR(2),P2P,Solana,Terra) |      |     |      |   X   |
-| Export keys (CSA,ETH,OCR(2),P2P,Solana,Terra) |      |     |      |   X   |
-| List jobs                                     |   X  |  X  |   X  |   X   |
-| View job                                      |   X  |  X  |   X  |   X   |
-| Create job                                    |      |     |   X  |   X   |
-| Delete job                                    |      |     |   X  |   X   |
-| List pipeline runs                            |   X  |  X  |   X  |   X   |
-| View job runs                                 |   X  |  X  |   X  |   X   |
-| Delete job spec errors                        |      |     |   X  |   X   |
-| View features                                 |   X  |  X  |   X  |   X   |
-| View log                                      |   X  |  X  |   X  |   X   |
-| Update log                                    |      |     |      |   X   |
-| List chains                                   |   X  |  X  |   X  |   X   |
-| View chain                                    |   X  |  X  |   X  |   X   |
-| Create chain                                  |      |     |   X  |   X   |
-| Update chain                                  |      |     |   X  |   X   |
-| Delete chain                                  |      |     |   X  |   X   |
-| View nodes                                    |   X  |  X  |   X  |   X   |
-| Create node                                   |      |     |   X  |   X   |
-| Update node                                   |      |     |   X  |   X   |
-| Delete node                                   |      |     |   X  |   X   |
-| View forwarders                               |   X  |  X  |   X  |   X   |
-| Create forwarder                              |      |     |   X  |   X   |
-| Delete forwarder                              |      |     |   X  |   X   |
-| Create job run                                |      |  X  |   X  |   X   |
-| Create Transfer EVM                           |      |     |      |   X   |
-| Create Transfer Terra                         |      |     |      |   X   |
-| Create Transfer Solana                        |      |     |      |   X   |
-| Create user                                   |      |     |      |   X   |
-| Delete user                                   |      |     |      |   X   |
-| Edit user                                     |      |     |      |   X   |
-| List users                                    |      |     |      |   X   |
+| Action                                  | View | Run | Edit | Admin |
+| :-------------------------------------- | :--: | :-: | :--: | :---: |
+| Update password                         |   X  |  X  |   X  |   X   |
+| Create self API token                   |   X  |  X  |   X  |   X   |
+| Delete self API token                   |   X  |  X  |   X  |   X   |
+| List external initiators                |   X  |  X  |   X  |   X   |
+| Create external initiator               |      |     |   X  |   X   |
+| Delete external initiator               |      |     |   X  |   X   |
+| List bridges                            |   X  |  X  |   X  |   X   |
+| View bridge                             |   X  |  X  |   X  |   X   |
+| Create bridge                           |      |     |   X  |   X   |
+| Edit bridge                             |      |     |   X  |   X   |
+| Delete bridge                           |      |     |   X  |   X   |
+| View config                             |   X  |  X  |   X  |   X   |
+| Update config                           |      |     |      |   X   |
+| Dump env/config                         |      |     |      |   X   |
+| View transaction attempts               |   X  |  X  |   X  |   X   |
+| View transaction attempts EVM           |   X  |  X  |   X  |   X   |
+| View transactions                       |   X  |  X  |   X  |   X   |
+| Replay a specific block number          |      |  X  |   X  |   X   |
+| List keys (CSA,ETH,OCR(2),P2P,Solana)   |   X  |  X  |   X  |   X   |
+| Create keys (CSA,ETH,OCR(2),P2P,Solana) |      |     |   X  |   X   |
+| Delete keys (CSA,ETH,OCR(2),P2P,Solana) |      |     |      |   X   |
+| Import keys (CSA,ETH,OCR(2),P2P,Solana) |      |     |      |   X   |
+| Export keys (CSA,ETH,OCR(2),P2P,Solana) |      |     |      |   X   |
+| List jobs                               |   X  |  X  |   X  |   X   |
+| View job                                |   X  |  X  |   X  |   X   |
+| Create job                              |      |     |   X  |   X   |
+| Delete job                              |      |     |   X  |   X   |
+| List pipeline runs                      |   X  |  X  |   X  |   X   |
+| View job runs                           |   X  |  X  |   X  |   X   |
+| Delete job spec errors                  |      |     |   X  |   X   |
+| View features                           |   X  |  X  |   X  |   X   |
+| View log                                |   X  |  X  |   X  |   X   |
+| Update log                              |      |     |      |   X   |
+| List chains                             |   X  |  X  |   X  |   X   |
+| View chain                              |   X  |  X  |   X  |   X   |
+| Create chain                            |      |     |   X  |   X   |
+| Update chain                            |      |     |   X  |   X   |
+| Delete chain                            |      |     |   X  |   X   |
+| View nodes                              |   X  |  X  |   X  |   X   |
+| Create node                             |      |     |   X  |   X   |
+| Update node                             |      |     |   X  |   X   |
+| Delete node                             |      |     |   X  |   X   |
+| View forwarders                         |   X  |  X  |   X  |   X   |
+| Create forwarder                        |      |     |   X  |   X   |
+| Delete forwarder                        |      |     |   X  |   X   |
+| Create job run                          |      |  X  |   X  |   X   |
+| Create Transfer EVM                     |      |     |      |   X   |
+| Create Transfer Solana                  |      |     |      |   X   |
+| Create user                             |      |     |      |   X   |
+| Delete user                             |      |     |      |   X   |
+| Edit user                               |      |     |      |   X   |
+| List users                              |      |     |      |   X   |
 
 The run command allows for minimal interaction and only enables the ability to replay a specific block number and kick off a job run.
 
@@ -23387,7 +24483,7 @@ This guide will teach you how to run a Chainlink node locally using [Docker](#us
 
    > **TIP: Important**
    >
-   > Because you are testing locally, add `?sslmode=disable` to the end of your `DATABASE_URL`. However you should *never*
+   > Because you are testing locally, add `?sslmode=disable` to the end of your database URL. However you should *never*
    > do this on a production node.
 
 4. Optionally, you can create an `.api` file with the credentials for the node's API and Operator Interface. The node stores the credentials from the `.api` file in the database only the first time you run the container using the database. The `.api` file cannot override credentials for an existing user in the database.
@@ -23485,7 +24581,7 @@ To learn how to modify user roles and see the full list of available roles, read
 # Secrets Config (TOML)
 Source: https://docs.chain.link/chainlink-nodes/v1/secrets-config
 
-[//]: # "Documentation generated from docs/secrets.toml in smartcontractkit/chainlink@v2.66.0 - DO NOT EDIT."
+[//]: # "Documentation generated from docs/secrets.toml in smartcontractkit/chainlink develop@ec8baa5296 - DO NOT EDIT."
 
 This document describes the TOML format for secrets.
 
@@ -23754,6 +24850,12 @@ When non-empty, overrides are used as fallback when Vault calls fail.
 # Forwarder tutorial
 Source: https://docs.chain.link/chainlink-nodes/v1/using-forwarder
 
+> **CAUTION: Direct request jobs are no longer supported**
+>
+> Chainlink nodes reject new direct request jobs. The DirectRequest job type was removed in Chainlink v2.48.0, so the
+> job steps in this tutorial do not run on this node. Forwarder contracts are still supported for other job types such
+> as OCR2 and VRF.
+
 > **NOTE: Prerequisites**
 >
 > This guide assumes you have a running Chainlink node. See the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide to learn how to run a Chainlink node. **Note**: For this example to work, you must use Chainlink node version *1.12.0* or above.
@@ -23788,7 +24890,7 @@ On your terminal, check that your Chainlink node is running:
  docker ps -a -f name=chainlink
 
  CONTAINER ID   IMAGE                            COMMAND               CREATED         STATUS                   PORTS                    NAMES
- feff39f340d6   smartcontract/chainlink:1.12.0   "chainlink local n"   4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
+ feff39f340d6   smartcontract/chainlink:2.66.0   "chainlink node -c…"  4 minutes ago   Up 4 minutes (healthy)   0.0.0.0:6688->6688/tcp   chainlink
 ```
 
 Your Chainlink Operator Interface is accessible on [http://localhost:6688](http://localhost:6688). If using a VPS, you can create a [SSH tunnel](https://www.howtogeek.com/168145/how-to-use-ssh-tunneling/) to your node for `6688:localhost:6688` to enable connectivity to the GUI. Typically this is done with `ssh -i $KEY $USER@$REMOTE-IP -L 6688:localhost:6688 -N`. A SSH tunnel is recommended over opening up ports specific to the Chainlink node to be public facing. See the [Security and Operation Best Practices](/chainlink-nodes/resources/best-security-practices) page for more details on how to secure your node.
@@ -23993,20 +25095,23 @@ MetaMask prompts you to confirm the transaction.
    docker stop chainlink && docker rm chainlink
    ```
 
-4. Update your environment file. If you followed [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide then add `ETH_USE_FORWARDERS=true` and `FEATURE_LOG_POLLER=true` to your environment file:
+4. Enable forwarders in your `config.toml`. Add the following to the `config.toml` file that you created in the [Running a Chainlink Node locally](/chainlink-nodes/v1/running-a-chainlink-node) guide:
 
-   ```shell
-   echo "ETH_USE_FORWARDERS=true
-   FEATURE_LOG_POLLER=true" >> ~/.chainlink-sepolia/.env
+   ```toml
+   [EVM.Transactions]
+   ForwardersEnabled = true
+
+   [Feature]
+   LogPoller = true
    ```
 
-   - `ETH_USE_FORWARDERS` enables sending transactions through forwarder contracts.
-   - `FEATURE_LOG_POLLER` enables polling forwarder contracts logs to detect any changes to the authorized senders.
+   - `EVM.Transactions.ForwardersEnabled` enables sending transactions through forwarder contracts.
+   - `Feature.LogPoller` enables polling forwarder contracts logs to detect any changes to the authorized senders.
 
 5. Start the Chainlink node:
 
    ```shell
-   cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink  -v ~/.chainlink-sepolia:/chainlink -it --env-file=.env -p 6688:6688 smartcontract/chainlink:1.12.0 local n
+   cd ~/.chainlink-sepolia && docker run --platform linux/x86_64/v8 --name chainlink -v ~/.chainlink-sepolia:/chainlink -it -p 6688:6688 --add-host=host.docker.internal:host-gateway smartcontract/chainlink:2.66.0 node -config /chainlink/config.toml -secrets /chainlink/secrets.toml start
    ```
 
 6. You will be prompted to enter the key store password:
