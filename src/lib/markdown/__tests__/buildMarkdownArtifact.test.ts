@@ -5,6 +5,10 @@ import {
   transformPageBodyToMarkdown,
 } from "@lib/markdown/buildMarkdownArtifact.js"
 
+function expectedLegalNotice(version: string): string {
+  return `Continued use of VRF ${version} is at your own risk. Use of the Chainlink Network is subject to the [Chainlink Foundation Terms of Service](https://chain.link/terms), which provides important information and disclosures.`
+}
+
 describe("buildMarkdownArtifact", () => {
   it.each([
     ["v1", "vrf/v1/api-reference"],
@@ -42,6 +46,7 @@ describe("buildMarkdownArtifact", () => {
     expect(markdown.split(`Security fixes for VRF ${version} are not guaranteed.`).length - 1).toBe(1)
     expect(markdown).toContain(`](/vrf/v2-5/migration-from-${version})`)
     expect(markdown).not.toContain("replaces and enhances VRF v1")
+    expect(normalized.split(expectedLegalNotice(version)).length - 1).toBe(1)
 
     if (version === "v2") {
       expect(normalized).toContain(
@@ -53,11 +58,18 @@ describe("buildMarkdownArtifact", () => {
   it.each(["v1", "v2"])("preserves the %s deprecation warning on the migration guide", async (version) => {
     const artifact = await buildMarkdownArtifact(`vrf/v2-5/migration-from-${version}`)
     const markdown = artifact?.markdown ?? ""
+    const normalized = markdown
+      .split("\n")
+      .map((line) => line.replace(/^>\s?/, ""))
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim()
 
     expect(artifact?.transformMode).toBe("normal")
     expect(markdown).toContain(`Chainlink VRF ${version} is deprecated`)
     expect(markdown.match(new RegExp(`Security fixes for VRF ${version} are not guaranteed\\.`, "g"))).toHaveLength(1)
     expect(markdown).toContain("Complete this guide to migrate your application to Chainlink VRF v2.5.")
+    expect(normalized.split(expectedLegalNotice(version)).length - 1).toBe(1)
   })
 
   it.each([
