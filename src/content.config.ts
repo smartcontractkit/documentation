@@ -52,6 +52,7 @@ const metadata = z
     datePublished: z.string().optional(), // ISO date string
     lastModified: z.string().optional(), // ISO date string
     version: z.string().optional(), // For API references
+    noindex: z.boolean().optional(), // Keep the URL, but ask crawlers not to index the page
   })
   .optional()
 

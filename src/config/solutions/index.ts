@@ -14,6 +14,7 @@ import type { Sections } from "../../content.config.ts"
 import type { Solution } from "./types.ts"
 import { demoSinglePage } from "./demo-single-page.ts"
 import { demoMultiPage } from "./demo-multi-page.ts"
+import { crossChainVaultAdapter } from "./cross-chain-vault-adapter.ts"
 
 export type { Solution, SolutionNavGroup } from "./types.ts"
 export { SOLUTION_PRODUCTS, productLabel } from "./products.ts"
@@ -23,7 +24,7 @@ export { SOLUTIONS_HUB_ENABLED } from "./hub.ts"
  * Every registered solution. Add yours here.
  * This is the only shared file a contributor touches.
  */
-const ALL_REGISTERED: Solution[] = [demoSinglePage, demoMultiPage]
+const ALL_REGISTERED: Solution[] = [demoSinglePage, demoMultiPage, crossChainVaultAdapter]
 
 export const SOLUTIONS: Solution[] = ALL_REGISTERED.filter((s) => !s.hidden)
 

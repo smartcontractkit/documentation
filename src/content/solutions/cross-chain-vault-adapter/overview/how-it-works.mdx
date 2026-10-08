@@ -1,0 +1,210 @@
+---
+title: "How it works"
+description: "How a deposit or redemption travels from a source chain to the vault's hub chain and back: components, the CCIP message and payload, deposit and redeem checks, delivery options, fees, slippage protection, and CCIP 2.0 lane settings."
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from.
+
+A request to the Cross-Chain Vault Adapter is one CCIP message that carries the vault's asset or shares from a source chain to the hub chain. In the transaction that receives the message, the adapter calls the vault, then either delivers the output on the hub chain or sends it back to the source chain. This page follows a request that succeeds. [Failures and recovery](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery) covers requests that do not.
+
+## Architecture
+
+The vault is the product. It holds one asset and earns the yield. CCIP is the bridge that moves tokens between chains. The adapter is how users on other chains reach the vault. It turns an incoming CCIP message into a vault call. For how CCIP itself carries a message, see the [CCIP architecture overview](/ccip/concepts/architecture/overview).
+
+The following diagram shows the contracts in a deployment, where each one lives, and what the adapter holds: its configuration, its three roles, and its link to the hub chain's CCIP Router.
+
+<ClickToZoom
+  src="/images/solutions/cross-chain-vault-adapter/architecture.svg"
+  alt="Components diagram. On the source chain, the user or app calls ccipSend on the CCIP Router. A CCIP lane connects that router with the CCIP Router on the hub chain. On the hub chain, the factory deploys the adapter, grants its roles, and keeps none. The adapter box lists its configuration (allowed source chains, allowed vaults, deposit and redeem switches, adapter fees, CCIP 2.0 settings) and its roles (DEFAULT_ADMIN_ROLE, FEE_SETTER_ROLE, FEE_COLLECTOR_ROLE). The adapter allowlists one or more ERC-4626 vaults and is fixed to the hub chain's CCIP Router."
+/>
+
+All three contracts live on the hub chain:
+
+- **Vault:** the team's existing [ERC-4626](https://eips.ethereum.org/EIPS/eip-4626) vault, unchanged. It holds one asset and issues the share token.
+- **Adapter:** [`CrossChainERC4626Adapter`](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/src/ccip/CrossChainERC4626Adapter.sol) receives CCIP messages, calls the vault, and delivers or returns the output. The vault team deploys and operates it.
+- **Factory:** [`CrossChainERC4626AdapterFactory`](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/src/ccip/CrossChainERC4626AdapterFactory.sol) deploys an adapter with its initial configuration in one transaction, then hands every role to the vault team's accounts.
+
+The adapter needs no contract on source chains. Users call `ccipSend` on the CCIP Router there directly. On the hub chain, the CCIP Router delivers messages to the adapter and sends the adapter's return legs. Shares that travel to or from a source chain do need a share token deployed there, as described in [Redeem flow](#redeem-flow).
+
+The adapter enforces the configuration shown in the diagram:
+
+- **Allowed source chains:** a chain type per CCIP chain selector, set with `setChainType`. A selector set to `NONE` is not allowed.
+- **Allowed vaults:** set with `setTargetEnabled`. The payload names one of them.
+- **Deposit and redeem switches:** `depositsEnabled` and `redeemsEnabled`, set together with `setProcessingEnabled`.
+- **Adapter fees:** see [Fees](#fees).
+- **CCIP 2.0 settings:** the inbound verifier and finality policy per source chain, and the return format and finality per destination. See [CCIP 2.0 lanes](#ccip-20-lanes).
+- **Roles:** `DEFAULT_ADMIN_ROLE` changes the configuration, `FEE_SETTER_ROLE` sets adapter fees, and `FEE_COLLECTOR_ROLE` withdraws them. See [Roles](/solutions/cross-chain-vault-adapter/reference/adapter-contract#roles).
+
+One adapter can serve several vaults and several source chains. The adapter does not check who sent a message. Any sender on an allowed source chain can deposit into or redeem from any allowlisted vault. The CCIP Router address is fixed when the adapter is deployed, and only that router can call `ccipReceive`.
+
+## What a user sends
+
+A user sends one CCIP message to the adapter. The message must carry exactly one token in `tokenAmounts` and a payload of exactly 128 bytes in `data`. The token decides the action:
+
+- The vault's asset (the address returned by the vault's `asset()`) means deposit.
+- The vault's share token (the vault address itself) means redeem.
+- Any other token fails the request.
+
+The payload is the ABI encoding of four 32-byte fields:
+
+| <div style="min-width: 160px;">Field</div> | <div style="min-width: 85px;">Type</div> | Meaning                                                                                                                                                                                        |
+| ------------------------------------------ | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `target`                                   | `address`                                | The vault to deposit into or redeem from. It must be on the adapter's allowlist.                                                                                                               |
+| `beneficiary`                              | `bytes32`                                | The account that receives the output: on the hub chain for local delivery, on the source chain for a return. It must be an EVM address left-padded with zeros, so the upper 12 bytes are zero. |
+| `minimumOut`                               | `uint256`                                | The smallest acceptable output after the adapter fee, in output units: shares for a deposit, asset for a redemption. See [Slippage protection](#slippage-protection).                          |
+| `deliveryAndRefund`                        | `uint256`                                | Two delivery and refund options packed into one word. Bit 0 is the return-to-source flag, and bits 1 to 160 hold the local refund address.                                                     |
+
+The sender packs the last field as `(uint256(uint160(localRefundAddress)) << 1) | (returnToSourceChain ? 1 : 0)`. The adapter ignores bits 161 to 255. The local refund address is the hub-chain account allowed to take back the tokens if the request fails. The [message format](/solutions/cross-chain-vault-adapter/reference/adapter-contract#message-format) reference has the exact encoding. [Build the payload](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain#build-the-payload) builds one with the repository's `pnpm ccip:build-payload` script.
+
+The rest of the message follows standard CCIP rules:
+
+- **Receiver:** the adapter address on the hub chain.
+- **Fee token:** the sender pays the CCIP fee on the source chain in the native gas token or LINK.
+- **Extra arguments:** on a CCIP 2.0 lane, the message carries `GenericExtraArgsV3`, encoded with [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec).
+
+The gas limit in the extra arguments pays for everything the adapter does on the hub chain: its checks, the vault call, and, when the output returns to the source chain, the outbound CCIP send. CCIP bills the sender for the gas limit, not the gas used. Measure the gas with a test message against your own vault, and give requests that return output to the source chain more headroom than local delivery, because only they include the outbound send. If the limit is too low, `ccipReceive` can run out of gas before it records the failure, and CCIP marks the message as failed. Recovery then needs CCIP [manual execution](/ccip/concepts/manual-execution) with a higher limit.
+
+The requested finality in the extra arguments must be one that both the adapter and the token pools allow. By default, the adapter accepts only messages that wait for finality.
+
+<Aside type="caution" title="The payload is final once sent">
+  Nobody can change the payload after the message leaves the source chain. Before the user signs, check that:
+
+- The message carries exactly one token: the vault's asset or its share token.
+- `data` is exactly 128 bytes.
+- The payload is built with a standard ABI encoder, such as Solidity `abi.encode`, ethers, viem, or `cast`.
+- `target` is a vault on the adapter's allowlist.
+- `beneficiary` is an EVM address whose upper 12 bytes are zero.
+- The local refund address is non-zero and is an account the user controls on the hub chain.
+
+Without a local refund address, the only way back for a failed request is a cross-chain refund to the original sender. A malformed payload can strand tokens permanently, as described in [Failures with no recovery path](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#failures-with-no-recovery-path).
+
+</Aside>
+
+## Deposit flow
+
+A deposit turns the asset sent from the source chain into vault shares. The following diagram shows a deposit from a source chain into a vault on the hub chain, with the return-to-source branch dashed.
+
+<ClickToZoom
+  src="/images/solutions/cross-chain-vault-adapter/deposit-flow.svg"
+  alt="Deposit flow diagram with numbered steps. On the source chain, the user sends the asset and the payload. CCIP verifies and delivers the message. On the hub chain, in one transaction, the adapter validates the message, routes it as a deposit, deducts the adapter fee only when returning, deposits into the vault, and checks the output against minimumOut. The shares then go to the beneficiary on the hub chain, or, on the dashed branch, back to the beneficiary on the source chain in a second CCIP message."
+/>
+
+The request passes these checks and decisions in order. From the second item on, the first check that fails turns the request into a failed message, and [What counts as a failure](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#what-counts-as-a-failure) lists the error for each.
+
+1. **CCIP 2.0 policy, before the adapter runs.** On a CCIP 2.0 lane, the OffRamp on the hub chain checks the message against the adapter's [Cross-Chain Verifier (CCV)](/ccip/concepts/ccvs/overview) and finality policy for the source chain. If it passes, CCIP transfers the asset to the adapter and calls `ccipReceive`, which runs every later check in an isolated self-call, `processMessage`.
+1. **Source chain and message shape.** The source chain's selector must not be set to `NONE`. The message must carry exactly one token and a 128-byte payload.
+1. **Vault and amount.** The payload's `target` must be allowlisted, which the adapter checks before it looks at the token. The amount must be greater than zero.
+1. **Action.** The token is the vault's asset, so the request is a deposit, and `depositsEnabled` must be true.
+1. **Adapter fee, return only.** When bit 0 of `deliveryAndRefund` asks for a return, the adapter deducts the fee keyed by the source chain's selector and the share token. The fee must be smaller than the amount.
+1. **Vault deposit.** The adapter deposits the rest with itself as the receiver, so it is the depositor and the first owner of the new shares. If the vault's `deposit` reverts, the request fails.
+1. **Output.** The vault must mint more than zero shares and at least `minimumOut`.
+1. **Delivery.** In both branches, the beneficiary's upper 12 bytes must be zero. For local delivery, the adapter transfers the shares on the hub chain. For a return, it quotes the return-leg CCIP fee, pays it from its own native gas token balance, and sends the shares to the source chain in a second CCIP message.
+
+The adapter's checks, the vault call, and the delivery all run in one transaction on the hub chain. A request that passes them ends with `MessageSucceeded`. If any check or call fails, the adapter rolls back the vault call, the fee, and the outbound send, keeps the inbound asset, and records a failed message. The [CCIP Explorer](https://ccip.chain.link) still shows Success, as [Failures and recovery](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#why-the-ccip-explorer-shows-success) explains.
+
+## Redeem flow
+
+A redemption turns shares sent from the source chain into the vault's asset. It follows the deposit flow with these differences:
+
+- **The user sends shares.** The vault's share token must be a [CCIP cross-chain token (CCT)](/ccip/concepts/cross-chain-token/overview) on the lane. A typical setup uses a Lock & Release pool on the hub chain, because only the vault may mint shares, and a Burn & Mint pool on the source chain. The [Lock & Mint tutorial](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry) shows that setup.
+- **The adapter calls `redeem`.** The token is the vault address, so the adapter routes the request as a redemption, which requires `redeemsEnabled`. It redeems the shares as both owner and receiver.
+- **The adapter fee comes from the output.** When returning, the adapter deducts the fee from the redeemed assets instead of from the input.
+- **`minimumOut` is in asset units.** The adapter compares it with the redeemed assets after the fee.
+- **The output is the asset.** The adapter transfers it to the beneficiary on the hub chain or sends it back to the source chain.
+
+## Delivery options
+
+Bit 0 of `deliveryAndRefund` chooses where the output goes. The following table compares the two options.
+
+|                                              | Local delivery                           | Return to the source chain                                             |
+| -------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------- |
+| Where the output goes                        | The beneficiary on the hub chain         | The beneficiary on the source chain the message came from              |
+| Adapter fee                                  | None                                     | Charged in asset units                                                 |
+| CCIP fee for delivery                        | None, because there is no second message | Paid by the adapter from its native gas token balance on the hub chain |
+| Tokens that must be CCIP-enabled for deposit | The asset                                | The asset and the share token                                          |
+| Tokens that must be CCIP-enabled for redeem  | The share token                          | The share token and the asset                                          |
+| Extra latency                                | None                                     | One more CCIP message, from the hub chain to the source chain          |
+| Event on the hub chain                       | `LocalTokenDelivered`                    | `MessageSent`, with the return message's CCIP message ID               |
+
+A return goes only to the chain the request came from, never to a third chain.
+
+The return leg is a separate, token-only CCIP message with empty `data` and a gas limit of 0. The adapter builds it itself and never copies extra arguments from the user's message. Track it on the CCIP Explorer with the message ID from `MessageSent`.
+
+## Fees
+
+A request can involve up to four fees. The [CCIP billing page](/ccip/concepts/fees-and-billing) explains how CCIP prices a message.
+
+| Fee                           | Who pays                                                        | Paid in                    | When                                                                                                                                        | Controlled by                                                                                                       |
+| ----------------------------- | --------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| CCIP fee for the user message | The sender, on the source chain                                 | Native gas token or LINK   | Every request                                                                                                                               | CCIP                                                                                                                |
+| Adapter fee                   | The user, from the deposited asset or the redeemed asset        | The asset's smallest units | Only when the output returns to the source chain                                                                                            | Set by `FEE_SETTER_ROLE` with `setAssetFee` or `setAssetFees`; withdrawn by `FEE_COLLECTOR_ROLE` with `withdrawFee` |
+| Return-leg CCIP fee           | The adapter, from its native gas token balance on the hub chain | Native gas token           | Every return to the source chain                                                                                                            | CCIP                                                                                                                |
+| Refund CCIP fee               | Whoever calls the cross-chain refund, through `msg.value`       | Native gas token           | Only for a [cross-chain refund](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#cross-chain-refund) of a failed message | CCIP; the adapter returns any excess `msg.value` to the caller                                                      |
+
+### Adapter fee
+
+The adapter fee is a flat amount, stored in `assetFees`. The adapter charges the fee on both deposits and redemptions whose output returns to the source chain, and it takes the fee from the deposited asset before a deposit or from the redeemed asset after a redemption. The fee is keyed by the source chain selector and the token that goes back: the share token for a deposit return, the asset for a redeem return. The amount is in the asset's smallest units even when shares go back.
+
+The adapter reads the fee when the message executes on the hub chain, so a fee change made while a message is in flight applies to that message. If the fee is equal to or larger than the deposit amount or the redeemed assets, the request fails. Fees accrue per asset in `collectedFees`, and the fee collector withdraws them with `withdrawFee`.
+
+### Return-leg CCIP fee
+
+The adapter quotes the return-leg fee from the CCIP Router at send time and pays it from its own native gas token balance, which the vault team funds by sending the native gas token to the adapter. If the balance is below the quote, the send reverts and the request becomes a failed message. Collected adapter fees are a separate balance. The adapter never converts them into the native gas token.
+
+## Slippage protection
+
+`minimumOut` is the smallest output the beneficiary accepts. It is measured in output units after the adapter fee: shares for a deposit, asset for a redemption. The adapter checks it after the vault call and before delivery. An output of zero always fails, even when `minimumOut` is 0. An output below `minimumOut` fails the request, which becomes a failed message that the user can [refund or recover](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery).
+
+To choose a value, call [`preview`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#preview) on the adapter on the hub chain. Pass the inbound token (the asset for a deposit, the share token for a redemption), the vault, the amount, the return flag, and the source chain selector, which the [CCIP Directory](/ccip/directory) lists. Pass the selector for local delivery too. For a non-zero amount, `preview` reverts when the selector is not configured. `preview` applies the same routing and adapter fee as a real request and asks the vault's `previewDeposit` or `previewRedeem` for the result.
+
+For some requests that would fail, such as one where the adapter fee consumes the amount, `preview` returns 0 instead of reverting. For others, such as one that names a vault that is not allowlisted, it reverts. The `preview` reference lists each condition in the order the function checks it.
+
+The vault's exchange rate can move between the send and the execution on the hub chain, a gap that includes the lane's CCIP latency. Subtract a tolerance for that movement from the `preview` result and use the remainder as `minimumOut`. [Build the payload](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain#build-the-payload) uses a 1% tolerance.
+
+`minimumOut` compares the amounts the vault reports. It does not protect against fee-on-transfer or rebasing tokens, or against donation or share inflation effects on the vault. [Limitations](/solutions/cross-chain-vault-adapter/reference/limitations#vault-and-token-compatibility) lists which vaults and tokens the adapter supports.
+
+## CCIP 2.0 lanes
+
+A lane's version is the version of the CCIP OnRamp and OffRamp contracts that serve it, and the [CCIP Directory](/ccip/directory) shows it.
+
+The adapter implements the CCIP 2.0 receiver interface, [`IAny2EVMMessageReceiverV2`](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver-v2). On a CCIP 2.0 lane, it controls which messages it accepts and how its own return legs are encoded.
+
+### Inbound settings
+
+The admin sets two values per source chain:
+
+- **CCV policy:** `setCCVsConfig` sets the required CCVs, the optional CCVs, and how many optional CCVs must attest. An empty configuration means the lane's default verifiers.
+- **Allowed finality:** `setInboundFinality` sets which finality modes the adapter accepts. The default, `0x00000000`, accepts only messages that wait for finality, so CCIP rejects [faster-than-finality](/ccip/concepts/execution-latency/ftf-dapps) messages to the adapter.
+
+The CCIP 2.0 OffRamp reads both values through `getCCVsAndFinalityConfig` before it calls `ccipReceive`. A message that lacks the required CCV attestations or requests a finality the adapter does not allow fails at the CCIP level, before the adapter runs. The adapter records no failed message in that case. Recovery is described in [Failures the adapter can't catch](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#failures-the-adapter-cant-catch). CCIP 1.6 lanes ignore both inbound settings.
+
+### Outbound settings
+
+Return legs and cross-chain refunds are messages that the adapter sends, so the admin sets their format per destination chain:
+
+- **Return format:** `setEvmReturnLaneFormat` sets `GENERIC_EXTRA_ARGS_V3_BASIC` for a CCIP 2.0 lane. For a CCIP 1.6 lane, leave the format unset or set `LEGACY_EXTRA_ARGS_V2`. The adapter then sends `GenericExtraArgsV2` with a gas limit of 0 and out-of-order execution allowed.
+- **Requested finality:** `setEvmReturnRequestedFinality` sets the finality for each destination and returned token. It accepts a non-zero value only after the destination's format is V3. `0x00000000` waits for finality and is the default. `0x00010000` waits for the `safe` tag. `0x00000001` to `0x0000FFFF` waits for that number of blocks. The token pools on the lane must allow the requested finality.
+
+Do not set the V3 format on a CCIP 1.6 lane. The CCIP 1.6 FeeQuoter accepts only the V1 and V2 extra arguments tags and reverts with `InvalidExtraArgsTag` for any other. The adapter quotes the fee before every send, so return requests to that chain become failed messages and cross-chain refunds to it revert.
+
+The following table lists the CCIP settings for an EVM source chain connected to the hub chain by CCIP 2.0 lanes.
+
+| Setting              | Function                        | Value on a CCIP 2.0 lane                                              |
+| -------------------- | ------------------------------- | --------------------------------------------------------------------- |
+| Allowed source chain | `setChainType`                  | The source chain's selector, chain type `EVM`                         |
+| Inbound verifiers    | `setCCVsConfig`                 | Empty lists to use the lane's default verifiers                       |
+| Inbound finality     | `setInboundFinality`            | `0x00000000` (default) to accept only messages that wait for finality |
+| Return format        | `setEvmReturnLaneFormat`        | `GENERIC_EXTRA_ARGS_V3_BASIC`                                         |
+| Return finality      | `setEvmReturnRequestedFinality` | `0x00000000` (default) per returned token, or a value the pools allow |
+
+The factory can set the chain type at deployment, but none of the other four settings, so the admin sets them after deployment. For an example that sets the return format with `pnpm ccip:configure`, see [Set the return format and fund the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter#fund-the-adapter).
+
+## Where to go next
+
+- [Failures and recovery](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery): what happens when a request fails and how the tokens come back.
+- [Limitations](/solutions/cross-chain-vault-adapter/reference/limitations): vault and token compatibility, operational limits, and when funds can get stuck.
+- [Adapter contract](/solutions/cross-chain-vault-adapter/reference/adapter-contract): every function, event, and error of `CrossChainERC4626Adapter`.
+- [Deploy the vault and set up its share token](/solutions/cross-chain-vault-adapter/guides/deploy-the-vault) and [Deploy the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter): the tutorials for the vault team.
+- [Deposit from a source chain](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain) and [Redeem from a source chain](/solutions/cross-chain-vault-adapter/guides/redeem-from-source-chain): the tutorials that send a deposit and a redemption through the adapter as a user on Arbitrum Sepolia.

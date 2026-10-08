@@ -894,8 +894,9 @@ Source: https://docs.chain.link/chainlink-nodes/external-initiators/external-ini
 
 > **NOTE**
 >
-> External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration
-> variable](/chainlink-nodes/v1/configuration) to enable this feature.
+> External initiators are disabled on nodes by default. Set
+> [JobPipeline.ExternalInitiatorsEnabled](/chainlink-nodes/v1/node-config#externalinitiatorsenabled) to `true` to enable
+> this feature.
 
 ## Creating an external initiator
 
@@ -1019,8 +1020,9 @@ External initiators allow jobs in a node to be initiated depending on some exter
 
 > **NOTE**
 >
-> External initiators are disabled on nodes by default. Set the `FEATURE_EXTERNAL_INITIATORS=true` [configuration
-> variable](/chainlink-nodes/v1/configuration) to enable this feature.
+> External initiators are disabled on nodes by default. Set
+> [JobPipeline.ExternalInitiatorsEnabled](/chainlink-nodes/v1/node-config#externalinitiatorsenabled) to `true` to enable
+> this feature.
 
 Initiator Bridges handle the authentication to and from the External Initiator and where to send the messages. When creating a Bridge two parameters are required:
 
@@ -1041,7 +1043,7 @@ Source: https://docs.chain.link/chainlink-nodes/job-specs/direct-request-existin
 
 This is an example v2 (TOML) job spec for returning gas price using [etherscan](https://docs.etherscan.io/api-endpoints/gas-tracker#get-gas-oracle) in one Chainlink API Call. Note that the job :
 
-- Uses an [external adapter](/chainlink-nodes/external-adapters/external-adapters) to consume the etherscan API: [EtherScan External Adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/etherscan). Note that this is done using the [bridge](/chainlink-nodes/oracle-jobs/all-tasks/#bridge-task) task: `type="bridge" name="etherscan"`.
+- Uses an [external adapter](https://github.com/smartcontractkit/external-adapters-js) to consume the etherscan API: [EtherScan External Adapter](https://github.com/smartcontractkit/external-adapters-js/tree/develop/packages/sources/etherscan). Note that this is done using the [bridge](/chainlink-nodes/oracle-jobs/all-tasks/#bridge-task) task: `type="bridge" name="etherscan"`.
 - Calls the `fulfillOracleRequest2` function. If you are a node operator, use an [Operator contract](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/Operator.sol) with this job.
 
 To test this job spec from a smart contract, see this [Example](/any-api/get-request/examples/existing-job-request).
@@ -1938,7 +1940,7 @@ Given the input string "Hello, playground", the task will return "SGVsbG8sIHBsYX
 
 ## Bridge task
 
-Bridge tasks make HTTP POST requests to pre-configured URLs. Bridges can be configured via the UI or the CLI, and are referred to by a simple user-specified name. This is the way that most jobs interact with [External Adapters](/chainlink-nodes/external-adapters/external-adapters).
+Bridge tasks make HTTP POST requests to pre-configured URLs. Bridges can be configured via the UI or the CLI, and are referred to by a simple user-specified name. This is the way that most jobs interact with an adapter from the [external adapters repository](https://github.com/smartcontractkit/external-adapters-js).
 
 **Parameters**
 
@@ -2999,7 +3001,7 @@ Source: https://docs.chain.link/chainlink-nodes/oracle-jobs/tasks
 
 Tasks are a replacement for core adapters that is more flexible. Tasks can be composed in arbitrary order into [pipelines](#writing-pipelines). Pipelines consist of one or more threads of execution where tasks are executed in a well-defined order.
 
-You can use Chainlink's [built-in tasks](/chainlink-nodes/oracle-jobs/all-tasks), or you can create your own [external adapters](/chainlink-nodes/external-adapters/external-adapters) for tasks which are accessed through a `bridge`.
+You can use Chainlink's [built-in tasks](/chainlink-nodes/oracle-jobs/all-tasks), or you can create your own [external adapters](https://github.com/smartcontractkit/external-adapters-js) for tasks which are accessed through a `bridge`.
 
 ## Shared attributes
 
@@ -3101,8 +3103,7 @@ To be proactive in detecting any issues before or when they occur, active monito
 - Ethereum http and websocket ports to be open and responsive. (Usually: 8545 & 8546)
 - Ethereum client disk, RAM and CPU usage.
 
-Monitoring can be set up from the Docker container's output and fed into most major logging providers. For example, you can use Docker's docs to set up the logging driver for [Amazon CloudWatch](https://docs.docker.com/config/containers/logging/awslogs/) and [Google Cloud Logging](https://docs.docker.com/config/containers/logging/gcplogs/). You will want to set the [
-JSON_CONSOLE](/chainlink-nodes/v1/configuration) configuration variable to `true` so that the output of the container is JSON-formatted for logging.
+Monitoring can be set up from the Docker container's output and fed into most major logging providers. For example, you can use Docker's docs to set up the logging driver for [Amazon CloudWatch](https://docs.docker.com/config/containers/logging/awslogs/) and [Google Cloud Logging](https://docs.docker.com/config/containers/logging/gcplogs/). You will want to set [Log.JSONConsole](/chainlink-nodes/v1/node-config#jsonconsole) to `true` so that the output of the container is JSON-formatted for logging.
 
 ## Frequent updates
 
@@ -3117,14 +3118,14 @@ The following are suggestions for job specifications and configuration settings 
 [Job Specifications](/chainlink-nodes/oracle-jobs/jobs):
 
 - Include the address of your oracle contract address for all RunLog initiated jobs, as shown in the [Fulfilling Requests](/chainlink-nodes/v1/fulfilling-requests/#add-a-job-to-the-node) guide.
-- Override the global `MIN_INCOMING_CONFIRMATIONS` config by setting a `confirmations` field in jobs which perform offchain payments to allow for greater security by making the node ensure the transaction is still valid after X blocks.
+- Override the global `EVM.MinIncomingConfirmations` config by setting a `confirmations` field in jobs which perform offchain payments to allow for greater security by making the node ensure the transaction is still valid after X blocks.
 
-[Configuring Chainlink Nodes](/chainlink-nodes/v1/configuration):
+[Node Config](/chainlink-nodes/v1/node-config):
 
-- [MINIMUM_CONTRACT_PAYMENT_LINK_JUELS](/chainlink-nodes/v1/configuration): ensure your required payment amount is high enough to meet the costs of responding onchain.
-- [MIN_INCOMING_CONFIRMATIONS](/chainlink-nodes/v1/configuration): this can be set to 0 for common data request jobs. See the bullet above on setting individual `confirmations` for specific jobs.
-- [LOG_FILE_MAX_SIZE](/chainlink-nodes/v1/configuration): Set this to `0` if you're using external log drivers which parse the output from Docker containers. This will save you disk space.
-- [JSON_CONSOLE](/chainlink-nodes/v1/configuration): Set to `true` if you're using external log drivers to parse the output of Docker containers. This will make it easier to parse individual fields of the log and set up alerts.
+- [EVM.MinContractPayment](/chainlink-nodes/v1/node-config#mincontractpayment): ensure your required payment amount is high enough to meet the costs of responding onchain.
+- [EVM.MinIncomingConfirmations](/chainlink-nodes/v1/node-config#minincomingconfirmations): this can be set to 0 for common data request jobs. See the bullet above on setting individual `confirmations` for specific jobs.
+- [Log.File.MaxSize](/chainlink-nodes/v1/node-config#maxsize): Set this below `1mb` if you're using external log drivers which parse the output from Docker containers. A value smaller than 1Mb disables logging to disk.
+- [Log.JSONConsole](/chainlink-nodes/v1/node-config#jsonconsole): Set to `true` if you're using external log drivers to parse the output of Docker containers. This will make it easier to parse individual fields of the log and set up alerts.
 
 ## Addresses
 
@@ -3296,46 +3297,28 @@ You can configure as many send-only nodes as you want. Send-only nodes only broa
 > Transaction broadcasts are always sent to every primary node and send-only node. It is redundant to specify the same
 > URL for a send-only node as an existing primary node, and it has no effect.
 
-Here is an example for how to specify the [`EVM_NODES` environment variable](/chainlink-nodes/v1/configuration):
+Set the chain and its RPC endpoints in TOML. The chain id goes on `[[EVM]]`. Each endpoint is an [`[[EVM.Nodes]]`](/chainlink-nodes/v1/node-config#evmnodes) entry:
 
-```shell
-export EVM_NODES='
-[
-  {
-    "name": "primary_1",
-    "evmChainId": "137",
-    "wsUrl": "wss://endpoint-1.example.com/ws",
-    "httpUrl": "http://endpoint-1.example.com/",
-    "sendOnly": false
-  },
-  {
-    "name": "primary_2",
-    "evmChainId": "137",
-    "wsUrl": "ws://endpoint-2.example.com/ws",
-    "httpUrl": "http://endpoint-2.example.com/",
-    "sendOnly": false
-  },
-  {
-    "name": "primary_3",
-    "evmChainId": "137",
-    "wsUrl": "wss://endpoint-3.example.com/ws",
-    "httpUrl": "http://endpoint-3.example.com/",
-    "sendOnly": false
-  },
-  {
-    "name": "sendonly_1",
-    "evmChainId": "137",
-    "httpUrl": "http://endpoint-4.example.com/",
-    "sendOnly": true
-  },
-  {
-    "name": "sendonly_2",
-    "evmChainId": "137",
-    "httpUrl": "http://endpoint-5.example.com/",
-    "sendOnly": true
-  },
-]
-'
+```toml
+[[EVM]]
+ChainID = '137'
+
+[[EVM.Nodes]]
+Name = 'primary_1'
+WSURL = 'wss://endpoint-1.example.com/ws'
+HTTPURL = 'http://endpoint-1.example.com/'
+SendOnly = false
+
+[[EVM.Nodes]]
+Name = 'primary_2'
+WSURL = 'wss://endpoint-2.example.com/ws'
+HTTPURL = 'http://endpoint-2.example.com/'
+SendOnly = false
+
+[[EVM.Nodes]]
+Name = 'sendonly_1'
+HTTPURL = 'http://endpoint-4.example.com/'
+SendOnly = true
 ```
 
 Send-only nodes are used for broadcasting transactions only, and must support the following RPC calls:
@@ -3351,25 +3334,22 @@ Send-only nodes are used for broadcasting transactions only, and must support th
 > Our recommendation is that node operators should **not** use load-balancers for RPCs. If you do use them, the load
 > balancers must provide finality guarantees.
 
-Chainlink node version 1.3.0 and above has built in failover and load balancing for primary nodes. Chainlink always uses round-robin requests across all primary nodes. Chainlink monitors when nodes go offline and stops routing requests to those nodes. If you don't want to use Chainlink's built-in failover, or you want to use an external proxy instead, you can disable failover completely using the following environment variables:
+Chainlink node version 1.3.0 and above has built in failover and load balancing for primary nodes. Chainlink always uses round-robin requests across all primary nodes. Chainlink monitors when nodes go offline and stops routing requests to those nodes. If you don't want to use Chainlink's built-in failover, or you want to use an external proxy instead, you can disable failover completely with these TOML settings:
 
-```text
-NODE_NO_NEW_HEADS_THRESHOLD=0
-NODE_POLL_FAILURE_THRESHOLD=0
-NODE_POLL_INTERVAL=0
+```toml
+[EVM]
+NoNewHeadsThreshold = '0s'
+
+[EVM.NodePool]
+PollFailureThreshold = 0
+PollInterval = '0s'
 ```
 
-- [NODE_NO_NEW_HEADS_THRESHOLD](/chainlink-nodes/v1/configuration): Controls how long to wait receiving no new heads before marking a node dead
-- [NODE_POLL_FAILURE_THRESHOLD](/chainlink-nodes/v1/configuration): Controls how many consecutive poll failures will disable a node
-- [NODE_POLL_INTERVAL](/chainlink-nodes/v1/configuration): Controls how often the node will be polled
+- [EVM.NoNewHeadsThreshold](/chainlink-nodes/v1/node-config#nonewheadsthreshold): Controls how long to wait receiving no new heads before marking a node out of sync. Set it to zero to disable the check.
+- [EVM.NodePool.PollFailureThreshold](/chainlink-nodes/v1/node-config#pollfailurethreshold): Controls how many consecutive poll failures will disable a node. Set it to zero to disable poll checking.
+- [EVM.NodePool.PollInterval](/chainlink-nodes/v1/node-config#pollinterval-1): Controls how often the node will be polled. Set it to zero to disable poll checking.
 
-By default, these environment variables use the following values:
-
-```text
-NODE_NO_NEW_HEADS_THRESHOLD="3m"
-NODE_POLL_FAILURE_THRESHOLD="5"
-NODE_POLL_INTERVAL="10s"
-```
+The defaults on the Node Config page are `NoNewHeadsThreshold = '3m'`, `PollFailureThreshold = 5`, and `PollInterval = '10s'`.
 
 ## Configuring websocket and HTTP URLs
 
@@ -3379,19 +3359,13 @@ NODE_POLL_INTERVAL="10s"
 
 It is not recommended to configure primary nodes with *only* a websocket URL. Routing all traffic over only a websocket can cause problems. As a best practices, every primary node must have both websocket and HTTP URLs specified. This allows Chainlink to route almost all RPC calls over HTTP, which tends to be more robust and reliable. The websocket URL is used only for subscriptions. Both URLs must point to the same node because they are bundled together and have the same liveness state.
 
-If you enabled HTTP URLs on all your primary nodes, you can increase the values for the following environment variables:
+If you enabled HTTP URLs on all your primary nodes, you can increase these TOML settings:
 
-- [ETH_RPC_DEFAULT_BATCH_SIZE](/chainlink-nodes/v1/configuration)
-- [BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE](/chainlink-nodes/v1/configuration)
-- [ETH_LOG_BACKFILL_BATCH_SIZE](/chainlink-nodes/v1/configuration)
+- [EVM.RPCDefaultBatchSize](/chainlink-nodes/v1/node-config#rpcdefaultbatchsize)
+- [EVM.GasEstimator.BlockHistory.BatchSize](/chainlink-nodes/v1/node-config#batchsize)
+- [EVM.LogBackfillBatchSize](/chainlink-nodes/v1/node-config#logbackfillbatchsize)
 
-By default, these config variables are set conservatively to avoid overflowing websocket frames. In HTTP mode, there are no such limitations. You might be able to improve performance with increased values similar to the following example:
-
-```text
-ETH_RPC_DEFAULT_BATCH_SIZE=1000
-BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE=100
-ETH_LOG_BACKFILL_BATCH_SIZE=1000
-```
+By default, these settings are set conservatively to avoid overflowing websocket frames. In HTTP mode, there are no such limitations. Read the defaults on each setting before you raise them.
 
 > **CAUTION**
 >
@@ -3833,7 +3807,7 @@ When the log messages on the first node indicate that it is waiting for the data
 
 You might want to run multiple instances of the Chainlink node on the same machine. If one instance goes down, the second instance can automatically pick up requests. Building off the concepts in the previous example, use Docker to have primary and a secondary containers referencing the same database URL.
 
-Use the default `DATABASE_LOCKING_MODE=advisorylock` setting unless you want to test the `lease` or `dual` settings. See [the docs](/chainlink-nodes/v1/configuration) for more information about this configuration variable.
+Chainlink nodes with v2.0 and later only support `lease` database locking. See [Database.Lock](/chainlink-nodes/v1/node-config#databaselock).
 
 Run the Chainlink node with a name option specified:
 
@@ -4178,7 +4152,7 @@ ETH_URL=wss://your-node-name.quiknode.pro/security-hash/
 
 At a minimum, disable the default RPC gas and txfee caps on your ETH node. This can be done in the TOML file as seen below, or by running go-ethereum with the command line arguments: `--rpc.gascap=0 --rpc.txfeecap=0`.
 
-To learn more about configuring ETH nodes, see the [configuration page](/chainlink-nodes/v1/configuration).
+The flags in this section are the ETH node settings. Chainlink node settings are on the [Node Config](/chainlink-nodes/v1/node-config) page.
 
 ## Additional Tools
 
@@ -4196,9 +4170,9 @@ Source: https://docs.chain.link/chainlink-nodes/v1/fulfilling-requests
 
 You can use your Chainlink nodes to fulfill requests. This guide shows you how to deploy your own operator contract and add jobs to your node so that it can provide data to smart contracts.
 
-Chainlink nodes can fulfill requests from open or unauthenticated APIs without the need for [External Adapters](/chainlink-nodes/external-adapters/external-adapters) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/tasks) to fulfill the request.
+Chainlink nodes can fulfill requests from open or unauthenticated APIs without an [external adapter](https://github.com/smartcontractkit/external-adapters-js) as long as you've [added the jobs](#add-a-job-to-the-node) to the node. For these requests, requesters supply the URL to the open API that they want each node to retrieve. The Chainlink node will use [tasks](/chainlink-nodes/oracle-jobs/tasks) to fulfill the request.
 
-Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an [external adapter](/chainlink-nodes/external-adapters/external-adapters) or by using the parameters of the [HTTP task](/chainlink-nodes/oracle-jobs/all-tasks/#http-task).
+Some APIs require authentication by providing request headers for the operator's API key, which the Chainlink node supports. If you would like to provide access to an API that requires authentication, you must create a job that is specific for that API either using an [external adapter](https://github.com/smartcontractkit/external-adapters-js) or by using the parameters of the [HTTP task](/chainlink-nodes/oracle-jobs/all-tasks/#http-task).
 
 ## Requirements
 
@@ -4378,7 +4352,7 @@ Source: https://docs.chain.link/chainlink-nodes/v1
 
 This section provides specific information for running and configuring v1.x.x Chainlink nodes. First you will [run a chainlink node](/chainlink-nodes/v1/running-a-chainlink-node) that implements the [basic request architecture model](/architecture-overview/architecture-request-model). Then you will [fulfill requests](/chainlink-nodes/v1/fulfilling-requests) initiated by a smart contract.
 
-The [Configuring Nodes page](/chainlink-nodes/v1/configuration) lists all the environment variables for configuring a v1.x.x Chainlink node.
+The [Configuring Nodes page](/chainlink-nodes/configuring-nodes) explains how to move from environment variables to TOML. The [Node Config](/chainlink-nodes/v1/node-config) page lists the TOML settings.
 
 ---
 

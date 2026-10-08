@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" width="1000" height="470" role="img" font-family="Arial, Helvetica, sans-serif">
+  <title>Cross-Chain Vault Adapter at a glance</title>
+  <desc>A user's wallet on a source chain sends the asset and a payload through Chainlink CCIP to the adapter on the hub chain. The adapter deposits the asset into the ERC-4626 vault and receives shares. The shares go to the user's wallet on the hub chain (local delivery, solid line) or back through CCIP to the user's wallet on the source chain (return leg, dashed line), which requires the share token to be a CCIP cross-chain token.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#000000"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1000" height="470" fill="#FFFFFF"/>
+
+  <!-- Chain headers -->
+  <text x="20" y="36" font-size="14" font-weight="bold" fill="#000000">Source chain</text>
+  <text x="20" y="316" font-size="14" font-weight="bold" fill="#000000">Hub chain</text>
+
+  <!-- Boxes -->
+  <rect x="380" y="50" width="220" height="64" rx="6" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+  <text x="490" y="76" font-size="14" text-anchor="middle" fill="#000000">User wallet</text>
+  <text x="490" y="96" font-size="12" text-anchor="middle" fill="#000000">Sends asset and payload</text>
+
+  <rect x="380" y="180" width="220" height="64" rx="6" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+  <text x="490" y="206" font-size="14" text-anchor="middle" fill="#000000">Chainlink CCIP</text>
+  <text x="490" y="226" font-size="12" text-anchor="middle" fill="#000000">Moves tokens and data</text>
+
+  <rect x="380" y="330" width="220" height="64" rx="6" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+  <text x="490" y="356" font-size="14" text-anchor="middle" fill="#000000">Adapter</text>
+  <text x="490" y="376" font-size="12" text-anchor="middle" fill="#000000">CrossChainERC4626Adapter</text>
+
+  <rect x="760" y="330" width="220" height="64" rx="6" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+  <text x="870" y="356" font-size="14" text-anchor="middle" fill="#000000">ERC-4626 vault</text>
+  <text x="870" y="376" font-size="12" text-anchor="middle" fill="#000000">Your existing vault</text>
+
+  <rect x="20" y="330" width="200" height="64" rx="6" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+  <text x="120" y="356" font-size="14" text-anchor="middle" fill="#000000">User wallet</text>
+  <text x="120" y="376" font-size="12" text-anchor="middle" fill="#000000">Receives shares</text>
+
+  <!-- Request path: source chain wallet to CCIP to adapter (solid) -->
+  <line x1="450" y1="114" x2="450" y2="180" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="440" y="152" font-size="12" text-anchor="end" fill="#000000">Asset and payload</text>
+  <line x1="450" y1="244" x2="450" y2="330" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="440" y="292" font-size="12" text-anchor="end" fill="#000000">Asset and payload</text>
+
+  <!-- Return to the source chain (dashed) -->
+  <line x1="530" y1="330" x2="530" y2="244" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+  <text x="540" y="292" font-size="12" fill="#000000">Shares (return leg)</text>
+  <line x1="530" y1="180" x2="530" y2="114" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+  <text x="540" y="144" font-size="12" fill="#000000">Shares returned to the source chain</text>
+  <text x="540" y="160" font-size="12" fill="#000000">Requires a CCIP share token</text>
+
+  <!-- Adapter and vault -->
+  <line x1="600" y1="350" x2="760" y2="350" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="680" y="342" font-size="12" text-anchor="middle" fill="#000000">Deposits asset</text>
+  <line x1="760" y1="376" x2="600" y2="376" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="680" y="392" font-size="12" text-anchor="middle" fill="#000000">Shares</text>
+
+  <!-- Local delivery (solid) -->
+  <line x1="380" y1="362" x2="220" y2="362" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="300" y="354" font-size="12" text-anchor="middle" fill="#000000">Shares</text>
+  <text x="300" y="380" font-size="12" text-anchor="middle" fill="#000000">Local delivery</text>
+
+  <!-- Legend -->
+  <line x1="20" y1="430" x2="60" y2="430" stroke="#000000" stroke-width="1.5"/>
+  <text x="72" y="434" font-size="12" fill="#000000">Solid: request path and local delivery on the hub chain</text>
+  <line x1="20" y1="452" x2="60" y2="452" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="72" y="456" font-size="12" fill="#000000">Dashed: optional return to the source chain, which requires the share token to be a CCIP cross-chain token on both chains</text>
+</svg>
