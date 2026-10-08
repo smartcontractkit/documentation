@@ -1,0 +1,1423 @@
+---
+title: "Adapter contract"
+description: "API reference for CrossChainERC4626Adapter: constructor, roles, payload format, types, state variables, every external function, events, and errors."
+---
+
+import { Aside } from "@components"
+
+Use this reference to check the exact signatures, access rules, revert conditions, and events of `CrossChainERC4626Adapter`. The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from. The adapter receives CCIP token transfers on the hub chain, deposits the asset into or redeems shares from an allowlisted ERC-4626 vault, and delivers the output on the hub chain or bridges it back to the source chain. For the same request explained step by step, read [How it works](/solutions/cross-chain-vault-adapter/overview/how-it-works) and [Failures and recovery](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery).
+
+This contract provides:
+
+- a CCIP receiver that runs the vault interaction in an isolated self-call and records failures instead of reverting
+- deposit and redeem routing, selected by the token the message carries
+- local delivery on the hub chain or return to the source chain, with a flat adapter fee on returns
+- cross-chain refund and local recovery for failed messages
+- per-source-chain [Cross-Chain Verifier (CCV)](/ccip/concepts/ccvs/overview) and finality settings for CCIP 2.0 lanes
+- configuration split across `DEFAULT_ADMIN_ROLE`, `FEE_SETTER_ROLE`, and `FEE_COLLECTOR_ROLE`
+
+<Aside type="note" title="Who calls the adapter">
+  The vault team deploys the adapter through `CrossChainERC4626AdapterFactory` on the hub chain. The CCIP Router calls
+  `ccipReceive` to deliver each message.
+</Aside>
+
+## Usage boundary
+
+- Only the CCIP Router set at construction (`ROUTER`) can call `ccipReceive`. Any other caller gets `InvalidRouter`.
+- `processMessage` is `external` only so that `ccipReceive` can wrap it in `try`/`catch`. Any caller other than the adapter itself gets `OnlySelf`.
+- The CCIP OffRamp calls `supportsInterface` to confirm the adapter is a CCIP receiver. On CCIP 2.0 lanes it also reads `getCCVsAndFinalityConfig` before it delivers a message.
+- Users do not call the adapter to deposit or redeem. They send a CCIP message from the source chain to the adapter's address, with the payload described in [Message format](#message-format).
+- Users and integrators call the [integrator views](#integrator-views) and the two [recovery functions](#recovery-functions). Anyone can call `refundFailedMessage`. Only the local refund address stored for a message can call `recoverFailedMessageLocally`.
+- Role holders call the [configuration functions](#configuration-functions) and the [fee functions](#fee-functions).
+- Deploy the adapter through the [factory](/solutions/cross-chain-vault-adapter/reference/factory-contract) instead of calling the constructor directly. See [Deploy the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter).
+- The message-processing logic has no `virtual` hooks. To change it, fork the contract and edit `processMessage` and its private helpers. See [Use it as-is or customize it](/solutions/cross-chain-vault-adapter#use-it-as-is-or-customize-it).
+
+## Contract
+
+Source: [`src/ccip/CrossChainERC4626Adapter.sol`](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/src/ccip/CrossChainERC4626Adapter.sol)
+
+| Property         | Value                                                                   |
+| ---------------- | ----------------------------------------------------------------------- |
+| Contract         | `CrossChainERC4626Adapter`                                              |
+| `typeAndVersion` | `CrossChainERC4626Adapter 1.0.0`                                        |
+| License          | MIT                                                                     |
+| Audit status     | Audited                                                                 |
+| Compiler         | solc 0.8.24, `via_ir` enabled, optimizer runs `1`, EVM version `cancun` |
+| Minimum EVM      | Shanghai upgrade (`PUSH0`)                                              |
+
+The audited bytecode is identical to a shanghai build, and `PUSH0` is the only opcode it uses that pre-Shanghai chains lack. Deploy the adapter only on chains that support the Shanghai upgrade. Recompiling with other settings produces bytecode that differs from the audited build. The pinned settings are in [`foundry.toml`](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/foundry.toml).
+
+The contract imports these dependencies:
+
+| <div style="min-width: 210px;">Package</div> | Version | Imports                                                                                                              |
+| -------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------- |
+| `@chainlink/contracts-ccip`                  | 2.0.0   | `Client`, `ExtraArgsCodec`, `FinalityCodec`, `IRouterClient`, `IAny2EVMMessageReceiver`, `IAny2EVMMessageReceiverV2` |
+| `@chainlink/contracts`                       | 1.5.0   | `ITypeAndVersion`                                                                                                    |
+| OpenZeppelin Contracts                       | 5.0.2   | `AccessControlEnumerable`, `ReentrancyGuard`, `IERC4626`                                                             |
+| OpenZeppelin Contracts                       | 4.8.3   | `IERC20`, `SafeERC20`                                                                                                |
+
+## Inheritance
+
+- [`IAny2EVMMessageReceiverV2`](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver-v2): `ccipReceive` and `getCCVsAndFinalityConfig`
+- `AccessControlEnumerable` (OpenZeppelin 5.0.2): roles and role enumeration. See [Roles](#roles).
+- `ReentrancyGuard` (OpenZeppelin 5.0.2): the `nonReentrant` modifier on `refundFailedMessage`, `recoverFailedMessageLocally`, `withdrawFee`, and `recoverNative`
+- [`ITypeAndVersion`](/ccip/evm/api-reference/v2.0.0/i-type-and-version): `typeAndVersion`
+
+The adapter does not inherit CCIP's `CCIPReceiver` base contract. It implements the receiver interface and its own router check.
+
+## Constructor
+
+A direct deployment runs this constructor:
+
+```solidity
+constructor(address router_, address defaultAdmin, address feeSetter, address feeCollector)
+```
+
+| <div style="min-width: 140px;">Parameter</div> | <div style="min-width: 110px;">Type</div> | Description                                                                                                                                                                           |
+| ---------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `router_`                                      | `address`                                 | CCIP Router on the hub chain, stored as the immutable `ROUTER`. Get the address from the CCIP Directory for [testnet](/ccip/directory/testnet) or [mainnet](/ccip/directory/mainnet). |
+| `defaultAdmin`                                 | `address`                                 | Receives `DEFAULT_ADMIN_ROLE`, `FEE_SETTER_ROLE`, and `FEE_COLLECTOR_ROLE`.                                                                                                           |
+| `feeSetter`                                    | `address`                                 | Receives `FEE_SETTER_ROLE`.                                                                                                                                                           |
+| `feeCollector`                                 | `address`                                 | Receives `FEE_COLLECTOR_ROLE`.                                                                                                                                                        |
+
+**Reverts with:**
+
+- `InvalidRouter(address(0))` when `router_` is the zero address.
+- `InvalidAdmin()` when `defaultAdmin` is the zero address.
+- `InvalidFeeSetter()` when `feeSetter` is the zero address.
+- `InvalidFeeCollector()` when `feeCollector` is the zero address.
+
+**Emits:**
+
+- `RoleGranted` for each new role grant: three for `defaultAdmin`, plus one each for `feeSetter` and `feeCollector` when they differ from `defaultAdmin`.
+
+The constructor checks only that `router_` is non-zero. It does not verify that the address is a CCIP Router, and `ROUTER` cannot change after deployment. A wrong router means deploying a new adapter.
+
+A new adapter starts with deposits and redeems disabled, no chain configured, no vault allowlisted, no adapter fee, no CCV or inbound finality settings, the `UNSET` (legacy) return format on every lane, and no native gas token balance.
+
+Deploy through the [factory](/solutions/cross-chain-vault-adapter/reference/factory-contract) instead. It sets chain types, the vault allowlist entry, the deposit and redeem switches, and adapter fees in the same transaction, then grants each role only to its configured address. Through the factory, `defaultAdmin` receives the fee roles only if you also set it as `feeSetter` or `feeCollector`. See [Role handoff](/solutions/cross-chain-vault-adapter/reference/factory-contract#role-handoff).
+
+## Roles
+
+The adapter defines two roles and inherits `DEFAULT_ADMIN_ROLE`:
+
+| Role          | Constant             | Value                             | Granted by                                                                                  | Can call                                                                                                                                                                                                                            |
+| ------------- | -------------------- | --------------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Admin         | `DEFAULT_ADMIN_ROLE` | `0x00`                            | Constructor (`defaultAdmin`), factory (`defaultAdmin`), or an existing admin                | `setChainType`, `setTargetEnabled`, `setProcessingEnabled`, `setCCVsConfig`, `setInboundFinality`, `setEvmReturnLaneFormat`, `setEvmReturnRequestedFinality`, `recoverNative`, and `grantRole` and `revokeRole` for all three roles |
+| Fee setter    | `FEE_SETTER_ROLE`    | `keccak256("FEE_SETTER_ROLE")`    | Constructor (`feeSetter` and `defaultAdmin`), factory (`feeSetter` only), or an admin       | `setAssetFee`, `setAssetFees`                                                                                                                                                                                                       |
+| Fee collector | `FEE_COLLECTOR_ROLE` | `keccak256("FEE_COLLECTOR_ROLE")` | Constructor (`feeCollector` and `defaultAdmin`), factory (`feeCollector` only), or an admin | `withdrawFee`                                                                                                                                                                                                                       |
+
+The adapter inherits role management from OpenZeppelin [`AccessControlEnumerable`](https://docs.openzeppelin.com/contracts/5.x/api/access#AccessControlEnumerable): `grantRole`, `revokeRole`, `renounceRole`, `hasRole`, `getRoleAdmin`, `getRoleMember`, and `getRoleMemberCount`. The adapter never changes role admins, so `DEFAULT_ADMIN_ROLE` is the admin of all three roles. Use `getRoleMemberCount` and `getRoleMember` to list the current holders of a role.
+
+Role changes take effect in a single step. There is no pending-admin acceptance and no delay, so granting `DEFAULT_ADMIN_ROLE` to a wrong address hands over control in that transaction. `renounceRole(role, callerConfirmation)` requires `callerConfirmation` to equal the caller. If the last holder of `DEFAULT_ADMIN_ROLE` renounces it or has it revoked, no account can call the admin functions or change roles again. Fee setters and fee collectors keep their roles.
+
+## Message format
+
+Every message sent to the adapter must carry exactly one token and a `data` field that decodes to `Payload`. For how a user builds the full CCIP message on the source chain, see [What a user sends](/solutions/cross-chain-vault-adapter/overview/how-it-works#what-a-user-sends).
+
+The adapter decodes `message.data` into this struct, shown here without its source comments:
+
+```solidity
+struct Payload {
+    address target;
+    bytes32 beneficiary;
+    uint256 minimumOut;
+    uint256 deliveryAndRefund;
+}
+```
+
+| <div style="min-width: 150px;">Field</div> | <div style="min-width: 90px;">Type</div> | Description                                                                                                                                                                                                                                            |
+| ------------------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `target`                                   | `address`                                | Vault to call. Must be allowlisted with [`setTargetEnabled`](#settargetenabled), or processing fails with `InvalidTarget`.                                                                                                                             |
+| `beneficiary`                              | `bytes32`                                | Recipient of the output: on the hub chain for local delivery, on the source chain for a return. For an EVM address, left-pad it to 32 bytes; if the upper 96 bits are not zero, processing fails with `InvalidEVMAddress`.                             |
+| `minimumOut`                               | `uint256`                                | Smallest acceptable output after the adapter fee, in output units: shares for a deposit, asset for a redemption. Below it, processing fails with `MinimumOutputNotMet`. `0` disables the check, but a zero output still fails with `NoOutputReceived`. |
+| `deliveryAndRefund`                        | `uint256`                                | Delivery choice and local refund address, packed into one word as shown in the next table.                                                                                                                                                             |
+
+`deliveryAndRefund` uses this bit layout:
+
+| <div style="min-width: 90px;">Bits</div> | <div style="min-width: 160px;">Field</div> | Meaning                                                                                                                                                  |
+| ---------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0                                        | `returnToSourceChain`                      | `1` bridges the output back to `message.sourceChainSelector`. `0` delivers it to `beneficiary` on the hub chain.                                         |
+| 1 to 160                                 | `localRefundAddress`                       | Hub-chain address that can call [`recoverFailedMessageLocally`](#recoverfailedmessagelocally) if processing fails. `address(0)` disables local recovery. |
+| 161 to 255                               | Unused                                     | Ignored on decode and not validated.                                                                                                                     |
+
+The adapter enforces these rules on every message:
+
+- `message.destTokenAmounts` must hold exactly one entry. Otherwise processing fails with `InvalidTokenCount`.
+- `message.data` must be exactly `CCIP_MESSAGE_PAYLOAD_LENGTH` (128) bytes, the length of `abi.encode` over the four static fields. Otherwise processing fails with `InvalidPayloadLength`.
+- The token selects the operation. The vault's `asset()` means deposit. The vault address, which is also the share token, means redeem. Any other token fails with `InvalidTargetToken`.
+
+This Solidity snippet builds `message.data` the same way as the `_encodePayload` and `_packDeliveryAndRefund` helpers in the repository's [adapter tests](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/test/ccip/CrossChainERC4626Adapter.t.sol):
+
+```solidity
+uint256 deliveryAndRefund = (uint256(uint160(localRefundAddress)) << 1) | (returnToSourceChain ? 1 : 0);
+
+bytes memory data = abi.encode(
+    vault,                                  // target
+    bytes32(uint256(uint160(beneficiary))), // beneficiary, left-padded EVM address
+    minimumOut,
+    deliveryAndRefund
+);
+```
+
+In TypeScript, encode the same four values as the ABI tuple `(address, bytes32, uint256, uint256)` with viem or ethers.
+
+<Aside type="caution" title="Validate the payload before you send">
+  Check every message against the payload checklist in [What a user
+  sends](/solutions/cross-chain-vault-adapter/overview/how-it-works#what-a-user-sends), including a non-zero
+  `localRefundAddress`, which cannot be added after the message is sent. A malformed payload can strand funds
+  permanently, as explained in [Failures with no recovery
+  path](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#failures-with-no-recovery-path).
+</Aside>
+
+## Types
+
+All types below are declared inside `CrossChainERC4626Adapter`. Messages and token amounts use `Client.Any2EVMMessage` and `Client.EVMTokenAmount` from the CCIP [`Client`](/ccip/evm/api-reference/v2.0.0/client) library.
+
+### ChainType
+
+The adapter records a chain family for each remote chain selector with this enum:
+
+```solidity
+enum ChainType {
+    NONE,
+    EVM,
+    SVM
+}
+```
+
+| <div style="min-width: 120px;">Value</div> | Meaning                                                                                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `NONE` (0)                                 | Selector not configured. Messages from it fail with `InvalidChain`, and `preview` reverts for it when the amount is not zero.  |
+| `EVM` (1)                                  | EVM chain family. Return legs and refunds to this selector use an EVM receiver encoding and the lane's EVM `extraArgs` format. |
+| `SVM` (2)                                  | Solana Virtual Machine chain family.                                                                                           |
+
+### EvmReturnExtraArgsFormat
+
+The adapter encodes `extraArgs` for return legs and refunds to an EVM chain according to this enum, set per destination with [`setEvmReturnLaneFormat`](#setevmreturnlaneformat):
+
+```solidity
+enum EvmReturnExtraArgsFormat {
+    UNSET,
+    LEGACY_EXTRA_ARGS_V2,
+    GENERIC_EXTRA_ARGS_V3_BASIC
+}
+```
+
+| Value                             | Encoding                                                                                                                                                                                          | Use on         |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |
+| `UNSET` (0)                       | Same as `LEGACY_EXTRA_ARGS_V2`. This is the default and cannot be written with `setEvmReturnLaneFormat`.                                                                                          | CCIP 1.6 lanes |
+| `LEGACY_EXTRA_ARGS_V2` (1)        | `Client.GenericExtraArgsV2` with `gasLimit` 0 and `allowOutOfOrderExecution` true                                                                                                                 | CCIP 1.6 lanes |
+| `GENERIC_EXTRA_ARGS_V3_BASIC` (2) | `ExtraArgsCodec._getBasicEncodedExtraArgsV3(0, requestedFinality)`, with the finality from `evmReturnRequestedFinality`. See [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec). | CCIP 2.0 lanes |
+
+### ErrorCode
+
+The adapter tracks the processing outcome of each inbound message ID with this enum:
+
+```solidity
+enum ErrorCode {
+    NONE,
+    BASIC,
+    RESOLVED
+}
+```
+
+| Value          | Meaning                                                                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `NONE` (0)     | Not received yet, or processed successfully. A `MessageSucceeded` event for the message ID tells the two apart.                                        |
+| `BASIC` (1)    | Processing failed. The adapter holds the inbound tokens, and a cross-chain refund or local recovery is available.                                      |
+| `RESOLVED` (2) | A failed message was refunded cross-chain or recovered locally. A `MessageRefunded` or `MessageRecoveredLocally` event for the message ID tells which. |
+
+### Payload
+
+`Payload` is the struct encoded in `message.data`. See [Message format](#message-format).
+
+### FailedMessageRecord
+
+When processing fails, the adapter stores this record for the message ID:
+
+```solidity
+struct FailedMessageRecord {
+    uint64 sourceChainSelector;
+    bytes sender;
+    Client.EVMTokenAmount[] destTokenAmounts;
+    address localRefundAddress;
+}
+```
+
+| Field                 | Type                      | Description                                                                                                                                                   |
+| --------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sourceChainSelector` | `uint64`                  | Chain the message came from. Cross-chain refunds go back to this chain.                                                                                       |
+| `sender`              | `bytes`                   | Original `message.sender`. CCIP encodes an EVM sender as 32 bytes. Cross-chain refunds go to this address.                                                    |
+| `destTokenAmounts`    | `Client.EVMTokenAmount[]` | Tokens and amounts the adapter received and now holds.                                                                                                        |
+| `localRefundAddress`  | `address`                 | Decoded from `deliveryAndRefund` when the payload is exactly 128 bytes, otherwise `address(0)`. The only address that can call `recoverFailedMessageLocally`. |
+
+The record does not include `message.data`. Read it with [`getFailedMessageRecord`](#getfailedmessagerecord).
+
+### CCVConfig
+
+The adapter stores its CCIP 2.0 verifier policy per source chain in this struct:
+
+```solidity
+struct CCVConfig {
+    address[] requiredCCVs;
+    address[] optionalCCVs;
+    uint8 optionalThreshold;
+}
+```
+
+| Field               | Type        | Description                                                                                |
+| ------------------- | ----------- | ------------------------------------------------------------------------------------------ |
+| `requiredCCVs`      | `address[]` | CCVs that must all attest to a message. `address(0)` stands for the lane's default CCVs.   |
+| `optionalCCVs`      | `address[]` | CCVs from which at least `optionalThreshold` must attest.                                  |
+| `optionalThreshold` | `uint8`     | Number of optional CCVs that must attest. Greater than 0 when `optionalCCVs` is non-empty. |
+
+Set it with [`setCCVsConfig`](#setccvsconfig) and read it with [`getCCVsAndFinalityConfig`](#getccvsandfinalityconfig).
+
+## State variables
+
+Every public state variable has a getter with the same name. The adapter declares these:
+
+| Getter                                                                       | Returns                    | Description                                                                                                                                       |
+| ---------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ROUTER()`                                                                   | `address`                  | Immutable CCIP Router. The only caller allowed into `ccipReceive`, and the router used for `getFee` and `ccipSend` on return legs and refunds.    |
+| `typeAndVersion()`                                                           | `string`                   | Constant `"CrossChainERC4626Adapter 1.0.0"`.                                                                                                      |
+| `DEFAULT_ADMIN_ROLE()`                                                       | `bytes32`                  | Inherited constant `0x00`.                                                                                                                        |
+| `FEE_SETTER_ROLE()`                                                          | `bytes32`                  | Constant `keccak256("FEE_SETTER_ROLE")`.                                                                                                          |
+| `FEE_COLLECTOR_ROLE()`                                                       | `bytes32`                  | Constant `keccak256("FEE_COLLECTOR_ROLE")`.                                                                                                       |
+| `CCIP_MESSAGE_PAYLOAD_LENGTH()`                                              | `uint256`                  | Constant `128`. Required length of `message.data`.                                                                                                |
+| `depositsEnabled()`                                                          | `bool`                     | Whether deposits are processed, for every vault on the adapter.                                                                                   |
+| `redeemsEnabled()`                                                           | `bool`                     | Whether redemptions are processed, for every vault on the adapter.                                                                                |
+| `inboundFinality(uint64 sourceChainSelector)`                                | `bytes4`                   | Allowed finality for messages from the source chain on CCIP 2.0 lanes. Default `0x00000000` accepts only messages that wait for finality.         |
+| `chains(uint64 chainSelector)`                                               | `ChainType`                | Chain family of a remote selector. `NONE` means not configured.                                                                                   |
+| `enabledTargets(address target)`                                             | `bool`                     | Whether a vault is allowlisted.                                                                                                                   |
+| `assetFees(uint64 destinationChainSelector, address bridgedToken)`           | `uint256`                  | Adapter fee in the asset's smallest units, keyed by the return chain and the token bridged back.                                                  |
+| `collectedFees(address asset)`                                               | `uint256`                  | Adapter fees accrued and not yet withdrawn.                                                                                                       |
+| `refundChainFamilySnapshot(bytes32 messageId)`                               | `ChainType`                | Chain family recorded when a message failed. Cross-chain refunds use it instead of the current `chains` value. Deleted when the message resolves. |
+| `messageErrorCode(bytes32 messageId)`                                        | `ErrorCode`                | Processing outcome of an inbound message.                                                                                                         |
+| `evmReturnExtraArgsFormat(uint64 destinationChainSelector)`                  | `EvmReturnExtraArgsFormat` | Return and refund `extraArgs` format for a destination chain.                                                                                     |
+| `evmReturnRequestedFinality(uint64 destinationChainSelector, address token)` | `bytes4`                   | Requested finality for return legs and refunds of `token` to a destination, used only on `GENERIC_EXTRA_ARGS_V3_BASIC` lanes.                     |
+
+`ccvConfigs` and `failedMessageRecords` are `internal`. Read them through [`getCCVsAndFinalityConfig`](#getccvsandfinalityconfig) and [`getFailedMessageRecord`](#getfailedmessagerecord).
+
+The adapter accepts the native gas token through `receive() external payable`. That balance pays the CCIP fees for return legs. The admin withdraws it with [`recoverNative`](#recovernative).
+
+## Receiver functions
+
+### ccipReceive
+
+Receives a message from the CCIP Router and processes it in an isolated self-call.
+
+```solidity
+function ccipReceive(Client.Any2EVMMessage calldata message) external onlyRouter
+```
+
+> Calls `this.processMessage(message)` inside `try`/`catch`.
+>
+> - On success, emits `MessageSucceeded`. `messageErrorCode` stays `NONE`.
+> - On a revert, sets `messageErrorCode` to `BASIC`, stores a [`FailedMessageRecord`](#failedmessagerecord), records the source chain's family in `refundChainFamilySnapshot`, and emits `MessageFailed`. If `chains` has no entry for the source chain, the family is inferred from the sender's format. The one exception, a malformed `target` word, is listed under **Reverts with**.
+>
+> When processing fails, every effect of `processMessage` rolls back: the vault call, the fee, and any outbound send. The adapter keeps the inbound tokens. CCIP execution still succeeds, so the [CCIP Explorer](https://ccip.chain.link) shows the message as Success. The `catch` is bare, so the adapter does not store or emit the revert reason. Nothing retries the message, and re-enabling a vault or chain does not reprocess it. See [Why the CCIP Explorer shows Success](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#why-the-ccip-explorer-shows-success).
+
+**Access:** `ROUTER` only.
+
+**Parameters:**
+
+| Parameter | Type                             | Description                                                                             |
+| --------- | -------------------------------- | --------------------------------------------------------------------------------------- |
+| `message` | `Client.Any2EVMMessage calldata` | Inbound message: message ID, source chain selector, sender, data, and delivered tokens. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `InvalidRouter(msg.sender)` when the caller is not `ROUTER`.
+- Out of gas when the gas limit set on the source chain does not cover the call. CCIP marks the message failed. Recover it with [manual execution](/ccip/concepts/manual-execution) at a higher gas limit.
+- A decode revert in the `catch` block when a 128-byte payload has a `target` word with non-zero upper 12 bytes. The message can never execute. See [Failures with no recovery path](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#failures-with-no-recovery-path).
+
+When `ccipReceive` reverts, CCIP reverts the token transfer and marks the message failed at the CCIP level. See [Failures the adapter can't catch](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#failures-the-adapter-cant-catch).
+
+**Emits:**
+
+- `MessageSucceeded(messageId)` after the events from a successful `processMessage`.
+- `MessageFailed(messageId)` when `processMessage` reverts.
+
+---
+
+### processMessage
+
+Validates an inbound message, calls the vault, and delivers the output.
+
+```solidity
+function processMessage(Client.Any2EVMMessage calldata message)
+    external
+    onlySelf
+    onlyValidChain(message.sourceChainSelector)
+```
+
+> Runs in this order:
+>
+> 1. Requires the caller to be the adapter, and `chains[message.sourceChainSelector]` to be configured (not `NONE`).
+> 2. Requires exactly one entry in `message.destTokenAmounts`.
+> 3. Requires `message.data` to be exactly 128 bytes, then decodes it as `Payload`.
+> 4. Requires `enabledTargets[payload.target]`.
+> 5. Requires a non-zero token amount.
+> 6. Reads `asset()` from the vault and routes by token:
+>    - **Asset (deposit):** requires `depositsEnabled`. When returning to the source chain, subtracts the adapter fee from the input. Calls `deposit(assets, address(this))` with the remaining amount.
+>    - **Share token (redeem):** requires `redeemsEnabled`. Calls `redeem(shares, address(this), address(this))`. When returning to the source chain, subtracts the adapter fee from the redeemed assets.
+> 7. Requires a non-zero output of at least `minimumOut`, then emits `TargetProcessed`.
+> 8. Delivers the output. With `returnToSourceChain` set, it sends a CCIP message to `beneficiary` on `message.sourceChainSelector`. Otherwise it transfers the output to `beneficiary` on the hub chain and emits `LocalTokenDelivered`.
+>
+> The vault sees the adapter as the caller, receiver, and owner. The adapter fee is read from `assetFees[message.sourceChainSelector][bridgedToken]` when the message executes. `bridgedToken` is the share token for a deposit return and the asset for a redemption return. Fees accrue in `collectedFees[asset]`. Local delivery pays no adapter fee.
+
+The adapter pays each return leg's CCIP fee from its own native gas token balance. A return leg is a token-only CCIP message, and for an EVM destination it has these fields:
+
+| Field          | Value                                                                                                                                                                                                                                                                                    |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `receiver`     | `abi.encode(beneficiary)`                                                                                                                                                                                                                                                                |
+| `data`         | Empty                                                                                                                                                                                                                                                                                    |
+| `tokenAmounts` | One entry: the output token and the output amount after the adapter fee                                                                                                                                                                                                                  |
+| `extraArgs`    | Built from the adapter's configuration, never from message data. `GenericExtraArgsV3` with gas limit 0 and `evmReturnRequestedFinality[destination][token]` on a `GENERIC_EXTRA_ARGS_V3_BASIC` lane; otherwise `GenericExtraArgsV2` with gas limit 0 and out-of-order execution allowed. |
+| `feeToken`     | `address(0)`, so the CCIP fee is paid in the native gas token, never LINK                                                                                                                                                                                                                |
+
+**Access:** the adapter itself (`onlySelf`).
+
+**Parameters:**
+
+| Parameter | Type                             | Description                                    |
+| --------- | -------------------------------- | ---------------------------------------------- |
+| `message` | `Client.Any2EVMMessage calldata` | Inbound message, forwarded from `ccipReceive`. |
+
+**Returns:** none.
+
+**Reverts with** (when called from `ccipReceive`, every revert below except `OnlySelf` and the decode revert becomes a failed message):
+
+- `OnlySelf()` when any address other than the adapter calls it.
+- `InvalidChain(sourceChainSelector)` when the source chain is not configured.
+- `InvalidTokenCount(tokenCount)` when the message does not carry exactly one token.
+- `InvalidPayloadLength(length, 128)` when `message.data` is not 128 bytes.
+- A decode revert without error data when the payload is 128 bytes but `target` does not fit in 160 bits. This case does not become a failed message. See [`ccipReceive`](#ccipreceive) and [Failures with no recovery path](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#failures-with-no-recovery-path).
+- `InvalidTarget(target)` when the vault is not allowlisted.
+- `AmountIsZero()` when the token amount is zero.
+- `DepositsDisabled()` or `RedeemsDisabled()` when that path is switched off.
+- `InvalidTargetToken(target, token)` when the token is neither the vault's asset nor its share token.
+- `FeeExceedsAmount(amount, fee)` when the adapter fee is greater than or equal to the deposit input or the redeemed assets.
+- `NoOutputReceived()` when the vault returns zero shares or zero assets.
+- `MinimumOutputNotMet(minimumOut, actualOut)` when the output after the fee is below `minimumOut`.
+- `InvalidEVMAddress(beneficiary)` when the upper 96 bits of `beneficiary` are not zero.
+- `InsufficientNativeBalance(requiredFee, availableBalance)` when the adapter's native gas token balance is below the router fee for the return leg.
+- Errors from the vault (for example, a deposit limit), the tokens, the CCIP Router, or a token pool (for example, a rate limit on the return lane).
+
+**Emits:**
+
+- `TargetProcessed` after the vault call.
+- `LocalTokenDelivered` for local delivery, or `MessageSent` for a return leg.
+
+These events roll back with the rest of `processMessage` when a later step reverts.
+
+---
+
+### getCCVsAndFinalityConfig
+
+Returns the verifier and finality policy that CCIP 2.0 OffRamps apply to messages from a source chain.
+
+```solidity
+function getCCVsAndFinalityConfig(uint64 sourceChainSelector, bytes calldata)
+    external
+    view
+    virtual
+    returns (
+        address[] memory requiredCCVs,
+        address[] memory optionalCCVs,
+        uint8 optionalThreshold,
+        bytes4 allowedFinalityConfig
+    )
+```
+
+> Returns the stored `CCVConfig` and `inboundFinality` for `sourceChainSelector`. The second parameter, the sender, is unnamed and ignored, so every sender on a source chain gets the same policy.
+>
+> On CCIP 2.0 lanes the OffRamp calls this function before `ccipReceive`. If a message lacks the required CCV attestations, or requests a finality that `allowedFinalityConfig` does not allow, the message fails at the CCIP level and the adapter never sees it. CCIP 1.6 lanes do not call this function.
+>
+> Empty CCV lists with a zero threshold make the OffRamp use the lane's default CCVs. An `allowedFinalityConfig` of `0x00000000`, the default, accepts only messages that wait for finality.
+
+**Access:** anyone (view).
+
+**Parameters:**
+
+| Parameter             | Type             | Description                          |
+| --------------------- | ---------------- | ------------------------------------ |
+| `sourceChainSelector` | `uint64`         | Source chain of the inbound message. |
+| (unnamed)             | `bytes calldata` | Sender on the source chain. Ignored. |
+
+**Returns:**
+
+| Name                    | Type               | Description                                                            |
+| ----------------------- | ------------------ | ---------------------------------------------------------------------- |
+| `requiredCCVs`          | `address[] memory` | CCVs that must all attest.                                             |
+| `optionalCCVs`          | `address[] memory` | Optional CCVs.                                                         |
+| `optionalThreshold`     | `uint8`            | Number of optional CCVs that must attest.                              |
+| `allowedFinalityConfig` | `bytes4`           | `inboundFinality[sourceChainSelector]`, in the `FinalityCodec` layout. |
+
+**Reverts with:** none.
+
+**Emits:** none.
+
+---
+
+### supportsInterface
+
+Reports which interfaces the adapter implements, per ERC-165.
+
+```solidity
+function supportsInterface(bytes4 interfaceId)
+    public
+    view
+    virtual
+    override(AccessControlEnumerable)
+    returns (bool supported)
+```
+
+> Returns `true` for `IAny2EVMMessageReceiver`, `IAny2EVMMessageReceiverV2`, `IAccessControlEnumerable`, `IAccessControl`, and `IERC165`. The CCIP OffRamp uses this check to decide whether to call `ccipReceive`, and on CCIP 2.0 lanes whether to read `getCCVsAndFinalityConfig`.
+
+**Access:** anyone (view).
+
+**Parameters:**
+
+| Parameter     | Type     | Description                   |
+| ------------- | -------- | ----------------------------- |
+| `interfaceId` | `bytes4` | ERC-165 interface identifier. |
+
+**Returns:**
+
+| Name        | Type   | Description                                   |
+| ----------- | ------ | --------------------------------------------- |
+| `supported` | `bool` | `true` if the adapter supports the interface. |
+
+**Reverts with:** none.
+
+**Emits:** none.
+
+## Integrator views
+
+### preview
+
+Simulates a deposit or redemption, including the adapter fee, so a UI can show the expected output.
+
+```solidity
+function preview(
+    address token,
+    address vaultTarget,
+    uint256 amount,
+    bool returnToSourceChain,
+    uint64 assetFeeDestinationChainSelector
+) external view returns (uint256 received)
+```
+
+> Call it on the hub chain with the source chain's selector. It follows the routing and fee rules of `processMessage` and calls the vault's `previewDeposit` or `previewRedeem`.
+>
+> - Returns `0` instead of reverting when `amount` is `0`, when the adapter fee is greater than or equal to the amount (deposit) or the redeemed assets (redemption), or when the vault preview returns `0`.
+> - Requires `assetFeeDestinationChainSelector` to be configured in `chains`, even when `returnToSourceChain` is `false`.
+> - Does not apply `minimumOut`. Vault state and the adapter fee can change before the message executes, so derive `minimumOut` from this value with a tolerance. See [Slippage protection](/solutions/cross-chain-vault-adapter/overview/how-it-works#slippage-protection).
+> - Does not catch vault reverts. If `asset()`, `previewDeposit`, or `previewRedeem` reverts, `preview` reverts.
+
+**Access:** anyone (view).
+
+**Parameters:**
+
+| Parameter                          | Type      | Description                                                                                                                       |
+| ---------------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `token`                            | `address` | Inbound token: the vault's asset for a deposit, or the vault (share token) address for a redemption.                              |
+| `vaultTarget`                      | `address` | Allowlisted vault, as in `Payload.target`.                                                                                        |
+| `amount`                           | `uint256` | Inbound amount, in `token` units.                                                                                                 |
+| `returnToSourceChain`              | `bool`    | `true` applies the adapter fee for a return to the source chain. `false` simulates local delivery, with no adapter fee.           |
+| `assetFeeDestinationChainSelector` | `uint64`  | Source chain selector of the message. Must be configured in `chains`. Also keys `assetFees` when `returnToSourceChain` is `true`. |
+
+**Returns:**
+
+| Name       | Type      | Description                                                                                                              |
+| ---------- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `received` | `uint256` | Expected output after the adapter fee: shares for a deposit, asset for a redemption. `0` when the request is not viable. |
+
+**Reverts with:**
+
+- `InvalidTarget(vaultTarget)` when the vault is not allowlisted. This check runs before the zero-amount check.
+- `InvalidChain(assetFeeDestinationChainSelector)` when the selector is not configured and `amount` is not zero.
+- `DepositsDisabled()` or `RedeemsDisabled()` when that path is switched off.
+- `InvalidTargetToken(vaultTarget, token)` when `token` is neither the asset nor the share token.
+- Errors from the vault's `asset()`, `previewDeposit`, or `previewRedeem`.
+
+**Emits:** none.
+
+---
+
+### checkRefundEligibility
+
+Reports whether a failed message can be refunded cross-chain, and estimates the fee.
+
+```solidity
+function checkRefundEligibility(bytes32 messageId)
+    external
+    view
+    returns (bool canRefund, bytes32 originalSender, address token, uint256 tokenAmount, uint256 requiredFee)
+```
+
+> Returns `canRefund = false` with zeroed fields when the message is not `BASIC`, when the stored sender is not exactly 32 bytes, or when no inbound token amount is positive. Otherwise it returns `canRefund = true`, the original sender, the first token with a non-zero amount, and `requiredFee`: the sum of one router `getFee` quote per non-zero token.
+>
+> This view can revert. After the early checks it calls the router's `getFee`, which reverts when, for example, the router has no lane back to the source chain, the configured return format does not match the lane, a token pool does not allow the requested finality, or the token has no pool on that lane. Treat a revert as "not refundable right now".
+>
+> `requiredFee` is an estimate. Send more than this as `msg.value` to `refundFailedMessage`; the adapter returns the excess.
+
+**Access:** anyone (view).
+
+**Parameters:**
+
+| Parameter   | Type      | Description                       |
+| ----------- | --------- | --------------------------------- |
+| `messageId` | `bytes32` | ID of the failed inbound message. |
+
+**Returns:**
+
+| Name             | Type      | Description                                                                          |
+| ---------------- | --------- | ------------------------------------------------------------------------------------ |
+| `canRefund`      | `bool`    | Whether a cross-chain refund is possible now, when the call does not revert.         |
+| `originalSender` | `bytes32` | Sender of the original message. The refund goes to this address on the source chain. |
+| `token`          | `address` | First inbound token with a non-zero amount.                                          |
+| `tokenAmount`    | `uint256` | Amount of `token`.                                                                   |
+| `requiredFee`    | `uint256` | Estimated total fee for all refund sends, in the native gas token.                   |
+
+**Reverts with:**
+
+- `InvalidEVMAddress(originalSender)` when the refund goes to an EVM chain and the upper 96 bits of the stored sender are not zero.
+- Router, OnRamp, and token pool errors from `getFee`. See [Errors from dependencies](#errors-from-dependencies).
+
+**Emits:** none.
+
+---
+
+### estimateRefundFee
+
+Estimates the total fee, in the native gas token, to refund a failed message cross-chain.
+
+```solidity
+function estimateRefundFee(bytes32 messageId) external view returns (uint256)
+```
+
+> Sums one router `getFee` quote per inbound token with a non-zero amount, using the current router state. The estimate can be lower than the cost at execution, because `refundFailedMessage` re-quotes each send and fees can change in between. Pad `msg.value` above this value.
+
+**Access:** anyone (view).
+
+**Parameters:**
+
+| Parameter   | Type      | Description                       |
+| ----------- | --------- | --------------------------------- |
+| `messageId` | `bytes32` | ID of the failed inbound message. |
+
+**Returns:**
+
+| Type      | Description                                                                    |
+| --------- | ------------------------------------------------------------------------------ |
+| `uint256` | Estimated total fee for all refund sends, in the hub chain's native gas token. |
+
+**Reverts with:**
+
+- `MessageNotFailed(messageId)` when the message is not `BASIC`.
+- `NoRefundableTokenAmounts()` when no inbound token amount is positive.
+- `InvalidSenderAddressFormat()` when the stored sender is not exactly 32 bytes.
+- `InvalidEVMAddress(originalSender)` when the refund goes to an EVM chain and the upper 96 bits of the stored sender are not zero.
+- Router, OnRamp, and token pool errors from `getFee`.
+
+**Emits:** none.
+
+---
+
+### checkLocalRecoveryEligibility
+
+Reports whether a failed message can be recovered on the hub chain, and by which address.
+
+```solidity
+function checkLocalRecoveryEligibility(bytes32 messageId)
+    external
+    view
+    returns (bool canRecover, address localRefundAddress, address token, uint256 tokenAmount)
+```
+
+> Returns `canRecover = false` with zeroed fields when the message is not `BASIC`, when no local refund address was stored, or when no inbound token amount is positive. Otherwise it returns `true`, the local refund address, and the first token with a non-zero amount. It does not check the caller, and it never reverts.
+
+**Access:** anyone (view).
+
+**Parameters:**
+
+| Parameter   | Type      | Description                       |
+| ----------- | --------- | --------------------------------- |
+| `messageId` | `bytes32` | ID of the failed inbound message. |
+
+**Returns:**
+
+| Name                 | Type      | Description                                                   |
+| -------------------- | --------- | ------------------------------------------------------------- |
+| `canRecover`         | `bool`    | Whether the local refund address can recover the message now. |
+| `localRefundAddress` | `address` | The only address that can call `recoverFailedMessageLocally`. |
+| `token`              | `address` | First inbound token with a non-zero amount.                   |
+| `tokenAmount`        | `uint256` | Amount of `token`.                                            |
+
+**Reverts with:** none.
+
+**Emits:** none.
+
+---
+
+### getFailedMessageRecord
+
+Returns the stored record of a failed message.
+
+```solidity
+function getFailedMessageRecord(bytes32 messageId) external view returns (FailedMessageRecord memory record)
+```
+
+> The record exists only while `messageErrorCode[messageId]` is `BASIC`. For a message that never failed, or one that was refunded or recovered, the call returns a record with zero values. Read `messageErrorCode` to tell these states apart.
+
+**Access:** anyone (view).
+
+**Parameters:**
+
+| Parameter   | Type      | Description                |
+| ----------- | --------- | -------------------------- |
+| `messageId` | `bytes32` | ID of the inbound message. |
+
+**Returns:**
+
+| Name     | Type                         | Description                                        |
+| -------- | ---------------------------- | -------------------------------------------------- |
+| `record` | `FailedMessageRecord memory` | See [`FailedMessageRecord`](#failedmessagerecord). |
+
+**Reverts with:** none.
+
+**Emits:** none.
+
+## Recovery functions
+
+### refundFailedMessage
+
+Sends the inbound tokens of a failed message back to the original sender on the source chain.
+
+```solidity
+function refundFailedMessage(bytes32 messageId) external payable nonReentrant
+```
+
+> Anyone can call it, and the caller pays the CCIP fees through `msg.value`. The recipient comes from the stored record, not from the caller. It is the original `message.sender` on `sourceChainSelector`. It is not the beneficiary and not the local refund address.
+>
+> The function:
+>
+> 1. Requires the message to be `BASIC`, at least one non-zero token amount, and a sender of exactly 32 bytes.
+> 2. Sets the message to `RESOLVED` and deletes its record and chain family snapshot.
+> 3. Sends each non-zero token in its own token-only CCIP message, with the same fields as a return leg (see [`processMessage`](#processmessage)). It uses the chain family recorded at failure time, the lane's return format, and `evmReturnRequestedFinality` for the inbound token: the asset for a failed deposit, the share token for a failed redemption.
+> 4. Requires `msg.value` to cover the total fee paid, then sends any excess `msg.value` back to the caller.
+>
+> The adapter's own native gas token balance is not consumed. If any step reverts, the whole transaction reverts and the message stays `BASIC`. If the original sender is a contract, the tokens arrive at that contract's address on the source chain, and the contract is not called.
+
+**Access:** anyone.
+
+**Parameters:**
+
+| Parameter   | Type             | Description                                                                                                                                             |
+| ----------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `messageId` | `bytes32`        | ID of the failed inbound message.                                                                                                                       |
+| `msg.value` | native gas token | Fee for all refund sends. Start from [`estimateRefundFee`](#estimaterefundfee) or [`checkRefundEligibility`](#checkrefundeligibility) and add a margin. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `MessageNotFailed(messageId)` when the message is not `BASIC`: it was never received, it succeeded, or it is already resolved.
+- `NoRefundableTokenAmounts()` when no inbound token amount is positive.
+- `InvalidSenderAddressFormat()` when the stored sender is not exactly 32 bytes.
+- `InvalidEVMAddress(originalSender)` when the refund goes to an EVM chain and the upper 96 bits of the stored sender are not zero.
+- `InsufficientNativeBalance(requiredFee, availableBalance)` when the adapter's native gas token balance, which includes `msg.value`, is below the router fee for a send.
+- `InsufficientRecoveryFee(requiredFee, providedFee)` when `msg.value` is below the total fee paid.
+- `RefundFailed()` when sending the excess `msg.value` back to the caller fails.
+- `ReentrancyGuardReentrantCall()` on a reentrant call.
+- Router, OnRamp, and token pool errors from `getFee` or `ccipSend`.
+
+**Emits:**
+
+- `MessageSent` for each token sent.
+- `MessageRefunded(messageId, sourceChainSelector, originalSender)`.
+
+---
+
+### recoverFailedMessageLocally
+
+Transfers the inbound tokens of a failed message to its local refund address on the hub chain.
+
+```solidity
+function recoverFailedMessageLocally(bytes32 messageId) external nonReentrant
+```
+
+> Only the `localRefundAddress` stored in the failed-message record can call it. It costs no CCIP fee, and the function is not `payable`. It sets the message to `RESOLVED`, deletes the record and chain family snapshot, transfers each non-zero inbound token to the caller, and emits `MessageRecoveredLocally`. The tokens are the ones that arrived: the asset for a failed deposit, shares for a failed redemption.
+>
+> The local refund address comes from the payload's `deliveryAndRefund` field and cannot be set or changed afterward. Whichever recovery function succeeds first resolves the message; the other then reverts with `MessageNotFailed`. See [Local recovery](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#local-recovery).
+
+**Access:** the stored `localRefundAddress` only.
+
+**Parameters:**
+
+| Parameter   | Type      | Description                       |
+| ----------- | --------- | --------------------------------- |
+| `messageId` | `bytes32` | ID of the failed inbound message. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `MessageNotFailed(messageId)` when the message is not `BASIC`.
+- `NoLocalRefundAddress(messageId)` when no local refund address was stored.
+- `UnauthorizedLocalRefund(caller, localRefundAddress)` when the caller is not the stored local refund address.
+- `NoRefundableTokenAmounts()` when no inbound token amount is positive.
+- `ReentrancyGuardReentrantCall()` on a reentrant call.
+- Token transfer errors.
+
+**Emits:**
+
+- `MessageRecoveredLocally(messageId, localRefundAddress)`.
+
+## Configuration functions
+
+### setChainType
+
+Configures how the adapter treats a remote chain selector.
+
+```solidity
+function setChainType(uint64 chainSelector, ChainType chainType) external onlyRole(DEFAULT_ADMIN_ROLE)
+```
+
+> Writes `chains[chainSelector]`. The adapter processes inbound messages only from selectors set to a value other than `NONE`, and uses the value to encode return legs to that selector. Set `EVM` for an EVM source chain, such as Arbitrum Sepolia (selector `3478487238524512106`) for an adapter on Ethereum Sepolia.
+>
+> Setting a selector to `NONE` does not stop CCIP delivery. Messages that arrive afterward fail with `InvalidChain` and become failed messages that users must refund or recover. Cross-chain refunds of earlier failures use the chain family recorded at failure time. The function does not validate the selector.
+
+**Access:** `DEFAULT_ADMIN_ROLE`.
+
+**Parameters:**
+
+| Parameter       | Type        | Description                                         |
+| --------------- | ----------- | --------------------------------------------------- |
+| `chainSelector` | `uint64`    | CCIP chain selector of the remote chain.            |
+| `chainType`     | `ChainType` | `EVM`, `SVM`, or `NONE` to reject messages from it. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `ChainTypeSet(chainSelector, chainType)`.
+
+---
+
+### setTargetEnabled
+
+Adds a vault to the allowlist or removes it.
+
+```solidity
+function setTargetEnabled(address target, bool enabled) external onlyRole(DEFAULT_ADMIN_ROLE)
+```
+
+> Writes `enabledTargets[target]`. The payload's `target` selects the vault, so one adapter can serve several vaults. The function accepts any non-zero address and does not check that it is an ERC-4626 vault. Enable only vaults whose asset and share token behave as standard ERC-20 tokens, without fee-on-transfer or rebasing. See [Vault and token compatibility](/solutions/cross-chain-vault-adapter/reference/limitations#vault-and-token-compatibility).
+>
+> Disabling a vault does not stop delivery. Messages that arrive for it fail with `InvalidTarget` and become failed messages.
+
+**Access:** `DEFAULT_ADMIN_ROLE`.
+
+**Parameters:**
+
+| Parameter | Type      | Description                             |
+| --------- | --------- | --------------------------------------- |
+| `target`  | `address` | Vault address.                          |
+| `enabled` | `bool`    | `true` to allowlist, `false` to remove. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `InvalidTarget(address(0))` when `target` is the zero address.
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `TargetEnabled(target, enabled)`.
+
+---
+
+### setProcessingEnabled
+
+Switches deposits and redemptions on or off for every vault on the adapter.
+
+```solidity
+function setProcessingEnabled(bool depositsEnabled_, bool redeemsEnabled_) external onlyRole(DEFAULT_ADMIN_ROLE)
+```
+
+> Sets `depositsEnabled` and `redeemsEnabled`. Both start as `false` on a directly deployed adapter.
+>
+> This is not a pause. CCIP keeps delivering, and messages that arrive while their path is off, including messages already in flight, fail with `DepositsDisabled` or `RedeemsDisabled` and become failed messages. Switching the path back on does not reprocess them. See [What counts as a failure](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#what-counts-as-a-failure).
+
+**Access:** `DEFAULT_ADMIN_ROLE`.
+
+**Parameters:**
+
+| Parameter          | Type   | Description                     |
+| ------------------ | ------ | ------------------------------- |
+| `depositsEnabled_` | `bool` | Whether to process deposits.    |
+| `redeemsEnabled_`  | `bool` | Whether to process redemptions. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `ProcessingEnabledSet(depositsEnabled, redeemsEnabled)`.
+
+---
+
+### setCCVsConfig
+
+Sets the CCV policy for messages from a source chain on CCIP 2.0 lanes.
+
+```solidity
+function setCCVsConfig(
+    uint64 sourceChainSelector,
+    address[] calldata requiredCCVs,
+    address[] calldata optionalCCVs,
+    uint8 optionalThreshold_
+) external onlyRole(DEFAULT_ADMIN_ROLE)
+```
+
+> Replaces the stored `CCVConfig` for `sourceChainSelector`, which `getCCVsAndFinalityConfig` returns to the OffRamp. CCIP 1.6 lanes ignore it. Empty lists with a zero threshold mean the lane's default CCVs. In `requiredCCVs`, `address(0)` stands for the lane's default CCVs.
+>
+> The function validates the lists:
+>
+> - `optionalThreshold_` must be greater than 0 when `optionalCCVs` is not empty, and no greater than `optionalCCVs.length`.
+> - No address can appear twice in one list, or in both lists.
+> - `optionalCCVs` cannot contain `address(0)`.
+>
+> It does not check that the CCVs exist or serve the lane. If a required CCV never attests, messages from that source chain fail at the CCIP level before they reach the adapter. Fix the configuration, then retry them with manual execution.
+
+**Access:** `DEFAULT_ADMIN_ROLE`.
+
+**Parameters:**
+
+| Parameter             | Type                 | Description                               |
+| --------------------- | -------------------- | ----------------------------------------- |
+| `sourceChainSelector` | `uint64`             | Source chain the policy applies to.       |
+| `requiredCCVs`        | `address[] calldata` | CCVs that must all attest.                |
+| `optionalCCVs`        | `address[] calldata` | Optional CCVs.                            |
+| `optionalThreshold_`  | `uint8`              | Number of optional CCVs that must attest. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `OptionalCCVsRequirePositiveThreshold(optionalCCVCount)` when `optionalCCVs` is not empty and the threshold is 0.
+- `InvalidOptionalThreshold(optionalThreshold, optionalCCVCount)` when the threshold is greater than the number of optional CCVs.
+- `DuplicateCCV(ccv)` when an address repeats within or across the lists.
+- `InvalidOptionalCCV()` when `optionalCCVs` contains `address(0)`.
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `CCVsConfigSet(sourceChainSelector, requiredCCVs, optionalCCVs, optionalThreshold)`.
+
+---
+
+### setInboundFinality
+
+Sets which requested finality the adapter accepts for messages from a source chain on CCIP 2.0 lanes.
+
+```solidity
+function setInboundFinality(uint64 sourceChainSelector, bytes4 allowedFinalityConfig)
+    external
+    onlyRole(DEFAULT_ADMIN_ROLE)
+```
+
+> Writes `inboundFinality[sourceChainSelector]`, which `getCCVsAndFinalityConfig` returns as `allowedFinalityConfig`. CCIP 2.0 OffRamps compare each message's requested finality against it; CCIP 1.6 lanes ignore it. The default, `0x00000000`, accepts only messages that wait for finality, so [faster-than-finality](/ccip/concepts/execution-latency/ftf-dapps) messages from that source chain fail at the CCIP level.
+>
+> The value uses the `FinalityCodec` layout. Bit 16 is the `safe` tag flag, and the low 16 bits are a block depth. A message that requests the `safe` tag is accepted when the flag is set. A message that requests N blocks is accepted when the configured depth is non-zero and N is at least that depth. A message that waits for finality is always accepted. The function performs no validation.
+
+**Access:** `DEFAULT_ADMIN_ROLE`.
+
+**Parameters:**
+
+| Parameter               | Type     | Description                                      |
+| ----------------------- | -------- | ------------------------------------------------ |
+| `sourceChainSelector`   | `uint64` | Source chain the setting applies to.             |
+| `allowedFinalityConfig` | `bytes4` | Allowed finality, in the `FinalityCodec` layout. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `InboundFinalitySet(sourceChainSelector, allowedFinalityConfig)`.
+
+---
+
+### setEvmReturnLaneFormat
+
+Sets the `extraArgs` format for return legs and refunds to an EVM destination chain.
+
+```solidity
+function setEvmReturnLaneFormat(uint64 destinationChainSelector, EvmReturnExtraArgsFormat format)
+    external
+    onlyRole(DEFAULT_ADMIN_ROLE)
+```
+
+> `destinationChainSelector` is the source chain of the inbound messages whose outputs and refunds go back to it. Set `GENERIC_EXTRA_ARGS_V3_BASIC` on CCIP 2.0 lanes, such as Arbitrum Sepolia for an adapter on Ethereum Sepolia. Leave the format unset or set `LEGACY_EXTRA_ARGS_V2` on CCIP 1.6 lanes.
+>
+> Setting `GENERIC_EXTRA_ARGS_V3_BASIC` on a CCIP 1.6 lane makes return legs and refunds revert at the router. Return-to-source messages then become failed messages, and cross-chain refunds to that chain revert until the format is corrected.
+>
+> `UNSET` cannot be written. To return to the legacy encoding, set `LEGACY_EXTRA_ARGS_V2`.
+
+**Access:** `DEFAULT_ADMIN_ROLE`.
+
+**Parameters:**
+
+| Parameter                  | Type                       | Description                                              |
+| -------------------------- | -------------------------- | -------------------------------------------------------- |
+| `destinationChainSelector` | `uint64`                   | Chain that return legs and refunds go to.                |
+| `format`                   | `EvmReturnExtraArgsFormat` | `LEGACY_EXTRA_ARGS_V2` or `GENERIC_EXTRA_ARGS_V3_BASIC`. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `InvalidEvmReturnExtraArgsFormat()` when `format` is `UNSET`.
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `EvmReturnLaneFormatSet(destinationChainSelector, format)`.
+
+---
+
+### setEvmReturnRequestedFinality
+
+Sets the finality that return legs and refunds of one token request on a CCIP 2.0 lane.
+
+```solidity
+function setEvmReturnRequestedFinality(
+    uint64 destinationChainSelector,
+    address token,
+    bytes4 requestedFinalityForV3
+) external onlyRole(DEFAULT_ADMIN_ROLE)
+```
+
+> `token` is the token bridged on that leg. It is the share token for deposit returns and failed-redemption refunds, and the asset for redemption returns and failed-deposit refunds.
+>
+> A non-zero value requires the lane format for `destinationChainSelector` to already be `GENERIC_EXTRA_ARGS_V3_BASIC`. On any other format, passing `0x00000000` clears the stored value. On a V3 lane, the value must select exactly one mode. The token pools on the lane must allow the requested finality. If they do not, the router rejects the send, return legs become failed messages, and refunds revert.
+
+The requested finality takes one of these values:
+
+| Value                        | Meaning                                 |
+| ---------------------------- | --------------------------------------- |
+| `0x00000000`                 | Wait for finality. This is the default. |
+| `0x00010000`                 | Wait for the `safe` tag.                |
+| `0x00000001` to `0x0000FFFF` | Wait for that many blocks.              |
+
+Other single flags in bits 17 to 31 pass the adapter's validation, but token pools and CCVs reject modes they do not implement.
+
+**Access:** `DEFAULT_ADMIN_ROLE`.
+
+**Parameters:**
+
+| Parameter                  | Type      | Description                                        |
+| -------------------------- | --------- | -------------------------------------------------- |
+| `destinationChainSelector` | `uint64`  | Chain that return legs and refunds go to.          |
+| `token`                    | `address` | Token bridged on the leg. Must be non-zero.        |
+| `requestedFinalityForV3`   | `bytes4`  | Requested finality, in the `FinalityCodec` layout. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `InvalidTarget(address(0))` when `token` is the zero address.
+- `UnexpectedRequestedFinalityForLegacyFormat(requestedFinalityForV3)` when the value is non-zero and the lane format is not `GENERIC_EXTRA_ARGS_V3_BASIC`.
+- `RequestedFinalityCanOnlyHaveOneMode(encodedFinality)` from `FinalityCodec` when the value combines a flag with a block depth or sets more than one flag.
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `EvmReturnRequestedFinalitySet(destinationChainSelector, token, requestedFinalityForV3)`, with `0x00000000` when the call clears the value on a non-V3 lane.
+
+---
+
+### recoverNative
+
+Sends the adapter's entire native gas token balance to a recipient.
+
+```solidity
+function recoverNative(address recipient) external nonReentrant onlyRole(DEFAULT_ADMIN_ROLE)
+```
+
+> There is no amount parameter, so the call always sends the full balance. Afterward the adapter cannot pay CCIP fees, so return-to-source messages fail with `InsufficientNativeBalance` until someone funds it again.
+
+**Access:** `DEFAULT_ADMIN_ROLE`.
+
+**Parameters:**
+
+| Parameter   | Type      | Description                            |
+| ----------- | --------- | -------------------------------------- |
+| `recipient` | `address` | Receives the native gas token balance. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `InvalidRecipient()` when `recipient` is the zero address.
+- `AmountIsZero()` when the balance is zero.
+- `RecoverNativeFailed()` when the transfer to `recipient` fails.
+- `ReentrancyGuardReentrantCall()` on a reentrant call.
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `NativeRecovered(recipient, amount)`.
+
+## Fee functions
+
+### setAssetFee
+
+Sets the adapter fee for returns of one token to one chain.
+
+```solidity
+function setAssetFee(uint64 destinationChainSelector, address bridgedToken, uint256 fee)
+    external
+    onlyRole(FEE_SETTER_ROLE)
+```
+
+> Writes `assetFees[destinationChainSelector][bridgedToken]`. The adapter fee is a flat amount in the asset's smallest units on both paths. It applies only when the output returns to the source chain.
+>
+> - **Deposit return:** the key is the share token (the vault address). The fee is taken from the inbound asset before the deposit.
+> - **Redemption return:** the key is the asset. The fee is taken from the redeemed assets.
+>
+> There is no upper bound. A fee greater than or equal to the amount makes those messages fail with `FeeExceedsAmount`. The fee is read when a message executes, so a change applies to messages already in flight. You can set a fee before configuring the chain with `setChainType`. Set `0` to remove a fee. See [Fees](/solutions/cross-chain-vault-adapter/overview/how-it-works#fees).
+
+**Access:** `FEE_SETTER_ROLE`.
+
+**Parameters:**
+
+| Parameter                  | Type      | Description                                                                              |
+| -------------------------- | --------- | ---------------------------------------------------------------------------------------- |
+| `destinationChainSelector` | `uint64`  | Chain the output returns to, which is the source chain of the inbound message.           |
+| `bridgedToken`             | `address` | Token bridged back, which is the share token for deposits and the asset for redemptions. |
+| `fee`                      | `uint256` | Fee in the asset's smallest units.                                                       |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `InvalidTarget(address(0))` when `bridgedToken` is the zero address.
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `AssetFeeSet(destinationChainSelector, bridgedToken, fee)`.
+
+---
+
+### setAssetFees
+
+Sets several adapter fees in one call.
+
+```solidity
+function setAssetFees(
+    uint64[] calldata destinationChainSelectors,
+    address[] calldata bridgedTokens,
+    uint256[] calldata fees
+) external onlyRole(FEE_SETTER_ROLE)
+```
+
+> Each index applies one `setAssetFee` row with the same validation. A zero token in any row reverts the whole call.
+
+**Access:** `FEE_SETTER_ROLE`.
+
+**Parameters:**
+
+| Parameter                   | Type                 | Description                                 |
+| --------------------------- | -------------------- | ------------------------------------------- |
+| `destinationChainSelectors` | `uint64[] calldata`  | Return chain per row.                       |
+| `bridgedTokens`             | `address[] calldata` | Token bridged back per row.                 |
+| `fees`                      | `uint256[] calldata` | Fee per row, in the asset's smallest units. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `FeeConfigLengthMismatch()` when the three arrays differ in length.
+- `InvalidTarget(address(0))` when any `bridgedTokens` entry is the zero address.
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `AssetFeeSet(destinationChainSelector, bridgedToken, fee)` for each row.
+
+---
+
+### withdrawFee
+
+Transfers accrued adapter fees to a recipient.
+
+```solidity
+function withdrawFee(address asset, address recipient, uint256 amount)
+    external
+    nonReentrant
+    onlyRole(FEE_COLLECTOR_ROLE)
+```
+
+> Reduces `collectedFees[asset]` by `amount` and transfers that amount. Partial withdrawals are allowed. The function withdraws only fees the adapter has accounted for. The adapter has no general ERC-20 sweep, so tokens sent to it directly, outside a CCIP message, cannot be recovered.
+
+**Access:** `FEE_COLLECTOR_ROLE`.
+
+**Parameters:**
+
+| Parameter   | Type      | Description                            |
+| ----------- | --------- | -------------------------------------- |
+| `asset`     | `address` | Asset whose fees to withdraw.          |
+| `recipient` | `address` | Receives the fees.                     |
+| `amount`    | `uint256` | Amount, in the asset's smallest units. |
+
+**Returns:** none.
+
+**Reverts with:**
+
+- `InvalidRecipient()` when `recipient` is the zero address.
+- `AmountIsZero()` when `amount` is zero.
+- `InsufficientFeeBalance(availableBalance, requestedAmount)` when `amount` exceeds `collectedFees[asset]`.
+- Token transfer errors, for example when the adapter holds less of the asset than its accounting allows.
+- `ReentrancyGuardReentrantCall()` on a reentrant call.
+- `AccessControlUnauthorizedAccount(account, neededRole)` when the caller lacks the role.
+
+**Emits:**
+
+- `FeeWithdrawn(asset, recipient, amount)`.
+
+## Events
+
+The adapter declares these 17 events:
+
+```solidity
+event MessageSent(
+    bytes32 indexed messageId,
+    uint64 indexed destinationChainSelector,
+    ChainType indexed chainType,
+    bytes32 beneficiary,
+    address token,
+    uint256 amount,
+    uint256 fee
+);
+
+event MessageSucceeded(bytes32 indexed messageId);
+
+event MessageFailed(bytes32 indexed messageId);
+
+event MessageRefunded(
+    bytes32 indexed messageId, uint64 indexed destinationChainSelector, bytes32 indexed beneficiary
+);
+
+event MessageRecoveredLocally(bytes32 indexed messageId, address indexed localRefundAddress);
+
+event TargetProcessed(
+    bytes32 indexed messageId,
+    address indexed target,
+    address indexed inputToken,
+    address outputToken,
+    uint256 inputAmount,
+    uint256 outputAmount
+);
+
+event TargetEnabled(address indexed target, bool enabled);
+event ChainTypeSet(uint64 indexed chainSelector, ChainType chainType);
+
+event ProcessingEnabledSet(bool depositsEnabled, bool redeemsEnabled);
+event AssetFeeSet(uint64 indexed destinationChainSelector, address indexed bridgedToken, uint256 fee);
+event CCVsConfigSet(
+    uint64 indexed sourceChainSelector, address[] requiredCCVs, address[] optionalCCVs, uint8 optionalThreshold
+);
+
+event InboundFinalitySet(uint64 indexed sourceChainSelector, bytes4 allowedFinalityConfig);
+
+event EvmReturnLaneFormatSet(uint64 indexed destinationChainSelector, EvmReturnExtraArgsFormat format);
+
+event EvmReturnRequestedFinalitySet(
+    uint64 indexed destinationChainSelector, address indexed token, bytes4 requestedFinalityForV3
+);
+
+event FeeWithdrawn(address indexed asset, address indexed recipient, uint256 amount);
+
+event NativeRecovered(address indexed recipient, uint256 amount);
+
+event LocalTokenDelivered(
+    bytes32 indexed messageId, address indexed token, address indexed beneficiary, uint256 amount
+);
+```
+
+| Event                           | Emitted when                                                                                                                    | Use it to                                                                                                                         |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `MessageSucceeded`              | `processMessage` completes inside `ccipReceive`.                                                                                | Mark an inbound message as processed.                                                                                             |
+| `MessageFailed`                 | `processMessage` reverts and the adapter records a failed message.                                                              | Alert on failures and offer the user a cross-chain refund or local recovery. The CCIP Explorer still shows Success.               |
+| `TargetProcessed`               | The vault deposit or redemption completes, before delivery.                                                                     | Record the inbound amount and the output after the adapter fee for each message.                                                  |
+| `LocalTokenDelivered`           | The output is transferred to the beneficiary on the hub chain.                                                                  | Confirm local delivery.                                                                                                           |
+| `MessageSent`                   | The adapter sends a CCIP message: a return leg, or one leg of a cross-chain refund.                                             | Track the outbound message ID on the CCIP Explorer and the fee paid in the native gas token. `messageId` here is the outbound ID. |
+| `MessageRefunded`               | `refundFailedMessage` completes. `destinationChainSelector` is the original source chain and `beneficiary` the original sender. | Close a failed message as refunded.                                                                                               |
+| `MessageRecoveredLocally`       | `recoverFailedMessageLocally` completes.                                                                                        | Close a failed message as recovered on the hub chain.                                                                             |
+| `TargetEnabled`                 | `setTargetEnabled` runs.                                                                                                        | Review the vault allowlist.                                                                                                       |
+| `ChainTypeSet`                  | `setChainType` runs.                                                                                                            | Review which source chains are configured.                                                                                        |
+| `ProcessingEnabledSet`          | `setProcessingEnabled` runs.                                                                                                    | Warn users before they send a request that will fail.                                                                             |
+| `AssetFeeSet`                   | `setAssetFee` runs, or once per row of `setAssetFees`.                                                                          | Update the adapter fee shown in a UI.                                                                                             |
+| `CCVsConfigSet`                 | `setCCVsConfig` runs.                                                                                                           | Review the CCV policy per source chain.                                                                                           |
+| `InboundFinalitySet`            | `setInboundFinality` runs.                                                                                                      | Review which faster-than-finality modes are accepted.                                                                             |
+| `EvmReturnLaneFormatSet`        | `setEvmReturnLaneFormat` runs.                                                                                                  | Review return formats per lane.                                                                                                   |
+| `EvmReturnRequestedFinalitySet` | `setEvmReturnRequestedFinality` runs.                                                                                           | Review return finality per lane and token.                                                                                        |
+| `FeeWithdrawn`                  | `withdrawFee` runs.                                                                                                             | Reconcile fee withdrawals.                                                                                                        |
+| `NativeRecovered`               | `recoverNative` runs.                                                                                                           | Raise an alert, because the adapter can no longer pay for return legs until it is funded again.                                   |
+
+`TargetProcessed`, `LocalTokenDelivered`, and the return-leg `MessageSent` are emitted inside `processMessage`. When processing fails they roll back, so a failed message emits only `MessageFailed`. On success, the inbound message's `TargetProcessed` and `MessageSucceeded` appear in the same transaction as the return leg's `MessageSent`, which links the inbound and outbound message IDs.
+
+The adapter also inherits `RoleGranted` and `RoleRevoked` from OpenZeppelin `AccessControl`. Watch them for role changes. `RoleAdminChanged` is part of the ABI, but the adapter never emits it because it never changes a role's admin.
+
+## Errors
+
+### Adapter errors
+
+The adapter declares these 35 custom errors:
+
+```solidity
+error InvalidRouter(address router);
+error InvalidAdmin();
+error InvalidFeeSetter();
+error InvalidFeeCollector();
+error InvalidRecipient();
+error InvalidChain(uint64 chainSelector);
+error OnlySelf();
+error AmountIsZero();
+error InvalidEVMAddress(bytes32 beneficiary);
+error InvalidSenderAddressFormat();
+error InsufficientNativeBalance(uint256 requiredFee, uint256 availableBalance);
+error InsufficientRecoveryFee(uint256 requiredFee, uint256 providedFee);
+error InsufficientFeeBalance(uint256 availableBalance, uint256 requestedAmount);
+error MessageNotFailed(bytes32 messageId);
+error InvalidTarget(address target);
+error InvalidTargetToken(address target, address token);
+error InvalidTokenCount(uint256 tokenCount);
+error InvalidPayloadLength(uint256 length, uint256 expected);
+error FeeConfigLengthMismatch();
+error InvalidEvmReturnExtraArgsFormat();
+error UnexpectedRequestedFinalityForLegacyFormat(bytes4 requestedFinalityForV3);
+error InvalidOptionalThreshold(uint8 optionalThreshold, uint256 optionalCCVCount);
+error OptionalCCVsRequirePositiveThreshold(uint256 optionalCCVCount);
+error DuplicateCCV(address ccv);
+error InvalidOptionalCCV();
+error DepositsDisabled();
+error RedeemsDisabled();
+error FeeExceedsAmount(uint256 amount, uint256 fee);
+error MinimumOutputNotMet(uint256 minimumOut, uint256 actualOut);
+error NoOutputReceived();
+error RefundFailed();
+error RecoverNativeFailed();
+error NoRefundableTokenAmounts();
+error NoLocalRefundAddress(bytes32 messageId);
+error UnauthorizedLocalRefund(address caller, address localRefundAddress);
+```
+
+"Becomes a failed message" is yes when the error is raised while `processMessage` handles an inbound message, because `ccipReceive` catches it and records a failed message. Errors raised by views, recovery functions, and setters revert the call directly.
+
+| Error                                        | Raised by                                                                                                       | Meaning                                                                                                              | Becomes a failed message  |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `InvalidRouter`                              | Constructor, `ccipReceive`                                                                                      | The router is the zero address at construction, or the caller of `ccipReceive` is not `ROUTER`.                      | No                        |
+| `InvalidAdmin`                               | Constructor                                                                                                     | `defaultAdmin` is the zero address. The factory reuses this error.                                                   | No                        |
+| `InvalidFeeSetter`                           | Constructor                                                                                                     | `feeSetter` is the zero address. The factory reuses this error.                                                      | No                        |
+| `InvalidFeeCollector`                        | Constructor                                                                                                     | `feeCollector` is the zero address. The factory reuses this error.                                                   | No                        |
+| `InvalidRecipient`                           | `withdrawFee`, `recoverNative`                                                                                  | The recipient is the zero address.                                                                                   | No                        |
+| `InvalidChain`                               | `processMessage`, `preview`                                                                                     | The source chain selector is `NONE` in `chains`.                                                                     | Yes from `processMessage` |
+| `OnlySelf`                                   | `processMessage`                                                                                                | An address other than the adapter called `processMessage`.                                                           | No                        |
+| `AmountIsZero`                               | `processMessage`, `withdrawFee`, `recoverNative`                                                                | The inbound amount, the withdrawal amount, or the native gas token balance is zero.                                  | Yes from `processMessage` |
+| `InvalidEVMAddress`                          | `processMessage`, `refundFailedMessage`, `estimateRefundFee`, `checkRefundEligibility`                          | The beneficiary or the original sender has non-zero upper 96 bits.                                                   | Yes from `processMessage` |
+| `InvalidSenderAddressFormat`                 | `refundFailedMessage`, `estimateRefundFee`                                                                      | The stored sender is not exactly 32 bytes.                                                                           | No                        |
+| `InsufficientNativeBalance`                  | `processMessage` (return leg), `refundFailedMessage`                                                            | The native gas token balance available for a send is below the router fee.                                           | Yes from `processMessage` |
+| `InsufficientRecoveryFee`                    | `refundFailedMessage`                                                                                           | `msg.value` is below the total fee paid for the refund.                                                              | No                        |
+| `InsufficientFeeBalance`                     | `withdrawFee`                                                                                                   | `amount` exceeds `collectedFees[asset]`.                                                                             | No                        |
+| `MessageNotFailed`                           | `refundFailedMessage`, `recoverFailedMessageLocally`, `estimateRefundFee`                                       | The message is not `BASIC`.                                                                                          | No                        |
+| `InvalidTarget`                              | `processMessage`, `preview`, `setTargetEnabled`, `setAssetFee`, `setAssetFees`, `setEvmReturnRequestedFinality` | The vault is not allowlisted, or a setter received the zero address.                                                 | Yes from `processMessage` |
+| `InvalidTargetToken`                         | `processMessage`, `preview`                                                                                     | The token is neither the vault's asset nor its share token.                                                          | Yes from `processMessage` |
+| `InvalidTokenCount`                          | `processMessage`                                                                                                | The message does not carry exactly one token.                                                                        | Yes                       |
+| `InvalidPayloadLength`                       | `processMessage`                                                                                                | `message.data` is not 128 bytes.                                                                                     | Yes                       |
+| `FeeConfigLengthMismatch`                    | `setAssetFees`                                                                                                  | The three arrays differ in length.                                                                                   | No                        |
+| `InvalidEvmReturnExtraArgsFormat`            | `setEvmReturnLaneFormat`                                                                                        | The format is `UNSET`.                                                                                               | No                        |
+| `UnexpectedRequestedFinalityForLegacyFormat` | `setEvmReturnRequestedFinality`                                                                                 | A non-zero finality was set for a lane whose format is not `GENERIC_EXTRA_ARGS_V3_BASIC`.                            | No                        |
+| `InvalidOptionalThreshold`                   | `setCCVsConfig`                                                                                                 | The threshold is greater than the number of optional CCVs.                                                           | No                        |
+| `OptionalCCVsRequirePositiveThreshold`       | `setCCVsConfig`                                                                                                 | Optional CCVs were given with a threshold of 0.                                                                      | No                        |
+| `DuplicateCCV`                               | `setCCVsConfig`                                                                                                 | An address repeats within or across the CCV lists.                                                                   | No                        |
+| `InvalidOptionalCCV`                         | `setCCVsConfig`                                                                                                 | `optionalCCVs` contains the zero address.                                                                            | No                        |
+| `DepositsDisabled`                           | `processMessage`, `preview`                                                                                     | Deposits are switched off.                                                                                           | Yes from `processMessage` |
+| `RedeemsDisabled`                            | `processMessage`, `preview`                                                                                     | Redemptions are switched off.                                                                                        | Yes from `processMessage` |
+| `FeeExceedsAmount`                           | `processMessage`                                                                                                | The adapter fee is greater than or equal to the deposit input or the redeemed assets. `preview` returns `0` instead. | Yes                       |
+| `MinimumOutputNotMet`                        | `processMessage`                                                                                                | The output after the adapter fee is below `minimumOut`.                                                              | Yes                       |
+| `NoOutputReceived`                           | `processMessage`                                                                                                | The vault returned zero shares or zero assets.                                                                       | Yes                       |
+| `RefundFailed`                               | `refundFailedMessage`                                                                                           | Sending the excess `msg.value` back to the caller failed.                                                            | No                        |
+| `RecoverNativeFailed`                        | `recoverNative`                                                                                                 | The native gas token transfer to the recipient failed.                                                               | No                        |
+| `NoRefundableTokenAmounts`                   | `refundFailedMessage`, `recoverFailedMessageLocally`, `estimateRefundFee`                                       | No inbound token amount is positive.                                                                                 | No                        |
+| `NoLocalRefundAddress`                       | `recoverFailedMessageLocally`                                                                                   | No local refund address was stored for the message.                                                                  | No                        |
+| `UnauthorizedLocalRefund`                    | `recoverFailedMessageLocally`                                                                                   | The caller is not the stored local refund address.                                                                   | No                        |
+
+### Errors from dependencies
+
+Callers can also see these errors from inherited contracts, libraries, and CCIP contracts:
+
+| Error                                                                        | Source                                                            | Raised when                                                                                                       |
+| ---------------------------------------------------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `AccessControlUnauthorizedAccount(address account, bytes32 neededRole)`      | OpenZeppelin `AccessControl`                                      | The caller lacks the role for a configuration or fee function, or the admin role for `grantRole` or `revokeRole`. |
+| `AccessControlBadConfirmation()`                                             | OpenZeppelin `AccessControl`                                      | `renounceRole` is called with an account other than the caller.                                                   |
+| `ReentrancyGuardReentrantCall()`                                             | OpenZeppelin `ReentrancyGuard`                                    | `refundFailedMessage`, `recoverFailedMessageLocally`, `withdrawFee`, or `recoverNative` is re-entered.            |
+| `RequestedFinalityCanOnlyHaveOneMode(bytes4 encodedFinality)`                | `FinalityCodec`, in `setEvmReturnRequestedFinality`               | The requested finality combines a flag with a block depth or sets more than one flag.                             |
+| `UnsupportedDestinationChain(uint64 destChainSelector)`                      | CCIP Router, in `getFee` and `ccipSend`                           | The hub-chain router has no lane to the return or refund destination.                                             |
+| `BadARMSignal()`                                                             | CCIP Router, in `ccipSend`                                        | The hub chain is cursed through the RMN contract, so sends revert until the curse is lifted.                      |
+| `InvalidRequestedFinality(bytes4 requestedFinality, bytes4 allowedFinality)` | `FinalityCodec`, raised by a token pool in `getFee` or `ccipSend` | The token pool does not allow the return leg's requested finality.                                                |
+
+OnRamps, fee quoters, token pools, vaults, and tokens can raise other errors during a send or vault call. `SafeERC20` from OpenZeppelin 4.8.3 reverts with string messages such as `SafeERC20: ERC20 operation did not succeed`. Inside `processMessage`, all of these are caught and the message becomes a failed message. In refund functions and views, they revert the call.
+
+## Security notes
+
+**Processing failures are caught.** A revert in `processMessage` does not revert CCIP execution, except for the malformed payload described below. The adapter keeps the tokens as a failed message, and the CCIP Explorer shows Success. Detect failures with `MessageFailed` or `messageErrorCode`, not with the CCIP Explorer status. Nothing refunds or retries a failed message automatically.
+
+**No sender allowlist.** Any sender on a chain configured in `chains` can deposit into or redeem from any allowlisted vault. `getCCVsAndFinalityConfig` ignores the sender. The adapter gates requests only by source chain, vault, and the deposit and redeem switches. The vault sees the adapter as its depositor, so a vault that allowlists depositors admits every cross-chain user once it allowlists the adapter.
+
+**Admin powers.** `DEFAULT_ADMIN_ROLE` holders can change chain types, the vault allowlist, the deposit and redeem switches, CCV and finality policy, and return formats; withdraw the entire native gas token balance; and grant or revoke every role. `FEE_SETTER_ROLE` holders can change the adapter fee, which applies to messages already in flight; `minimumOut` is the user's protection against that. Every change takes effect in the transaction that makes it. No role can transfer the tokens of a failed message. Only `refundFailedMessage` and `recoverFailedMessageLocally` move them, and `withdrawFee` is limited to `collectedFees`.
+
+**Reentrancy.** `refundFailedMessage`, `recoverFailedMessageLocally`, `withdrawFee`, and `recoverNative` use `nonReentrant`. Both recovery functions mark the message `RESOLVED` and delete its record before they move tokens.
+
+**The adapter pays CCIP fees only in the native gas token.** Return legs pay the CCIP fee from the adapter's native gas token balance, never in LINK. When the balance is below the fee, return-to-source messages fail with `InsufficientNativeBalance`. Cross-chain refunds are paid from the caller's `msg.value`. The sender pays the source-chain CCIP fee in the native gas token or LINK.
+
+**Outputs return only to the source chain.** Return legs and refunds go to the inbound message's source chain. The adapter cannot route output to a third chain. Refunds go to the original sender, so a refund for a message sent through a contract arrives at that contract. Return-leg `extraArgs` come from the adapter's configuration, never from message data.
+
+**Malformed payloads.** A hand-built payload can make `ccipReceive` itself revert and strand the tokens permanently, as explained in [Failures with no recovery path](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#failures-with-no-recovery-path).
+
+**Token-only messages.** A CCIP message with empty `data` and a gas limit of 0 is a token-only transfer. The OffRamp delivers the tokens to the adapter without calling `ccipReceive`, so the adapter records nothing and has no function that returns them. An ERC-20 transfer sent straight to the adapter ends up in the same state. See [When funds can get stuck](/solutions/cross-chain-vault-adapter/reference/limitations#when-funds-can-get-stuck).
+
+**Forks.** If you fork the adapter, keep the router check in `ccipReceive`, the self-call isolation of `processMessage`, failed-message storage and both recovery paths, and the beneficiary address checks. The failure handler, the `catch` path in `ccipReceive`, must never revert on any input. See [Customizing the adapter](/solutions/cross-chain-vault-adapter/reference/limitations#customizing-the-adapter).
+
+## Related contracts
+
+- [Factory contract](/solutions/cross-chain-vault-adapter/reference/factory-contract): deploys and configures adapters
+- [Limitations](/solutions/cross-chain-vault-adapter/reference/limitations): what the adapter does not do
+- [`IAny2EVMMessageReceiverV2`](/ccip/evm/api-reference/v2.0.0/i-any2-evm-message-receiver-v2): the CCIP 2.0 receiver interface the adapter implements
+- [`Client`](/ccip/evm/api-reference/v2.0.0/client): CCIP message structs and `GenericExtraArgsV2`
+- [`ExtraArgsCodec`](/ccip/evm/api-reference/v2.0.0/extra-args-codec): `GenericExtraArgsV3` encoding for return legs on CCIP 2.0 lanes
+- [`CCIPReceiver`](/ccip/evm/api-reference/v2.0.0/ccip-receiver): CCIP's base receiver, which the adapter does not inherit
+- [`CCVConfigValidation`](/ccip/evm/api-reference/v2.0.0/ccv-config-validation): CCV list rules applied by CCIP
+- [OpenZeppelin `AccessControlEnumerable`](https://docs.openzeppelin.com/contracts/5.x/api/access#AccessControlEnumerable): role management
+- [EIP-4626](https://eips.ethereum.org/EIPS/eip-4626): the tokenized vault standard
