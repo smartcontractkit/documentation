@@ -1,21 +1,30 @@
 import type { MiddlewareHandler } from "astro"
+import { MARKDOWN_FALLBACK_PARAM, negotiateMarkdown } from "@lib/markdown/negotiateMarkdown.js"
+import { isSunsetDocsPath } from "./config/sunset.js"
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
-  const url = context.url
-  const pathname = url.pathname.replace(/\/$/, "") || "/"
+  const acceptHeader = context.isPrerendered ? null : context.request.headers.get("accept")
+  const decision = negotiateMarkdown(context.url.pathname, acceptHeader)
 
-  const isAssetLike = pathname.startsWith("/_astro") || pathname.includes(".")
+  if (decision.action === "rewrite") {
+    const rewritten = new URL(context.url)
+    rewritten.pathname = decision.pathname
+    // The .md route serves HTML when this flag is set and the page has no markdown.
+    rewritten.searchParams.set(MARKDOWN_FALLBACK_PARAM, "1")
+    return context.rewrite(rewritten)
+  }
 
   const response = await next()
+  if (decision.action !== "html") return response
 
-  const contentType = response.headers.get("content-type") || ""
-  if (!contentType.includes("text/html") || isAssetLike) {
+  if (isSunsetDocsPath(context.url.pathname)) {
+    response.headers.set("X-Robots-Tag", "noindex, follow")
     return response
   }
 
-  const markdownPath = pathname === "/" ? "/index.md" : `${pathname}.md`
+  const contentType = response.headers.get("content-type") || ""
+  if (!contentType.includes("text/html")) return response
 
-  response.headers.append("Link", `<${markdownPath}>; rel="alternate"; type="text/markdown"`)
-
+  response.headers.append("Link", `<${decision.alternatePath}>; rel="alternate"; type="text/markdown"`)
   return response
 }

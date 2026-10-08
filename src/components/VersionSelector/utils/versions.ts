@@ -77,8 +77,8 @@ export const validateVersion = <T extends string>(
  * @returns Complete URL path for the new version
  *
  * @example
- * // Current: /ccip/api-reference/evm/v1.5.0/client
- * // Returns: /ccip/api-reference/evm/v1.5.1/client
+ * // Current: /ccip/v1/evm/api-reference/v1.5.0/client
+ * // Returns: /ccip/v1/evm/api-reference/v1.5.1/client
  */
 export const buildVersionUrl = (
   product: ProductConfig,
@@ -115,14 +115,14 @@ export const buildVersionUrl = (
  * detectApiReference("/XXX/api-reference/v1.5.1/client")
  *
  * // Also handles extended paths:
- * detectApiReference("/ccip/api-reference/evm/v1.5.1/client")
+ * detectApiReference("/ccip/v1/evm/api-reference/v1.5.1/client")
  */
 export const detectApiReference = (
   path: string
 ): { isApiReference: boolean; product?: Collection; isVersioned: boolean } => {
   // Match both standard and extended API reference paths
   // Standard: /product/api-reference/v1.5.1/client
-  // Extended: /ccip/api-reference/evm/v1.5.1/client
+  // Extended: /ccip/v1/evm/api-reference/v1.5.1/client
   const standardMatch = path.match(/^\/([^/]+)\/api-reference(?:\/v\d+\.\d+\.\d+)?/)
   const extendedMatch = path.match(/^\/([^/]+)\/api-reference\/(?:[^/]+)(?:\/v\d+\.\d+\.\d+)?/)
 

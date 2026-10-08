@@ -13,8 +13,11 @@ import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 import redirectsJson from "./src/features/redirects/redirects.json"
+import tailwind from "@astrojs/tailwind"
 import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
+import { isSunsetDocsPath, SUNSET_PAGES_STAY_IN_SITEMAP } from "./src/config/sunset"
 import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
+import remarkCodeFenceLanguageAlias from "./src/lib/markdown/remarkCodeFenceLanguageAlias"
 import rehypeCodeSampleFences from "./src/lib/markdown/rehypeCodeSampleFences"
 
 config() // Load .env file
@@ -48,6 +51,7 @@ export default defineConfig({
     ...ccipRedirects,
   },
   integrations: [
+    tailwind(),
     trailingSlashMiddleware(),
     preact({
       include: ["**/preact/*"],
@@ -68,8 +72,6 @@ export default defineConfig({
         "https://docs.chain.link/data-streams/llms-full.txt",
         "https://docs.chain.link/dta-technical-standard/llms-full.txt",
         "https://docs.chain.link/datalink/llms-full.txt",
-        "https://docs.chain.link/chainlink-functions/llms-full.txt",
-        "https://docs.chain.link/chainlink-automation/llms-full.txt",
         "https://docs.chain.link/resources/llms-full.txt",
         "https://docs.chain.link/architecture-overview/llms-full.txt",
         "https://docs.chain.link/getting-started/llms-full.txt",
@@ -81,7 +83,13 @@ export default defineConfig({
         const pathname = new URL(page).pathname
         const cleanPath = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname
 
-        // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/api-reference/evm/v150)
+        // Sunset pages stay listed for now so a crawler can recrawl and read noindex.
+        // Flip SUNSET_PAGES_STAY_IN_SITEMAP to false after a few weeks.
+        if (!SUNSET_PAGES_STAY_IN_SITEMAP && isSunsetDocsPath(cleanPath)) {
+          return false
+        }
+
+        // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/evm/api-reference/v150)
         // These are aliases for versioned content - we keep only the canonical long format URLs
         const shortVersionPattern = /\/api-reference\/(?:.*\/)?v\d{3,4}(?:\/|$)/
         if (shortVersionPattern.test(cleanPath)) {
@@ -95,6 +103,11 @@ export default defineConfig({
 
         // CCIP directory API v1 interactive page: noindex + omit from sitemap to avoid competing with CCIP Tools REST (v2)
         if (cleanPath === "/api/ccip/v1/docs") {
+          return false
+        }
+
+        // Old v1 glossary. The URL stays. It is not a current product page.
+        if (cleanPath === "/resources/glossary") {
           return false
         }
 
@@ -113,11 +126,11 @@ export default defineConfig({
     }),
     // Ensure our fence-meta parser runs for `.mdx` pages (in addition to `markdown.remarkPlugins`).
     mdx({
-      remarkPlugins: [remarkCodeFenceFilename],
+      remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias],
     }),
   ],
   markdown: {
-    remarkPlugins: [remarkCodeFenceFilename],
+    remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias],
     rehypePlugins: [
       rehypeSlug, // Required for autolink to work properly
       [

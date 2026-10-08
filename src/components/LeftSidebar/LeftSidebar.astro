@@ -1,15 +1,22 @@
 ---
 import { Sections } from "~/content.config"
-import { SIDEBAR } from "../../config"
+import { SIDEBAR_WITH_SUNSET_PRODUCTS, CCIP_SIDEBARS } from "../../config"
 import type { SectionEntry, SectionContent } from "../../config"
 import { SIDEBAR_SECTIONS } from "../../config/sidebarSections.ts"
 import { AI_AGENT_RESOURCES_SECTION, withParentQuery } from "../../config/sidebar/ai-agent-resources.ts"
+import { getSolutionsSection } from "../../config/sidebar/solutions.ts"
 import RecursiveSidebar from "./RecursiveSidebar.astro"
 import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
 import { ChainTypeSelector } from "~/components/ChainSelector"
+import { CcipVersionToggle, CcipVersionBanner } from "~/components/CcipVersionToggle"
 import { isChainAwareSection } from "~/config/chainTypes"
-import { filterContentByChainType } from "~/utils/chainType"
-import type { ChainType } from "~/config/types"
+import {
+  CCIP_VERSION_TOGGLE_ENABLED,
+  LATEST_CCIP_VERSION,
+  CCIP_VERSION_CONFIGS,
+  type CcipVersionConfig,
+} from "~/config/ccipVersions"
+import type { CcipVersion } from "~/config/types"
 import styles from "./leftSidebar.module.css"
 
 type SectionEntryWithParent = SectionEntry & { parentSection?: string }
@@ -27,13 +34,26 @@ const { currentPage, section } = Astro.props
 // Check if this section supports chain type filtering
 const showChainSelector = isChainAwareSection(section)
 
+// Detect CCIP version from URL at build time for correct sidebar rendering
+function detectCcipVersionFromPage(page: string): CcipVersion {
+  for (const [versionId, config] of Object.entries(CCIP_VERSION_CONFIGS) as [CcipVersion, CcipVersionConfig][]) {
+    if (
+      config.urlPrefix &&
+      (page.includes(`/ccip/${config.urlPrefix}/`) || page.endsWith(`/ccip/${config.urlPrefix}`))
+    ) {
+      return versionId
+    }
+  }
+  return LATEST_CCIP_VERSION
+}
+
 // Return whichever sections we need
 function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
   if (!section) {
     return []
   } else if (section === "global") {
     // Flatten all sidebar entries into one array (include AI resources per product)
-    return Object.entries(SIDEBAR).flatMap(([parentSection, entries]) => {
+    return Object.entries(SIDEBAR_WITH_SUNSET_PRODUCTS).flatMap(([parentSection, entries]) => {
       const sections = entries?.map((entry) => ({ ...entry, parentSection: parentSection as Sections })) ?? []
 
       if (!SECTIONS_WITHOUT_AI_RESOURCES.has(parentSection as Sections)) {
@@ -43,17 +63,52 @@ function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
         })
       }
 
+      const solutionsSection = getSolutionsSection(parentSection as Sections)
+      if (solutionsSection) {
+        // Insert before the AI resources group when present, else append, so Solutions sits above it.
+        const hasAiResources = !SECTIONS_WITHOUT_AI_RESOURCES.has(parentSection as Sections)
+        const insertAt = hasAiResources ? sections.length - 1 : sections.length
+        sections.splice(insertAt, 0, {
+          ...solutionsSection,
+          parentSection: parentSection as Sections,
+        })
+      }
+
       return sections
     })
   }
 
-  const productSections = SIDEBAR[section] ?? []
+  // For CCIP: use version-specific sidebar based on the current page URL
+  if (section === "ccip") {
+    const ccipVersion = detectCcipVersionFromPage(currentPage)
+    const ccipSections = CCIP_SIDEBARS[ccipVersion] ?? SIDEBAR_WITH_SUNSET_PRODUCTS[section] ?? []
+
+    if (SECTIONS_WITHOUT_AI_RESOURCES.has(section)) {
+      return ccipSections
+    }
+
+    const ccipSolutionsSection = getSolutionsSection(section)
+
+    return [
+      ...ccipSections,
+      ...(ccipSolutionsSection ? [ccipSolutionsSection] : []),
+      withParentQuery(AI_AGENT_RESOURCES_SECTION, section),
+    ]
+  }
+
+  const productSections = SIDEBAR_WITH_SUNSET_PRODUCTS[section] ?? []
 
   if (SECTIONS_WITHOUT_AI_RESOURCES.has(section)) {
     return productSections
   }
 
-  return [...productSections, withParentQuery(AI_AGENT_RESOURCES_SECTION, section)]
+  const solutionsSection = getSolutionsSection(section)
+
+  return [
+    ...productSections,
+    ...(solutionsSection ? [solutionsSection] : []),
+    withParentQuery(AI_AGENT_RESOURCES_SECTION, section),
+  ]
 }
 
 /**
@@ -104,10 +159,20 @@ const sidebarSections = getSidebarSections(section)
 ---
 
 <nav aria-labelledby="grid-left" class={styles.nav}>
-  <div class={styles.sidebarDropdowns}>
-    {section === "cre" && <LanguageSwitcherDropdown client:only="react" />}
-    {showChainSelector && <ChainTypeSelector client:only="react" />}
-  </div>
+  {
+    (showChainSelector || section === "cre") && (
+      <div class={styles.sidebarDropdowns}>
+        {section === "cre" && <LanguageSwitcherDropdown client:only="react" />}
+        {showChainSelector && (
+          <div class={styles.selectorRow}>
+            <ChainTypeSelector client:only="react" />
+            {CCIP_VERSION_TOGGLE_ENABLED && <CcipVersionToggle client:only="react" />}
+          </div>
+        )}
+        {showChainSelector && CCIP_VERSION_TOGGLE_ENABLED && <CcipVersionBanner client:only="react" />}
+      </div>
+    )
+  }
   <ul class={styles.navGroups} data-sticky>
     {
       sidebarSections.map((group) => (
@@ -142,18 +207,22 @@ const sidebarSections = getSidebarSections(section)
 
 <script>
   import { initializeChainType } from "~/stores/chainType.js"
+  import { initializeCcipVersion } from "~/stores/ccipVersion.js"
 
   /**
-   * Initialize chain type selection from URL on page load
-   * This detects the chain from the URL path (e.g., /ccip/tutorials/svm/... → solana)
+   * Initialize chain type and CCIP version selection from URL on page load
+   * This detects the chain from the URL path (e.g., /ccip/evm/... → evm)
+   * and the version (e.g., /ccip/v1/... → v1.6, no prefix → latest)
    */
   initializeChainType()
+  initializeCcipVersion()
 
   /**
    * Re-initialize on client-side navigation (Astro view transitions)
    */
   document.addEventListener("astro:after-swap", () => {
     initializeChainType()
+    initializeCcipVersion()
   })
 
   /**
@@ -183,19 +252,22 @@ const sidebarSections = getSidebarSections(section)
    * Filters sidebar items based on selected chain type
    * Triggers the unified filter in RecursiveSidebar that respects BOTH chain type AND language
    */
-  function filterSidebarByChainType() {
-    // trigger a languageChanged event to run the unified filter
+  function runUnifiedSidebarFilter() {
+    // Trigger the unified filter (RecursiveSidebar listens for this)
     window.dispatchEvent(new CustomEvent("languageChanged"))
   }
 
   // Run on initial load
-  filterSidebarByChainType()
+  runUnifiedSidebarFilter()
 
   // Run after view transitions
-  document.addEventListener("astro:after-swap", filterSidebarByChainType)
+  document.addEventListener("astro:after-swap", runUnifiedSidebarFilter)
 
-  // Subscribe to chain type changes
+  // Subscribe to chain type changes (store)
   selectedChainType.subscribe(() => {
-    filterSidebarByChainType()
+    runUnifiedSidebarFilter()
   })
+
+  // Also respond to explicit chain-change events (e.g., from React dropdowns)
+  window.addEventListener("chainTypeChanged", runUnifiedSidebarFilter)
 </script>

@@ -1,8 +1,6 @@
 # Digital Transfer Agent (DTA) Technical Standard
 Source: https://docs.chain.link/dta-technical-standard
 
-<Dta section="dtaNotes" />
-
 The **Chainlink Digital Transfer Agent (DTA) technical standard** defines how transfer agents and fund administrators can expand their operations onchain to support tokenized assets, while facilitating adherence to applicable regulatory frameworks.
 
 The Chainlink DTA technical standard leverages multiple time-tested Chainlink capabilities to provide the easiest and most reliable path for market participants to launch their own onchain transfer agency services and capture the emerging opportunity of tokenized financial markets.
@@ -33,8 +31,6 @@ Get a high-level overview of the system's components and request flows.
 # How It Works
 Source: https://docs.chain.link/dta-technical-standard/how-it-works
 
-<Dta section="dtaNotes" />
-
 ### Components of the Chainlink DTA Technical Standard
 
 The Chainlink DTA technical standard consists of multiple components that enable onchain transfer agency services:
@@ -50,6 +46,8 @@ The Chainlink DTA technical standard consists of multiple components that enable
 ## The subscription flow
 
 A typical subscription (buy) order follows a clear, four-step process that moves from the distributor to Request Management, Request Settlement, and back.
+
+![Image](/images/DTA/subscription-flow.png)
 
 1. **Request Submission:** A registered and allowlisted Fund Distributor submits a subscription request to the DTA Request Management contract, specifying which fund they want to invest in and the subscription amount.
 
@@ -87,8 +85,6 @@ To learn more about the specific workflows for each of these models, see the [Pa
 
 # DTA Technical Standard: Actors
 Source: https://docs.chain.link/dta-technical-standard/actors
-
-<Dta section="dtaNotes" />
 
 The Digital Transfer Agent technical standard allows for multiple market participants to interact with each other onchain, mirroring the flows for traditional financial assets.
 
@@ -157,11 +153,11 @@ The core DTA actors are supported by a number of offchain or external participan
 # Architecture
 Source: https://docs.chain.link/dta-technical-standard/concepts/architecture
 
-<Dta section="dtaNotes" />
-
 The Digital Transfer Agent (DTA) technical standard is designed around a core principle: **separation of concerns**. This ensures a system that is secure, decentralized, and flexible. The architecture clearly distinguishes between the public-facing Request Management contract, where users interact, and the private, secure Request Settlement contract, where fund operations occur.
 
 This design allows the public, multi-tenant DTA Request Management to coexist with private, single-tenant DTA Request Settlement contracts controlled by each Transfer Agent, delivering open discovery with segregated, secure settlement.
+
+![Image](/images/DTA/archi.png)
 
 ## Core components
 
@@ -202,8 +198,6 @@ This dual-interaction pattern allows the Transfer Agents and Fund Administrators
 # Payment Modes
 Source: https://docs.chain.link/dta-technical-standard/concepts/payment-modes
 
-<Dta section="dtaNotes" />
-
 The Digital Transfer Agent (DTA) technical standard is designed for maximum flexibility, supporting three distinct payment and settlement models. This allows Transfer Agents, Fund Administrators, and Distributors to choose the workflow that best suits their operational needs, whether they are bridging traditional finance with onchain technology or operating a fully cross-chain native fund.
 
 The payment model for a fund is defined by the Transfer Agent when they register the Fund Token with DTA Request Management.
@@ -223,6 +217,8 @@ This model is designed for funds that handle payments through traditional, offch
 **Use Case:** Ideal for tokenized traditional funds where distributors and transfer agents / fund administrators already have established payment relationships.
 
 **Workflow (Subscription):**
+
+![Image](/images/DTA/offchain-settlement.png)
 
 *Offchain settlement flow, where DTA Request Settlement escrows tokens until the Transfer Agent confirms offchain payment.*
 
@@ -247,6 +243,8 @@ This is the simplest, fully automated model. It is used when DTA Request Managem
 
 **Workflow (Subscription):**
 
+![Image](/images/DTA/local-onchain-settlement.png)
+
 *Local onchain settlement, where all interactions occur atomically on a single blockchain.*
 
 1. A Distributor submits a request.
@@ -265,6 +263,8 @@ This is the most advanced model, leveraging [Chainlink CCIP](/ccip) to enable se
 **Use Case:** For global fund platforms that want to accept investments on a major chain like Ethereum Mainnet while managing the fund's assets on a more cost-effective blockchain.
 
 **Workflow (Subscription):**
+
+![Image](/images/DTA/cross-chain-onchain-settlement.png)
 
 *Cross-chain settlement, where a request on Chain A is fulfilled by the DTA Request Settlement on Chain B via a CCIP message.*
 
@@ -286,8 +286,6 @@ This is the most advanced model, leveraging [Chainlink CCIP](/ccip) to enable se
 # The Request Lifecycle
 Source: https://docs.chain.link/dta-technical-standard/concepts/request-lifecycle
 
-<Dta section="dtaNotes" />
-
 Every subscription and redemption request submitted to DTA Request Management moves through a predictable lifecycle controlled by a state machine. However, the exact flow depends on a critical parameter set for each fund: the Net Asset Value (NAV) Time-to-Live, or NAV TTL.
 
 The NAV TTL determines whether requests are processed manually in batches or automatically as they arrive. Understanding this distinction is key to managing your fund's operations.
@@ -295,6 +293,8 @@ The NAV TTL determines whether requests are processed manually in batches or aut
 ## Manual processing lifecycle (NAV TTL = 0)
 
 This is the standard lifecycle for open-ended funds that are priced daily. When NAV TTL is set to 0, requests enter a Pending state, creating a window for end-of-day batch processing and allowing distributors to cancel their requests before they are finalized.
+
+![Image](/images/DTA/request-lifecycle.png)
 
 ### Pending
 
@@ -351,17 +351,15 @@ In this mode, requests bypass the Pending and Canceled states entirely.
 3. If the NAV is fresh, the request moves directly to the Processing state.
 4. From here, the flow is the same as the manual lifecycle, moving to either Processed or Failed upon settlement.
 
-<Aside type="caution" title="No Cancellation Window">
-  Because the Pending state is bypassed in the automatic processing model, there is **no opportunity for a Fund
-  Distributor to cancel a request**. It is locked and processed in a single, atomic step.
-</Aside>
+> **CAUTION: No Cancellation Window**
+>
+> Because the Pending state is bypassed in the automatic processing model, there is **no opportunity for a Fund
+> Distributor to cancel a request**. It is locked and processed in a single, atomic step.
 
 ---
 
 # Glossary
 Source: https://docs.chain.link/dta-technical-standard/reference/glossary
-
-<Dta section="dtaNotes" />
 
 A list of key terms used throughout the Digital Transfer Agent (DTA) Technical Standard documentation.
 

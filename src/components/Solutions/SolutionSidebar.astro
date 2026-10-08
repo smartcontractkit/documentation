@@ -1,0 +1,33 @@
+---
+import RecursiveSidebar from "~/components/LeftSidebar/RecursiveSidebar.astro"
+import type { Solution } from "~/config/solutions/index.ts"
+import type { ResolvedNavGroup } from "~/utils/solutions"
+import styles from "~/components/LeftSidebar/leftSidebar.module.css"
+
+interface Props {
+  solution: Solution
+  groups: ResolvedNavGroup[]
+  currentPage: string
+}
+const { groups, currentPage } = Astro.props
+
+const normalized = currentPage.replace(/\/$/, "")
+const isActiveGroup = (contents: { url: string }[]) => contents.some((c) => `/${c.url}` === normalized)
+---
+
+<nav aria-labelledby="grid-left" class={styles.nav}>
+  <ul class={styles.navGroups} data-sticky>
+    {
+      groups.map((group) => (
+        <li>
+          <details open={isActiveGroup(group.contents)}>
+            <summary class={styles.navGroupTitle}>{group.section}</summary>
+            <ul class={styles.navGroupEntries}>
+              <RecursiveSidebar items={group.contents} currentPage={currentPage} />
+            </ul>
+          </details>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

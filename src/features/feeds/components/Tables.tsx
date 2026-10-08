@@ -18,13 +18,7 @@ import {
 import type { MarketPricingRiskProduct } from "../content/marketPricingRiskTerms.ts"
 import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
 import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
-import {
-  isSharedSVR,
-  isAaveSVR,
-  isNewSharedSVR,
-  getSvrType,
-  type SvrFeedType,
-} from "~/features/feeds/utils/svrDetection.ts"
+import { getSvrType, type SvrFeedType } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 import {
   shouldHideAddress,
@@ -40,6 +34,7 @@ import {
   isApacEquitiesStreamFeed,
   getTwapWindowSeconds,
 } from "~/features/feeds/utils/feedMetadata.ts"
+import { isFeedIdAddressedNetwork } from "~/features/feeds/utils/feedIdAddressedNetworks.ts"
 import { getFeedTypeFlags, type SchemaFilterValue } from "~/features/feeds/types.ts"
 import { useFilteredFeedMetadata } from "~/features/feeds/hooks/useFilteredFeedMetadata.ts"
 
@@ -63,10 +58,13 @@ const getMaxSubmissionValueBound = (
   try {
     const raw = BigInt(maxSubmissionValue)
     const divisor = BigInt(10) ** BigInt(decimals)
-    // Hide the badge if the decoded price exceeds $2.00 (fixed-point compare avoids
-    // float drift). The all-0xff unbounded sentinel decodes to ~9.578e44 and is filtered here.
-    if (raw > BigInt(2) * divisor) return null
     const wholePart = raw / divisor
+    // Hide the badge if the decoded price exceeds $1,000,000 (1M).
+    // This filters out the all-0xff unbounded sentinel that contracts use by default
+    // (which decodes to ~9.578e44) while still accommodating any real-world price cap
+    // across USD, ETH, EUR, and other quote currencies — the highest plausible cap
+    // for any stablecoin or pegged asset is well below $1M.
+    if (wholePart > BigInt(1_000_000)) return null
     const remainder = raw % divisor
     const price = Number(wholePart) + Number(remainder) / Number(divisor)
     return new Intl.NumberFormat("en-US", {
@@ -527,7 +525,7 @@ const DefaultTHead = ({
   showRiskColumn?: boolean
   isSvr?: boolean
 }) => {
-  const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
+  const isAptosNetwork = isFeedIdAddressedNetwork(networkName)
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
   return (
@@ -609,11 +607,11 @@ const DefaultTr = ({
   // should have its address hidden and show a contact email instead.
   const hideAddress = shouldHideAddress(metadata, finalTier)
 
-  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
-  const stablecoinBound =
-    metadata.docs?.stablecoinCapped === true
-      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
-      : null
+  // Stablecoin price-bound note: only shown for stablecoin feeds with a meaningful cap
+  const isStablecoin = metadata.docs?.assetSubClass === "Stablecoin"
+  const stablecoinBound = isStablecoin
+    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+    : null
 
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
@@ -633,9 +631,9 @@ const DefaultTr = ({
                 href="/data-feeds/svr-feeds"
                 target="_blank"
                 className={tableStyles.feedVariantBadge}
-                title={`${getSvrType(metadata)} Feed`}
+                title={`${getSvrType(metadata, network)} Feed`}
               >
-                {getSvrType(metadata)}
+                {getSvrType(metadata, network)}
               </a>
             </div>
           )}
@@ -778,7 +776,7 @@ const DefaultTr = ({
                 <div className={tableStyles.separator} />
                 <div className={tableStyles.assetAddress}>
                   <dt>
-                    <span className="label">{getSvrType(metadata)} Proxy:</span>
+                    <span className="label">{getSvrType(metadata, network)} Proxy:</span>
                   </dt>
                   <dd>
                     {hideAddress ? (
@@ -811,7 +809,7 @@ const DefaultTr = ({
                     )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "Aave-SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -821,7 +819,7 @@ const DefaultTr = ({
                     .
                   </div>
                 )}
-                {isNewSharedSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
@@ -830,7 +828,7 @@ const DefaultTr = ({
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "SVR-Backup" && !hideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR-Backup Feed:</strong> This is a legacy SVR proxy feed. New integrations should use
                     the <strong>SVR</strong> feeds. Learn more about{" "}
@@ -898,13 +896,13 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData,
   // (already includes deprecating status and Supabase risk tier)
   const finalTier = metadata.finalCategory ?? null
 
-  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
-  const stablecoinBound =
-    metadata.docs?.stablecoinCapped === true
-      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
-      : null
-
   const hideAddress = shouldHideAddress(metadata, finalTier)
+
+  // Stablecoin price-bound note for Stablecoin Stability Assessment feeds
+  const isStablecoinAssessment = metadata.docs?.assetClass === "Stablecoin Stability Assessment"
+  const stablecoinBound = isStablecoinAssessment
+    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+    : null
 
   return (
     <tr>
@@ -1815,10 +1813,10 @@ export const MainnetTable = ({
   const typeFilteredMetadata = useMemo(() => {
     if (!isSvr || !svrTypeFilters || svrTypeFilters.size === 0) return filteredMetadata
     return filteredMetadata.filter((m) => {
-      const svrType = getSvrType(m)
+      const svrType = getSvrType(m, network)
       return svrType && !svrTypeFilters.has(svrType)
     })
-  }, [filteredMetadata, isSvr, svrTypeFilters])
+  }, [filteredMetadata, isSvr, svrTypeFilters, network])
 
   const slicedFilteredMetadata = typeFilteredMetadata.slice(firstAddr, lastAddr)
 
@@ -1835,7 +1833,7 @@ export const MainnetTable = ({
               <tr>
                 <td colSpan={isStreams ? 3 : 6} style={{ textAlign: "center" }}>
                   <img
-                    src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                    src="https://d2f70xi62kby8n.cloudfront.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
                   />
                   <h4>No results found</h4>
@@ -1995,7 +1993,7 @@ export const TestnetTable = ({
               <tr>
                 <td colSpan={getFeedTableColSpan(isStreams, showRiskColumn)} style={{ textAlign: "center" }}>
                   <img
-                    src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                    src="https://d2f70xi62kby8n.cloudfront.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
                   />
                   <h4>No results found</h4>

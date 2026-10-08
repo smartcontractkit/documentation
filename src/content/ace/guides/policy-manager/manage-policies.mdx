@@ -1,0 +1,207 @@
+---
+section: ace
+title: "Managing Policies"
+date: Last Modified
+metadata:
+  description: "Browse policy implementations, create and configure policy instances, and update policy configurations in Chainlink ACE using the Platform UI or the Coordinator API."
+  datePublished: "2026-04-15"
+  lastModified: "2026-04-15"
+---
+
+import { Aside, ClickToZoom, MethodTabs } from "@components"
+import PolicyInstanceBuilder from "../../../../components/ACE/PolicyInstanceBuilder/PolicyInstanceBuilder.tsx"
+
+This guide covers how to browse available policy types, create policy instances, and configure their parameters. For attaching policies to specific functions on your contracts, see [Protecting Target Functions](/ace/guides/policy-manager/manage-protections).
+
+## Policy implementations vs policy instances
+
+ACE distinguishes between two concepts:
+
+- **Policy implementation** — A reusable policy template (smart contract code) that defines specific compliance logic, such as an allowlist check or volume limit. ACE provides a [pre-built library](/ace/reference/policy-library) of audited implementations, and you can register your own [custom policy](/ace/guides/policy-manager/custom-policies) implementations, which are scoped to your organization.
+- **Policy instance** — A deployed copy of a policy implementation, configured with your specific parameters and associated with a [policy engine](/ace/guides/policy-manager/manage-engines). You create a policy instance from an implementation and then attach it to target functions via [protections](/ace/guides/policy-manager/manage-protections).
+
+For example, the "Allow List Policy" implementation can be instantiated multiple times with different allowlists.
+
+## Browse policy implementations
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar.
+    1. Click on the policy engine you want to browse policies for.
+    1. Select the **Policy types** tab. You see a list of all available policy implementations with their descriptions.
+
+       <ClickToZoom src="/images/ace/managing-policies/policy-implementations-list.webp" caption="Policy types tab showing available policy implementations." />
+
+  </Fragment>
+  <Fragment slot="api">
+    List all policy implementations:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/policy-implementations \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    | Parameter | Description |
+    | --- | --- |
+    | `page` | Page number (default: 1) |
+    | `page_size` | Results per page (max: 100) |
+    | `include_onchains` | Include on-chain contract details (default: true) |
+
+    To retrieve a specific implementation by ID:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/policy-implementations/<IMPLEMENTATION_ID> \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Create a policy instance
+
+A policy instance is created from a policy implementation and deployed on-chain within a policy engine.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. From the **Policy types** tab (see [Browse policy implementations](#browse-policy-implementations) above), click on the policy implementation you want to use.
+    1. Click the **+ Add instance** button.
+    1. Follow the wizard to configure and create your policy instance.
+  </Fragment>
+  <Fragment slot="api">
+    Select a policy implementation below to see its configuration fields and get a ready-to-use curl command. Each implementation has a `policy_config_schema` that describes its configurable fields — the tool below extracts the key information you need.
+
+    <PolicyInstanceBuilder client:only="react" />
+
+    | Field | Required | Description |
+    | --- | --- | --- |
+    | `name` | Yes | Human-readable name for the policy instance |
+    | `description` | No | Description of the instance's purpose |
+    | `policy_implementation_id` | Yes | UUID of the policy implementation to instantiate |
+    | `policy_engine_id` | Yes | UUID of the policy engine to associate with |
+    | `onchain_policies` | No | Array of per-chain deployments with `chain_selector` and `initial_config` |
+
+    Each on-chain policy starts in `creation_pending` status until deployment completes.
+
+    <Aside type="tip" title="Fields not required at creation">
+      Fields marked "No" in the **Required at creation** column can be configured after the policy instance is deployed
+      using `PATCH /policies/<ID>/configs`. See [Update policy configuration](#update-policy-configuration) below.
+    </Aside>
+
+  </Fragment>
+</MethodTabs>
+
+## View and filter policies
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. From the **Policy types** tab (see [Browse policy implementations](#browse-policy-implementations) above), click on the policy implementation type you are interested in.
+    1. The list of policy instances created for that implementation type is displayed.
+  </Fragment>
+  <Fragment slot="api">
+    List all policy instances:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/policies \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    | Parameter | Description |
+    | --- | --- |
+    | `page` | Page number (default: 1) |
+    | `page_size` | Results per page (max: 100) |
+    | `include_onchains` | Include on-chain deployment details (default: true) |
+    | `target_id` | Filter by target |
+    | `policy_engine_id` | Filter by policy engine |
+    | `name` | Filter by name |
+    | `status` | Filter by on-chain status (`creation_pending`, `creation_failed`, `created`) |
+    | `only_with_active_protections` | Return only policies attached to at least one target function |
+    | `target_address` | Filter by target contract address |
+
+    To retrieve a specific policy by ID:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/policies/<POLICY_ID> \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Update policy configuration
+
+After deploying a policy instance, you can update its on-chain configuration parameters — for example, adding an address to an allowlist or changing a volume threshold — without redeploying the policy.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. From the policy instances list (see [View and filter policies](#view-and-filter-policies) above), click on the policy instance you want to update.
+    1. A detail drawer opens on the right side of the screen.
+    1. Click the **Edit configuration** button to modify the policy's parameters.
+    1. Follow the wizard to update the policy's configuration.
+  </Fragment>
+  <Fragment slot="api">
+    Update policy configurations with a `PATCH` request using JSON patch operations:
+
+    ```bash
+    curl -X PATCH https://ace.api.chain.link/v1/policies/<POLICY_ID>/configs \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "patches": [
+          {
+            "op": "add",
+            "path": "/allowList/-",
+            "value": "0x3333333333333333333333333333333333333333"
+          }
+        ]
+      }'
+    ```
+
+    The JSON patch format follows [RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902). Common operations:
+
+    | Operation | Description | Example |
+    | --- | --- | --- |
+    | `add` | Add a value | Add an address to an allowlist |
+    | `remove` | Remove a value | Remove an address from a list |
+    | `replace` | Replace a value | Change a threshold |
+
+  </Fragment>
+</MethodTabs>
+
+## Archive a policy
+
+Archiving a policy instance removes it from active use. All target protections that reference this policy must be archived first.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    <Aside type="note">
+      Archiving a policy is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+    </Aside>
+  </Fragment>
+  <Fragment slot="api">
+    Archive a policy with a `PATCH` request:
+
+    ```bash
+    curl -X PATCH https://ace.api.chain.link/v1/policies/<POLICY_ID> \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "status": "archived"
+      }'
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+<Aside type="caution">
+  All target protections referencing this policy must be archived before the policy itself can be archived. See
+  [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) for how to archive protections.
+</Aside>
+
+## Related pages
+
+- [Policy Management](/ace/concepts/policy-management) — how policy chains and evaluation work
+- [Policy Library](/ace/reference/policy-library) — pre-built policy implementations with configuration details
+- [Managing Policy Engines](/ace/guides/policy-manager/manage-engines) — create the engine your policies belong to
+- [Protecting Target Functions](/ace/guides/policy-manager/manage-protections) — attach policy instances to target functions
+- [Policy Ordering & Composition](/ace/concepts/policy-ordering) — how to compose effective rulesets
+- [Coordinator API Reference](/api/ace/coordinator/docs) — full API schema

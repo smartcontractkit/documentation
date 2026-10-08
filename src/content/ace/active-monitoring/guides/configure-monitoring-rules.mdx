@@ -1,0 +1,233 @@
+---
+section: ace
+title: "Configure Monitoring Rules"
+date: Last Modified
+metadata:
+  description: "Create, view, and delete the Chainlink ACE Active Monitoring rule of a token that maps each TRM risk level to a response, using the Platform UI or the Coordinator API."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside, MethodTabs } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+A **monitoring rule** maps each TRM risk level to a response (Silently log, Flag, or Enforce) for one monitored token. This guide covers three operations: create the rule, view it, and delete it. For how rules behave, including why one rule can create several decisions, see [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules).
+
+A token has one active rule, and you cannot edit it. To change a rule, delete it and create a new one.
+
+## Prerequisites
+
+- A [monitored token](/ace/active-monitoring/guides/manage-monitored-tokens), with the enforcement functions you want to use.
+- For an Enforce response with the balance condition, a primary token ABI that includes `balanceOf(address)`.
+- The [onchain role](/ace/active-monitoring/guides/prepare-your-token) granted to your CRE Connect Wallet on every network, so that enforced actions do not revert.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
+
+## Create a monitoring rule
+
+The following rule is used in both tabs. It applies to a token called Example Treasury Fund, registered as in [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): the token has the enforcement function `freezePartialTokens`, and an associated contract called Example Blocklist has `addBlacklist`. The blocklist is only an example of an action on a second contract. If you registered your token alone, keep the freeze and leave out the blocklist action.
+
+TRM gives each address a risk level, from 0 - Unknown to 15 - Severe. See [Watchlist and Screening](/ace/active-monitoring/concepts/screening) for how the level is chosen. The rule chooses a response for each level:
+
+| Risk level                       | Response     | Detail                                                                                                                                                                          |
+| -------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 15 - Severe                      | Enforce      | Freeze the balance with `freezePartialTokens(_userAddress, _amount)`, only if the address holds a balance. Add the address to a blocklist with `addBlacklist(account, reason)`. |
+| 10 - High                        | Flag         | A person reviews the address.                                                                                                                                                   |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log | Record only.                                                                                                                                                                    |
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring**, open **Monitoring configuration**, and click the token. A token without a rule shows the tag **Missing rule**.
+    1. Click **Configure rule**.
+    1. In the **Decision logic** card, select the risk levels in **If risk score is**, for example **15 - Severe**.
+    1. In **then**, select **Silently log**, **Flag**, or **Enforce**.
+    1. For **Enforce**, complete the **Enforced action** fields:
+       - **Enforce on**: the contract that runs the function.
+       - **Enforcement function**: the function to call.
+       - **Parameter mapping**: for each argument of the function, choose what Active Monitoring sends. Select **Screened address** for the address that TRM flagged, or **Balance** for that address's balance of the token, in the smallest unit of the token. Select **Other** to type a fixed value.
+       - **Only execute if the address holds a balance on this token**: select it for any action that maps **Balance**, or that is useless without a balance, such as a freeze.
+    1. To add another action to the same response, click **Add action**. In the example, the second action is `addBlacklist` on the associated contract, mapped to **Screened address** and the constant `Severe risk`, without the balance condition.
+    1. To define another response, click **Add condition**. A new **Decision logic** card opens. Every risk level must be in exactly one card before you can continue.
+    1. Click **Next**. The **Review and add** step lists each action with its risk level and response.
+    1. Click **Add rule**.
+
+    The token tag changes to **Active rule**, and the token page shows the **Decision logic** table.
+
+    <Aside type="caution" title="Map Balance only with the balance condition">
+      An action that maps **Balance** needs the balance reading that the balance condition creates. Select **Only execute if the address holds a balance on this token** on that action.
+    </Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+    Create the rule with `POST /active-monitoring/rule-groups`. You need the identifiers returned when you [registered the token](/ace/active-monitoring/guides/manage-monitored-tokens): `group_id` for `contract_group_id`, the `id` of each contract for `contract_id`, and the `func_id` of each function for `admin_function_id`.
+
+    A rule has conditions and actions. Every condition must be true for the rule to apply, and all actions of a rule have the same type. The first condition checks the TRM risk level. A second condition on `balance` implements the balance condition.
+
+    The following request creates the example rule from the table. The conditions of a rule must all be true, so the Severe response is two rules: the freeze, which also requires a balance, and the blocklist entry, which does not. The blocklist entry then happens even when the address holds nothing. Leave out the second rule if you registered your token alone.
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/rule-groups \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "title": "Example Treasury Fund - monitoring rule",
+        "trigger_event_type": "trm_event",
+        "contract_group_id": "<GROUP_ID>",
+        "rules": [
+          {
+            "conditions": [
+              { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "severe" },
+              {
+                "data_source_type": "read_balance_event",
+                "data_source_metadata": { "contract_id": "<PRIMARY_CONTRACT_ID>" },
+                "path": "balance",
+                "operator": "greater",
+                "value": "0"
+              }
+            ],
+            "actions": [
+              {
+                "action_type": "auto_enforce_onchain_action",
+                "onchain_enforcement_definition": {
+                  "contract_id": "<PRIMARY_CONTRACT_ID>",
+                  "admin_function_id": "<FREEZE_FUNC_ID>",
+                  "argument_mapping": [
+                    { "argument_name": "_userAddress", "mapping_type": "reference", "value": "screened_address" },
+                    { "argument_name": "_amount", "mapping_type": "reference", "value": "holder_balance" }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "conditions": [
+              { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "severe" }
+            ],
+            "actions": [
+              {
+                "action_type": "auto_enforce_onchain_action",
+                "onchain_enforcement_definition": {
+                  "contract_id": "<BLOCKLIST_CONTRACT_ID>",
+                  "admin_function_id": "<ADD_BLACKLIST_FUNC_ID>",
+                  "argument_mapping": [
+                    { "argument_name": "account", "mapping_type": "reference", "value": "screened_address" },
+                    { "argument_name": "reason", "mapping_type": "constant", "value": "Severe risk" }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "conditions": [
+              { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "high" }
+            ],
+            "actions": [{ "action_type": "flag_for_review" }]
+          },
+          {
+            "conditions": [
+              { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "medium" }
+            ],
+            "actions": [{ "action_type": "silently_log" }]
+          },
+          {
+            "conditions": [
+              { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "low" }
+            ],
+            "actions": [{ "action_type": "silently_log" }]
+          },
+          {
+            "conditions": [
+              { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "unknown" }
+            ],
+            "actions": [{ "action_type": "silently_log" }]
+          }
+        ]
+      }'
+    ```
+
+    | Field                                   | Description                                                                                                                                         |
+    | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | `trigger_event_type`                    | Always `trm_event`.                                                                                                                                  |
+    | `contract_group_id`                     | The `group_id` of the monitored token. The token must not have an active rule.                                                                       |
+    | `conditions[].path` and `value`         | `risk_level` with `severe`, `high`, `medium`, `low`, or `unknown`. For `balance`, a raw integer in token base units; `greater` with `0` means "holds a balance". |
+    | `conditions[].data_source_metadata`     | For `read_balance_event`, `contract_id` is the primary contract, which must have `balanceOf(address)`.                                                |
+    | `actions[].action_type`                 | `silently_log`, `flag_for_review`, or `auto_enforce_onchain_action`.                                                                                 |
+    | `argument_mapping`                      | One entry per argument of the function, matched by `argument_name`. `mapping_type` is `reference`, which Active Monitoring fills in for each decision with an action variable, or `constant`, a fixed value you type.               |
+
+    List the action variables with `GET /active-monitoring/action-variables`. The system variables are `screened_address`, the address that TRM flagged, and `holder_balance`, its balance of the token in raw base units, read before the action runs.
+
+    The rule is active immediately. The response contains the rule, with an `id` for each rule, condition, and action:
+
+    ```json
+    {
+      "id": "7c8d9e0f-1a2b-3c4d-5e6f-708192a3b4c5",
+      "title": "Example Treasury Fund - monitoring rule",
+      "trigger_event_type": "trm_event",
+      "contract_group_id": "5b0f0c3e-6d1a-4f43-8e0a-1d6f3f3a9a10",
+      "status": "active",
+      "created_at": 1790000100,
+      "updated_at": 1790000100,
+      "rules": [
+        // ... the rules you sent, each with its id, conditions, and actions
+      ]
+    }
+    ```
+
+    The Platform UI requires all five risk levels. The API requires only one rule. A risk level that no rule covers creates no decision.
+
+    The request returns `409` when the token already has an active rule, and `400` when a function is not a write function, an argument is missing or has the wrong type, or the primary contract has no `balanceOf(address)`.
+
+  </Fragment>
+</MethodTabs>
+
+## View a monitoring rule
+
+<MethodTabs>
+  <Fragment slot="ui">
+    Open the token page. The **Monitoring rule** section shows the **Decision logic** table: one row per action, with the function or response, the risk level, the contract, and a tag (**Enforce**, **Flag**, or **Silently log**).
+  </Fragment>
+  <Fragment slot="api">
+    Get one rule with `GET /active-monitoring/rule-groups/{rule_group_id}`. The response expands the contracts and the enforcement functions.
+
+    List rules with `GET /active-monitoring/rule-groups`. Filter with `status` (`active` or `archived`) and `contract_group_id`:
+
+    ```bash
+    curl "https://ace.api.chain.link/v1/active-monitoring/rule-groups?status=active&contract_group_id=<GROUP_ID>" \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    A monitored token also returns its active rule in `active_rule_group`.
+
+  </Fragment>
+</MethodTabs>
+
+## Delete a monitoring rule
+
+Deleting a rule archives it. Active Monitoring stops creating decisions for the token until you create a new rule. Existing decisions stay in the log.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. On the token page, click **Delete rule** in the **Decision logic** card.
+    1. Confirm with **Remove rule**.
+
+    To change a rule, delete it and run **Configure rule** again.
+
+  </Fragment>
+  <Fragment slot="api">
+    ```bash
+    curl -X PATCH https://ace.api.chain.link/v1/active-monitoring/rule-groups/<RULE_GROUP_ID> \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{ "status": "archived" }'
+    ```
+
+    An archived rule cannot be reactivated. Archiving it again returns `409`.
+
+  </Fragment>
+</MethodTabs>
+
+## Next steps
+
+- [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist): add the addresses to screen.
+- [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening): start screening.

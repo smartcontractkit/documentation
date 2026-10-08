@@ -2,59 +2,227 @@
 section: dataFeeds
 date: Last Modified
 title: "Chainlink Data Feeds"
-isIndex: true
-whatsnext:
-  {
-    "Follow the Data Feeds Getting Started guide to learn the basics": "/data-feeds/getting-started",
-    "Read the API reference for using Data Feeds": "/data-feeds/api-reference",
-    "Find Price Feed Addresses": "/data-feeds/price-feeds/addresses",
-    "Find SmartData Addresses": "/data-feeds/smartdata/addresses",
-    "Find Rate and Volatility Feed Addresses": "/data-feeds/rates-feeds/addresses",
-    "Learn how to use Data Feeds on L2 networks": "/data-feeds/l2-sequencer-feeds",
-  }
 metadata:
   title: "Chainlink Data Feeds Documentation"
-  description: "Add data to your smart contracts and applications."
+  description: "Connect your smart contracts to real-world data: asset prices, reserves, NAV, and more."
+  excerpt: "Chainlink Data Feeds, price feeds, SmartData, MVR feeds, SVR feeds, rate and volatility feeds, L2 sequencer uptime feeds, decentralized oracle network, DeFi, RWA, tokenization"
+  datePublished: "2023-08-03"
+  lastModified: "2026-09-16"
+isIndex: true
+disableDefaultStyles: true
+hideTitle: true
 ---
 
-import { Aside } from "@components"
-import button from "@chainlink/design-system/button.module.css"
+import LayoutHero from "@components/LayoutHero/LayoutHero.astro"
+import { TabGrid } from "@components/TabGrid/TabGrid.tsx"
+import ToolsUtilitiesGrid from "@components/ToolsUtilitiesGrid/ToolsUtilitiesGrid.astro"
+import OverviewWrapper from "@components/OverviewWrapper.astro"
+import ChangelogSnippet from "@components/ChangelogSnippet/ChangelogSnippet.astro"
 
-<Aside type="note" title="Talk to an expert">
-  <a href="https://chain.link/contact?ref_id=pricefeeds">Contact us</a> to talk to an expert about integrating Chainlink
-  Data Feeds with your applications.
-</Aside>
+export const getStarted = [
+  {
+    name: "Read Feeds",
+    links: [
+      {
+        title: "Getting Started",
+        description: "Deploy a Solidity consumer contract and read your first price feed.",
+        link: "/data-feeds/getting-started",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Using Data Feeds on EVM Chains",
+        description: "Read feeds onchain and offchain with Solidity, Vyper, JavaScript, Python, or Go.",
+        link: "/data-feeds/using-data-feeds",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Get Historical Data",
+        description: "Retrieve past round answers for charts, analytics, and time-weighted averages.",
+        link: "/data-feeds/historical-data",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Read MVR Feeds",
+        description: "Read multi-variable feed bundles with Solidity, ethers.js, or viem.",
+        link: "/data-feeds/mvr-feeds/guides",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Data Feeds on Solana",
+        description: "Read feeds onchain from a Solana program or offchain from a client application.",
+        link: "/data-feeds/solana",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Data Feeds on Aptos",
+        description: "Write and publish a Move module that reads Data Feeds on Aptos testnet.",
+        link: "/data-feeds/aptos",
+        personas: ["App Developers"],
+      },
+    ],
+  },
+  {
+    name: "Find Addresses",
+    links: [
+      {
+        title: "Price Feed Addresses",
+        description: "Pairs and proxy contract addresses for every Price Feed, by network.",
+        link: "/data-feeds/price-feeds/addresses",
+        personas: ["App Developers"],
+      },
+      {
+        title: "SmartData Addresses",
+        description: "Proof of Reserve, NAV, AUM, and other feeds for tokenized assets.",
+        link: "/data-feeds/smartdata/addresses",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Rate and Volatility Feed Addresses",
+        description: "Interest rate curves, staking APR, and realized volatility feeds.",
+        link: "/data-feeds/rates-feeds/addresses",
+        personas: ["App Developers"],
+      },
+      {
+        title: "Tokenized Equity Feed Addresses",
+        description: "Feeds for tokenized stocks and ETFs from issuers like Ondo, Robinhood, and Coinbase.",
+        link: "/data-feeds/tokenized-equity-feeds",
+        personas: ["App Developers"],
+      },
+      {
+        title: "L2 Sequencer Uptime Feed Addresses",
+        description: "Sequencer uptime feed addresses for each supported L2 network.",
+        link: "/data-feeds/l2-sequencer-feeds#supported-networks",
+        personas: ["App Developers"],
+      },
+      {
+        title: "U.S. Government Macroeconomic Feeds",
+        description: "Addresses for U.S. government macroeconomic data published onchain.",
+        link: "/data-feeds/us-government-macroeconomic/addresses",
+        personas: ["App Developers"],
+      },
+    ],
+  },
+  {
+    name: "Mitigate Risk",
+    links: [
+      {
+        title: "Selecting Quality Data Feeds",
+        description: "Feed categories, market risk tiers, and how to evaluate a feed before you use it.",
+        link: "/data-feeds/selecting-data-feeds",
+        personas: ["App Developers", "Advanced"],
+      },
+      {
+        title: "Developer Responsibilities",
+        description: "What your application must handle: monitoring, circuit breakers, and safeguards.",
+        link: "/data-feeds/developer-responsibilities",
+        personas: ["App Developers", "Advanced"],
+      },
+      {
+        title: "Deprecating Feeds",
+        description: "How feeds are retired and what to do when a feed you use is scheduled for deprecation.",
+        link: "/data-feeds/deprecating-feeds",
+        personas: ["App Developers", "Advanced"],
+      },
+    ],
+  },
+]
 
-Chainlink Data Feeds are the quickest way to connect your smart contracts to real-world data such as asset prices, reserve balances, and L2 sequencer health. Data Feeds aggregate data from many independent sources and publish it onchain, so your smart contracts can read it and act on it within the same transaction.
+export const feedTypes = [
+  {
+    title: "Price Feeds",
+    description: "Aggregated, decentralized asset prices for collateral, lending, and derivatives.",
+    link: "/data-feeds/price-feeds",
+  },
+  {
+    title: "SmartData",
+    description: "RWA-focused feeds: reserves, NAV, AUM, and multi-variable (MVR) bundles.",
+    link: "/data-feeds/smartdata",
+  },
+  {
+    title: "Smart Value Recapture (SVR) Feeds",
+    description: "Recapture Oracle Extractable Value (OEV) associated with oracle updates.",
+    link: "/data-feeds/svr-feeds",
+  },
+  {
+    title: "Rate and Volatility Feeds",
+    description: "Interest rate curves, staking APR, and realized volatility benchmarks.",
+    link: "/data-feeds/rates-feeds",
+  },
+  {
+    title: "L2 Sequencer Uptime Feeds",
+    description: "Real-time L2 sequencer status for protective circuit breakers.",
+    link: "/data-feeds/l2-sequencer-feeds",
+  },
+  {
+    title: "Tokenized Equity Feeds",
+    description: "Onchain equity data from providers like Ondo, Robinhood, and Coinbase.",
+    link: "/data-feeds/tokenized-equity-feeds",
+  },
+]
 
-## Get started
+export const toolsAndResources = [
+  {
+    image: "/images/card-icons/5f75cc9f74f7124d70ad4f0a_file-code-check.svg",
+    imageAlt: "API Reference icon",
+    label: "Data Feeds API Reference",
+    link: "/data-feeds/api-reference",
+    description: "AggregatorV3Interface and aggregator contract functions for reading feeds.",
+  },
+  {
+    image: "/images/card-icons/5f75cc9f74f7124d70ad4f0a_file-code-check.svg",
+    imageAlt: "MVR API Reference icon",
+    label: "MVR Feeds API Reference",
+    link: "/data-feeds/mvr-feeds/api-reference",
+    description: "IBundleAggregatorProxy functions for reading multi-variable feed bundles.",
+  },
+  {
+    image: "/images/card-icons/5f75b5e6e24b376ed9ab5c1e_programming-browser.svg",
+    imageAlt: "data.chain.link icon",
+    label: "data.chain.link",
+    link: "https://data.chain.link",
+    description: "Browse all feeds: live prices, heartbeats, deviations, and network coverage.",
+  },
+  {
+    image: "/images/card-icons/5f75ccd99b524261854d093d_multiple-users-network.svg",
+    imageAlt: "Flags Contract Registry icon",
+    label: "Flags Contract Registry",
+    link: "/data-feeds/contract-registry",
+    description: "Verify onchain that a data feed proxy is owned and operated by Chainlink.",
+  },
+  {
+    image: "/images/card-icons/5f75e7d3f8ef05758ce8c1f5_bulb.svg",
+    imageAlt: "Chainlink contracts package icon",
+    label: "@chainlink/contracts",
+    link: "https://www.npmjs.com/package/@chainlink/contracts",
+    description: "NPM package with AggregatorV3Interface and the other interfaces for consuming feeds.",
+  },
+  {
+    image: "/images/card-icons/5f96ab4b4db522072b7ff30c_book-bookmark.svg",
+    imageAlt: "Architecture icon",
+    label: "Decentralized Data Model",
+    link: "/architecture-overview/architecture-decentralized-model?parent=dataFeeds",
+    description: "How DONs aggregate data sources and publish answers onchain.",
+  },
+]
 
-- **New to Data Feeds?** Follow the [Getting Started guide](/data-feeds/getting-started) to read your first feed.
-- **Need to read a feed in your contract?** See [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds).
-- **Looking for a feed address?** Browse the [Price Feed Addresses](/data-feeds/price-feeds/addresses), [SmartData Addresses](/data-feeds/smartdata/addresses), or [Rate and Volatility Addresses](/data-feeds/rates-feeds/addresses) pages.
-- **Want to understand the terminology?** See [Key Terms and Concepts](/data-feeds/key-terms).
-- **Already have a project?** [Add Chainlink to your existing project](/resources/create-a-chainlinked-project?parent=dataFeeds#installing-into-existing-projects) with the [`@chainlink/contracts` NPM package](https://www.npmjs.com/package/@chainlink/contracts).
+<LayoutHero
+  title="Build with Data Feeds"
+  description="Asset prices, proof of reserves, NAV, and interest rates, aggregated from many sources by decentralized oracle networks and published onchain on dozens of networks. Lending markets, stablecoins, and tokenized funds use them to value collateral and settle positions, and your contract can read the latest value in a single call."
+  buttons={[
+    {
+      label: "Overview",
+      link: "/data-feeds/overview",
+    },
+    {
+      label: "Get Started",
+      link: "/data-feeds/getting-started",
+    },
+  ]}
+/>
 
-## Types of data feeds
-
-Data Feeds provide many different types of data for your applications. See [Feed Types](/data-feeds/feed-types) for a full overview of each type.
-
-| Feed Type                                                                    | Purpose                                                                      |
-| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| [Price Feeds](/data-feeds/price-feeds)                                       | Aggregated, decentralized asset prices.                                      |
-| [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds)                 | Continuous pricing for tokenized stocks and ETFs.                            |
-| [SmartData Feeds](/data-feeds/smartdata)                                     | Data for tokenized real-world assets (RWAs), such as reserves, NAV, and AUM. |
-| [Smart Value Recapture (SVR) Feeds](/data-feeds/svr-feeds)                   | Feeds that help protocols recapture MEV.                                     |
-| [Rate and Volatility Feeds](/data-feeds/rates-feeds)                         | Interest rates, APY, and realized volatility.                                |
-| [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds)                  | L2 sequencer health status.                                                  |
-| [24/7 Extended-Hours Data Feeds](/data-feeds/24-7-extended-hours-data-feeds) | Continuous pricing for assets whose markets normally close.                  |
-| [Self-Managed Feeds](/data-feeds/self-managed-feeds)                         | Feeds published by a chain or third-party operator.                          |
-
-## Learn more
-
-| Topic                                                                | Description                                              |
-| -------------------------------------------------------------------- | -------------------------------------------------------- |
-| [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds)     | Evaluate feed quality and risk.                          |
-| [Developer Responsibilities](/data-feeds/developer-responsibilities) | Understand your responsibilities when integrating feeds. |
-| [Data Feeds API Reference](/data-feeds/api-reference)                | The full API for reading feeds.                          |
-| [Historical Price Data](/data-feeds/historical-data)                 | Retrieve past answers.                                   |
+<OverviewWrapper>
+  <TabGrid header="Get Started" client:visible tabs={getStarted} />
+  <TabGrid header="Feed Types" client:visible tabs={[{ name: "Feed Types", links: feedTypes }]} />
+  <ToolsUtilitiesGrid title="Tools & Resources" links={toolsAndResources} />
+  <ChangelogSnippet query="data-feeds" />
+</OverviewWrapper>

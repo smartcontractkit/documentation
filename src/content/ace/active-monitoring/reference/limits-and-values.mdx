@@ -1,0 +1,121 @@
+---
+section: ace
+title: "Limits, Statuses, and Values"
+date: Last Modified
+metadata:
+  description: "Reference for Chainlink ACE Active Monitoring: TRM risk levels, rule responses, decision outcomes, operation statuses, action variables, parameter mapping types, and limits."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-07"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+This page lists the fixed values and limits of Active Monitoring, with the label you see in the Platform UI and the value the API uses. For how they fit together, see [How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works).
+
+## TRM risk levels
+
+A monitoring rule matches the highest TRM risk level of a screened address. The Platform UI shows the TRM score next to the label.
+
+| Platform UI label | TRM score | API value (`risk_level`) |
+| ----------------- | --------- | ------------------------ |
+| Severe            | 15        | `severe`                 |
+| High              | 10        | `high`                   |
+| Medium            | 5         | `medium`                 |
+| Low               | 1         | `low`                    |
+| Unknown           | 0         | `unknown`                |
+
+TRM returns `Unknown` when it has no risk label for the address. Active Monitoring applies the same value when the label is missing or empty.
+
+## Rule responses
+
+| Platform UI label | API value (`action_type`)     | Effect                                                   |
+| ----------------- | ----------------------------- | -------------------------------------------------------- |
+| Silently log      | `silently_log`                | Records the decision. No other action.                   |
+| Flag              | `flag_for_review`             | Creates a decision that waits for a human to resolve it. |
+| Enforce           | `auto_enforce_onchain_action` | Creates one onchain operation per enforced action.       |
+
+## Decision outcomes
+
+The **Decision** column of the Decisions log shows the outcome. The API returns it in the `output` field of a decision log.
+
+| Platform UI label (table)                             | API value (`output`)             | Meaning                                                                                                          |
+| ----------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Evaluating                                            | `null`                           | The rule is still being evaluated, for example while the balance is being read.                                  |
+| Logged                                                | `silently_logged`                | A rule with the Silently log response matched.                                                                   |
+| Flag for review                                       | `flagged_for_review`             | A rule with the Flag response matched. A person must resolve it.                                                 |
+| No balance - flag for review                          | `flagged_for_review`             | The risk score matched an Enforce rule, but its balance condition was not met.                                   |
+| Function signature, such as `freeze(address,uint256)` | `auto_enforced_onchain_action`   | A rule with the Enforce response matched and created an operation.                                               |
+| Function signature                                    | `manual_enforced_onchain_action` | A person enforced a flagged decision with **Enforce action**.                                                    |
+| Resolved                                              | `user_ignored`                   | A person dismissed a flagged decision with **Resolve** and a reason. The Decision filter calls this **Ignored**. |
+
+A rule whose conditions do not match produces no entry in the Decisions log.
+
+## Operation statuses
+
+An enforced decision links to an operation. The **Operation status** column shows its latest status.
+
+| Platform UI label | API value           | Terminal | Meaning                                                       |
+| ----------------- | ------------------- | -------- | ------------------------------------------------------------- |
+| Submitted         | `pending`           | No       | The operation is created and queued.                          |
+| Sending           | `sending`           | No       | The operation is being sent to CRE Connect.                   |
+| Pending signature | `pending_signature` | No       | The operation waits for your signer. Applies to self-signing. |
+| Executing         | `executing`         | No       | The operation is signed and being executed onchain.           |
+| Success           | `success`           | Yes      | The operation is confirmed onchain.                           |
+| Failed            | `failed`            | Yes      | The operation failed, expired, or was cancelled.              |
+
+## Parameter mapping
+
+Each argument of an enforcement function gets a value from an action variable or from a constant you type.
+
+### Action variables
+
+| Platform UI label | API key (`reference` value) | Type    | Resolves to                                                                                                     |
+| ----------------- | --------------------------- | ------- | --------------------------------------------------------------------------------------------------------------- |
+| Screened address  | `screened_address`          | address | The address that TRM screened.                                                                                  |
+| Balance           | `holder_balance`            | number  | The raw `balanceOf` value of the screened address on the primary token, in base units, read at evaluation time. |
+
+<Aside type="caution" title="Use Balance with the balance condition">
+  The `Balance` variable needs a balance reading. Select **Only execute if the address holds a balance on this token**
+  on every enforced action that maps `Balance`. Without it, the rule has no balance to resolve.
+</Aside>
+
+### Which variable fits which argument
+
+The Platform UI lists only the variables whose type fits the argument.
+
+| ABI type of the argument | Available variables | Constant ("Other") format                      |
+| ------------------------ | ------------------- | ---------------------------------------------- |
+| `address`                | Screened address    | A valid address                                |
+| `uint*`                  | Balance             | Digits only, no sign                           |
+| `int*`                   | Balance             | A whole number, with an optional leading minus |
+| `bool`                   | None                | `true` or `false`                              |
+| `string`                 | Screened address    | Any non-empty text                             |
+| `bytes*`                 | Screened address    | A value that starts with `0x`                  |
+
+In the API, a mapping has a `mapping_type` of `reference` (the value is an action variable key) or `constant` (the value is the literal).
+
+## Limits
+
+| Item                                     | Limit                                                                                          |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Watchlist size                           | No fixed limit                                                                                 |
+| CSV upload                               | 100 rows per file in the Platform UI. Columns `address` and `chain_selector`.                  |
+| Screening interval, Platform UI          | 6, 12, or 24 hours                                                                             |
+| Screening interval, API                  | Whole hours from 1 to 168                                                                      |
+| Monitoring rules per token               | 1                                                                                              |
+| Risk levels covered by a rule            | All 5, each in exactly one **Decision logic** card (Platform UI)                               |
+| Monitoring rule edits                    | None. Delete the rule and create a new one.                                                    |
+| Actions in one enforced response         | One or more. The same contract and function pair cannot repeat in one **Decision logic** card. |
+| Operations per manual **Enforce action** | 1. Every argument is a constant.                                                               |
+| Primary tokens per monitored token       | 1                                                                                              |
+| A token address on a network             | Registered once                                                                                |
+| TRM API keys per organization            | 1. The key is never shown again after you save it.                                             |
+| List endpoints, `page_size`              | Up to 100                                                                                      |
+
+## Related pages
+
+- [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens): which functions qualify as enforcement functions.
+- [Active Monitoring API](/ace/active-monitoring/reference/api): endpoints and request examples.

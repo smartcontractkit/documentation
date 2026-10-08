@@ -7,7 +7,7 @@
  */
 
 import type { Metadata, QuickstartsFrontmatter } from "~/content.config.ts"
-import { generateEnhancedSchemaProperties } from "./seo/entities.ts"
+import { formatLabelWord, generateEnhancedSchemaProperties } from "./seo/entities.ts"
 
 /**
  * Base URLs - Environment-aware constants
@@ -409,8 +409,6 @@ export function detectQuickstartProducts(products?: string[]): string[] {
     feeds: "Data Feeds",
     "data-feeds": "Data Feeds",
     "data-streams": "Data Streams",
-    functions: "Functions",
-    automation: "Automation",
     vrf: "VRF",
   }
 
@@ -568,7 +566,7 @@ export function generateBreadcrumbList(pathname: string, baseUrl: string): objec
 function formatBreadcrumbName(segment: string): string {
   return segment
     .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => formatLabelWord(word))
     .join(" ")
 }
 
@@ -906,20 +904,8 @@ export function generateWebSite(baseUrl: string): object {
         {
           "@type": "ListItem",
           position: 3,
-          url: `${baseUrl}/chainlink-automation`,
-          name: "Chainlink Automation",
-        },
-        {
-          "@type": "ListItem",
-          position: 4,
           url: `${baseUrl}/vrf`,
           name: "Verifiable Random Function (VRF)",
-        },
-        {
-          "@type": "ListItem",
-          position: 5,
-          url: `${baseUrl}/chainlink-functions`,
-          name: "Chainlink Functions",
         },
       ],
     },

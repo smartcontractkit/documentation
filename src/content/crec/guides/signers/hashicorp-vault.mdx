@@ -1,0 +1,155 @@
+---
+section: crec
+title: "HashiCorp Vault Signer"
+date: Last Modified
+metadata:
+  description: "Sign Chainlink CRE Connect operations with a key stored in HashiCorp Vault's Transit secrets engine: supports RSA-2048/4096 and ECDSA P-256/P-384/P-521."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The Vault signer (`github.com/smartcontractkit/crec-sdk/transact/signer/vault`) signs CRE Connect payloads using HashiCorp Vault's **Transit** secrets engine. Vault holds the key (optionally backed by an HSM) and signs digests on request.
+
+## Key types supported
+
+| Constant                 | Algorithm      |
+| ------------------------ | -------------- |
+| `vault.KeyTypeRSA2048`   | RSA, 2048-bit  |
+| `vault.KeyTypeRSA4096`   | RSA, 4096-bit  |
+| `vault.KeyTypeECDSAP256` | ECDSA on P-256 |
+| `vault.KeyTypeECDSAP384` | ECDSA on P-384 |
+| `vault.KeyTypeECDSAP521` | ECDSA on P-521 |
+
+<Aside type="note" title="Vault is not secp256k1">
+  Vault Transit does not expose a secp256k1 curve. Wallets backed by a Vault signer should be created with
+  `WalletType=apiClient.Rsa` and the RSA modulus + exponent in `AllowedRsaSigners`.
+</Aside>
+
+## Prerequisites
+
+- Vault cluster reachable from your service.
+- Transit engine mounted (default mount `transit`).
+- A Vault token with policies that allow `update transit/sign/<key>` and `read transit/keys/<key>`.
+
+## Create a key in Vault
+
+You can create the key with the Vault CLI:
+
+```bash
+vault write transit/keys/treasury-prod-eth type=rsa-2048
+```
+
+Or directly through the Go SDK:
+
+```go
+import "github.com/smartcontractkit/crec-sdk/transact/signer/vault"
+
+result, err := vault.CreateKeyInVault(
+    "https://vault.example.com:8200",
+    os.Getenv("VAULT_TOKEN"),
+    "transit",
+    "treasury-prod-eth",
+    vault.KeyTypeRSA2048,
+)
+if err != nil { return err }
+fmt.Println("modulus (hex):", result.Modulus, "exponent (hex):", "010001") // RSA exponent in Vault is 65537
+```
+
+Save the `(modulus, exponent)` pair: you'll feed it into `AllowedRsaSigners` when you provision the wallet. `result.Modulus` is already hex-encoded, which is the format `AllowedRsaSigners` expects.
+
+## Construct the signer
+
+```go
+import "github.com/smartcontractkit/crec-sdk/transact/signer/vault"
+
+s, err := vault.NewSigner(
+    "https://vault.example.com:8200",
+    os.Getenv("VAULT_TOKEN"),
+    "transit",
+    "treasury-prod-eth",
+)
+if err != nil { return err }
+```
+
+All four arguments are required; an empty value returns `"vaultUrl, token, mountPath, and key must be set"`.
+
+### Inject a custom client (for tests)
+
+```go
+client, _ := vaultapi.NewClient(vaultapi.DefaultConfig())
+client.SetAddress("http://127.0.0.1:8200")
+client.SetToken("dev-only-token")
+
+s, err := vault.NewSigner("http://127.0.0.1:8200", "dev-only-token", "transit", "key", vault.WithClient(client))
+```
+
+## Provision the wallet's signer set
+
+Read back the key's hex-encoded modulus and pass it (with hex-encoded exponent for RSA-65537) into `wallets.Create`. Both `e` and `n` must be **`0x`-prefixed hex** strings. `GetRSAModulus()` returns hex **without** the prefix, so prepend `0x` before passing it to the API:
+
+```go
+import (
+    apiClient "github.com/smartcontractkit/crec-api-go/client"
+    "github.com/smartcontractkit/crec-sdk/wallets"
+)
+
+modHex, err := s.GetRSAModulus()
+if err != nil { return err }
+
+rsaSigners := apiClient.RSASignersList{
+    {E: "0x010001", N: "0x" + modHex},
+}
+
+w, err := client.Wallets.Create(ctx, wallets.CreateInput{
+    Name:               "treasury-prod-eth",
+    ChainSelector:      "5009297550715157269",
+    WalletOwnerAddress: ownerEOA.Hex(),
+    WalletType:         apiClient.Rsa,
+    AllowedRsaSigners:  &rsaSigners,
+    StatusChannelId:    &statusChannelID, // optional; receives wallet.status events
+})
+```
+
+For ECDSA-P256 / P-384 / P-521 keys, use `s.Public()` to retrieve the `*ecdsa.PublicKey` and serialise it according to your wallet's expected format.
+
+## Sign an operation
+
+```go
+opHash, sig, err := client.Transact.SignOperation(ctx, op, s, chainSelector)
+```
+
+Internally `Sign(ctx, hash)`:
+
+1. Base64-encodes the digest.
+2. Calls `transit/sign/<key>` with `prehashed=true` and `marshaling_algorithm=asn1`.
+3. Strips the `vault:v1:` prefix, decodes the ASN.1 signature, and returns the raw bytes.
+
+For ECDSA-P256 the result is a DER-encoded `(r, s)` pair; for RSA it's a PKCS#1 v1.5 signature. The CRE Connect Smart Account expects this format for the corresponding `WalletType`.
+
+## Operational notes
+
+- **Vault token lifecycle.** The signer holds a single Vault token; rotate it by re-creating the signer when the token nears expiry. Consider using AppRole for short-lived tokens.
+- **Latency.** Each `SignOperation` call issues one Vault sign request synchronously. Latency is dominated by the network path to Vault and Vault's own response time; measure against your own Vault deployment and provision a cluster with headroom for your peak throughput.
+- **Audit logging.** Vault's audit devices capture every `transit/sign` call; pair with the [Signing Transparency](/crec/guides/operations/signing-transparency) guide for a complete signer-side audit trail.
+- **HSM backing.** For FIPS 140-2 compliance, run Vault Enterprise with the HSM auto-unseal + entropy plugin so the Transit engine's key material lives inside the HSM.
+
+## Vault policy
+
+```hcl
+path "transit/keys/treasury-prod-eth" {
+  capabilities = ["read"]
+}
+
+path "transit/sign/treasury-prod-eth" {
+  capabilities = ["update"]
+}
+```
+
+Bind the policy to the AppRole / token used by the signer.
+
+## Next steps
+
+- [Manage Wallet Signers](/crec/guides/wallets/manage-signers): encode the modulus into `AllowedRsaSigners`.
+- [AWS KMS Signer](/crec/guides/signers/aws-kms): alternative HSM path for AWS environments.

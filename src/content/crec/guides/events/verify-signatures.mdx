@@ -1,0 +1,135 @@
+---
+section: crec
+title: "Verify Event Signatures"
+date: Last Modified
+metadata:
+  description: "Cryptographically authenticate every Chainlink CRE Connect event before processing it: Verify / VerifyWithOrgID / VerifyWithWorkflowOwner for watcher events, plus the equivalents for `operation.status` events."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-26"
+---
+
+import { Aside } from "@components"
+
+Every event the SDK consumes carries an Off-Chain Reporting (OCR) proof from the Chainlink DON, and the SDK refuses to trust an event that does not check out cryptographically. This guide covers the three verification helpers, their per-call variants, and the sentinel errors they return. The deeper algorithm is documented in [Concepts: Event Verification](/crec/concepts/event-verification).
+
+## The verification methods
+
+Three event types can be verified: `watcher.event`, `operation.status`, and `query.status`. Each accepts the workflow owner in three ways:
+
+| Use case                                      | Watcher events                         | `operation.status` events                             | `query.status` events                             |
+| --------------------------------------------- | -------------------------------------- | ----------------------------------------------------- | ------------------------------------------------- |
+| Use the client's default (most apps)          | `Verify(event)`                        | `VerifyOperationStatus(event)`                        | `VerifyQueryStatus(event)`                        |
+| Multi-org service deriving owner from org ID  | `VerifyWithOrgID(event, orgID)`        | `VerifyOperationStatusWithOrgID(event, orgID)`        | `VerifyQueryStatusWithOrgID(event, orgID)`        |
+| Caller already has the workflow owner address | `VerifyWithWorkflowOwner(event, addr)` | `VerifyOperationStatusWithWorkflowOwner(event, addr)` | `VerifyQueryStatusWithWorkflowOwner(event, addr)` |
+
+`Verify` chooses based on which option you set on the client:
+
+1. If `OrgID` is set → `VerifyWithOrgID`.
+2. Else if `WorkflowOwner` is set → `VerifyWithWorkflowOwner`.
+3. Else → returns `events.ErrOrgIDOrWorkflowOwnerReq`.
+
+## Configure the client
+
+Verification is **enabled by default** with the production DON keys (`DefaultMinRequiredSignatures = 4`, `DefaultValidSigners` = the production DON signing addresses).
+
+```go
+client, err := crec.NewClient(
+    "https://cre-connect.api.chain.link/v1",
+    os.Getenv("CREC_API_KEY"),
+    crec.WithEventVerification(4, []string{
+        "0xff9b062fccb2f042311343048b9518068370f837",
+        // ... remaining production DON signers ...
+    }),
+    crec.WithOrgID("your-org-id"), // OR WithWorkflowOwner("0x...")
+)
+```
+
+Use `crec.WithoutEventVerification()` only in tests against an in-process mock server.
+
+<Aside type="caution" title="Production must verify">
+  Treat any event whose `Verify` returned `false`, or whose `Verify` returned an error, as if it never happened. The
+  DON's signatures are the only proof the SDK has that the event is real.
+</Aside>
+
+## Verifying a watcher event
+
+```go
+events, _, err := client.Events.Poll(ctx, channelID, nil)
+if err != nil {
+    return err
+}
+
+for _, ev := range events {
+    ok, err := client.Events.Verify(&ev)
+    if err != nil {
+        log.Printf("event %s verification error: %v", ev.EventId, err)
+        continue
+    }
+    if !ok {
+        log.Printf("event %s did not meet signature threshold", ev.EventId)
+        continue
+    }
+
+    // Safe to process from here.
+}
+```
+
+`Verify` returns `false` (no error) when:
+
+- The OCR proof has fewer than `MinRequiredSignatures` valid signatures from `ValidSigners`.
+- A signature is structurally valid but recovers to an address not in `ValidSigners`.
+
+It returns an error when the event is malformed (no proof, bad hex, payload type mismatch, etc.); see the **Sentinel errors** table below.
+
+### Multi-org verification
+
+If a single client receives events from multiple organizations, derive the workflow owner per-event:
+
+```go
+ok, err := client.Events.VerifyWithOrgID(&ev, "their-org-id")
+```
+
+Internally this calls `WorkflowOwnerFromOrgID(orgID)`, which uses the CRE canonical CREATE2-style derivation with the configured `CRETenantID` (default `"1"`). You can also pre-compute the address yourself and call `VerifyWithWorkflowOwner` to avoid the derivation per event.
+
+## Verifying an `operation.status` event
+
+```go
+ok, err := client.Events.VerifyOperationStatus(&ev)
+```
+
+`VerifyOperationStatus` is structurally identical to `Verify` but expects `event.Headers.Type == apiClient.EventTypeOperationStatus`. The hash recipe differs (it hashes the base64-decoded `VerifiableEvent` directly), but the signature-checking step is the same.
+
+## Lower-level: verifying raw OCR signatures
+
+If you have an OCR report, OCR context, and a list of signatures and want to check them in isolation (for example because you persisted only the proof bytes), use `VerifyOCRSignatures`:
+
+```go
+ok, err := client.Events.VerifyOCRSignatures(report, ctxStr, signatures)
+```
+
+This validates only that enough signatures recover to addresses in `ValidSigners`. It does **not** check the event hash or workflow owner; use it only for forensic / replay scenarios.
+
+## Sentinel errors
+
+| Error                                                                   | Meaning                                                                                                                                                                                                                              |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `events.ErrVerificationNotConfigured`                                   | No `ValidSigners`. The client was constructed with `WithoutEventVerification()`.                                                                                                                                                     |
+| `events.ErrOrgIDOrWorkflowOwnerReq`                                     | Default `Verify` was called but neither `OrgID` nor `WorkflowOwner` was configured.                                                                                                                                                  |
+| `events.ErrOnlyWatcherEventsSupported`                                  | `Verify` was called with a non-`watcher.event` envelope. Use `VerifyOperationStatus` for status events.                                                                                                                              |
+| `events.ErrOnlyOperationStatusSupported`                                | Symmetric: `VerifyOperationStatus` was called with a non-status event.                                                                                                                                                               |
+| `events.ErrInvalidEventHash`                                            | The locally-computed event hash does not match the report. Possible tampering or wrong workflow owner.                                                                                                                               |
+| `events.ErrNoOCRProofs`                                                 | No OCR proof is attached to the event yet. This is usually a transient race: the backend surfaced the record before the DON had attached the proof. Re-poll on the next cycle; the same event will reappear with the proof attached. |
+| `events.ErrMultipleOCRProofs`                                           | More than one OCR proof on the same event: exactly one is expected. Indicates a backend bug; report it.                                                                                                                              |
+| `events.ErrOCRReportTooShort`                                           | The report is shorter than the minimum needed to extract the payload.                                                                                                                                                                |
+| `events.ErrParseOCRReport` / `ErrParseOCRContext` / `ErrParseSignature` | Hex parsing failure.                                                                                                                                                                                                                 |
+| `events.ErrRecoverPubKeyFromSignature`                                  | A signature was malformed (wrong length / non-recoverable).                                                                                                                                                                          |
+| `events.ErrDeriveWorkflowOwner`                                         | `WorkflowOwnerFromOrgID` failed (typically a malformed `OrgID`).                                                                                                                                                                     |
+
+## Tuning `MinRequiredSignatures`
+
+`DefaultMinRequiredSignatures = 4`. For a higher security bar, raise the threshold; for a more permissive setup, lower it. The constraint is `MinRequiredSignatures > 0` whenever `ValidSigners` is non-empty; otherwise `crec.NewClient` returns `crec.ErrInvalidEventVerificationConfig`.
+
+## Next steps
+
+- [Decode Event Data](/crec/guides/events/decode-data): once the event verifies, turn it into a typed payload.
+- [Event Verification](/crec/concepts/event-verification): the algorithm explained step-by-step.

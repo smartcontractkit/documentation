@@ -1,0 +1,280 @@
+---
+section: crec
+title: "Go SDK Reference"
+date: Last Modified
+metadata:
+  description: "Per-package summary of the CRE Connect Go SDK (github.com/smartcontractkit/crec-sdk) and the DTA v2 extension."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The CRE Connect Go SDK is the recommended client for production integrations. This page lists every public sub-package, its purpose, and the canonical entry points. Full type-level documentation lives on `pkg.go.dev`:
+
+- [`github.com/smartcontractkit/crec-sdk`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk)
+- [`github.com/smartcontractkit/crec-sdk-ext-dta/v2`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk-ext-dta/v2)
+
+## Module layout
+
+```
+github.com/smartcontractkit/crec-sdk
+├── crec.go            // crec.NewClient, crec.Client (root facade)
+├── options.go         // crec.Option, WithEventVerification, WithOrgID, …
+├── channels/          // channels.Client
+├── watchers/          // watchers.Client
+├── events/            // events.Client + verification + decoding
+├── transact/          // transact.Client (operations, signing helpers)
+│   ├── eip712/        // EIP-712 typed-data construction
+│   ├── signer/        // Signer interface + implementations
+│   │   ├── local/     // ECDSA dev signer
+│   │   ├── kms/       // AWS KMS ECDSA signer
+│   │   ├── vault/     // HashiCorp Vault RSA / non-secp256k1 signer
+│   │   ├── fireblocks/// Fireblocks signer
+│   │   └── privy/     // Privy embedded-wallet signer
+│   └── types/         // Operation, Transaction, OperationResponse
+├── wallets/           // wallets.Client (Smart Accounts)
+├── queries/           // queries.Client (chain queries)
+├── parsing/           // ABI + log decoding helpers
+├── extension/         // Extension SDK contract used by ext-* modules
+├── interfaces/        // Public interfaces for testing / mocking
+└── mocks/             // gomock-generated mocks
+```
+
+## Root client (`crec`)
+
+The root facade composes every sub-client behind one struct.
+
+```go
+import crec "github.com/smartcontractkit/crec-sdk"
+
+client, err := crec.NewClient(
+    "https://cre-connect.api.chain.link/v1",
+    os.Getenv("CREC_API_KEY"),
+    crec.WithOrgID(os.Getenv("CREC_ORG_ID")),
+)
+if err != nil { return err }
+
+// Optionally configure event verification for your DON as one unit
+// (tenant ID, threshold, signer set; provided at onboarding):
+// crec.WithDONConfig("3", 2, []string{...})
+
+// Sub-clients:
+client.Channels   // *channels.Client
+client.Watchers   // *watchers.Client
+client.Events     // *events.Client
+client.Transact   // *transact.Client
+client.Wallets    // *wallets.Client
+client.Queries    // *queries.Client
+```
+
+See [SDK Configuration](/crec/reference/sdk-configuration) for the complete `Option` table.
+
+[`pkg.go.dev/github.com/smartcontractkit/crec-sdk`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk)
+
+## `channels`
+
+Manage event/operation channels: the partition unit for watchers, operations, and event streams.
+
+| Method                                 | Description                                                                                        |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `Client.Create(ctx, input)`            | Create a new channel (`channels.CreateInput`).                                                     |
+| `Client.Get(ctx, channelID)`           | Fetch one channel.                                                                                 |
+| `Client.List(ctx, input)`              | List channels (`channels.ListInput` for pagination + filters); returns `(channels, hasMore, err)`. |
+| `Client.Update(ctx, channelID, input)` | Rename or change `Status` (e.g. archive) via `UpdateInput`.                                        |
+
+[`pkg.go.dev/github.com/smartcontractkit/crec-sdk/channels`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/channels)
+
+## `watchers`
+
+Provision and manage on-chain event subscriptions.
+
+| Method                                            | Description                                                 |
+| ------------------------------------------------- | ----------------------------------------------------------- |
+| `Client.CreateWithService(ctx, channelID, input)` | Create a watcher from a predefined service (e.g. `dta.v2`). |
+| `Client.CreateWithABI(ctx, channelID, input)`     | Create a watcher from raw contract ABI + event names.       |
+| `Client.Get(ctx, channelID, watcherID)`           | Fetch one watcher.                                          |
+| `Client.List(ctx, channelID, filters)`            | List watchers in a channel (`watchers.ListFilters`).        |
+| `Client.Update(ctx, channelID, watcherID, input)` | Rename a watcher.                                           |
+| `Client.Archive(ctx, channelID, watcherID)`       | Archive a watcher (async; transitions through `archiving`). |
+
+Polling helpers: `WaitForActive` and `WaitForArchived` poll `Get` on a fixed-interval ticker (default 2s, configurable via `crec.WithWatcherPolling`) until the watcher reaches the requested status, the deadline elapses, or a permanent error is returned. Transient errors (`429`, `5xx`, common network errors) classified by `isTransientStatusCode` are logged and the loop continues to the next tick; see [Error Handling](/crec/reference/error-handling).
+
+[`pkg.go.dev/github.com/smartcontractkit/crec-sdk/watchers`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/watchers)
+
+## `events`
+
+Poll, search, verify, and decode events emitted to a channel.
+
+| Method                                                                                    | Description                                                                                                    |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `Client.Poll(ctx, channelID, filters)`                                                    | Returns `(events, hasMore, err)`.                                                                              |
+| `Client.SearchEvents(ctx, channelID, params)`                                             | Historical search with `apiClient.GetChannelsChannelIdEventsSearchParams`.                                     |
+| `Client.Verify(event)` / `VerifyWithOrgID` / `VerifyWithWorkflowOwner`                    | Cryptographic verification of `watcher.event` envelopes.                                                       |
+| `Client.VerifyOperationStatus(event)` (+ `WithOrgID` / `WithWorkflowOwner` variants)      | Verification of `operation.status` envelopes, including `confirmed_latest`, `confirmed_safe`, and `confirmed`. |
+| `Client.VerifyQueryStatus(event)` (+ `WithOrgID` / `WithWorkflowOwner` variants)          | Verification of `query.status` envelopes.                                                                      |
+| `Client.VerifyOCRSignatures(ocrReport, ocrContext, signatures)`                           | Lower-level OCR signature verification (any event type).                                                       |
+| `Client.Decode(event, payload)`                                                           | Re-marshal an `apiClient.Event` into a user-supplied struct.                                                   |
+| `Client.DecodeVerifiableEvent(payload)`                                                   | Decode a `WatcherEventPayload` into the canonical `models.VerifiableEvent`.                                    |
+| `Client.DecodeOperationStatusVerifiableEvent(payload)`                                    | Same, for `OperationStatusPayload`.                                                                            |
+| `Client.DecodeQueryStatusVerifiableEvent(payload)`                                        | Same, for `QueryStatusPayload`.                                                                                |
+| `Client.DecodeChainQueryVerifiableResult(b64)`                                            | Decode a base64 `verifiable_result` directly.                                                                  |
+| `Client.EventHash(payload)` / `OperationStatusHash(payload)` / `QueryStatusHash(payload)` | Compute the event hash for each payload type.                                                                  |
+| `Client.ToJSON(event)`                                                                    | JSON serialization helper.                                                                                     |
+| `Client.WorkflowOwnerFromOrgID(orgID)`                                                    | Derive the workflow owner address from an org ID.                                                              |
+
+Sentinel errors live in `events` (selection):
+
+- `events.ErrChannelNotFound`, `events.ErrPollEvents`, `events.ErrSearchEvents`, `events.ErrBadRequest`
+- `events.ErrVerifyEvent`, `events.ErrInvalidEventHash`, `events.ErrVerificationNotConfigured`
+- `events.ErrOnlyWatcherEventsSupported`, `events.ErrOnlyOperationStatusSupported`, `events.ErrOnlyQueryStatusSupported`
+- `events.ErrOrgIDOrWorkflowOwnerReq`, `events.ErrOrgIDRequired`, `events.ErrWorkflowOwnerRequired`, `events.ErrDeriveWorkflowOwner`
+- `events.ErrNoOCRProofs`, `events.ErrMultipleOCRProofs`, `events.ErrOCRReportTooShort`, `events.ErrParseOCRReport`, `events.ErrParseOCRContext`, `events.ErrParseSignature`, `events.ErrRecoverPubKeyFromSignature`
+
+See [Verify Event Signatures](/crec/guides/events/verify-signatures) and [Event Verification](/crec/concepts/event-verification).
+
+[`pkg.go.dev/github.com/smartcontractkit/crec-sdk/events`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/events)
+
+## `transact`
+
+Build, sign, and submit operations. Operations can be created with a signature (immediately relayed) or without a signature as drafts (held in `pending_signature` until finalized). See [Draft Operations](/crec/concepts/drafts).
+
+| Method                                                                                      | Description                                                                    |
+| ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `Client.SignOperation(ctx, op, signer, chainSelector)`                                      | Produce the EIP-712 hash and ECDSA signature for an `Operation`.               |
+| `Client.SignOperationHash(ctx, opHash, signer)`                                             | Sign a pre-computed operation hash.                                            |
+| `Client.HashOperation(op, chainSelector)`                                                   | Compute the EIP-712 digest offline (for deferred signing).                     |
+| `Client.SendSignedOperation(ctx, channelID, op, signature, chainSelector)`                  | Submit a signed operation.                                                     |
+| `Client.ExecuteOperation(ctx, channelID, signer, op, chainSelector)`                        | Sign and submit in one call.                                                   |
+| `Client.ExecuteTransactions(ctx, channelID, signer, account, txs, deadline, chainSelector)` | Convenience wrapper that builds and submits the `Operation` for you.           |
+| `Client.CreateOperation(ctx, input)`                                                        | Lower-level submission via `CreateOperationInput`.                             |
+| `Client.SendDraftOperation(ctx, channelID, op, chainSelector, txPreviews)`                  | Create an unsigned draft operation.                                            |
+| `Client.CreateUnsignedDraftOperation(ctx, input)`                                           | Low-level draft creation with explicit input fields.                           |
+| `Client.ExecuteDraftOperation(ctx, channelID, operationID, digest, signer)`                 | Sign digest + finalize draft in one call.                                      |
+| `Client.SendSignedDraftOperation(ctx, channelID, operationID, digest, signature)`           | Finalize a draft with a pre-computed signature.                                |
+| `Client.CancelDraftOperation(ctx, channelID, operationID)`                                  | Cancel a pending draft.                                                        |
+| `Client.GetOperation(ctx, channelID, operationID)`                                          | Fetch one operation.                                                           |
+| `Client.ListOperations(ctx, input)`                                                         | List operations (`ListOperationsInput`); returns `(operations, hasMore, err)`. |
+
+Subpackages:
+
+- [`transact/types`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/transact/types): `Operation`, `Transaction`, `OperationResponse`, status enums.
+- [`transact/eip712`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/transact/eip712): typed-data domain + payload assembly.
+- [`transact/signer`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/transact/signer): `Signer` and `TypedDataSigner` interfaces.
+
+## `transact/signer/*`
+
+Each subpackage implements `signer.Signer` (and optionally `signer.TypedDataSigner`):
+
+| Package                                                                                            | Use case                   | Notes                           |
+| -------------------------------------------------------------------------------------------------- | -------------------------- | ------------------------------- |
+| [`local`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/transact/signer/local)           | Dev / test                 | ECDSA from a raw private key.   |
+| [`kms`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/transact/signer/kms)               | Production ECDSA           | AWS KMS HSM-backed.             |
+| [`vault`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/transact/signer/vault)           | RSA or non-secp256k1 ECDSA | HashiCorp Vault Transit.        |
+| [`fireblocks`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/transact/signer/fireblocks) | Fireblocks-managed wallets | Raw-hash + EIP-712 typed-data.  |
+| [`privy`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/transact/signer/privy)           | Embedded user wallets      | `personal_sign` over Privy API. |
+
+To plug in a custom custody system, implement `signer.Signer` directly; see [Custom Signer](/crec/guides/signers/custom).
+
+## `wallets`
+
+Provision and manage Smart Accounts.
+
+| Method                                | Description                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------ |
+| `Client.Create(ctx, input)`           | Provision an ECDSA or RSA wallet (`wallets.CreateInput`).                |
+| `Client.Get(ctx, walletID)`           | Fetch one wallet.                                                        |
+| `Client.List(ctx, input)`             | List wallets (`wallets.ListInput`); returns `(wallets, hasMore, err)`.   |
+| `Client.Update(ctx, walletID, input)` | Rename a wallet.                                                         |
+| `Client.Archive(ctx, walletID)`       | Archive a wallet (synchronous; returns the wallet in `archived` status). |
+
+[`pkg.go.dev/github.com/smartcontractkit/crec-sdk/wallets`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/wallets)
+
+## `queries`
+
+Submit asynchronous, DON-backed, verifiable chain queries. See [Chain Queries](/crec/concepts/queries).
+
+| Method                                              | Description                                                      |
+| --------------------------------------------------- | ---------------------------------------------------------------- |
+| `Client.Create(ctx, input)`                         | Generic create with raw `EVMCallQueryParams`.                    |
+| `Client.CreateEVMCall(ctx, input)`                  | Create an `evm_call` query (async, no wait).                     |
+| `Client.Get(ctx, channelID, queryID)`               | Fetch one query.                                                 |
+| `Client.List(ctx, input)`                           | List queries (`ListInput`); returns `(queries, hasMore, err)`.   |
+| `Client.Wait(ctx, channelID, queryID, maxWaitTime)` | Poll until terminal status (`completed` / `failed` / `expired`). |
+| `Client.CallContract(ctx, input)`                   | One-shot: create + wait + decode (raw return bytes).             |
+| `Client.CallContractWithABI(ctx, input)`            | One-shot: create + wait + decode + ABI unpack.                   |
+
+Package-level helpers:
+
+| Function                                      | Description                                        |
+| --------------------------------------------- | -------------------------------------------------- |
+| `Latest()` / `Finalized()`                    | Block selection helpers.                           |
+| `BlockNumber(n)` / `BlockNumberFromString(s)` | Explicit block number selection.                   |
+| `ResultFromQuery(query)`                      | Build a decoded `CallContractResult` from a query. |
+| `DecodeVerifiableResult(b64)`                 | Decode a base64 `verifiable_result`.               |
+| `IsTerminalStatus(status)`                    | Check if a `QueryStatus` is terminal.              |
+| `NewClient(opts)`                             | Create a standalone `queries.Client`.              |
+
+Key types: `CallContractResult`, `CallContractABIResult`, `ResolvedBlock`, `QueryError`, `EVMCallInput`, `CallContractInput`, `CallContractWithABIInput`.
+
+[`pkg.go.dev/github.com/smartcontractkit/crec-sdk/queries`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/queries)
+
+## `parsing`
+
+Helpers for ABI-encoding/decoding and Solidity log parsing. Used internally by `events.Decode` and the DTA v2 extension; useful for advanced integrations that want to roll their own decoders.
+
+[`pkg.go.dev/github.com/smartcontractkit/crec-sdk/parsing`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk/parsing)
+
+## `extension`
+
+Defines the `Extension` interface that ext-modules (DTA, future extensions) implement. Most consumers don't import this directly: it's a contract for extension authors.
+
+## `interfaces` and `mocks`
+
+`interfaces` exposes minimal interfaces over each sub-client for use in user code (e.g. for accepting fakes in tests). `mocks` ships gomock-generated test doubles for every interface.
+
+```go
+import (
+    "github.com/smartcontractkit/crec-sdk/interfaces"
+    "github.com/smartcontractkit/crec-sdk/mocks"
+)
+
+func mySvc(events interfaces.EventsClient) { /* ... */ }
+
+// In tests:
+ctrl := gomock.NewController(t)
+mockEvents := mocks.NewMockEventsClient(ctrl)
+mockEvents.EXPECT().Poll(gomock.Any(), "ch-1").Return(...)
+mySvc(mockEvents)
+```
+
+## DTA v2 extension module
+
+```
+github.com/smartcontractkit/crec-sdk-ext-dta/v2
+├── doc.go
+├── decode.go              // dtav2.DecodeFromEvent
+├── operations/            // Prepare* operation builders
+├── events/                // Typed event payloads + enums
+└── watcher/bundle/        // bundle.Get(): watcher provisioning bundle
+```
+
+| Sub-package      | Entry point                                               | Notes                                                        |
+| ---------------- | --------------------------------------------------------- | ------------------------------------------------------------ |
+| `operations`     | `New(opts)`; `ext.Prepare*Operation(...)`                 | Returns ready-to-sign `types.Operation`.                     |
+| `events`         | `events.SubscriptionRequested`, `events.RequestStatus`, … | Typed payloads + Solidity-aligned enums.                     |
+| `watcher/bundle` | `bundle.Get()`                                            | Watcher provisioning input for `watchers.CreateWithService`. |
+| (root)           | `dtav2.DecodeFromEvent(ctx, ev)`                          | One-call decoder for DTA events.                             |
+
+[`pkg.go.dev/github.com/smartcontractkit/crec-sdk-ext-dta/v2`](https://pkg.go.dev/github.com/smartcontractkit/crec-sdk-ext-dta/v2)
+
+## Versioning
+
+- The Go SDK module path is unversioned (`github.com/smartcontractkit/crec-sdk`); pin to a tagged release in `go.mod`.
+- The DTA extension repository (`github.com/smartcontractkit/crec-sdk-ext-dta`) uses **contract versioning** to expose multiple deployed contract ABIs side-by-side as separate import paths (`/v1`, `/v2`, …). Per the extension's README, this is separate from Go module semantic versioning. Choose the import path that matches the deployed contract ABI you target.
+
+## See also
+
+- [SDK Configuration](/crec/reference/sdk-configuration): every constructor option.
+- [Error Handling](/crec/reference/error-handling): sentinel errors and retry behaviour.
+- [Event Payloads](/crec/reference/event-payloads): every payload struct returned by `events.Client`.

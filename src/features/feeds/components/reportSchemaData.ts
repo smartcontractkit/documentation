@@ -21,11 +21,17 @@ export interface SchemaDefinition {
 // Fields present in every report schema
 const COMMON_FIELDS: SchemaField[] = [
   { field: "feedId", type: "bytes32", description: "Unique identifier for the Data Streams feed" },
-  { field: "validFromTimestamp", type: "uint32", description: "Earliest timestamp when the price is valid (seconds)" },
+  {
+    field: "validFromTimestamp",
+    type: "uint32",
+    description: "Earliest timestamp when the price is valid (seconds)",
+    link: { label: "How report timestamps work", href: "/data-streams/how-report-timestamps-work" },
+  },
   {
     field: "observationsTimestamp",
     type: "uint32",
     description: "Latest timestamp when the price is valid (seconds)",
+    link: { label: "How report timestamps work", href: "/data-streams/how-report-timestamps-work" },
   },
   { field: "nativeFee", type: "uint192", description: "Legacy onchain verification fee field" },
   {
@@ -198,7 +204,11 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       { field: "bidVolume", type: "int192", description: "Volume at bid price" },
       { field: "ask", type: "int192", description: "Median ask price" },
       { field: "askVolume", type: "int192", description: "Volume at ask price" },
-      { field: "lastTradedPrice", type: "int192", description: "Last traded price" },
+      {
+        field: "lastTradedPrice",
+        type: "int192",
+        description: "Last traded price. Availability and production support vary by stream.",
+      },
       {
         field: "marketStatus",
         type: "uint32",

@@ -1,0 +1,416 @@
+---
+title: "Deploy the adapter"
+description: "Deploy a Cross-Chain Vault Adapter for your ERC-4626 vault on Ethereum Sepolia through the factory, accept requests from Arbitrum Sepolia, set an adapter fee, and fund the adapter for return legs."
+---
+
+import { AnchoredAccordion, Aside, GitHubCard } from "@components"
+
+The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from. Here, Ethereum Sepolia is the hub chain and Arbitrum Sepolia is the source chain.
+
+In this tutorial, we will:
+
+1. Deploy an adapter through the factory at `0x12A0f45738F3DDA931C4D3ECd1b267355e587921` on Ethereum Sepolia, with your vault allowlisted and Arbitrum Sepolia accepted as a source chain.
+2. Set an adapter fee of 0.001 CCIP-BnM on output that returns to Arbitrum Sepolia.
+3. Set the return format for the CCIP 2.0 lane to Arbitrum Sepolia, and fund the adapter with 0.01 Ethereum Sepolia ETH for return-leg CCIP fees.
+4. Check the configuration and preview a deposit and a redemption.
+
+> This tutorial continues from [Deploy the vault and set up its share token](/solutions/cross-chain-vault-adapter/guides/deploy-the-vault), which deploys Vault CCIP-BnM (vCCIP-BnM), an ERC-4626 vault on Ethereum Sepolia whose asset is CCIP-BnM. You can use your own vault implementation instead.
+
+## Before you begin
+
+You need:
+
+- The `cross-chain-vault-adapters` repository, cloned and built, with all the required variables being set in the `.env` file. [Set up your development environment](/solutions/cross-chain-vault-adapter/guides/deploy-the-vault#set-up-your-development-environment) lists the tools and the steps.
+- A Foundry keystore for your wallet, which deploys the adapter and receives its three roles in this tutorial. Use the same keystore in every tutorial of this solution.
+- An ERC-4626 vault on Ethereum Sepolia. [Deploy the vault and set up its share token](/solutions/cross-chain-vault-adapter/guides/deploy-the-vault) deploys one.
+
+<Aside type="caution" title="Before you continue">
+- **Ethereum Sepolia ETH**: required for Ethereum Sepolia transactions. Get it from the [Chainlink faucet](https://faucets.chain.link). This tutorial also sends 0.01 Ethereum Sepolia ETH to the adapter for return-leg CCIP fees.
+- **Etherscan API key**: required for `--verify`, which publishes the source code of the contracts you deploy on Etherscan. Get one from [Etherscan](https://etherscan.io/myapikey).
+
+</Aside>
+
+<Aside type="tip" title="Bringing your own vault or adapter?">
+
+Skip only what you already have:
+
+- If you completed [Deploy the vault and set up its share token](/solutions/cross-chain-vault-adapter/guides/deploy-the-vault) in this terminal, your shell variables are set. Continue with [Configure the deployment](#configure-the-deployment).
+- If you bring your own vault, it must meet the [requirements](/solutions/cross-chain-vault-adapter#requirements).
+  Set `VAULT` to its address, and set `ETHEREUM_SEPOLIA_CCIP_BNM` to your vault's asset, as returned by `asset()`.
+  Use that asset address wherever `.env` below shows the CCIP-BnM address.
+  Adapter fees are in the asset's smallest units, so scale `1000000000000000` (0.001 of an 18-decimal token) to your asset's decimals.
+- If your vault's share token is not a cross-chain token yet, you can still deploy the adapter.
+  But until and unless you enable the share token on the lane, users can deposit only with delivery on Ethereum Sepolia: the adapter cannot send shares to Arbitrum Sepolia, and users there hold no shares to redeem.
+- If you already deployed an adapter for your vault, run `export ADAPTER=<your_adapter_address>` and continue with [Set the return format and fund the adapter](#fund-the-adapter).
+
+</Aside>
+
+<AnchoredAccordion title="Set your shell variables" number={1} depth={3}>
+
+Run every command in this tutorial from the root of the `cross-chain-vault-adapters` repository. Forge loads `.env` from there for every `forge script` run.
+
+The `cast` commands in this tutorial read the following variables from your shell. If you opened a new terminal since the previous tutorial, change to the repository root and set them again:
+
+```bash filename="Terminal"
+export KEYSTORE_NAME=your_keystore_name
+export ETHEREUM_SEPOLIA_RPC_URL=your_ethereum_sepolia_rpc_url
+export ETHEREUM_SEPOLIA_CCIP_BNM=0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
+export VAULT=<your_vault_address>
+```
+
+Set `MY_ADDRESS` to your keystore's address. `cast` asks for the keystore password:
+
+```bash filename="Terminal"
+export MY_ADDRESS=$(cast wallet address --account $KEYSTORE_NAME)
+echo $MY_ADDRESS
+```
+
+Confirm that `VAULT` is your vault and that its asset is CCIP-BnM:
+
+```bash filename="Terminal"
+cast call $VAULT "asset()(address)" --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call $VAULT "symbol()(string)" --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+The output shows the CCIP-BnM address and the share symbol:
+
+```bash filename="Terminal"
+0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
+"vCCIP-BnM"
+```
+
+</AnchoredAccordion>
+
+## Deploy and configure the adapter
+
+<AnchoredAccordion title="Configure the deployment" number={1} depth={3}>
+
+The `pnpm ccip:deploy` script reads its configuration from `.env`, calls `deploy` on the factory, and writes a deployment record.
+
+<GitHubCard
+  title="DeployAndActivateCrossChainERC4626Adapter.s.sol"
+  href="https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/script/ccip/DeployAndActivateCrossChainERC4626Adapter.s.sol"
+  iconName="github-svg-card"
+>
+  View the deployment script on GitHub.
+</GitHubCard>
+
+Print your wallet address and the vault address, which you paste into `.env`:
+
+```bash filename="Terminal"
+echo $MY_ADDRESS $VAULT
+```
+
+Open `.env` and set the following variables:
+
+```bash filename=".env"
+# CCIP Router on Ethereum Sepolia
+ROUTER=0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+
+# Role holders. This tutorial gives all three roles to your wallet.
+DEFAULT_ADMIN=<your_wallet_address>
+FEE_SETTER=<your_wallet_address>
+FEE_COLLECTOR=<your_wallet_address>
+
+# Accept deposits and redemptions
+DEPOSITS_ENABLED=true
+REDEEMS_ENABLED=true
+
+# The vault the adapter may call. TARGET_ENABLED defaults to true.
+VAULT_TARGET=<your_vault_address>
+
+# Accept messages from Arbitrum Sepolia (chain type 1 = EVM)
+CHAIN_SELECTORS=3478487238524512106
+CHAIN_TYPES=1
+
+# Adapter fee of 0.001 CCIP-BnM on output returned to Arbitrum Sepolia.
+# Row 1: deposits that return shares. Row 2: redemptions that return CCIP-BnM.
+FEE_DESTINATION_CHAIN_SELECTORS=3478487238524512106,3478487238524512106
+FEE_BRIDGED_TOKENS=<your_vault_address>,0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
+FEE_VALUES=1000000000000000,1000000000000000
+
+# Deploy through the existing factory on Ethereum Sepolia
+FACTORY=0x12A0f45738F3DDA931C4D3ECd1b267355e587921
+```
+
+What each setting does:
+
+- `ROUTER` is represents the CCIP Router address on Ethereum Sepolia, which you can verify from the [CCIP Directory](/ccip/directory/testnet/chain/ethereum-testnet-sepolia). The adapter stores it as the immutable `ROUTER`, so a wrong router means deploying a new adapter.
+- `DEFAULT_ADMIN`, `FEE_SETTER`, and `FEE_COLLECTOR` receive the adapter's three roles. The factory then renounces its own roles.
+  - See [Role handoff](/solutions/cross-chain-vault-adapter/reference/factory-contract#role-handoff).
+- `VAULT_TARGET` connects the adapter to your vault: the factory adds the vault to the adapter's allowlist, `enabledTargets`. Each user payload names the vault it targets, and the adapter rejects vaults that are not allowlisted.
+- `CHAIN_SELECTORS` and `CHAIN_TYPES` accept messages from Arbitrum Sepolia, whose selector number on the CCIP protocol is `3478487238524512106`. The adapter uses the same entry to encode return legs to that chain.
+- `FEE_DESTINATION_CHAIN_SELECTORS`, `FEE_BRIDGED_TOKENS`, and `FEE_VALUES` are parallel lists, one fee row per position.
+- The `FACTORY` variable being set makes the script deploy through an existing factory instead of deploying a new one.
+
+<Aside type="caution" title="Use a multisig for the admin role in production">
+  `DEFAULT_ADMIN_ROLE` controls source chains, the vault allowlist, the processing switches, and the adapter's native
+  gas token balance. Role changes take effect in one step, and if the last admin renounces the role, nobody can change
+  the configuration again.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Simulate the deployment" number={2} depth={3}>
+
+We recommend simulating the deployment against Ethereum Sepolia, before actually executing on-chain. Without the `--broadcast` flag, Forge sends no transaction, and `--sender` runs the simulation from your wallet address:
+
+```bash filename="Terminal"
+pnpm ccip:deploy --rpc-url $ETHEREUM_SEPOLIA_RPC_URL --sender $MY_ADDRESS
+```
+
+Before it simulates, the script performs a few checks:
+
+1. The `ROUTER` and `FACTORY` contracts have code,
+2. `FACTORY` should be an instance of the `CrossChainERC4626AdapterFactory 1.0.0`,
+3. `VAULT_TARGET` answers `asset()`,
+4. That the chain type should be a valid number.
+
+A successful simulation prints the configuration it would deploy (illustrative):
+
+```bash filename="Terminal"
+== Logs ==
+  Dry run: nothing was deployed. Re-run with --broadcast to deploy and write the deployment record.
+  CrossChainERC4626AdapterFactory: 0x12A0f45738F3DDA931C4D3ECd1b267355e587921
+  CrossChainERC4626Adapter:        0x...
+  Router:                          0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+  Default admin:                   0x...
+  Fee setter / collector:          0x... 0x...
+  Vault target (enabled):          0x... true
+  Deposits / redeems enabled:      true true
+  Chain configs / fee rows:        1 2
+...
+SIMULATION COMPLETE. To broadcast these transactions, add --broadcast and wallet configuration(s) to the previous command. See forge script --help for more.
+```
+
+Check that `Chain configs / fee rows` shows `1 2`. The adapter address in the simulation matches the real one only if nobody else deploys through the factory before you broadcast, so read the real address from the deployment record after the broadcast.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Broadcast the deployment" number={3} depth={3}>
+
+Finally, we can deploy the adapter. Forge asks for your keystore password, sends one transaction that calls `deploy` on the factory, and verifies the new adapter on Etherscan:
+
+```bash filename="Terminal"
+pnpm ccip:deploy --rpc-url $ETHEREUM_SEPOLIA_RPC_URL --account $KEYSTORE_NAME --broadcast --verify --delay 20 --retries 12
+```
+
+<Aside type="note" title="About verification">
+  - `--verify` reads `ETHERSCAN_API_KEY` from `.env`.
+</Aside>
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+== Logs ==
+  CrossChainERC4626AdapterFactory: 0x12A0f45738F3DDA931C4D3ECd1b267355e587921
+  CrossChainERC4626Adapter:        0x...
+  ...
+  Deployment record:               deployments/ccip/11155111.json
+
+  Next steps:
+   1. Fund the adapter with native gas for return legs (ADAPTER=<adapter> FUND_NATIVE_WEI=...).
+   2. For CCIP v2 lanes, set return-lane formats and finality with pnpm ccip:configure.
+   3. Verify the result with pnpm ccip:check.
+...
+ONCHAIN EXECUTION COMPLETE & SUCCESSFUL.
+...
+All (1) contracts were verified!
+```
+
+With `--broadcast`, the script writes a deployment record to `deployments/ccip/11155111.json`, where `11155111` is the Ethereum Sepolia chain ID.
+You can print it using this command:
+
+```bash filename="Terminal"
+cat deployments/ccip/11155111.json
+```
+
+The record lists the factory, the adapter, the router, the role holders, the vault, and the processing switches (illustrative):
+
+```json filename="deployments/ccip/11155111.json"
+{
+  "adapter": "0x...",
+  "chainId": 11155111,
+  "defaultAdmin": "0x...",
+  "depositsEnabled": true,
+  "factory": "0x12A0f45738F3DDA931C4D3ECd1b267355e587921",
+  "feeCollector": "0x...",
+  "feeSetter": "0x...",
+  "redeemsEnabled": true,
+  "router": "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59",
+  "vaultTarget": "0x..."
+}
+```
+
+Export the adapter address for the next steps. `pnpm ccip:configure` and `pnpm ccip:check` also read `ADAPTER` from your shell:
+
+```bash filename="Terminal"
+export ADAPTER=<your_adapter_address>
+echo $ADAPTER
+```
+
+Open `https://sepolia.etherscan.io/address/<ADAPTER>` and confirm that the **Contract** tab shows verified source code for `CrossChainERC4626Adapter`.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Set the return format and fund the adapter" number={4} depth={3} anchorId="fund-the-adapter">
+
+The adapter pays the CCIP fee for each return leg to Arbitrum Sepolia from its own Ethereum Sepolia ETH balance. With no balance, every request that returns output fails with `InsufficientNativeBalance` and becomes a failed message.
+
+<GitHubCard
+  title="ConfigureCrossChainERC4626Adapter.s.sol"
+  href="https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/script/ccip/ConfigureCrossChainERC4626Adapter.s.sol"
+  iconName="github-svg-card"
+>
+  View the configuration script on GitHub.
+</GitHubCard>
+
+The lane from Ethereum Sepolia to Arbitrum Sepolia is a CCIP 2.0 lane, and we need to tell the adapter that, using the `RETURN_LANE_FORMATS` param.
+
+We can do that in one run, alongside funding the adapter with Ethereum Sepolia ETH.
+
+```bash filename="Terminal"
+RETURN_LANE_SELECTORS=3478487238524512106 \
+RETURN_LANE_FORMATS=2 \
+FUND_NATIVE_WEI=10000000000000000 \
+  pnpm ccip:configure --rpc-url $ETHEREUM_SEPOLIA_RPC_URL --account $KEYSTORE_NAME --broadcast
+```
+
+- Before it sends anything, the script checks that `ADAPTER` reports `CrossChainERC4626Adapter 1.0.0`, so a mistyped address does not receive the Ethereum Sepolia ETH.
+- Setting the return format needs `DEFAULT_ADMIN_ROLE`. Funding needs no role: anyone can send Ethereum Sepolia ETH to the adapter.
+
+The script logs each setting it applied (illustrative):
+
+```bash filename="Terminal"
+== Logs ==
+  Return lane format set: 3478487238524512106 2
+  Funded adapter (wei):   10000000000000000
+```
+
+For what the return format and the other CCIP 2.0 settings control, see [CCIP 2.0 lanes](/solutions/cross-chain-vault-adapter/overview/how-it-works#ccip-20-lanes).
+
+</AnchoredAccordion>
+
+## Verify the adapter
+
+<AnchoredAccordion title="Run the deployment check" number={1} depth={3}>
+
+`pnpm ccip:check` reads the adapter and compares it with the values in `.env`:
+
+```bash filename="Terminal"
+pnpm ccip:check --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+The report shows the switches, the adapter's Ethereum Sepolia ETH balance, the role holders, the vault, and the settings for Arbitrum Sepolia (illustrative):
+
+```bash filename="Terminal"
+== Logs ==
+  Adapter:            0x...
+  typeAndVersion:     CrossChainERC4626Adapter 1.0.0
+  Router:             0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59
+  Deposits enabled:   true
+  Redeems enabled:    true
+  Native balance:     10000000000000000
+  DEFAULT_ADMIN holds role: 0x... true
+  FEE_SETTER holds role: 0x... true
+  FEE_COLLECTOR holds role: 0x... true
+  Vault target:       0x... true
+  Vault asset:        0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
+
+  Chain selector:     3478487238524512106
+    chain type:       EVM
+    return format:    GenericExtraArgsV3 basic (CCIP v2 lane)
+    inbound finality: 0x00000000
+    fee (share out):  1000000000000000
+    fee (asset out):  1000000000000000
+
+  Warnings:           0
+```
+
+Make sure that the report ends with `Warnings: 0`. The script prints each problem on a `WARNING:` line but still exits successfully, so read the count instead of relying on the exit code. An inbound finality of `0x00000000` is the default: the adapter accepts only messages that wait for finality.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Read the configuration with cast" number={2} depth={3}>
+
+Read the source chain, the vault allowlist, and the two fee rows directly from the adapter's public mappings:
+
+```bash filename="Terminal"
+cast call $ADAPTER "chains(uint64)(uint8)" 3478487238524512106 --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call $ADAPTER "enabledTargets(address)(bool)" $VAULT --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call $ADAPTER "assetFees(uint64,address)(uint256)" 3478487238524512106 $VAULT --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call $ADAPTER "assetFees(uint64,address)(uint256)" 3478487238524512106 $ETHEREUM_SEPOLIA_CCIP_BNM --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+The output has one line per call:
+
+```bash filename="Terminal"
+1
+true
+1000000000000000 [1e15]
+1000000000000000 [1e15]
+```
+
+| Call                                  | Value              | Meaning                                                                      |
+| ------------------------------------- | ------------------ | ---------------------------------------------------------------------------- |
+| `chains`                              | `1`                | Arbitrum Sepolia is an accepted source chain of type EVM (`0` NONE, `2` SVM) |
+| `enabledTargets`                      | `true`             | The adapter may call your vault                                              |
+| `assetFees` with the vault address    | `1000000000000000` | 0.001 CCIP-BnM fee on deposits whose shares return to Arbitrum Sepolia       |
+| `assetFees` with the CCIP-BnM address | `1000000000000000` | 0.001 CCIP-BnM fee on redemptions whose CCIP-BnM returns to Arbitrum Sepolia |
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Preview the adapter fee" number={3} depth={3}>
+
+[`preview`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#preview) simulates a request with the same routing and adapter fee as a real message from Arbitrum Sepolia. Preview a deposit of 0.1 CCIP-BnM (`100000000000000000` wei) whose shares return to Arbitrum Sepolia:
+
+```bash filename="Terminal"
+cast call $ADAPTER "preview(address,address,uint256,bool,uint64)(uint256)" \
+  $ETHEREUM_SEPOLIA_CCIP_BNM $VAULT 100000000000000000 true 3478487238524512106 \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+The adapter deducts the 0.001 CCIP-BnM fee before it deposits, so 0.099 CCIP-BnM enters the vault, and the 1:1 vault mints 0.099 vCCIP-BnM:
+
+```bash filename="Terminal"
+99000000000000000 [9.9e16]
+```
+
+Preview the same deposit with delivery on Ethereum Sepolia by passing `false`. The adapter charges no fee when output stays on Ethereum Sepolia:
+
+```bash filename="Terminal"
+cast call $ADAPTER "preview(address,address,uint256,bool,uint64)(uint256)" \
+  $ETHEREUM_SEPOLIA_CCIP_BNM $VAULT 100000000000000000 false 3478487238524512106 \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+The output is the full 0.1 vCCIP-BnM:
+
+```bash filename="Terminal"
+100000000000000000 [1e17]
+```
+
+Preview a redemption of 0.1 vCCIP-BnM whose CCIP-BnM returns to Arbitrum Sepolia. For a redemption, the token is the vault address:
+
+```bash filename="Terminal"
+cast call $ADAPTER "preview(address,address,uint256,bool,uint64)(uint256)" \
+  $VAULT $VAULT 100000000000000000 true 3478487238524512106 \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+The vault redeems 0.1 vCCIP-BnM for 0.1 CCIP-BnM, and the adapter deducts the 0.001 CCIP-BnM fee:
+
+```bash filename="Terminal"
+99000000000000000 [9.9e16]
+```
+
+A user sets `minimumOut` in the payload from this value minus a tolerance for exchange-rate movement. See [Slippage protection](/solutions/cross-chain-vault-adapter/overview/how-it-works#slippage-protection).
+
+</AnchoredAccordion>
+
+<Aside type="note" title="Where to go next">
+
+1. [Deposit from a source chain](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain): as a user on Arbitrum Sepolia, deposit 0.1 CCIP-BnM into the vault through this adapter and receive the shares on Arbitrum Sepolia.
+2. Stay in this terminal and in the `cross-chain-vault-adapters` directory.
+
+</Aside>

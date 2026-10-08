@@ -1,0 +1,210 @@
+---
+import { SOLUTION_PRODUCTS, SOLUTIONS_HUB_ENABLED } from "~/config/solutions/index.ts"
+import type { Solution } from "~/config/solutions/index.ts"
+import type { ResolvedNavGroup } from "~/utils/solutions"
+import SolutionGitHubButton from "./SolutionGitHubButton.astro"
+import SolutionMobileNavigation from "./SolutionMobileNavigation"
+
+interface Props {
+  solution: Solution
+  groups: ResolvedNavGroup[] | null
+  currentPage: string
+}
+const { solution, groups, currentPage } = Astro.props
+
+const products = solution.products.map((p) => SOLUTION_PRODUCTS[p]).filter(Boolean)
+---
+
+<div class="solution-nav">
+  <div class:list={["solution-nav-inner", { "has-mobile-navigation": groups !== null }]}>
+    {
+      groups && (
+        <div class="solution-mobile-navigation">
+          <SolutionMobileNavigation client:media="(max-width: 50em)" title={solution.title} {groups} {currentPage} />
+        </div>
+      )
+    }
+    {
+      SOLUTIONS_HUB_ENABLED ? (
+        <nav class="solution-breadcrumb" aria-label="Breadcrumb">
+          {/*
+           * The breadcrumb links back to the hub. The product badges below are the other
+           * return path: a reader who arrived from the CCIP sidebar can go back to CCIP.
+           */}
+          <a class="breadcrumb-root" href="/solutions">
+            All Chainlink Solutions
+          </a>
+          <span class="breadcrumb-separator" aria-hidden="true">
+            /
+          </span>
+          <span class="breadcrumb-current" aria-current="page">
+            {solution.title}
+          </span>
+        </nav>
+      ) : (
+        /* No hub to go back to while SOLUTIONS_HUB_ENABLED is false: title only, no breadcrumb. */
+        <div class="solution-breadcrumb">
+          <span class="breadcrumb-current">{solution.title}</span>
+        </div>
+      )
+    }
+    {
+      products.length > 0 && (
+        <span class="solution-products">
+          <span class="uses-label">Uses</span>
+          {products.map((p) => (
+            <a class="product-badge" href={p.href}>
+              {p.label}
+            </a>
+          ))}
+        </span>
+      )
+    }
+    {solution.repoUrl && <SolutionGitHubButton class="repo-link" href={solution.repoUrl} />}
+  </div>
+</div>
+
+<style>
+  .solution-nav {
+    position: sticky;
+    top: var(--space-16x);
+    z-index: 5;
+    padding: var(--space-4x) 0;
+    background: rgba(250, 250, 251, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid #ecedef;
+    box-shadow: var(--space-0x) var(--space-1x) var(--space-3x) var(--space-0x) #0000000f;
+    /* Mirrors DocsNavigationDesktop: collapses to top: 0 when the site header hides. */
+    transition: top 0.5s ease;
+  }
+
+  .solution-nav.is-header-hidden {
+    top: 0;
+  }
+
+  .solution-nav-inner {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-4x);
+    width: 100%;
+    margin: 0 auto;
+    max-width: min(calc(1505px - 2 * var(--space-4x)), calc(100% - 2 * var(--space-4x)));
+    padding: 0 var(--space-4x);
+  }
+
+  .solution-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2x);
+    min-width: 0;
+  }
+
+  .solution-mobile-navigation {
+    display: none;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .breadcrumb-root {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--Page-Foreground-Muted, #6c7585);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .breadcrumb-root:hover {
+    color: var(--blue-600, #0847f7);
+    text-decoration: underline;
+  }
+
+  .breadcrumb-separator {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+
+  .breadcrumb-current {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0b101c;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+  }
+
+  .solution-products {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2x);
+    margin-left: auto;
+  }
+
+  .uses-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: #6c7585;
+    line-height: 1;
+  }
+
+  .product-badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: #f5f7fa;
+    color: #5a6175;
+    border: 1px solid #e5e7eb;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .product-badge:hover {
+    color: var(--blue-600, #0847f7);
+    border-color: var(--blue-600, #0847f7);
+  }
+
+  @media (max-width: 49.999em) {
+    .has-mobile-navigation .solution-breadcrumb {
+      display: none;
+    }
+
+    .solution-mobile-navigation {
+      display: block;
+    }
+  }
+
+  @media (max-width: 50em) {
+    .uses-label,
+    .repo-link {
+      display: none;
+    }
+
+    .breadcrumb-root,
+    .breadcrumb-separator {
+      font-size: 12px;
+    }
+
+    .breadcrumb-current {
+      font-size: 14px;
+    }
+  }
+</style>
+
+<script>
+  // The site header hides on scroll-down and publishes its state through the navBarInfo
+  // nanostore (see src/components/Header/NavBar.tsx). DocsNavigation subscribes to it as a
+  // React island; this bar is a plain Astro component, so subscribe in vanilla JS instead.
+  // Same contract: when the header hides, the bar sticks to the top of the viewport.
+  import { navBarInfo } from "~/components/Header/useNavBar/navBarStore.ts"
+
+  const bar = document.querySelector(".solution-nav")
+
+  navBarInfo.subscribe((info) => {
+    bar?.classList.toggle("is-header-hidden", !!info?.hidden)
+  })
+</script>

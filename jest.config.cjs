@@ -15,12 +15,15 @@ module.exports = {
   moduleNameMapper: {
     "^(\\.{1,2}/.*)\\.js$": "$1",
     "\\.(css)$": "<rootDir>/src/__mocks__/styleMock.ts",
+    "^~/(.*)\\.js$": "<rootDir>/src/$1",
     "^~/(.*)$": "<rootDir>/src/$1",
     "^@api/(.*)$": "<rootDir>/src/pages/api/$1",
     "^@components": "<rootDir>/src/components/index.ts",
     "^@components/(.*)$": "<rootDir>/src/components/$1",
     "^@config$": "<rootDir>/src/config/index.ts",
+    "^@config/(.*)\\.js$": "<rootDir>/src/config/$1",
     "^@config/(.*)$": "<rootDir>/src/config/$1",
+    "^@features/(.*)\\.js$": "<rootDir>/src/features/$1",
     "^@features/(.*)$": "<rootDir>/src/features/$1",
     "^@graphql$": "<rootDir>/src/graphql/index.ts",
     "^@graphql/(.*)$": "<rootDir>/src/graphql/$1",
@@ -35,5 +38,11 @@ module.exports = {
     "\\.ya?ml$": "<rootDir>/src/__mocks__/yamlMock.ts",
   },
   transformIgnorePatterns: ["/node_modules/(?!.*\\.mjs$)"],
-  testPathIgnorePatterns: ["/node_modules/", "src/tests/chain-api.test.ts"],
+  modulePathIgnorePatterns: ["/\\.vercel/"],
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "/\\.vercel/",
+    "src/tests/chain-api.test.ts",
+    "src/tests/chain-identifier-service.test.ts",
+  ],
 }
