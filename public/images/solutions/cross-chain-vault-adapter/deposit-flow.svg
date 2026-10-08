@@ -1,30 +1,31 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 970" width="800" height="970" role="img" font-family="Arial, Helvetica, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 850" width="800" height="850" role="img" font-family="Arial, Helvetica, sans-serif">
   <title>Deposit flow through the Cross-Chain Vault Adapter</title>
-  <desc>Numbered steps of a deposit. 1: on the source chain, the user sends the asset and the payload to the adapter through the CCIP Router. 2: CCIP verifies and delivers the message; on CCIP 2.0 lanes the verifier and finality policy are checked first. On the hub chain, in one transaction: 3: the adapter validates the source chain, the token count, and the 128-byte payload. 4: the asset was received, so the request is a deposit; the vault must be allowlisted, the amount above zero, and deposits enabled. 5: only when returning, the adapter fee is deducted from the asset. 6: the adapter deposits into the vault and receives the shares. 7: the adapter checks that the shares are above zero and at least minimumOut. 8: either local delivery of the shares to the beneficiary on the hub chain, or, dashed, the adapter sends the shares back over CCIP and pays the CCIP fee in the native gas token. 9, dashed: the beneficiary receives the shares on the source chain through a second CCIP message.</desc>
+  <desc>Numbered steps of a deposit. 1: on the source chain, the user sends the asset and the payload to the adapter through the CCIP Router. 2: CCIP verifies and delivers the message; on CCIP 2.0 lanes the verifier and finality policy are checked first. On the hub chain, in one transaction: 3: the adapter validates the source chain, the token count, and the 128-byte payload. 4: the asset was received, so the request is a deposit; the vault must be allowlisted, the amount above zero, and deposits enabled. 5: only when returning, the adapter fee is deducted from the asset. 6: the adapter deposits into the vault and receives the shares. 7: the adapter checks that the shares are above zero and at least minimumOut. 8a: local delivery of the shares to the beneficiary on the hub chain. 8b, dashed: the adapter sends the shares back over CCIP and pays the CCIP fee in the native gas token. 9, dashed: the beneficiary receives the shares through a second, later CCIP message on the same source chain; the diagram shows one source-chain region holding both step 1 and step 9, because a return goes only to the chain the request came from.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
       <path d="M0 0 L10 5 L0 10 z" fill="#000000"/>
     </marker>
   </defs>
-  <rect x="0" y="0" width="800" height="970" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="800" height="850" fill="#FFFFFF"/>
 
   <g font-family="Arial, Helvetica, sans-serif" fill="#000000">
-    <!-- Source chain region (send) -->
-    <rect x="20" y="20" width="760" height="110" fill="none" stroke="#000000" stroke-width="1.5"/>
-    <text x="36" y="42" font-size="12">Source chain</text>
+    <!-- Source chain region: the request leaves from here, and the return leg arrives here -->
+    <rect x="20" y="20" width="760" height="120" fill="none" stroke="#000000" stroke-width="1.5"/>
+    <text x="36" y="38" font-size="12">Source chain</text>
 
-    <rect x="160" y="58" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
-    <text x="400" y="83" font-size="14" text-anchor="middle">1. User sends the asset and the payload</text>
-    <text x="400" y="103" font-size="12" text-anchor="middle">One CCIP message to the adapter through the CCIP Router</text>
+    <rect x="50" y="48" width="340" height="76" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="220" y="70" font-size="14" text-anchor="middle">1. User sends the asset and the payload</text>
+    <text x="220" y="90" font-size="12" text-anchor="middle">One CCIP message to the adapter</text>
+    <text x="220" y="106" font-size="12" text-anchor="middle">through the CCIP Router</text>
 
-    <line x1="400" y1="118" x2="400" y2="150" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <path d="M220 124 V135 H400 V156" fill="none" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
 
     <!-- CCIP -->
-    <rect x="160" y="150" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
-    <text x="400" y="175" font-size="14" text-anchor="middle">2. CCIP verifies and delivers the message</text>
-    <text x="400" y="195" font-size="12" text-anchor="middle">CCIP 2.0 lanes: verifier and finality policy checked first</text>
+    <rect x="160" y="156" width="480" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+    <text x="400" y="181" font-size="14" text-anchor="middle">2. CCIP verifies and delivers the message</text>
+    <text x="400" y="201" font-size="12" text-anchor="middle">CCIP 2.0 lanes: verifier and finality policy checked first</text>
 
-    <line x1="400" y1="210" x2="400" y2="268" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <line x1="400" y1="216" x2="400" y2="268" stroke="#000000" stroke-width="1.5" marker-end="url(#arrow)"/>
 
     <!-- Hub chain region -->
     <rect x="20" y="230" width="760" height="554" fill="none" stroke="#000000" stroke-width="1.5"/>
@@ -64,25 +65,23 @@
     <path d="M400 684 H590 V704" fill="none" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
 
     <rect x="40" y="704" width="340" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
-    <text x="210" y="729" font-size="14" text-anchor="middle">8. Local delivery</text>
+    <text x="210" y="729" font-size="14" text-anchor="middle">8a. Local delivery</text>
     <text x="210" y="749" font-size="12" text-anchor="middle">Shares sent to the beneficiary on this chain</text>
 
     <rect x="420" y="704" width="340" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <text x="590" y="729" font-size="14" text-anchor="middle">8. Return to the source chain</text>
+    <text x="590" y="729" font-size="14" text-anchor="middle">8b. Return to the source chain</text>
     <text x="590" y="749" font-size="12" text-anchor="middle">Adapter pays the CCIP fee in the native gas token</text>
 
-    <line x1="590" y1="764" x2="590" y2="842" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+    <!-- Return leg: a second CCIP message back to the same source chain -->
+    <line x1="700" y1="704" x2="700" y2="124" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
 
-    <!-- Source chain region (return) -->
-    <rect x="20" y="804" width="760" height="116" fill="none" stroke="#000000" stroke-width="1.5"/>
-    <text x="36" y="826" font-size="12">Source chain</text>
-
-    <rect x="420" y="842" width="340" height="60" fill="#FFFFFF" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <text x="590" y="867" font-size="14" text-anchor="middle">9. Beneficiary receives the shares</text>
-    <text x="590" y="887" font-size="12" text-anchor="middle">Delivered by a second CCIP message</text>
+    <!-- Step 9 is drawn last so assistive technologies read the steps in numeric order -->
+    <rect x="410" y="48" width="340" height="76" fill="#FFFFFF" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="580" y="80" font-size="14" text-anchor="middle">9. Beneficiary receives the shares</text>
+    <text x="580" y="100" font-size="12" text-anchor="middle">Delivered by a second CCIP message</text>
 
     <!-- Legend -->
-    <line x1="40" y1="946" x2="90" y2="946" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
-    <text x="100" y="950" font-size="12">Dashed: only when the payload requests return to the source chain</text>
+    <line x1="40" y1="816" x2="90" y2="816" stroke="#000000" stroke-width="1.5" stroke-dasharray="6 4"/>
+    <text x="100" y="820" font-size="12">Dashed: only when the payload requests return to the source chain</text>
   </g>
 </svg>
