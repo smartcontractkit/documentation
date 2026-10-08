@@ -7,11 +7,25 @@ import { Aside, ClickToZoom } from "@components"
 
 ## What the adapter does
 
-With the Cross-Chain Vault Adapter, a vault team can accept deposits and redemptions from users on other chains without changing its vault or deploying anything on those chains. The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from. The vault is the product, CCIP is the bridge, and the adapter is how users on other chains reach the vault. The vault holds one asset and earns yield. The adapter is a contract on the hub chain that receives tokens and instructions through CCIP and calls the vault for the user.
+With the Cross-Chain Vault Adapter, a vault team can accept deposits and redemptions from users on other chains. The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from. The vault is the product, CCIP is the bridge, and the adapter is how users on other chains reach the vault. The vault holds one asset and earns yield. The adapter is a contract on the hub chain that receives tokens and instructions through CCIP and calls the vault for the user.
 
-Without the adapter, a user on a source chain who wants shares in a vault on the hub chain must bridge the asset, switch their wallet to the hub chain, get the native gas token there, approve the vault, deposit, and bridge the shares back. With the adapter, the user approves the CCIP Router and sends one CCIP message from the source chain. The message carries the asset and a 128-byte payload that names the vault, the beneficiary, the minimum output, the delivery option, and a local refund address.
+Without the adapter, a user on a source chain who wants those shares in a vault on the hub chain must:
 
-The adapter deposits the asset, then delivers the shares on the hub chain or returns them to the source chain. Redemptions work in reverse. [How it works](/solutions/cross-chain-vault-adapter/overview/how-it-works) covers each step.
+1. Bridge the asset manually from the source chain to the hub chain,
+2. Switch their wallet to the hub chain,
+3. Get some native gas token on the hub chain,
+4. Approve the vault on the hub chain,
+5. Deposit into the vault on the hub chain, and,
+6. Bridge the shares back ot the source chain.
+
+With the Chainlink Cross-Chain Vault Adapter on the other hand, the user:
+
+1. Approves the CCIP Router and sends one CCIP message from the source chain. \
+   The message carries the asset and a 128-byte payload that names the vault, the beneficiary, the minimum output, the delivery option, and a local refund address.
+
+And that's it. The user doesn't have to do anything else.
+
+The adapter deposits the asset, then delivers the shares on the hub chain or returns them to the source chain back to the user. Redemptions work the same way, just in the reverse direction. [How it works](/solutions/cross-chain-vault-adapter/overview/how-it-works) covers each step.
 
 The following diagram shows a deposit from a source chain into a vault on the hub chain, with both delivery options.
 
@@ -73,13 +87,11 @@ Your vault and deployment must also meet these requirements:
 
 You deploy one adapter on the hub chain with one call to `deploy` on the `CrossChainERC4626AdapterFactory`. That transaction sets the accepted source chains, allowlists your vault when you pass its address and enable it, sets the deposit and redeem switches and the adapter fees, and grants the admin, fee setter, and fee collector roles to your accounts. The factory then renounces all of its own roles. The [Factory contract](/solutions/cross-chain-vault-adapter/reference/factory-contract) reference lists the factory's deployed addresses and its inputs. One adapter can allowlist several vaults on the same chain, and each payload names the vault it targets.
 
-A lane's version is the version of the CCIP OnRamp and OffRamp contracts that serve it, and the [CCIP Directory](/ccip/directory) shows it. The factory does not apply CCIP 2.0 lane settings or fund the adapter, so after deployment you:
+A lane's version is defined as the version of the CCIP OnRamp and OffRamp contracts that serve it, and the [CCIP Directory](/ccip/directory) shows it. The factory does not apply CCIP 2.0 lane settings or fund the adapter, so after deployment you:
 
 - Set the return format for each CCIP 2.0 lane to `GENERIC_EXTRA_ARGS_V3_BASIC`.
 - Optionally set the inbound finality and [Cross-Chain Verifier (CCV)](/ccip/concepts/ccvs/overview) settings for each CCIP 2.0 source chain.
 - Fund the adapter with the native gas token for return legs.
-
-[CCIP 2.0 lanes](/solutions/cross-chain-vault-adapter/overview/how-it-works#ccip-20-lanes) explains each setting and the rule for CCIP 1.6 lanes.
 
 Your team holds the three roles on the adapter:
 
@@ -133,4 +145,4 @@ The contracts in `src/ccip` are audited. A fork is not the audited code and need
 - [Deploy the vault and set up its share token](/solutions/cross-chain-vault-adapter/guides/deploy-the-vault): deploy an example ERC-4626 vault on Ethereum Sepolia and make its share token a CCIP cross-chain token.
 - [Deploy the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter): deploy, configure, and fund an adapter for that vault through the factory.
 - [Deposit from a source chain](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain): deposit into the vault from Arbitrum Sepolia through the adapter and receive the shares on Arbitrum Sepolia.
-- [Redeem from a source chain](/solutions/cross-chain-vault-adapter/guides/redeem-from-source-chain): redeem the shares from Arbitrum Sepolia, receive CCIP-BnM back, and withdraw the adapter fees as the vault team.
+- [Redeem from a source chain](/solutions/cross-chain-vault-adapter/guides/redeem-from-source-chain): redeem the shares from Arbitrum Sepolia, receive CCIP-BnM back, and withdraw the adapter fees as the vault operator.
