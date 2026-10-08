@@ -9,7 +9,7 @@ The hub chain is the chain where the vault and the adapter are deployed, and a s
 
 In this guide, “vault operator” refers to the team that operates and configures the vault and its adapter, not Chainlink Labs, the Chainlink Foundation, or Chainlink node operators.
 
-When a cross-chain deposit or redemption fails on the hub chain, the user gets the tokens back with a cross-chain refund to the source chain or a local recovery on the hub chain. The adapter, which is how users on other chains reach the vault, calls the vault inside the transaction that receives the CCIP message, so a failure leaves the tokens in the adapter, not in the vault. The adapter records the failure and holds the tokens until someone recovers them. Some failures happen inside CCIP before the adapter records anything. Most of those are fixed with CCIP manual execution. Two sender mistakes have no recovery path, and their tokens are permanently lost, as described in [Failures with no recovery path](#failures-with-no-recovery-path).
+> When a cross-chain deposit or redemption fails on the hub chain, the user gets the tokens back with a cross-chain refund to the source chain or a local recovery on the hub chain. The adapter, which is how users on other chains reach the vault, calls the vault inside the transaction that receives the CCIP message, so a failure leaves the tokens in the adapter, not in the vault. The adapter records the failure and holds the tokens until someone recovers them. Some failures happen inside CCIP before the adapter records anything. Most of those are fixed with CCIP manual execution. Two sender mistakes have no recovery path, and their tokens are permanently lost, as described in [Failures with no recovery path](#failures-with-no-recovery-path).
 
 ## What counts as a failure
 
@@ -143,7 +143,7 @@ A return leg or a refund is a separate CCIP message from the hub chain to the so
 
 ### Failures with no recovery path
 
-Two sender mistakes have no recovery path: a message with empty data and a gas limit of 0, and a malformed payload. Neither the adapter nor CCIP manual execution can return these tokens to the user, so the tokens are permanently lost.
+Two sender mistakes have no recovery path, and can result in a permanent loss of funds: A message with empty data and a gas limit of 0, and a malformed payload. Neither the adapter nor CCIP manual execution can return these tokens to the user, so the tokens are permanently lost.
 
 CCIP treats a message with empty data and a gas limit of 0 as a token-only transfer and delivers the tokens to the adapter without calling `ccipReceive`. The adapter records nothing and has no function that returns those tokens.
 
