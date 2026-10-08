@@ -56,7 +56,7 @@ The repository also contains a separate [multibridge implementation](https://git
 
 The contract also supports Solana source chains. These docs cover EVM source chains.
 
-Asynchronous vaults, multi-asset vaults, and targets that are not ERC-4626 vaults need a fork; see [Use it as-is or customize it](#use-it-as-is-or-customize-it).
+Asynchronous vaults, multi-asset vaults, and targets that are not ERC-4626 vaults need a fork; see [Use it as-is or customize it](#use-it-as-is-or-customize-it). An asynchronous vault that accepts synchronous ERC-4626 deposits needs the fork only for redemptions: deposits work with the adapter as-is.
 
 ## Requirements
 
@@ -125,7 +125,7 @@ You also monitor the `MessageFailed` event. A failed request leaves its tokens i
 
 ## Use it as-is or customize it
 
-Use the adapter as-is through the factory when your vault meets the [requirements](#requirements). Otherwise, fork the [repository](https://github.com/smartcontractkit/cross-chain-vault-adapters) and edit [`CrossChainERC4626Adapter.sol`](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/src/ccip/CrossChainERC4626Adapter.sol). The contract has no virtual hooks for processing, so you change `processMessage` and `_processTarget` directly. Common reasons to fork are asynchronous vaults, multi-asset vaults, targets that are not ERC-4626 vaults, custom payload encoding, and custom validation of the source chain, sender, or beneficiary.
+Use the adapter as-is through the factory when your vault meets the [requirements](#requirements). Otherwise, fork the [repository](https://github.com/smartcontractkit/cross-chain-vault-adapters) and edit [`CrossChainERC4626Adapter.sol`](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/src/ccip/CrossChainERC4626Adapter.sol). The contract has no virtual hooks for processing, so you change `processMessage` and `_processTarget` directly. Common reasons to fork are asynchronous vaults (typically for the redemption path), multi-asset vaults, targets that are not ERC-4626 vaults, custom payload encoding, and custom validation of the source chain, sender, or beneficiary.
 
 A fork must keep these safety properties:
 
