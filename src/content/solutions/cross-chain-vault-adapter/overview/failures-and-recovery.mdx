@@ -143,16 +143,39 @@ A return leg or a refund is a separate CCIP message from the hub chain to the so
 
 ### Failures with no recovery path
 
-Two sender mistakes have no recovery path, and can result in a permanent loss of funds: A message with empty data and a gas limit of 0, and a malformed payload. Neither the adapter nor CCIP manual execution can return these tokens to the user, so the tokens are permanently lost.
+<Aside type="danger" title="Sender mistakes with no recovery path">
+Two sender mistakes have no recovery path, and can result in a permanent loss of funds:
 
-CCIP treats a message with empty data and a gas limit of 0 as a token-only transfer and delivers the tokens to the adapter without calling `ccipReceive`. The adapter records nothing and has no function that returns those tokens.
-
-<Aside type="caution" title="A malformed payload loses the tokens permanently">
-  A payload can be exactly 128 bytes and still be malformed when its `target` word has non-zero upper 12 bytes, so it is not a valid ABI-encoded address. `processMessage` reverts when it decodes the payload, and the adapter catches that revert. While recording the failure, the adapter decodes the same bytes again to read the local refund address. That second decode runs outside the `try/catch`, so `ccipReceive` itself reverts. CCIP then reverts the destination-side token release together with the receiver call and marks the message failed. Manual execution can raise the gas limit but cannot change the message, so every attempt reverts, with `NoStateProgressMade` on a CCIP 2.0 lane or `ExecutionError` on a CCIP 1.6 lane. The tokens are never released or minted on the hub chain. They stay locked in, or burned by, the token pool on the source chain.
-
-Standard ABI encoders (Solidity `abi.encode`, ethers, viem, `cast`) cannot produce this payload; only hand-built encoders can. Before the user signs, build the payload with a standard ABI encoder and check it against the [payload checklist](/solutions/cross-chain-vault-adapter/overview/how-it-works#what-a-user-sends). Also set a non-zero local refund address. Without one, a failed request whose cross-chain refund is also impossible leaves the tokens in the adapter permanently.
-
+<ol>
+  <li>
+  A message with empty data and a gas limit of 0. CCIP treats a message with empty data and a gas limit of 0 as a token-only transfer and delivers the tokens to the adapter without calling `ccipReceive`. The adapter records nothing and has no function that returns those tokens.
+  </li>
+  <li>
+  A message with a malformed payload. Neither the adapter nor CCIP manual execution can return these tokens to the user, so the tokens are permanently lost.
+  </li>
+</ol>
 </Aside>
+
+<ol>
+  <li>
+    A payload can be exactly 128 bytes and still be malformed when its `target` word has non-zero upper 12 bytes, so it
+    is not a valid ABI-encoded address. `processMessage` reverts when it decodes the payload, and the adapter catches
+    that revert. While recording the failure, the adapter decodes the same bytes again to read the local refund address.
+    That second decode runs outside the `try/catch`, so `ccipReceive` itself reverts. CCIP then reverts the
+    destination-side token release together with the receiver call and marks the message failed.
+  </li>
+  <li>
+    Manual execution can raise the gas limit but cannot change the message, so every attempt reverts, with
+    `NoStateProgressMade` on a CCIP 2.0 lane or `ExecutionError` on a CCIP 1.6 lane. The tokens are never released or
+    minted on the hub chain. They stay locked in, or burned by, the token pool on the source chain.
+  </li>
+  <li>
+    Standard ABI encoders (Solidity `abi.encode`, ethers, viem, `cast`) cannot produce this payload; only hand-built
+    encoders can.
+  </li>
+</ol>
+
+> **Important:** Before a final signature, build the payload with a standard ABI encoder and check it against the [payload checklist](/solutions/cross-chain-vault-adapter/overview/how-it-works#what-a-user-sends). Also set a non-zero local refund address. Without one, a failed request whose cross-chain refund is also impossible leaves the tokens in the adapter permanently.
 
 ## Message lifecycle
 
