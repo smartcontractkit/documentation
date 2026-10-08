@@ -165,17 +165,17 @@ The following diagram shows the states a message can reach after CCIP delivers i
 
 The adapter tracks each message ID in `messageErrorCode` with three states:
 
-| State      | Value | Meaning                                                                                      | Related events                                 |
-| :--------- | :---- | :------------------------------------------------------------------------------------------- | :--------------------------------------------- |
-| `NONE`     | `0`   | The message has not arrived yet, or it was processed successfully                            | `MessageSucceeded` when processed              |
-| `BASIC`    | `1`   | Processing failed and the adapter holds the inbound tokens; refund or local recovery is open | `MessageFailed`                                |
-| `RESOLVED` | `2`   | The failed message was returned through a refund or a local recovery                         | `MessageRefunded` or `MessageRecoveredLocally` |
+| <div style="min-width: 100px;">State</div> | Value | Meaning                                                                                      | Related events                                 |
+| :----------------------------------------- | :---- | :------------------------------------------------------------------------------------------- | :--------------------------------------------- |
+| `NONE`                                     | `0`   | The message has not arrived yet, or it was processed successfully                            | `MessageSucceeded` when processed              |
+| `BASIC`                                    | `1`   | Processing failed and the adapter holds the inbound tokens; refund or local recovery is open | `MessageFailed`                                |
+| `RESOLVED`                                 | `2`   | The failed message was returned through a refund or a local recovery                         | `MessageRefunded` or `MessageRecoveredLocally` |
 
 `MessageSucceeded` tells the two meanings of `NONE` apart, and `MessageRefunded` or `MessageRecoveredLocally` shows which recovery path produced `RESOLVED`. While a message is `BASIC`, [`getFailedMessageRecord`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#getfailedmessagerecord) returns its stored source chain selector, sender, token amounts, and local refund address.
 
 To find the next action for a request, combine the CCIP Explorer status with the adapter's state:
 
-| CCIP Explorer status       | <div style="min-width: 180px;">Adapter state and event</div> | Meaning                                                                                        | Action                                                                                                                               |
+| CCIP Explorer status       | <div style="min-width: 190px;">Adapter state and event</div> | Meaning                                                                                        | Action                                                                                                                               |
 | :------------------------- | :----------------------------------------------------------- | :--------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
 | Any status before Success  | `NONE`, no event                                             | CCIP has not delivered the message yet                                                         | Wait for CCIP                                                                                                                        |
 | Success                    | `NONE`, `MessageSucceeded`                                   | The request completed                                                                          | For local delivery, nothing. For a return, track the return leg from `MessageSent`                                                   |
