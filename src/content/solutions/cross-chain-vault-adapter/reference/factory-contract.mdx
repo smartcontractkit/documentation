@@ -149,18 +149,18 @@ struct DeploymentConfig {
 
 ### DeploymentConfig
 
-| Field             | Type            | Description                                                                                                                                                                                                                                                     |
-| ----------------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `router`          | `address`       | CCIP Router on the hub chain. It becomes the adapter's immutable `ROUTER`, the only caller allowed to deliver messages. Must not be zero. Get the address from the CCIP Directory for [testnet](/ccip/directory/testnet) or [mainnet](/ccip/directory/mainnet). |
-| `defaultAdmin`    | `address`       | Receives `DEFAULT_ADMIN_ROLE`. Must not be zero.                                                                                                                                                                                                                |
-| `feeSetter`       | `address`       | Receives `FEE_SETTER_ROLE`. Must not be zero.                                                                                                                                                                                                                   |
-| `feeCollector`    | `address`       | Receives `FEE_COLLECTOR_ROLE`. Must not be zero.                                                                                                                                                                                                                |
-| `vaultTarget`     | `address`       | ERC-4626 vault to allowlist. Pass the zero address to skip.                                                                                                                                                                                                     |
-| `targetEnabled`   | `bool`          | Value passed to `setTargetEnabled` for `vaultTarget`. Ignored when `vaultTarget` is zero.                                                                                                                                                                       |
-| `depositsEnabled` | `bool`          | Whether the adapter processes deposits.                                                                                                                                                                                                                         |
-| `redeemsEnabled`  | `bool`          | Whether the adapter processes redemptions.                                                                                                                                                                                                                      |
-| `chainConfigs`    | `ChainConfig[]` | Source chains to configure. Can be empty.                                                                                                                                                                                                                       |
-| `feeConfigs`      | `FeeConfig[]`   | Adapter fee rows. Can be empty.                                                                                                                                                                                                                                 |
+| <div style="min-width: 170px;">Field</div> | <div style="min-width: 120px;">Type</div> | Description                                                                                                                                                                                                                                                     |
+| ------------------------------------------ | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `router`                                   | `address`                                 | CCIP Router on the hub chain. It becomes the adapter's immutable `ROUTER`, the only caller allowed to deliver messages. Must not be zero. Get the address from the CCIP Directory for [testnet](/ccip/directory/testnet) or [mainnet](/ccip/directory/mainnet). |
+| `defaultAdmin`                             | `address`                                 | Receives `DEFAULT_ADMIN_ROLE`. Must not be zero.                                                                                                                                                                                                                |
+| `feeSetter`                                | `address`                                 | Receives `FEE_SETTER_ROLE`. Must not be zero.                                                                                                                                                                                                                   |
+| `feeCollector`                             | `address`                                 | Receives `FEE_COLLECTOR_ROLE`. Must not be zero.                                                                                                                                                                                                                |
+| `vaultTarget`                              | `address`                                 | ERC-4626 vault to allowlist. Pass the zero address to skip.                                                                                                                                                                                                     |
+| `targetEnabled`                            | `bool`                                    | Value passed to `setTargetEnabled` for `vaultTarget`. Ignored when `vaultTarget` is zero.                                                                                                                                                                       |
+| `depositsEnabled`                          | `bool`                                    | Whether the adapter processes deposits.                                                                                                                                                                                                                         |
+| `redeemsEnabled`                           | `bool`                                    | Whether the adapter processes redemptions.                                                                                                                                                                                                                      |
+| `chainConfigs`                             | `ChainConfig[]`                           | Source chains to configure. Can be empty.                                                                                                                                                                                                                       |
+| `feeConfigs`                               | `FeeConfig[]`                             | Adapter fee rows. Can be empty.                                                                                                                                                                                                                                 |
 
 ### ChainConfig
 
@@ -173,11 +173,11 @@ struct DeploymentConfig {
 
 Each row becomes one `setAssetFee` call. The code calls the adapter fee the asset fee.
 
-| Field                      | Type      | Description                                                                                                                              |
-| -------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `destinationChainSelector` | `uint64`  | Chain the output returns to, which is the source chain of the inbound message.                                                           |
-| `bridgedToken`             | `address` | Token bridged back, which is the share token (the vault address) for deposit returns and the asset for redeem returns. Must not be zero. |
-| `fee`                      | `uint256` | Flat adapter fee in the asset's smallest units. The adapter charges it only when the user asks for return to the source chain.           |
+| <div style="min-width: 100px;">Field</div> | <div style="min-width: 100px;">Type</div> | Description                                                                                                                              |
+| ------------------------------------------ | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `destinationChainSelector`                 | `uint64`                                  | Chain the output returns to, which is the source chain of the inbound message.                                                           |
+| `bridgedToken`                             | `address`                                 | Token bridged back, which is the share token (the vault address) for deposit returns and the asset for redeem returns. Must not be zero. |
+| `fee`                                      | `uint256`                                 | Flat adapter fee in the asset's smallest units. The adapter charges it only when the user asks for return to the source chain.           |
 
 The fee is staged even when the chain in that row has no chain type yet.
 
@@ -234,17 +234,17 @@ event AdapterDeployed(
 );
 ```
 
-| Field             | Type      | Indexed | Description                                                      |
-| ----------------- | --------- | ------- | ---------------------------------------------------------------- |
-| `adapter`         | `address` | Yes     | Address of the new adapter.                                      |
-| `router`          | `address` | Yes     | `config.router`.                                                 |
-| `defaultAdmin`    | `address` | Yes     | Account that received `DEFAULT_ADMIN_ROLE`.                      |
-| `feeSetter`       | `address` | No      | Account that received `FEE_SETTER_ROLE`.                         |
-| `feeCollector`    | `address` | No      | Account that received `FEE_COLLECTOR_ROLE`.                      |
-| `vaultTarget`     | `address` | No      | `config.vaultTarget`, or the zero address if none was set.       |
-| `targetEnabled`   | `bool`    | No      | `config.targetEnabled`, emitted even when `vaultTarget` is zero. |
-| `depositsEnabled` | `bool`    | No      | `config.depositsEnabled`.                                        |
-| `redeemsEnabled`  | `bool`    | No      | `config.redeemsEnabled`.                                         |
+| <div style="min-width: 150px;">Field</div> | <div style="min-width: 90px;">Type</div> | Indexed | Description                                                      |
+| ------------------------------------------ | ---------------------------------------- | ------- | ---------------------------------------------------------------- |
+| `adapter`                                  | `address`                                | Yes     | Address of the new adapter.                                      |
+| `router`                                   | `address`                                | Yes     | `config.router`.                                                 |
+| `defaultAdmin`                             | `address`                                | Yes     | Account that received `DEFAULT_ADMIN_ROLE`.                      |
+| `feeSetter`                                | `address`                                | No      | Account that received `FEE_SETTER_ROLE`.                         |
+| `feeCollector`                             | `address`                                | No      | Account that received `FEE_COLLECTOR_ROLE`.                      |
+| `vaultTarget`                              | `address`                                | No      | `config.vaultTarget`, or the zero address if none was set.       |
+| `targetEnabled`                            | `bool`                                   | No      | `config.targetEnabled`, emitted even when `vaultTarget` is zero. |
+| `depositsEnabled`                          | `bool`                                   | No      | `config.depositsEnabled`.                                        |
+| `redeemsEnabled`                           | `bool`                                   | No      | `config.redeemsEnabled`.                                         |
 
 The chain and fee rows are not in this event. They appear as the adapter's `ChainTypeSet` and `AssetFeeSet` events in the same transaction.
 

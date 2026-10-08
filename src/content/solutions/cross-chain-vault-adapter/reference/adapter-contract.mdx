@@ -49,12 +49,12 @@ The audited bytecode is identical to a shanghai build, and `PUSH0` is the only o
 
 The contract imports these dependencies:
 
-| Package                     | Version | Imports                                                                                                              |
-| --------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------- |
-| `@chainlink/contracts-ccip` | 2.0.0   | `Client`, `ExtraArgsCodec`, `FinalityCodec`, `IRouterClient`, `IAny2EVMMessageReceiver`, `IAny2EVMMessageReceiverV2` |
-| `@chainlink/contracts`      | 1.5.0   | `ITypeAndVersion`                                                                                                    |
-| OpenZeppelin Contracts      | 5.0.2   | `AccessControlEnumerable`, `ReentrancyGuard`, `IERC4626`                                                             |
-| OpenZeppelin Contracts      | 4.8.3   | `IERC20`, `SafeERC20`                                                                                                |
+| <div style="min-width: 210px;">Package</div> | Version | Imports                                                                                                              |
+| -------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------- |
+| `@chainlink/contracts-ccip`                  | 2.0.0   | `Client`, `ExtraArgsCodec`, `FinalityCodec`, `IRouterClient`, `IAny2EVMMessageReceiver`, `IAny2EVMMessageReceiverV2` |
+| `@chainlink/contracts`                       | 1.5.0   | `ITypeAndVersion`                                                                                                    |
+| OpenZeppelin Contracts                       | 5.0.2   | `AccessControlEnumerable`, `ReentrancyGuard`, `IERC4626`                                                             |
+| OpenZeppelin Contracts                       | 4.8.3   | `IERC20`, `SafeERC20`                                                                                                |
 
 ## Inheritance
 
@@ -73,12 +73,12 @@ A direct deployment runs this constructor:
 constructor(address router_, address defaultAdmin, address feeSetter, address feeCollector)
 ```
 
-| Parameter      | Type      | Description                                                                                                                                                                           |
-| -------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `router_`      | `address` | CCIP Router on the hub chain, stored as the immutable `ROUTER`. Get the address from the CCIP Directory for [testnet](/ccip/directory/testnet) or [mainnet](/ccip/directory/mainnet). |
-| `defaultAdmin` | `address` | Receives `DEFAULT_ADMIN_ROLE`, `FEE_SETTER_ROLE`, and `FEE_COLLECTOR_ROLE`.                                                                                                           |
-| `feeSetter`    | `address` | Receives `FEE_SETTER_ROLE`.                                                                                                                                                           |
-| `feeCollector` | `address` | Receives `FEE_COLLECTOR_ROLE`.                                                                                                                                                        |
+| <div style="min-width: 140px;">Parameter</div> | <div style="min-width: 110px;">Type</div> | Description                                                                                                                                                                           |
+| ---------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `router_`                                      | `address`                                 | CCIP Router on the hub chain, stored as the immutable `ROUTER`. Get the address from the CCIP Directory for [testnet](/ccip/directory/testnet) or [mainnet](/ccip/directory/mainnet). |
+| `defaultAdmin`                                 | `address`                                 | Receives `DEFAULT_ADMIN_ROLE`, `FEE_SETTER_ROLE`, and `FEE_COLLECTOR_ROLE`.                                                                                                           |
+| `feeSetter`                                    | `address`                                 | Receives `FEE_SETTER_ROLE`.                                                                                                                                                           |
+| `feeCollector`                                 | `address`                                 | Receives `FEE_COLLECTOR_ROLE`.                                                                                                                                                        |
 
 **Reverts with:**
 
@@ -126,20 +126,20 @@ struct Payload {
 }
 ```
 
-| Field               | Type      | Description                                                                                                                                                                                                                                            |
-| ------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `target`            | `address` | Vault to call. Must be allowlisted with [`setTargetEnabled`](#settargetenabled), or processing fails with `InvalidTarget`.                                                                                                                             |
-| `beneficiary`       | `bytes32` | Recipient of the output: on the hub chain for local delivery, on the source chain for a return. For an EVM address, left-pad it to 32 bytes; if the upper 96 bits are not zero, processing fails with `InvalidEVMAddress`.                             |
-| `minimumOut`        | `uint256` | Smallest acceptable output after the adapter fee, in output units: shares for a deposit, asset for a redemption. Below it, processing fails with `MinimumOutputNotMet`. `0` disables the check, but a zero output still fails with `NoOutputReceived`. |
-| `deliveryAndRefund` | `uint256` | Delivery choice and local refund address, packed into one word as shown in the next table.                                                                                                                                                             |
+| <div style="min-width: 150px;">Field</div> | <div style="min-width: 90px;">Type</div> | Description                                                                                                                                                                                                                                            |
+| ------------------------------------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `target`                                   | `address`                                | Vault to call. Must be allowlisted with [`setTargetEnabled`](#settargetenabled), or processing fails with `InvalidTarget`.                                                                                                                             |
+| `beneficiary`                              | `bytes32`                                | Recipient of the output: on the hub chain for local delivery, on the source chain for a return. For an EVM address, left-pad it to 32 bytes; if the upper 96 bits are not zero, processing fails with `InvalidEVMAddress`.                             |
+| `minimumOut`                               | `uint256`                                | Smallest acceptable output after the adapter fee, in output units: shares for a deposit, asset for a redemption. Below it, processing fails with `MinimumOutputNotMet`. `0` disables the check, but a zero output still fails with `NoOutputReceived`. |
+| `deliveryAndRefund`                        | `uint256`                                | Delivery choice and local refund address, packed into one word as shown in the next table.                                                                                                                                                             |
 
 `deliveryAndRefund` uses this bit layout:
 
-| Bits       | Field                 | Meaning                                                                                                                                                  |
-| ---------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 0          | `returnToSourceChain` | `1` bridges the output back to `message.sourceChainSelector`. `0` delivers it to `beneficiary` on the hub chain.                                         |
-| 1 to 160   | `localRefundAddress`  | Hub-chain address that can call [`recoverFailedMessageLocally`](#recoverfailedmessagelocally) if processing fails. `address(0)` disables local recovery. |
-| 161 to 255 | Unused                | Ignored on decode and not validated.                                                                                                                     |
+| <div style="min-width: 90px;">Bits</div> | <div style="min-width: 160px;">Field</div> | Meaning                                                                                                                                                  |
+| ---------------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0                                        | `returnToSourceChain`                      | `1` bridges the output back to `message.sourceChainSelector`. `0` delivers it to `beneficiary` on the hub chain.                                         |
+| 1 to 160                                 | `localRefundAddress`                       | Hub-chain address that can call [`recoverFailedMessageLocally`](#recoverfailedmessagelocally) if processing fails. `address(0)` disables local recovery. |
+| 161 to 255                               | Unused                                     | Ignored on decode and not validated.                                                                                                                     |
 
 The adapter enforces these rules on every message:
 
@@ -186,11 +186,11 @@ enum ChainType {
 }
 ```
 
-| Value      | Meaning                                                                                                                        |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `NONE` (0) | Selector not configured. Messages from it fail with `InvalidChain`, and `preview` reverts for it when the amount is not zero.  |
-| `EVM` (1)  | EVM chain family. Return legs and refunds to this selector use an EVM receiver encoding and the lane's EVM `extraArgs` format. |
-| `SVM` (2)  | Solana Virtual Machine chain family.                                                                                           |
+| <div style="min-width: 120px;">Value</div> | Meaning                                                                                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| `NONE` (0)                                 | Selector not configured. Messages from it fail with `InvalidChain`, and `preview` reverts for it when the amount is not zero.  |
+| `EVM` (1)                                  | EVM chain family. Return legs and refunds to this selector use an EVM receiver encoding and the lane's EVM `extraArgs` format. |
+| `SVM` (2)                                  | Solana Virtual Machine chain family.                                                                                           |
 
 ### EvmReturnExtraArgsFormat
 
