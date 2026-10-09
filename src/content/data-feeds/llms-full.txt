@@ -6186,10 +6186,10 @@ Source: https://docs.chain.link/data-feeds/svr-feeds
 > onboarded. Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely
 > Chainlink SVR updates.
 
-> **TIP: SVR Now Available on Base, Arbitrum, and BNB Chain**
+> **TIP: SVR Now Available Beyond Ethereum Mainnet**
 >
-> Chainlink SVR has expanded beyond Ethereum Mainnet and is now available on Base, Arbitrum, and BNB Chain via the
-> Atlas auction system. See the&#x20;
+> Chainlink SVR has expanded beyond Ethereum Mainnet and is now available on Base, Arbitrum, BNB Chain, Monad, Arc,
+> HyperEVM, Ink, Robinhood Chain, and Unichain via the Atlas auction system. See the&#x20;
 > [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas) for integration
 > details.
 
@@ -6262,7 +6262,7 @@ If the **private route** fails or times out, the SVR feed automatically **revert
 
 ## SVR Feed Variants
 
-Chainlink SVR Feeds are available in three variants:
+Each SVR feed carries a variant label in the [Feed Addresses](/data-feeds/price-feeds/addresses) table and on [data.chain.link](https://data.chain.link/). The label identifies which protocol or integration the feed is intended for.
 
 ### SVR (Shared)
 
@@ -6272,9 +6272,9 @@ Canonical shared SVR feeds for use by any protocol. These are the recommended fe
 
 Dedicated SVR feeds exclusively for the Aave protocol.
 
-### SVR-Backup (Legacy)
+### Compound SVR Feeds
 
-Legacy shared SVR feeds that are still actively used by existing applications. Searchers should continue to monitor these feeds. New integrations should use the [SVR (Shared)](#svr-shared) feeds instead.
+Dedicated SVR feeds exclusively for the Compound protocol.
 
 ## Default SVR Activation
 
@@ -6282,7 +6282,7 @@ Chainlink SVR is activated by default for certain Chainlink Data Feeds on certai
 
 Integrators should expect zero service disruption during activation, and no action is needed on their part.
 
-On these networks, SVR feeds have an **SVR** label on the [Feed Addresses](/data-feeds/price-feeds/addresses?network=base\&showSvr=true) page and on [data.chain.link](https://data.chain.link/). Previously deployed SVR feeds remain available and function as expected, and can be identified with the **SVR-Backup** label.
+On these networks, SVR feeds have an **SVR** label on the [Feed Addresses](/data-feeds/price-feeds/addresses?network=base\&showSvr=true) page and on [data.chain.link](https://data.chain.link/). Previously deployed SVR feeds remain available and function as expected, and can be identified by their variant label.
 
 For any questions, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com). Protocols can also opt out at any time by reading from the "Standard" proxy that complements every SVR proxy for the relevant feed.
 
@@ -6325,10 +6325,10 @@ This code sample is essentially the same as reading from a standard Chainlink Pr
 
 Chainlink SVR supports two auction paths depending on the network:
 
-| Network                          | Auction System      | Guide                                                                                                            |
-| -------------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Ethereum Mainnet                 | Flashbots MEV-Share | [Searcher Onboarding: Ethereum Mainnet](/data-feeds/svr-feeds/searcher-onboarding-ethereum)                      |
-| Base, Arbitrum, BNB Chain, Monad | Atlas               | [Searcher Onboarding: Atlas (Base, Arbitrum, BNB Chain, Monad)](/data-feeds/svr-feeds/searcher-onboarding-atlas) |
+| Network                                                                         | Auction System      | Guide                                                                                       |
+| ------------------------------------------------------------------------------- | ------------------- | ------------------------------------------------------------------------------------------- |
+| Ethereum Mainnet                                                                | Flashbots MEV-Share | [Searcher Onboarding: Ethereum Mainnet](/data-feeds/svr-feeds/searcher-onboarding-ethereum) |
+| Base, Arbitrum, BNB Chain, Monad, Arc, HyperEVM, Ink, Robinhood Chain, Unichain | Atlas               | [Searcher Onboarding: Atlas](/data-feeds/svr-feeds/searcher-onboarding-atlas)               |
 
 ## Economics and Revenue Split
 
@@ -6368,7 +6368,9 @@ Source: https://docs.chain.link/data-feeds/svr-feeds/searcher-onboarding-atlas
 >
 > Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2tK) to receive timely Chainlink SVR updates.
 
-[Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, BNB Chain, and Monad with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
+[Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded beyond Ethereum Mainnet with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
+
+Atlas is currently live on the following networks: Base, Arbitrum, BNB Chain, Monad, Arc, HyperEVM, Ink, Robinhood Chain, and Unichain. See [Contract References](#contract-references) for the deployed addresses.
 
 ## Core Components
 
@@ -6395,43 +6397,10 @@ Recommended native token amounts for bonding:
 
 ## Contract References
 
-The following contracts are deployed at version **v1.6.4**.
+Each chain has a live Atlas deployment and a live DappControl:
 
-### Base
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### Arbitrum
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### BNB Chain
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
-
-### Monad
-
-Contract
-Address
-
-Atlas (v1.6.4)
-
-DappControl
+- **Atlas**: The auction contract, deployed at version **v1.6.4**. Searchers bond native tokens here to cover the gas costs of their operation and the oracle update, and call it to unbond and redeem.
+- **DappControl**: The dApp-specific module that defines the auction rules for Chainlink SVR. Searchers read parameters such as the solver gas limit from it, and filter incoming user operations by its address.
 
 ## Feed Aggregator Addresses
 
@@ -6439,9 +6408,8 @@ DappControl
 >
 > Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
 > aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
-> address in the table below. Use **Aave-SVR** type feeds for Aave, **SVR** type feeds for other protocols, and
-> **SVR-Backup** for the legacy shared feeds. For the full list of SVR feeds, see the [SVR Feeds
-> page](/data-feeds/svr-feeds).
+> address in the table below. Each feed is labeled with its SVR variant (for example, **Shared SVR**, **Aave SVR**, or
+> **Compound SVR**). For the full list of SVR feeds, see the [SVR Feeds page](/data-feeds/svr-feeds).
 
 ## Guide
 
@@ -6640,7 +6608,7 @@ interface IAtlas {
     function depositAndBond(uint256 amountToBond) external payable;
 }
 
-address atlasAddress = address(0x8e098Dfd60aEC9bCf07fd3cA5933e9F22b1b4A0d);
+address atlasAddress = address(0x583dcFef0D240DC80753F0F0B26513feE27D9B77);
 uint256 amountToBond = 1e18;
 
 IAtlas(atlasAddress).depositAndBond{ value: amountToBond }(amountToBond);
@@ -6664,7 +6632,7 @@ interface IAtlas {
     function ESCROW_DURATION() external view returns (uint256);
 }
 
-address atlasAddress = address(0x8e098Dfd60aEC9bCf07fd3cA5933e9F22b1b4A0d);
+address atlasAddress = address(0x583dcFef0D240DC80753F0F0B26513feE27D9B77);
 uint256 amountToUnbond = 1e18;
 
 IAtlas(atlasAddress).unbond(amountToUnbond);
@@ -7027,7 +6995,7 @@ var (
 	chainId = big.NewInt(8453)
 
 	// Filtering notifications for the Chainlink dApp control (module) address only
-	dAppControlAddress = common.HexToAddress("0xe15BBa987C002ecc3586e81244517877D294d291")
+	dAppControlAddress = common.HexToAddress("0xa5E1a36938769cbd5a26f5e19D8FCB379f597c83")
 )
 
 // This function returns true if the notification is of interest and false
@@ -7210,7 +7178,7 @@ This guide explains how to identify and bid on **Chainlink SVR** liquidation opp
 through **Flashbots MEV-Share**. SVR Feeds support a private transmission channel for oracle price updates, enabling
 searchers to backrun new prices with liquidation transactions and compete for profit.
 
-For Base, Arbitrum, and BNB Chain, see the [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas).
+For all other supported networks, see the [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas).
 
 ### Why Chainlink SVR?
 
@@ -7232,9 +7200,8 @@ For more background on how Aave liquidations work, see [Aave Documentation](http
 >
 > Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
 > aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
-> address in the table below. Use **Aave-SVR** type feeds for Aave, **SVR** type feeds for other protocols, and
-> **SVR-Backup** for the legacy shared feeds. For the full list of SVR feeds, see the [SVR Feeds
-> page](/data-feeds/svr-feeds).
+> address in the table below. Each feed is labeled with its SVR variant (for example, **Shared SVR**, **Aave SVR**, or
+> **Compound SVR**). For the full list of SVR feeds, see the [SVR Feeds page](/data-feeds/svr-feeds).
 
 ## How to Participate as a Searcher
 
