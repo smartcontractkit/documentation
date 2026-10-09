@@ -5,7 +5,7 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-07-09"
+  lastModified: "2026-10-09"
 ---
 
 import { Aside } from "@components"
@@ -282,6 +282,11 @@ cre workflow deploy <workflow-name-or-path> [flags]
 {/* prettier-ignore */}
 <Aside type="note" title="Deploying over a paused workflow">
   If you deploy an update to a workflow that is currently paused, the CLI will complete the update and then print a warning: `Your workflow is paused and has been updated`. The workflow remains paused after the update — run `cre workflow activate` to resume it.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Automatic key linking is permanent">
+  If your workflow owner address is not yet linked, `cre workflow deploy` prompts you to link it. Linking is permanent: once linked, the address cannot be transferred to or reused in another organization. The CLI prints a warning and asks for confirmation before linking. In non-interactive mode, `cre workflow deploy --non-interactive` requires `--yes` when linking an unlinked owner. See [Linking Wallet Keys](/cre/organization/linking-keys).
 </Aside>
 
 For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
