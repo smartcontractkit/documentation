@@ -249,19 +249,17 @@ The primary SDK clients you use inside a callback to interact with capabilities.
 - **Go SDK**: `evm.Client` and `http.Client`
 - **TypeScript SDK**: `EVMClient` and `HTTPClient` classes
 
-### `Bindings` (Go SDK only)
+### `Bindings`
 
-A Go package generated from a smart contract's ABI using the `cre generate-bindings` CLI command. Bindings create a type-safe Go interface for a specific smart contract, abstracting away the low-level complexity of ABI encoding and decoding.
+A type-safe interface generated from a smart contract's ABI using the `cre generate-bindings` CLI command. Bindings are available in both Go (a generated package) and TypeScript (a generated class), and they abstract away the low-level complexity of ABI encoding and decoding.
 
-Using generated bindings is the recommended best practice for Go workflows, as they provide helper methods for:
+Using generated bindings is the recommended best practice for workflows that interact with contracts, as they provide helper methods for:
 
 - Reading from `view`/`pure` functions.
 - Encoding data structures for onchain writes.
 - Creating triggers for and decoding event logs.
 
 This makes your workflow code cleaner, safer, and easier to maintain. Learn more in the [Generating Contract Bindings](/cre/guides/workflow/using-evm-client/generating-bindings) guide.
-
-**Note for TypeScript**: The TypeScript SDK uses [Viem](https://viem.sh/) for type-safe contract interactions with manual ABI definitions instead of generated bindings.
 
 ### Async Patterns
 
@@ -8746,7 +8744,7 @@ See the [repository README](https://github.com/smartcontractkit/cre-gcp-predicti
 Source: https://docs.chain.link/cre/reference/cli
 Last Updated: 2026-07-09
 
-The CRE Command Line Interface (CLI) is your primary tool for developing, testing, deploying, and managing workflows. It handles project setup, contract binding generation (Go workflows only), local simulation, and workflow lifecycle management.
+The CRE Command Line Interface (CLI) is your primary tool for developing, testing, deploying, and managing workflows. It handles project setup, contract binding generation (Go and TypeScript), local simulation, and workflow lifecycle management.
 
 ## Global flags
 
@@ -8784,10 +8782,10 @@ Manage your authentication and account credentials.
 
 ### Project Setup
 
-Initialize projects and generate contract bindings (Go only).
+Initialize projects and generate contract bindings (Go and TypeScript).
 
 - [**`cre init`**](/cre/reference/cli/project-setup) — Initialize a new CRE project (interactive wizard or **`--non-interactive`** with flags for CI/CD)
-- **`cre generate-bindings`** — Generate contract bindings from ABI or Anchor IDL files (Go and TypeScript for Solana)
+- **`cre generate-bindings`** — Generate contract bindings from ABI or Anchor IDL files (Go and TypeScript)
 
 [View project setup commands →](/cre/reference/cli/project-setup)
 
@@ -8888,7 +8886,7 @@ Additional utility commands.
 The typical workflow development process uses these commands in sequence:
 
 1. **`cre init`** — Initialize your project
-2. **`cre generate-bindings`** — Generate contract bindings from ABIs (Go workflows only, if interacting with contracts)
+2. **`cre generate-bindings`** — Generate contract bindings from ABIs (Go and TypeScript, if interacting with contracts)
 3. **`cre workflow simulate`** — Test your workflow locally
 4. **`cre workflow build`** — (Optional) Compile independently; useful in CI/CD pipelines
 5. **`cre workflow hash`** — (Optional) Inspect content hashes before deploying
