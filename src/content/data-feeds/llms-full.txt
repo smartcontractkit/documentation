@@ -6022,9 +6022,11 @@ Before you begin, you should have:
 
 To complete this guide, you'll need:
 
-- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation.
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation. This guide uses Stellar CLI v25 or later.
 
 - **Rust toolchain**: Install [Rust](https://www.rust-lang.org/tools/install) using [rustup](https://rustup.rs/). Run cargo --version to verify your installation.
+
+- **soroban-sdk**: The `stellar contract init` command scaffolds a project that depends on the latest `soroban-sdk` (v25 or later). The contract in this guide compiles against `soroban-sdk` v21 and later. If you pin an older version, use v21 or later.
 
 - **Testnet XLM**: You'll need testnet XLM to deploy your contract. Fund a Stellar Testnet account using the friendbot faucet. Testnet XLM has no real value.
 
@@ -6106,13 +6108,19 @@ To complete this guide, you'll need:
        /// Read the latest round for a feed and return its answer.
        pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
            let client = DataFeedsProxyClient::new(&env, &proxy);
-           let round = client.latest_round(&data_id, &18).unwrap();
+           let round = client.latest_round(&data_id, &18);
            round.answer
        }
    }
    ```
 
    This contract calls the proxy's `latest_round` function with a single `data_id` and requests the answer at `18` decimal places. The returned `Round` contains the `round_id`, `answer`, and `timestamp` fields for the feed.
+
+   The `#[contractclient]` macro generates a client whose `latest_round` method returns the `Round` value directly, not a `Result`. Do not call `.unwrap()` on the result. If you need to handle errors from the proxy call, use the generated `try_latest_round` method instead. It returns a nested `Result`: the outer `Result` reports whether the call itself succeeded, and the inner `Result` carries the contract's `ProxyReadError`:
+
+   ```rust
+   let round = client.try_latest_round(&data_id, &18).unwrap().unwrap();
+   ```
 
 ## Build and deploy the contract
 
