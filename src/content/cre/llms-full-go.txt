@@ -13684,7 +13684,7 @@ Confidential HTTP takes a different approach: by design, only one request is mad
 
 # Finality and Confidence Levels
 Source: https://docs.chain.link/cre/concepts/finality-go
-Last Updated: 2025-12-10
+Last Updated: 2026-10-08
 
 Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
 
@@ -13737,6 +13737,13 @@ Chain read operations ([`CallContract`](/cre/reference/sdk/evm-client-go#callcon
 For most read operations, use the standard confidence levels by passing `-2` (latest) or `-3` (finalized) as the `BlockNumber` parameter. If you don't specify a block number, CRE defaults to `LATEST`.
 
 **Note:** The `SAFE` confidence level is not available for chain reads—only `LATEST` and `FINALIZED` are supported.
+
+> **CAUTION: Finalized reads can fail on RPC nodes**
+>
+> RPC nodes are not archival nodes. On a P99.9 basis, they keep the blocks between `finalized` and `latest` in memory.
+> However, changes in the chain environment can cause the gap between `finalized` and `latest` to temporarily exceed
+> what RPC nodes have in memory. When this happens, calls to the `finalized` block return an error. Handle this error
+> in your workflow and retry the read.
 
 ### Custom block depths
 
