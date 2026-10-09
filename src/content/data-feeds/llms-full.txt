@@ -6116,12 +6116,6 @@ To complete this guide, you'll need:
 
    This contract calls the proxy's `latest_round` function with a single `data_id` and requests the answer at `18` decimal places. The returned `Round` contains the `round_id`, `answer`, and `timestamp` fields for the feed.
 
-   The `#[contractclient]` macro generates a client whose `latest_round` method returns the `Round` value directly, not a `Result`. Do not call `.unwrap()` on the result. If you need to handle errors from the proxy call, use the generated `try_latest_round` method instead. It returns a nested `Result`: the outer `Result` reports whether the call itself succeeded, and the inner `Result` carries the contract's `ProxyReadError`:
-
-   ```rust
-   let round = client.try_latest_round(&data_id, &18).unwrap().unwrap();
-   ```
-
 ## Build and deploy the contract
 
 1. Build the contract:
