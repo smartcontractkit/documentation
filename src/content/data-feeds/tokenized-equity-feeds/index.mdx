@@ -55,7 +55,7 @@ Chainlink Tokenized Equity Feeds help bridge this gap between TradFi and DeFi ma
 
 - **Providing continuous 24/5 pricing**: A single feed that spans regular, pre-market, post-market, and overnight sessions
 - **Simplifying integration**: Consume one feed across trading sessions instead of managing multiple session-specific data sources
-- **Applying session-aware smoothing**: Intelligent pricing algorithms that aim to reduce certain price anomalies during session transitions
+- **Applying session-aware smoothing**: Intelligent pricing algorithms that aim to reduce certain price anomalies during session transitions and lower-liquidity sessions
 - **Maintaining benchmark accuracy**: Optimized algorithms that are designed to track consolidated tape benchmarks with high fidelity
 - **Performing tokenized price calculations**: Returning real-time calculated primary market valuations of tokenized equities based on the issuer's multiplier values.
 
@@ -83,13 +83,15 @@ US equity markets exhibit distinct liquidity regimes throughout the 24-hour cycl
 
 ### Session-aware smoothing
 
-To enable reliable, 24/5 continuous pricing, tokenized equity feeds apply intelligent smoothing during session transitions to target pricing integrity under different liquidity conditions. The smoothing methodology:
+To enable reliable, 24/5 continuous pricing, tokenized equity feeds apply intelligent smoothing during session transitions and throughout the overnight session to target pricing integrity under different liquidity conditions. The smoothing methodology:
 
 1. **Tracks benchmark prices accurately** during liquid regular sessions
-1. **Filters microstructure noise** during illiquid session transitions
+1. **Filters microstructure noise** during illiquid session transitions and overnight sessions
 1. **Reduces the risk of phantom liquidations** from transient price spikes in thin markets
 1. **Converges quickly** after legitimate large price movements
 1. **Minimizes tracking lag** to reduce mispricing during active trading
+
+During the overnight session, where liquidity is thinnest, the published price is an exponential moving average (EMA) of the underlying session price rather than the latest observation.
 
 Please note that while intelligent smoothing is designed to mitigate these issues, tokenized equities' structural connections with underlying traditional equity markets, liquidity, and pricing considerations require protocols to ensure performance of Chainlink Tokenized Equity Feeds matches expectations and is appropriate for the intended use case.
 
@@ -109,15 +111,15 @@ While tokenized equity feeds use the same Chainlink infrastructure as standard c
 
 ### Continuous vs. point-in-time pricing
 
-Standard crypto price feeds reflect a single aggregated market price at a point in time from 24/7 markets. Tokenized equity feeds combine data from multiple trading sessions that have different operating hours, update frequencies, liquidity profiles, and data sources. The feed value represents a calculated return using the best mid-price for continuous 24/5 coverage of underlying equity markets.
+Standard crypto price feeds reflect a single aggregated market price at a point in time from 24/7 markets. Tokenized equity feeds combine data from multiple trading sessions that have different operating hours, update frequencies, liquidity profiles, and data sources. The feed value represents a calculated return using the best mid-price for continuous 24/5 coverage of underlying equity markets, smoothed during the overnight session.
 
-### Smoothing during transitions
+### Smoothing
 
-Standard feeds report raw aggregated prices. Tokenized equity feeds apply smoothing algorithms during session transitions in an effort to filter out microstructure noise and mitigate artificial volatility. This means:
+Standard feeds report raw aggregated prices. Tokenized equity feeds apply smoothing algorithms during session transitions and across the overnight session in an effort to filter out microstructure noise and mitigate artificial volatility. This means:
 
 - Brief price spikes in illiquid sessions are dampened
 - Convergence to new price levels after gaps is gradual rather than instantaneous
-- The reported price may temporarily lag during rapid price movements
+- The reported price may temporarily lag during rapid price movements, and that lag is largest overnight
 
 For more information about this risk, see [Smoothing-induced Tracking Lag](#smoothing-induced-tracking-lag) below.
 
@@ -192,20 +194,20 @@ These are expected market microstructure effects, not data quality issues. Typic
 - Implement transition-aware logic that expects and handles price gaps
 - Consider pausing or restricting operations during transition windows
 - Apply additional smoothing or price change limits during transitions
-- Use time-weighted averages (TWAP) or exponential moving averages (EMA) for risk-sensitive calculations
+- Use time-weighted averages (TWAP) or exponential moving averages (EMA) for risk-sensitive calculations. Note that the feed already smooths the overnight session, and layering additional smoothing increases tracking lag.
 
 ### Smoothing-induced tracking lag
 
 The session-aware smoothing that mitigates phantom liquidations also introduces tracking lag: a delay between market price movements and the reported feed price. During rapid legitimate price moves:
 
 - The smoothed price will temporarily trail the true market price
-- Convergence typically occurs within seconds to tens of seconds
+- Convergence typically occurs within seconds to tens of seconds during regular and extended sessions, and over a longer window during the overnight session
 - In extreme cases, this may result in delayed liquidations or arbitrage opportunities
 
 #### Mitigation
 
 - Understand the trade-off: smoothing protects against false liquidations but delays real ones
-- Configure your protocol's risk parameters to account for potential tracking lag
+- Configure your protocol's risk parameters to account for potential tracking lag, including the larger overnight tracking lag
 - Consider the tracking lag characteristics when setting liquidation thresholds
 - Monitor for persistent deviation between tokenized equity feeds and other market data sources
 
