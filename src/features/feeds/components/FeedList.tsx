@@ -1885,14 +1885,20 @@ export const FeedList = ({
                             </details>
                           )}
                           {!isStreams && (
-                            <label className={feedList.detailsLabel}>
-                              <input
-                                type="checkbox"
-                                className={feedList.feedCheckbox}
-                                checked={showExtraDetails}
-                                onChange={() => setShowExtraDetails(!showExtraDetails)}
-                              />
-                              More Details
+                            <label className={feedList.detailsSwitch}>
+                              <button
+                                type="button"
+                                role="switch"
+                                className={clsx(
+                                  feedList.detailsSwitchTrack,
+                                  showExtraDetails && feedList.detailsSwitchTrackActive
+                                )}
+                                aria-checked={showExtraDetails}
+                                onClick={() => setShowExtraDetails(!showExtraDetails)}
+                              >
+                                <span className={feedList.detailsSwitchThumb} />
+                              </button>
+                              <span>More Details</span>
                             </label>
                           )}
                           {!isStreams && isSmartData && (
@@ -2174,14 +2180,20 @@ export const FeedList = ({
                                 </nav>
                               </details>
                             )}
-                            <label className={feedList.detailsLabel}>
-                              <input
-                                type="checkbox"
-                                className={feedList.feedCheckbox}
-                                checked={showExtraDetails}
-                                onChange={() => setShowExtraDetails(!showExtraDetails)}
-                              />
-                              More Details
+                            <label className={feedList.detailsSwitch}>
+                              <button
+                                type="button"
+                                role="switch"
+                                className={clsx(
+                                  feedList.detailsSwitchTrack,
+                                  showExtraDetails && feedList.detailsSwitchTrackActive
+                                )}
+                                aria-checked={showExtraDetails}
+                                onClick={() => setShowExtraDetails(!showExtraDetails)}
+                              >
+                                <span className={feedList.detailsSwitchThumb} />
+                              </button>
+                              <span>More Details</span>
                             </label>
                             {!isStreams && isSmartData && (
                               <label className={feedList.detailsLabel}>
