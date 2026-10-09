@@ -126,9 +126,25 @@ if (isCanonical) {
   {isCanonical && <meta name="robots" content="noindex, follow" slot="head-scripts" />}
 
   {
+    // Marker read by BaseLayout's astro:before-swap handler. A canonical CRE page renders an
+    // empty body and redirects to the language-specific URL; client-side routing would swap in
+    // that empty body and flash before the redirect runs. The handler cancels the swap and does
+    // a full navigation instead, so the redirect happens before first paint.
+    isCanonical && (
+      <meta
+        name="astro-canonical-redirect"
+        data-go={`/cre/${goEntry!.id}`}
+        data-ts={`/cre/${tsEntry!.id}`}
+        slot="head-scripts"
+      />
+    )
+  }
+
+  {
     isCanonical && (
       <script
         is:inline
+        data-astro-rerun
         slot="head-scripts"
         define:vars={{
           goUrl: `/cre/${goEntry!.id}`,
@@ -157,6 +173,7 @@ if (isCanonical) {
     !isCanonical && goEntry && tsEntry && (
       <script
         is:inline
+        data-astro-rerun
         slot="head-scripts"
         define:vars={{ currentLang: entry!.data.sdkLang }}
         set:html={`(function(){

@@ -34,8 +34,8 @@ function initializeClipboard() {
   })
 }
 
-// Initialize clipboard when the DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
+// Initialize clipboard on first load and after every client-side navigation
+document.addEventListener("astro:page-load", () => {
   initializeClipboard()
 
   // Function to initialize copy buttons within code blocks dynamically
