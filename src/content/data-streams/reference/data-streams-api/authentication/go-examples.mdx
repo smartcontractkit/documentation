@@ -31,10 +31,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 ### Running the Example
 
 1. Create a file named <CopyText text="auth-example.go" code/> with the example code shown below
-1. Set your API credentials as environment variables:
+1. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 1. Run with <CopyText text="go run auth-example.go" code/>
 
@@ -122,7 +122,7 @@ func FetchSingleReport(ctx context.Context, feedID string) (*SingleReport, error
     }
 
     // API connection details
-    host := "api.testnet-dataengine.chain.link"
+    host := "api.dataengine.chain.link"
     path := "/api/v1/reports/latest"
 
     // Build query parameters
@@ -181,7 +181,7 @@ func main() {
     defer cancel()
 
     // Example feed ID (ETH/USD)
-    feedID := "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+    feedID := "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"
 
     fmt.Printf("Fetching latest report for feed ID: %s\n", feedID)
 
@@ -203,9 +203,9 @@ func main() {
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747921357
   Observations Timestamp: 1747921357
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c[...]bffd8feddabf120e14bf
@@ -250,10 +250,10 @@ For production use, consider using the [Go SDK](/data-streams/reference/data-str
 
 1. Create a file named <CopyText text="ws-auth-example.go" code/> with the example code shown below
 
-1. Set your API credentials as environment variables:
+1. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 1. Install the required dependencies:
 
@@ -362,9 +362,9 @@ func main() {
     }
 
     // WebSocket connection details
-    host := "ws.testnet-dataengine.chain.link"
+    host := "ws.dataengine.chain.link"
     path := "/api/v1/ws"
-    feedIDs := []string{"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"} // ETH/USD
+    feedIDs := []string{"0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"} // ETH/USD
 
     // Validate feed IDs
     if len(feedIDs) == 0 {
@@ -481,18 +481,18 @@ func main() {
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 2025/05/22 08:34:20 Sending ping to keep connection alive...
 2025/05/22 08:34:20 Received pong from server
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 ```
 
 ### Production Considerations

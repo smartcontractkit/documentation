@@ -1,0 +1,727 @@
+---
+title: "Redeem from a source chain"
+description: "Redeem 0.1 vCCIP-BnM from Arbitrum Sepolia through the Cross-Chain Vault Adapter, receive CCIP-BnM back on Arbitrum Sepolia, and withdraw the collected adapter fees as the vault team."
+---
+
+import { AnchoredAccordion, Aside } from "@components"
+
+This tutorial continues from [Deposit from a source chain](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain), which left your wallet with 0.199 vCCIP-BnM on Arbitrum Sepolia.
+
+The hub chain is the chain where the vault and the adapter are deployed, and a source chain is any other chain that users send deposits and redemptions from. Here, Ethereum Sepolia is the hub chain and Arbitrum Sepolia is the source chain.
+
+In this tutorial, to simulate the redeem flow, you will:
+
+1. Preview a redemption of 0.1 vCCIP-BnM and set a minimum output with a 1% tolerance.
+2. Send 0.1 vCCIP-BnM and a 128-byte payload from Arbitrum Sepolia to the adapter on Ethereum Sepolia.
+3. Confirm that the adapter redeemed the shares on Ethereum Sepolia, and follow the return leg that carries 0.099 CCIP-BnM to Arbitrum Sepolia.
+4. Acting as the vault team, withdraw the 0.002 CCIP-BnM of adapter fees that your deposit and this redemption paid.
+5. Review the four CCIP messages of the deposit and the redemption, and reconcile the balances on both chains.
+
+## Before you begin
+
+You need:
+
+- ccip-cli, Foundry, Node.js, and the `cross-chain-vault-adapters` repository, set up in [Set up your development environment](/solutions/cross-chain-vault-adapter/guides/deploy-the-vault#set-up-your-development-environment).
+- A Foundry keystore for your wallet, which acts as a user on Arbitrum Sepolia and then withdraws the adapter fees as the fee collector in this tutorial. Use the same keystore in every tutorial of this solution.
+- An ERC-4626 vault on Ethereum Sepolia whose share token is a CCIP cross-chain token between Ethereum Sepolia and Arbitrum Sepolia. [Deploy the vault and set up its share token](/solutions/cross-chain-vault-adapter/guides/deploy-the-vault) sets one up.
+- An adapter on Ethereum Sepolia for that vault that accepts requests from Arbitrum Sepolia and has redemptions enabled. [Deploy the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter) deploys one.
+
+<Aside type="caution" title="Before you continue">
+
+- **Ethereum Sepolia ETH**: required for Ethereum Sepolia transactions. Get it from the [Chainlink faucet](https://faucets.chain.link). In this tutorial, the fee withdrawal needs it.
+- **Arbitrum Sepolia ETH**: required for Arbitrum Sepolia transactions. Get it from the same faucet. The redemption request pays a CCIP fee of about 0.0023 Arbitrum Sepolia ETH at the time of writing.
+- **vCCIP-BnM on Arbitrum Sepolia**: at least 0.1, the amount you redeem. [Check the starting balances](#check-the-starting-balances) reads your balance.
+- **Ethereum Sepolia ETH in the adapter**: at least 0.001 Ethereum Sepolia ETH, which pays the return leg's CCIP fee. [Check the adapter](#check-the-adapter) reads the balance and shows how to top it up.
+
+</Aside>
+
+<Aside type="tip" title="Bringing your own vault or adapter?">
+
+Skip only what you already have:
+
+- If you completed [Deposit from a source chain](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain) in this terminal, your shell variables are set. Continue with [Check the adapter](#check-the-adapter).
+- If you skipped Deposit from a source chain, run every command in [Set your shell variables](#set-your-shell-variables), then redeem the 0.1 vCCIP-BnM that [Deploy the vault and set up its share token](/solutions/cross-chain-vault-adapter/guides/deploy-the-vault) sent to Arbitrum Sepolia. Your balances then differ from the values shown, so compare the changes instead.
+- If you bring your own vault, adapter, or share token, set the variables in [Set your shell variables](#set-your-shell-variables) to your addresses. Set the two CCIP-BnM variables to your vault's asset on each chain. In the `preview` call and in the payload builder's `AMOUNT`, scale `100000000000000000` (0.1 of an 18-decimal share token) to your share token's decimals. `ccip-cli` takes whole tokens, so its `=0.1` stays the same. If you did not set up the share token with the Lock & Mint tutorial, skip the lockbox checks.
+- Your adapter must accept Arbitrum Sepolia as a source chain, allowlist your vault, allow redemptions, and hold Ethereum Sepolia ETH. Your share token must be a cross-chain token between Ethereum Sepolia and Arbitrum Sepolia. To withdraw the adapter fees, your wallet needs `FEE_COLLECTOR_ROLE` on the adapter.
+
+</Aside>
+
+<AnchoredAccordion title="Set your shell variables" number={1} depth={3}>
+
+Run the commands in this tutorial from the root of the `cross-chain-vault-adapters` repository, in the terminal you used for the previous tutorials. If you opened a new terminal, change to the repository root and set the variables from the previous tutorials again:
+
+```bash filename="Terminal"
+export KEYSTORE_NAME=your_keystore_name
+export ETHEREUM_SEPOLIA_RPC_URL=your_ethereum_sepolia_rpc_url
+export ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL=your_arbitrum_sepolia_rpc_url
+export ETHEREUM_SEPOLIA_CCIP_BNM=0xFd57b4ddBf88a4e07fF4e34C487b99af2Fe82a05
+export ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_ROUTER=0x2a9C5afB0d0e4BAb2BCdaE109EC4b0c4Be15a165
+export ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_CCIP_BNM=0xA8C0c11bf64AF62CDCA6f93D3769B88BdD7cb93D
+export VAULT=<your_vault_address>
+export ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN=<your_share_token_on_arbitrum_sepolia>
+export LOCK_BOX=<your_lockbox_address>
+export ADAPTER=<your-adapter-address>
+```
+
+- The Arbitrum Sepolia router and CCIP-BnM addresses come from the [Arbitrum Sepolia page of the CCIP Directory](/ccip/directory/testnet/chain/ethereum-testnet-sepolia-arbitrum-1).
+- `ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN` is the vCCIP-BnM token you deployed on Arbitrum Sepolia with the Lock & Mint tutorial. `LOCK_BOX` is the lockbox from its Deploy ERC20LockBox step, which also saved the address under `script/deployments/lock-boxes/` in `docs-cct-foundry`.
+- `ADAPTER` is the adapter address you exported in [Broadcast the deployment](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter#broadcast-the-deployment), also stored as `adapter` in `deployments/ccip/11155111.json`. If you deployed your adapter another way, use that address instead.
+
+In a new terminal, also set `MY_ADDRESS` to your keystore's address. `cast` asks for the keystore password:
+
+```bash filename="Terminal"
+export MY_ADDRESS=$(cast wallet address --account $KEYSTORE_NAME)
+echo $MY_ADDRESS
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Check the adapter" number={2} depth={3}>
+
+1. Check that `ADAPTER` points to an adapter:
+
+```bash filename="Terminal"
+cast call $ADAPTER "typeAndVersion()(string)" --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+```bash filename="Terminal"
+"CrossChainERC4626Adapter 1.0.0"
+```
+
+2. Check the adapter's Ethereum Sepolia ETH balance. The adapter pays the return leg's CCIP fee from it:
+
+```bash filename="Terminal"
+cast balance $ADAPTER --ether --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+The balance is the 0.01 Ethereum Sepolia ETH that [Set the return format and fund the adapter](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter#fund-the-adapter) sent, plus any top-up, minus the CCIP fee of your deposit's return leg.
+Make sure to have some Sepolia ETH in the adapter.
+With too little, the adapter cannot send the return leg, and your request becomes a failed message. If the balance is below 0.001 Ethereum Sepolia ETH, top it up. Any account can send Ethereum Sepolia ETH to the adapter:
+
+```bash filename="Terminal"
+cast send $ADAPTER --value 0.01ether --rpc-url $ETHEREUM_SEPOLIA_RPC_URL --account $KEYSTORE_NAME
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Check the starting balances" number={3} depth={3}>
+
+Check your vCCIP-BnM and CCIP-BnM balances on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+cast call $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN "balanceOf(address)(uint256)" $MY_ADDRESS \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+cast call $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_CCIP_BNM "balanceOf(address)(uint256)" $MY_ADDRESS \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+Example output:
+
+```bash filename="Terminal"
+199000000000000000 [1.99e17]
+900000000000000000 [9e17]
+```
+
+You hold 0.199 vCCIP-BnM: 0.1 from the test transfer in Deploy the vault and set up its share token, and 0.099 from your deposit.
+The 0.9 CCIP-BnM is what remains of the 1 CCIP-BnM that you minted with `drip` in Deposit from a source chain. The balances later on this page start from these values.
+
+</AnchoredAccordion>
+
+## Build the request
+
+<AnchoredAccordion title="Preview the redemption" number={1} depth={3}>
+
+`minimumOut` in the payload is the smallest amount of CCIP-BnM, after the adapter fee, that you accept for your 0.1 vCCIP-BnM.
+The adapter checks it on Ethereum Sepolia when your request executes, about 20 minutes after you send it. By then, the vault's exchange rate or the adapter fee, which the adapter reads at execution, can have changed.
+If the output is below `minimumOut`, the adapter redeems nothing and sends nothing back: it keeps your 0.1 vCCIP-BnM and records a failed message, which you then [refund or recover](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery).
+
+1. Preview the redemption with the adapter's [`preview`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#preview) function, and store the result:
+
+```bash filename="Terminal"
+export REDEEM_PREVIEW=$(cast call $ADAPTER "preview(address,address,uint256,bool,uint64)(uint256)" \
+  $VAULT $VAULT 100000000000000000 true 3478487238524512106 \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL | awk '{print $1}')
+echo $REDEEM_PREVIEW
+```
+
+- The first argument is the token as the adapter receives it. CCIP delivers your vCCIP-BnM from Arbitrum Sepolia as vCCIP-BnM on Ethereum Sepolia, where the vault contract is the share token, so you pass `$VAULT` as both the token and the vault.
+- `100000000000000000` is 0.1 vCCIP-BnM, `true` returns the output to the source chain, and `3478487238524512106` is the Arbitrum Sepolia chain selector.
+- `awk` keeps the number and drops the `[9.9e16]` that `cast` appends.
+
+Example Output:
+
+```bash filename="Terminal"
+99000000000000000
+```
+
+The 1:1 vault redeems 0.1 vCCIP-BnM for 0.1 CCIP-BnM, and the adapter deducts its 0.001 CCIP-BnM fee from it. Do not continue if the output is `0` or `cast` prints an error. `preview` returns `0` when the adapter fee consumes the redeemed CCIP-BnM. It reverts with `InvalidTarget` when the vault is not allowlisted, `InvalidChain` when Arbitrum Sepolia is not a source chain, and `RedeemsDisabled` when redemptions are off.
+
+2. No separate command applies the tolerance: [Build the payload](#build-the-payload) subtracts it from the preview to set `minimumOut`. With the 1% tolerance this page uses, the minimum output is `98010000000000000` (0.09801 CCIP-BnM), which the builder prints. For a 0.5% tolerance, pass `TOLERANCE_BPS=50` to the builder instead of `100`.
+
+A smaller tolerance rejects more requests when the rate moves, and a larger one accepts a worse rate. The vault in these tutorials has no yield strategy, so its exchange rate changes only if someone transfers CCIP-BnM to it directly, and 1% is only an example. For your own vault, choose the tolerance from how far its exchange rate can move during CCIP delivery. See [Slippage protection](/solutions/cross-chain-vault-adapter/overview/how-it-works#slippage-protection).
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Build the payload" number={2} depth={3}>
+
+The payload is the `data` of your CCIP message: four 32-byte fields that tell the adapter what to do. For this redemption, they hold:
+
+| Field               | Value                   | Meaning                                                                                                                                                                                                                      |
+| ------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `target`            | `$VAULT`                | The vault to redeem from. It must be on the adapter's allowlist.                                                                                                                                                             |
+| `beneficiary`       | `$MY_ADDRESS`           | The account that receives the CCIP-BnM on Arbitrum Sepolia.                                                                                                                                                                  |
+| `minimumOut`        | the preview minus 1%    | The smallest acceptable output, in CCIP-BnM. The builder subtracts the `TOLERANCE_BPS` tolerance from the preview.                                                                                                           |
+| `deliveryAndRefund` | your address and `true` | Bit 0 set to `1` returns the CCIP-BnM to Arbitrum Sepolia. Bits 1 to 160 hold `$MY_ADDRESS` as the local refund address, which can take back the vCCIP-BnM on Ethereum Sepolia if the request fails. The builder packs both. |
+
+The payload does not name the action. The token you send decides it: vCCIP-BnM, the vault's share token, makes this request a redemption, so `minimumOut` counts CCIP-BnM. With the 1:1 vault and the equal adapter fees in these tutorials, this payload is byte for byte the same payload you built in [Deposit from a source chain](/solutions/cross-chain-vault-adapter/guides/deposit-from-source-chain).
+
+1. Build the payload with the repository's `pnpm ccip:build-payload` script. It calls your adapter's `preview` with your vault, token, amount, source chain and return flag, subtracts the tolerance from the preview to set `minimumOut`, packs the return flag and your local refund address into `deliveryAndRefund`, and ABI-encodes the four fields:
+
+```bash filename="Terminal"
+export REDEEM_PAYLOAD=$(REQUEST_TOKEN=$VAULT \
+  REQUEST_ADAPTER=$ADAPTER \
+  REQUEST_TARGET=$VAULT \
+  AMOUNT=100000000000000000 \
+  SOURCE_CHAIN_SELECTOR=3478487238524512106 \
+  TOLERANCE_BPS=100 \
+  MY_ADDRESS=$MY_ADDRESS \
+  pnpm ccip:build-payload --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  | tee /dev/stderr \
+  | awk '/PAYLOAD:/ {print $2}')
+```
+
+- `REQUEST_TOKEN` is the token as the adapter receives it. CCIP delivers your vCCIP-BnM from Arbitrum Sepolia as vCCIP-BnM on Ethereum Sepolia, where the vault contract is the share token, so you pass `$VAULT` as the token.
+- `TOLERANCE_BPS=100` is the 1% tolerance from the previous accordion: the script sets `minimumOut` to `preview * (10_000 - 100) / 10_000`. Use `50` for a 0.5% tolerance.
+- `tee /dev/stderr` shows the script's output in your terminal, and `awk` stores the value of its `PAYLOAD:` line in `REDEEM_PAYLOAD`.
+  Your output should look something like this:
+
+```bash filename="Terminal"
+== Logs ==
+  Adapter:             0x3f73Cc1547F2606A20535Bd6620622107059a463
+  Token:               0xE4Ef963183C29401Ff6F67CC13B500dB1354cfB6
+  Vault target:        0xE4Ef963183C29401Ff6F67CC13B500dB1354cfB6
+  Amount:              100000000000000000
+  Return to source:    true
+  Source selector:     3478487238524512106
+  Tolerance (bps):     100
+  Preview:             99000000000000000
+  Minimum out:         98010000000000000
+  Beneficiary:         0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Local refund:        0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994
+  Delivery and refund: 664579538352300329284056227591069458130104865577
+  Byte length:         128
+  PAYLOAD: 0x000000000000000000000000e4ef963183c29401ff6f67cc13b500db1354cfb60000000000000000000000003a34637a41ab08519d30fdb65344aba8e9b2e994000000000000000000000000000000000000000000000000015c3393626fa0000000000000000000000000007468c6f4835610a33a61fb6ca6895751d365d329
+```
+
+2. Check the output before you continue.
+   - The vault target must be your `VAULT` (the token and the vault are the same address for a redemption),
+   - the preview must be the value from the previous accordion,
+   - the minimum out must be `98010000000000000`,
+   - the beneficiary and the local refund must be your address,
+   - the return-to-source flag must be `true`,
+   - the byte length must be `128`.
+   - The last line is the value of `REDEEM_PAYLOAD`: byte for byte the same payload as `DEPOSIT_PAYLOAD` in the deposit tutorial. Do not continue if the preview is `0` or `forge` prints an error.
+
+<Aside type="caution" title="The payload is final once sent">
+  Nobody can change the payload after your message leaves Arbitrum Sepolia. If a check does not match, build the payload
+  again before you send it. The [payload
+  checklist](/solutions/cross-chain-vault-adapter/overview/how-it-works#what-a-user-sends) lists every rule.
+</Aside>
+
+</AnchoredAccordion>
+
+## Send the request
+
+<AnchoredAccordion title="Send the redemption" number={1} depth={3}>
+
+Send 0.1 vCCIP-BnM and the payload from Arbitrum Sepolia to the adapter on Ethereum Sepolia. `ccip-cli` first approves the Arbitrum Sepolia router for exactly 0.1 vCCIP-BnM:
+
+```bash filename="Terminal"
+ccip-cli send \
+  --source ethereum-testnet-sepolia-arbitrum-1 \
+  --router $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_ROUTER \
+  --dest ethereum-testnet-sepolia \
+  --transfer-tokens $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN=0.1 \
+  --receiver $ADAPTER \
+  --data $REDEEM_PAYLOAD \
+  --gas-limit 1500000 \
+  --wallet foundry:$KEYSTORE_NAME \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+```
+
+- `--transfer-tokens` takes the amount in whole tokens, so `0.1` is 0.1 vCCIP-BnM. The Burn & Mint pool on Arbitrum Sepolia burns it, and the Lock & Release pool on Ethereum Sepolia releases 0.1 vCCIP-BnM from the lockbox to the adapter. The adapter receives the vault's share token, so it treats the request as a redemption.
+- `--receiver $ADAPTER` sends the message to the adapter. Your wallet receives the CCIP-BnM because it is the payload's `beneficiary`.
+- `--data` sends the 128-byte payload as is, because it starts with `0x`.
+- `--gas-limit 1500000` is the gas available on Ethereum Sepolia for everything the adapter does when it receives the message: its checks, the vault redemption, and the CCIP send of the return leg. CCIP bills you for the limit, not for the gas used. If the limit is too low, `ccipReceive` can run out of gas before the adapter records the failure, and CCIP marks the message as failed. The message then needs [manual execution](/ccip/concepts/manual-execution) with a higher limit.
+- Without `--fee-token`, `ccip-cli` pays the CCIP fee in Arbitrum Sepolia ETH and prints it on the `Fee:` line.
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+Estimated gasLimit for sender = 0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994 : 744376
+Fee: 836394747647981n = 0.000836394747647981 ETH
+🚀 Sending message to 0x3f73Cc1547F2606A20535Bd6620622107059a463 @ ethereum-testnet-sepolia , tx => 0xa46ff978365a06bd6f7500532ae0ef4b6de3bf5f876b98dfa265baf718df871c , messageId => 0xabad1355c344bcc670d783494829eaf68a197f85f7d263c64a0b66a34b5119ef
+Lane:
+┌────────────────┬──────────────────────────────────────────────┬────────────────────────────┐
+│ (index)        │ source                                       │ dest                       │
+├────────────────┼──────────────────────────────────────────────┼────────────────────────────┤
+│ name           │ 'ethereum-testnet-sepolia-arbitrum-1'        │ 'ethereum-testnet-sepolia' │
+│ chainId        │ 421614                                       │ 11155111                   │
+│ chainSelector  │ 3478487238524512106n                         │ 16015286601757825753n      │
+│ onRamp/version │ '0x6B9a7cF69F90Ae2659bfe3069fba5Aa308A48cC4' │ '2.0.0'                    │
+└────────────────┴──────────────────────────────────────────────┴────────────────────────────┘
+Request (source):
+┌────────────────────────────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)                        │ Values                                                               │
+├────────────────────────────────┼──────────────────────────────────────────────────────────────────────┤
+│ messageId                      │ '0xabad1355c344bcc670d783494829eaf68a197f85f7d263c64a0b66a34b5119ef' │
+│ origin                         │ '0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994'                         │
+│ sender                         │ '0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994'                         │
+│ receiver                       │ '0x3f73Cc1547F2606A20535Bd6620622107059a463'                         │
+```
+
+Export the message ID from the output:
+
+```bash filename="Terminal"
+export REDEEM_MESSAGE_ID=<message_id>
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Track the request" number={2} depth={3}>
+
+Open the CCIP Explorer link from the output, or follow the request from the terminal with `ccip-cli show`. `--wait` keeps the command running until the request executes on Ethereum Sepolia:
+
+```bash filename="Terminal"
+ccip-cli show $REDEEM_MESSAGE_ID \
+  --wait \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+```
+
+CCIP delivers the request after your transaction reaches finality on Arbitrum Sepolia, which typically takes about 20 minutes.
+
+Once your request has finalized, your output should look something like this:
+
+```bash filename="Terminal"
+---------------------OTHER LOGS----------------------------------------------------------
+
+[SENT] Waiting for source chain finalization...
+[SOURCE_FINALIZED] Source chain finalized
+[SOURCE_FINALIZED] Waiting for commit on destination chain...
+[SUCCESS] Message executed on destination chain
+┌─────────────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)         │ Values                                                               │
+├─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│ state           │ '✅ success'                                                         │
+│ origin          │ '0x64d20bbd0a280307884A99C43E8baf9fC5D5BC11'                         │
+│ contract        │ '0xc6A246A9AcdAaE651708706494720F79C3E5d0A1'                         │
+│ transactionHash │ '0xfd83d4a1704797b75ad228810f0c8dd79e8e774bed22cb06d155116c5afeecd5' │
+│ logIndex        │ 93                                                                   │
+│ blockNumber     │ 11863985                                                             │
+│ timestamp       │ '2026-10-07 15:49:24 (17m10s after request)'                         │
+└─────────────────┴──────────────────────────────────────────────────────────────────────┘
+```
+
+</AnchoredAccordion>
+
+## Check the result
+
+In the transaction that executed your request, the Lock & Release pool on Ethereum Sepolia released 0.1 vCCIP-BnM from the lockbox to the adapter.
+These are shares that the vault minted on Ethereum Sepolia: the lockbox held them while the same amount existed on Arbitrum Sepolia, where the Burn & Mint pool burned your 0.1 vCCIP-BnM when you sent the request.
+The token the adapter received is the vault's share token, so the adapter treated the request as a redemption.
+
+In the same transaction, the adapter:
+
+1. Redeemed the 0.1 vCCIP-BnM from the vault, which burned the shares and paid 0.1 CCIP-BnM to the adapter.
+2. Kept the 0.001 CCIP-BnM adapter fee from the redeemed CCIP-BnM.
+3. Checked the remaining 0.099 CCIP-BnM against your `minimumOut` of 0.09801 CCIP-BnM.
+4. Sent the 0.099 CCIP-BnM to your wallet on Arbitrum Sepolia in the return leg, and paid its CCIP fee from its Ethereum Sepolia ETH. The CCIP-BnM pool on Ethereum Sepolia burned the CCIP-BnM.
+
+<AnchoredAccordion title="Confirm the vault redemption" number={1} depth={3}>
+
+`[SUCCESS]` means that CCIP delivered your request to the adapter. It does not mean that the vault redemption happened. The adapter catches the errors that occur while it processes a request, so CCIP execution also succeeds for a request that the adapter rejected. [Why the CCIP Explorer shows Success](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#why-the-ccip-explorer-shows-success) explains this. Check the adapter's own result on Ethereum Sepolia.
+
+1. From the `[SUCCESS]` table, export the hash and the block number of the Ethereum Sepolia transaction that executed your request. Do not use the `transactionHash` and `blockNumber` rows of the request table above it: they belong to your send transaction on Arbitrum Sepolia. If you run `ccip-cli show` again later, the request table also shows the execution values as `receiptTransactionHash` and `receiptBlockNumber`:
+
+```bash filename="Terminal"
+export REDEEM_EXECUTION_TX=<transaction_hash>
+export REDEEM_EXECUTION_BLOCK=<block_number>
+```
+
+2. Look for the adapter's `MessageSucceeded` event for your message ID in that block:
+
+```bash filename="Terminal"
+cast logs --from-block $REDEEM_EXECUTION_BLOCK --to-block $REDEEM_EXECUTION_BLOCK --address $ADAPTER \
+  "MessageSucceeded(bytes32 indexed messageId)" $REDEEM_MESSAGE_ID \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+- address: 0x3f73Cc1547F2606A20535Bd6620622107059a463
+  blockHash: 0x075286b104df9919e1eb6c395f9683017abe1fcdbc93cd765f92bc3b058559cd
+  blockNumber: 11863985
+  data: 0x
+  logIndex: 91
+  removed: false
+  topics: [
+        0xdf6958669026659bac75ba986685e11a7d271284989f565f2802522663e9a70f
+        0xabad1355c344bcc670d783494829eaf68a197f85f7d263c64a0b66a34b5119ef
+  ]
+  transactionHash: 0xfd83d4a1704797b75ad228810f0c8dd79e8e774bed22cb06d155116c5afeecd5
+  transactionIndex: 53
+```
+
+The adapter emits `MessageSucceeded` only after it completes the whole request. In the same transaction, it also emitted `TargetProcessed` for the vault redemption and `MessageSent` for the return leg. When a request fails, the adapter rolls back those events and emits `MessageFailed` instead.
+
+3. Read the adapter's state for your message ID:
+
+```bash filename="Terminal"
+cast call $ADAPTER "messageErrorCode(bytes32)(uint8)" $REDEEM_MESSAGE_ID --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+```bash filename="Terminal"
+0
+```
+
+1. `0` (`NONE`) confirms success only together with `MessageSucceeded`, because a message that has not arrived yet also reads `0`.
+2. `1` (`BASIC`) means that the adapter rejected the request and holds your 0.1 vCCIP-BnM. In that case, [What counts as a failure](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery#what-counts-as-a-failure) lists the possible causes.
+3. [Failures and recovery](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery) shows how to refund the vCCIP-BnM to Arbitrum Sepolia, or recover it on Ethereum Sepolia with your wallet, the payload's local refund address.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Find the return leg" number={2} depth={3}>
+
+The adapter sent your CCIP-BnM in the return leg, a second CCIP message with its own message ID, from the transaction that executed your request. Find the ID with the CCIP API, then confirm it on-chain.
+
+1. Search the CCIP API for the latest message that the adapter sent to your wallet. `--no-interactive` makes the command exit after it prints the result, instead of opening a menu:
+
+```bash filename="Terminal"
+ccip-cli search messages $ADAPTER --receiver $MY_ADDRESS --limit 1 --no-interactive
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+┌───────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)   │ Values                                                               │
+├───────────┼──────────────────────────────────────────────────────────────────────┤
+│ messageId │ '0xd8f1f245b1884df38538b295def1b0bafe16a116893c3371102e88ad78243662' │
+│ status    │ 'SENT'                                                               │
+│ source    │ 'ethereum-testnet-sepolia [11155111]'                                │
+│ dest      │ 'ethereum-testnet-sepolia-arbitrum-1 [421614]'                       │
+│ sender    │ '0x3f73Cc1547F2606A20535Bd6620622107059a463'                         │
+│ receiver  │ '0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994'                         │
+│ txHash    │ '0xfd83d4a1704797b75ad228810f0c8dd79e8e774bed22cb06d155116c5afeecd5' │
+│ timestamp │ '2026-10-07T15:49:24.000Z'                                           │
+└───────────┴──────────────────────────────────────────────────────────────────────┘
+
+1 message(s) found.
+```
+
+The `txHash` must equal `$REDEEM_EXECUTION_TX`. If it differs, the CCIP API has not indexed this return leg yet and still shows the return leg of your deposit, so run the command again after a minute. Export the message ID:
+
+```bash filename="Terminal"
+export REDEEM_RETURN_MESSAGE_ID=<message_id>
+```
+
+2. Read the same ID from the adapter's `MessageSent` event. This way needs only your Ethereum Sepolia RPC, not the CCIP API:
+
+```bash filename="Terminal"
+cast logs --from-block $REDEEM_EXECUTION_BLOCK --to-block $REDEEM_EXECUTION_BLOCK --address $ADAPTER \
+  "MessageSent(bytes32 indexed messageId,uint64 indexed destinationChainSelector,uint8 indexed chainType,bytes32 beneficiary,address token,uint256 amount,uint256 fee)" \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+- address: 0x3f73Cc1547F2606A20535Bd6620622107059a463
+  blockHash: 0x075286b104df9919e1eb6c395f9683017abe1fcdbc93cd765f92bc3b058559cd
+  blockNumber: 11863985
+  data: 0x0000000000000000000000003a34637a41ab08519d30fdb65344aba8e9b2e994000000000000000000000000fd57b4ddbf88a4e07ff4e34c487b99af2fe82a05000000000000000000000000000000000000000000000000015fb7f9b8c380000000000000000000000000000000000000000000000000000000ea7f1b127937
+  logIndex: 90
+  removed: false
+  topics: [
+        0xb6bd76b2fc831b8df833914080c10bae0c3951d7550d7c24a72e3d2fa8b7ff63
+        0xd8f1f245b1884df38538b295def1b0bafe16a116893c3371102e88ad78243662
+        0x000000000000000000000000000000000000000000000000304611b6affba76a
+        0x0000000000000000000000000000000000000000000000000000000000000001
+  ]
+  transactionHash: 0xfd83d4a1704797b75ad228810f0c8dd79e8e774bed22cb06d155116c5afeecd5
+  transactionIndex: 53
+```
+
+The second entry of `topics` is the return leg's message ID and must equal `$REDEEM_RETURN_MESSAGE_ID`. The third is the Arbitrum Sepolia chain selector, and the fourth is the chain type, `1` for EVM.
+
+3. Decode the log's `data` field. It holds the beneficiary, the token, the amount, and the CCIP fee that the adapter paid in Ethereum Sepolia ETH, in wei. Replace `<data>` with the `data` value from the log:
+
+```bash filename="Terminal"
+cast abi-decode --input "f(bytes32,address,uint256,uint256)" <data>
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Track the return leg" number={3} depth={3}>
+
+Follow the return leg until it executes on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+ccip-cli show $REDEEM_RETURN_MESSAGE_ID \
+  --wait \
+  --rpc "$ETHEREUM_SEPOLIA_RPC_URL" \
+  --rpc "$ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL"
+```
+
+The return leg carries only tokens: its `data` is empty and its gas limit is 0, so CCIP delivers the CCIP-BnM to your wallet without calling a contract. The CCIP-BnM pool on Arbitrum Sepolia mints it. CCIP delivers the return leg after the execution transaction reaches finality on Ethereum Sepolia, which typically takes about 20 minutes.
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+----------------------OTHER LOGS---------------------------------------
+[SENT] Waiting for source chain finalization...
+[SOURCE_FINALIZED] Source chain finalized
+[SOURCE_FINALIZED] Waiting for commit on destination chain...
+[SUCCESS] Message executed on destination chain
+┌─────────────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)         │ Values                                                               │
+├─────────────────┼──────────────────────────────────────────────────────────────────────┤
+│ state           │ '✅ success'                                                         │
+│ origin          │ '0x40699f4108fC51a4c50BDA0BF3Aae904FB4e9F1B'                         │
+│ contract        │ '0xC93218EB7B778bC0c13E5296140C8E4Fa1C440DA'                         │
+│ transactionHash │ '0x888e522f8a6b6032e8d4ad5034cd9630168308e5a3885c436cdb533ec77b06b7' │
+│ logIndex        │ 3                                                                    │
+│ blockNumber     │ 316762230                                                            │
+│ timestamp       │ '2026-10-07 16:08:19 (18m55s after request)'                         │
+└─────────────────┴──────────────────────────────────────────────────────────────────────┘
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Confirm the balances" number={4} depth={3}>
+
+1. Check your vCCIP-BnM and CCIP-BnM balances on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+cast call $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN "balanceOf(address)(uint256)" $MY_ADDRESS \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+cast call $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_CCIP_BNM "balanceOf(address)(uint256)" $MY_ADDRESS \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+Example Output:
+
+```bash filename="Terminal"
+99000000000000000 [9.9e16]
+999000000000000000 [9.99e17]
+```
+
+Your vCCIP-BnM dropped by the 0.1 you redeemed, from 0.199 to 0.099. Your CCIP-BnM grew by 0.099, from 0.9 to 0.999. You redeemed 0.1 vCCIP-BnM for 0.099 CCIP-BnM, and the 0.001 difference is the adapter fee.
+
+2. Check the vault's total assets and total share supply on Ethereum Sepolia:
+
+```bash filename="Terminal"
+cast call $VAULT "totalAssets()(uint256)" --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call $VAULT "totalSupply()(uint256)" --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Example Output:
+
+```bash filename="Terminal"
+999000000000000000 [9.99e17]
+999000000000000000 [9.99e17]
+```
+
+Both vault totals dropped by 0.1, from 1.099 to 0.999: the vault burned 0.1 vCCIP-BnM and paid out 0.1 CCIP-BnM, so shares still convert 1:1.
+
+If you set up the share token with the Lock & Mint tutorial, check that the lockbox holds 0.099 vCCIP-BnM, which backs your 0.099 vCCIP-BnM on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+cast call $VAULT "balanceOf(address)(uint256)" $LOCK_BOX --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Example Output:
+
+```bash filename="Terminal"
+99000000000000000 [9.9e16]
+```
+
+</AnchoredAccordion>
+
+## Withdraw the adapter fees
+
+Now you will act as the vault team. The adapter keeps each adapter fee in the vault's asset, CCIP-BnM, and adds it to `collectedFees`. Only an account with `FEE_COLLECTOR_ROLE` can withdraw the fees, with `withdrawFee`.
+[Configure the deployment](/solutions/cross-chain-vault-adapter/guides/deploy-the-adapter#configure-the-deployment) gave that role to your wallet through `FEE_COLLECTOR`.
+
+<AnchoredAccordion title="Check the collected fees" number={1} depth={3}>
+
+Store the collected CCIP-BnM fees, then check the adapter's CCIP-BnM balance and whether your wallet holds `FEE_COLLECTOR_ROLE`:
+
+```bash filename="Terminal"
+export COLLECTED_FEES=$(cast call $ADAPTER "collectedFees(address)(uint256)" $ETHEREUM_SEPOLIA_CCIP_BNM \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL | awk '{print $1}')
+echo $COLLECTED_FEES
+cast call $ETHEREUM_SEPOLIA_CCIP_BNM "balanceOf(address)(uint256)" $ADAPTER --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call $ADAPTER "hasRole(bytes32,address)(bool)" $(cast keccak FEE_COLLECTOR_ROLE) $MY_ADDRESS \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Example Output:
+
+```bash filename="Terminal"
+2000000000000000
+2000000000000000 [2e15]
+true
+```
+
+- The adapter collected 0.001 CCIP-BnM from your deposit, before it deposited, and 0.001 CCIP-BnM from this redemption, out of the redeemed CCIP-BnM.
+- Its CCIP-BnM balance equals its collected fees, because every other CCIP-BnM it received went into the vault or back to Arbitrum Sepolia.
+- `FEE_COLLECTOR_ROLE` is the keccak-256 hash of the string `FEE_COLLECTOR_ROLE`, which `cast keccak` computes. If the output is `false`, run the withdrawal from the account that holds the role.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Withdraw the fees" number={2} depth={3}>
+
+1. Withdraw all collected fees to your wallet. The arguments are the asset, the recipient, and the amount in the asset's smallest units:
+
+```bash filename="Terminal"
+cast send $ADAPTER "withdrawFee(address,address,uint256)" $ETHEREUM_SEPOLIA_CCIP_BNM $MY_ADDRESS $COLLECTED_FEES \
+  --rpc-url $ETHEREUM_SEPOLIA_RPC_URL \
+  --account $KEYSTORE_NAME
+```
+
+Check that the receipt's `status` is `1 (success)`.
+
+The recipient can be any address other than the zero address, such as a treasury, and you can withdraw part of the fees. An amount of 0 reverts with `AmountIsZero`, an amount above `collectedFees` reverts with `InsufficientFeeBalance`, and a call from an account without `FEE_COLLECTOR_ROLE` reverts with `AccessControlUnauthorizedAccount`. See [`withdrawFee`](/solutions/cross-chain-vault-adapter/reference/adapter-contract#withdrawfee).
+
+2. Check the collected fees and your CCIP-BnM balance on Ethereum Sepolia:
+
+```bash filename="Terminal"
+cast call $ADAPTER "collectedFees(address)(uint256)" $ETHEREUM_SEPOLIA_CCIP_BNM --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call $ETHEREUM_SEPOLIA_CCIP_BNM "balanceOf(address)(uint256)" $MY_ADDRESS --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+Example Output:
+
+```bash filename="Terminal"
+0
+2000000000000000 [2e15]
+```
+
+The collected fees are back to 0, and your wallet received the 0.002 CCIP-BnM. Your balance is exactly `2000000000000000` only if your wallet held no other CCIP-BnM on Ethereum Sepolia.
+
+</AnchoredAccordion>
+
+## Review the round trip
+
+The values below assume that you followed all four tutorials with the amounts shown, starting with no vCCIP-BnM or CCIP-BnM in your wallet.
+
+<AnchoredAccordion title="List the four CCIP messages" number={1} depth={3}>
+
+The deposit and the redemption each took two CCIP messages: a request that you sent and paid for on Arbitrum Sepolia, and a return leg that the adapter sent and paid for on Ethereum Sepolia.
+
+| Message                  | Direction                            | Sender and receiver        | Tokens                          | CCIP fee paid by                     | Adapter fee                                         |
+| ------------------------ | ------------------------------------ | -------------------------- | ------------------------------- | ------------------------------------ | --------------------------------------------------- |
+| 1. Deposit request       | Arbitrum Sepolia to Ethereum Sepolia | Your wallet to the adapter | 0.1 CCIP-BnM, with the payload  | You, in Arbitrum Sepolia ETH         | 0.001 CCIP-BnM, deducted before the deposit         |
+| 2. Deposit return leg    | Ethereum Sepolia to Arbitrum Sepolia | The adapter to your wallet | 0.099 vCCIP-BnM                 | The adapter, in Ethereum Sepolia ETH | None                                                |
+| 3. Redemption request    | Arbitrum Sepolia to Ethereum Sepolia | Your wallet to the adapter | 0.1 vCCIP-BnM, with the payload | You, in Arbitrum Sepolia ETH         | 0.001 CCIP-BnM, deducted from the redeemed CCIP-BnM |
+| 4. Redemption return leg | Ethereum Sepolia to Arbitrum Sepolia | The adapter to your wallet | 0.099 CCIP-BnM                  | The adapter, in Ethereum Sepolia ETH | None                                                |
+
+The two tokens cross the lane differently:
+
+- CCIP-BnM has a Burn & Mint pool on both chains, so messages 1 and 4 burned it on the source chain and minted it on the destination chain.
+- vCCIP-BnM has a Lock & Release pool on Ethereum Sepolia and a Burn & Mint pool on Arbitrum Sepolia. Message 2 locked 0.099 vCCIP-BnM in the lockbox and minted it on Arbitrum Sepolia. Message 3 burned 0.1 vCCIP-BnM on Arbitrum Sepolia and released it from the lockbox.
+
+List your requests to the adapter and the adapter's return legs to you through the CCIP API:
+
+```bash filename="Terminal"
+ccip-cli search messages $MY_ADDRESS --receiver $ADAPTER --limit 2 --no-interactive
+ccip-cli search messages $ADAPTER --receiver $MY_ADDRESS --limit 2 --no-interactive
+```
+
+Your output should look something like this:
+
+```bash filename="Terminal"
+2 message(s) found.
+(node:58794) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+┌───────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)   │ Values                                                               │
+├───────────┼──────────────────────────────────────────────────────────────────────┤
+│ messageId │ '0xd8f1f245b1884df38538b295def1b0bafe16a116893c3371102e88ad78243662' │
+│ status    │ 'SUCCESS'                                                            │
+│ source    │ 'ethereum-testnet-sepolia [11155111]'                                │
+│ dest      │ 'ethereum-testnet-sepolia-arbitrum-1 [421614]'                       │
+│ sender    │ '0x3f73Cc1547F2606A20535Bd6620622107059a463'                         │
+│ receiver  │ '0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994'                         │
+│ txHash    │ '0xfd83d4a1704797b75ad228810f0c8dd79e8e774bed22cb06d155116c5afeecd5' │
+│ timestamp │ '2026-10-07T15:49:24.000Z'                                           │
+└───────────┴──────────────────────────────────────────────────────────────────────┘
+┌───────────┬──────────────────────────────────────────────────────────────────────┐
+│ (index)   │ Values                                                               │
+├───────────┼──────────────────────────────────────────────────────────────────────┤
+│ messageId │ '0xe0977e67438c5116084634de44f79db5feb995582b3f7645abc380a82c6dc8c0' │
+│ status    │ 'SUCCESS'                                                            │
+│ source    │ 'ethereum-testnet-sepolia [11155111]'                                │
+│ dest      │ 'ethereum-testnet-sepolia-arbitrum-1 [421614]'                       │
+│ sender    │ '0x3f73Cc1547F2606A20535Bd6620622107059a463'                         │
+│ receiver  │ '0x3A34637a41aB08519d30Fdb65344aBa8E9b2e994'                         │
+│ txHash    │ '0x316d8252f6b40cae8edffa137871975b26df7d4bdf8a26ca1093b35944d352b1' │
+│ timestamp │ '2026-10-07T10:23:00.000Z'                                           │
+└───────────┴──────────────────────────────────────────────────────────────────────┘
+
+2 message(s) found.
+```
+
+Each command lists the newest message first: the first command prints messages 3 and 1, and the second prints messages 4 and 2. All four show the status `SUCCESS`.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Reconcile the final balances" number={2} depth={3}>
+
+1. Read the two balances that this tutorial has not checked yet: your vCCIP-BnM on Ethereum Sepolia, and the vCCIP-BnM supply on Arbitrum Sepolia:
+
+```bash filename="Terminal"
+cast call $VAULT "balanceOf(address)(uint256)" $MY_ADDRESS --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+cast call $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_TOKEN "totalSupply()(uint256)" \
+  --rpc-url $ETHEREUM_TESTNET_SEPOLIA_ARBITRUM_1_RPC_URL
+```
+
+```bash filename="Terminal"
+900000000000000000 [9e17]
+99000000000000000 [9.9e16]
+```
+
+2. Read the adapter's Ethereum Sepolia ETH balance, in wei:
+
+```bash filename="Terminal"
+cast balance $ADAPTER --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
+```
+
+The balance is 0.01 Ethereum Sepolia ETH (`10000000000000000` wei) minus the `fee` values of the `MessageSent` events for messages 2 and 4, plus any top-up you sent.
+
+The following table lists every balance at the end of the series and how it got there:
+
+| Chain            | Balance                                    | Final value | How it got there                                                                                 |
+| ---------------- | ------------------------------------------ | ----------- | ------------------------------------------------------------------------------------------------ |
+| Ethereum Sepolia | Your vCCIP-BnM                             | 0.9         | 1 from your deposit in Deploy the vault and set up its share token, minus the 0.1 test transfer  |
+| Ethereum Sepolia | vCCIP-BnM in the lockbox                   | 0.099       | 0.1 locked by the test transfer, plus 0.099 locked by message 2, minus 0.1 released by message 3 |
+| Ethereum Sepolia | Vault total supply and total assets        | 0.999 each  | 1 from your deposit, plus 0.099 deposited by message 1, minus 0.1 redeemed by message 3          |
+| Ethereum Sepolia | Adapter collected fees                     | 0           | 0.001 each from messages 1 and 3, then withdrawn                                                 |
+| Ethereum Sepolia | Your CCIP-BnM                              | 0.002       | The adapter fees you withdrew                                                                    |
+| Arbitrum Sepolia | vCCIP-BnM total supply, all in your wallet | 0.099       | 0.1 from the test transfer, plus 0.099 from message 2, minus 0.1 burned by message 3             |
+| Arbitrum Sepolia | Your CCIP-BnM                              | 0.999       | 1 minted in Deposit from a source chain, minus 0.1 sent in message 1, plus 0.099 from message 4  |
+
+The vault's 0.999 vCCIP-BnM supply is your 0.9 on Ethereum Sepolia plus the 0.099 in the lockbox, and the lockbox holds exactly the 0.099 vCCIP-BnM that exists on Arbitrum Sepolia. The vault holds 0.999 CCIP-BnM against 0.999 vCCIP-BnM, so shares still convert 1:1. The round trip cost you the CCIP fees of messages 1 and 3, in Arbitrum Sepolia ETH, and 0.002 CCIP-BnM in adapter fees. Because your wallet also acted as the vault team, the adapter fees came back to it through `withdrawFee`.
+
+</AnchoredAccordion>
+
+## Where to go next
+
+- [Failures and recovery](/solutions/cross-chain-vault-adapter/overview/failures-and-recovery): what happens to a request that fails a check, such as the minimum output, and how its tokens come back.
+- [What a user sends](/solutions/cross-chain-vault-adapter/overview/how-it-works#what-a-user-sends): the payload checklist for an app that sends requests for its users.
+- [Fee functions](/solutions/cross-chain-vault-adapter/reference/adapter-contract#fee-functions): change the adapter fee per chain and token with `setAssetFee`.
+- [Limitations](/solutions/cross-chain-vault-adapter/reference/limitations): what to check before you use the adapter with your own vault in production.

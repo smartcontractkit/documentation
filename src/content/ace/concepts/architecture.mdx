@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Understand the Chainlink ACE system architecture: onchain contracts, the ACE Platform, and how the Policy Manager, Identity Manager, Reporting Manager, and Chainlink infrastructure work together to power automated compliance."
   datePublished: "2026-03-31"
-  lastModified: "2026-03-31"
+  lastModified: "2026-10-05"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -14,6 +14,15 @@ import AceCallout from "@features/ace/callouts/AceCallout.astro"
 <AceCallout callout="privateBeta" />
 
 ACE has two layers: **onchain smart contracts** that enforce compliance rules on the blockchain, and the **[ACE Platform](/ace/concepts/key-terms#ace-platform)** (UI and APIs) that lets you manage them. Under the hood, Chainlink infrastructure connects the two — routing your platform actions to the blockchain and indexing onchain events back into the Reporting API. This page gives a bird's-eye view of how all the pieces fit together.
+
+## Two ways ACE enforces compliance
+
+ACE enforces compliance in two ways, which use the same Platform and the same CRE Connect Wallet but different components:
+
+- **Preventive enforcement** uses the onchain contracts below. A protected function calls a PolicyEngine during the transaction, and the transaction reverts if a policy rejects it.
+- **Continuous monitoring** is [Active Monitoring](/ace/active-monitoring/overview). It does not use the ACE contracts. The ACE Platform screens addresses with TRM on a schedule, reads balances and executes operations on your existing token through CRE Connect, and records each decision.
+
+See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) to choose between them.
 
 ## System overview
 
@@ -34,7 +43,7 @@ The sections below explain each layer in detail.
 
 ## ACE managers
 
-ACE Beta provides three managers that abstract away the complexity of managing onchain contracts:
+ACE Beta provides four managers. Policy Manager and Identity Manager abstract away the complexity of managing ACE onchain contracts. Active Monitoring operates on tokens you already run.
 
 ### Policy Manager
 
@@ -53,6 +62,12 @@ The Identity Manager operates on the **Cross-Chain Identity** onchain contracts:
 The Reporting Manager gives you read-only access to onchain state and transaction history. You can query policy engines and their configurations, look up identities and credentials, and view policy run transactions with filtering by network, target contract, and time range.
 
 The Reporting Manager exposes data through the **Reporting API**. Under the hood, Chainlink's indexing infrastructure monitors onchain events (such as `PolicyRunComplete`) emitted by your PolicyEngines and indexes the data so it can be queried through the API. See the [API Overview](/ace/reference/apis) for available endpoints.
+
+### Active Monitoring
+
+Active Monitoring screens the wallet addresses you choose with TRM Wallet Screening, applies a monitoring rule to each change of risk level, and acts on tokens that are already deployed. A rule can record a decision, flag it for a person to review, or enforce an action: Active Monitoring calls an enforcement function that you registered on your token, through your CRE Connect Wallet.
+
+Unlike the other managers, Active Monitoring does not deploy or configure ACE contracts. It needs the ABI of your token, its addresses, and an onchain role for your CRE Connect Wallet. Decisions and operation history are available in the Platform and through the Coordinator API. See [How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works).
 
 <Aside type="note" title="UI and API">
   Everything you can do in the Policy Manager and Identity Manager UIs is also available through the Coordinator API.
@@ -114,6 +129,8 @@ Every ACE management action — whether triggered from the UI or the Coordinator
 1. The CRE Connect Wallet verifies authorization and executes the operation on the target contract.
 
 How the transaction gets signed depends on your organization's signing model: with **delegated signing**, Chainlink signs the operation automatically. With **self-signing**, ACE creates an unsigned draft operation that you poll, sign with your own key, and submit using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). In both cases, the CRE Connect Wallet remains the execution gateway. See [Signing & Ownership Model](/ace/concepts/signing-ownership) for details.
+
+Active Monitoring uses the same write path for the operations it creates. It also reads balances through CRE Connect: the Platform asks CRE Connect to call `balanceOf(address)` on your token, and records the result with the decision.
 
 ### How ACE observes onchain activity (read path)
 

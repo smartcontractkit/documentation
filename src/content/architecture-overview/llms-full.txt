@@ -65,30 +65,36 @@ Aggregators receive updates from the oracle network only when the **Deviation Th
 # Data Feeds Architecture
 Source: https://docs.chain.link/architecture-overview/architecture-overview
 
+Chainlink Data Feeds, Offchain Reporting (OCR), and the Chainlink Runtime Environment (CRE) are the current ways to bring data and computation to a smart contract.
+
+## Data Feeds
+
+A Chainlink Data Feed aggregates answers from many independent oracle nodes. Your contract reads that one aggregated answer. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model) describes how the feed is updated and how a consumer contract reads it.
+
+Start with [Data Feeds](/data-feeds/getting-started).
+
+## Offchain Reporting
+
+Offchain Reporting (OCR) is how those nodes agree. Each node reports its observation and signs it. The nodes then submit one aggregate transaction. The report is checked onchain against the quorum signatures. Read [Offchain Reporting](/architecture-overview/off-chain-reporting) for the protocol.
+
+## Chainlink Runtime Environment
+
+[CRE](/cre/overview) is the orchestration layer for new multi-step work. You write a workflow with the CRE SDK in Go or TypeScript. A workflow DON runs it. The workflow can call other DONs to fetch offchain data or to write onchain. Start with the [CRE getting started guide](/cre/getting-started/overview).
+
 ## Basic request model
 
-Chainlink connects smart contracts with external data using its decentralized oracle network. Chainlink API requests are handled 1:1 by an oracle.
-
-The [Basic Request Model](/architecture-overview/architecture-request-model) describes the onchain architecture of requesting data from a single oracle source.
-
-To learn how to make a GET request using a single oracle, see [Make a GET Request](/any-api/get-request/introduction).
-
-## Decentralized data model
-
-For a more robust and trustworthy answer, you can aggregate data from many oracles. With onchain aggregation, data is aggregated from a decentralized network of independent oracle nodes. This architecture is applied to Chainlink Data Feeds, which can aggregate data such as asset price data.
-
-The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model) describes how data is aggregated, and how consumer contracts can retrieve this data.
-
-## Offchain reporting
-
-Offchain Reporting (OCR) is an improvement on the decentralization and scalability of Chainlink networks. With our Offchain Reporting aggregators, all nodes communicate using a peer to peer network. During the communication process, a lightweight consensus algorithm runs where each node reports its price observation and signs it. A single aggregate transaction is then transmitted, which saves a significant amount of gas.
-
-To learn more about OCR and how it works, see the [Offchain Reporting](/architecture-overview/off-chain-reporting) page.
+The [Basic Request Model](/architecture-overview/architecture-request-model) is the old path: one contract, one oracle, and one request. That page stays at the same URL so existing contracts can still be read. It is not in the product navigation. Do not use it for a new project.
 
 ---
 
-# Basic Request Model
+# Basic Request Model (historical)
 Source: https://docs.chain.link/architecture-overview/architecture-request-model
+
+> **CAUTION: Historical**
+>
+> This page describes the old basic request model. One contract calls one oracle. The URL stays so existing contracts
+> can still be read. Do not use this model for a new project. Use [Data Feeds](/data-feeds/getting-started), [Offchain
+> Reporting](/architecture-overview/off-chain-reporting), or [CRE](/cre/overview).
 
 ## Contracts overview
 
