@@ -5,7 +5,7 @@ title: "Account Management"
 metadata:
   description: "Manage wallet addresses with CLI: link, unlink, and list keys for public onchain registry workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-26"
+  lastModified: "2026-10-09"
 ---
 
 import { Aside } from "@components"
@@ -41,6 +41,7 @@ When you run this command, the CLI will:
 
 1. Check whether your organization has deployment access enabled
 1. If not, prompt you to submit a request
+1. Ask you to select the **purpose of this request** — **Hackathon**, **Evaluation**, or **Production Integration**
 1. Ask you to briefly describe your use case
 1. Confirm the request was submitted — the Chainlink team will follow up via email
 
@@ -50,6 +51,11 @@ When you run this command, the CLI will:
 ! Deployment access is not yet enabled for your organization.
 
   Request deployment access? Yes
+
+  Purpose of this request
+  > Hackathon
+    Evaluation
+    Production Integration
 
   Briefly describe your use case
   What are you building with CRE?
@@ -116,9 +122,20 @@ When you run this command, the CLI will:
 1. Extract your public address from the private key in your `.env` file
 1. Prompt you to provide a label for this address (e.g., "Production Wallet")
 1. Check if the address is already linked
+1. **Display a permanence warning** and ask you to confirm that you want to link the address permanently
 1. Display transaction details (chain, contract, estimated gas cost)
 1. Ask for confirmation to execute the transaction
 1. Submit the transaction and provide a block explorer link
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Linking is permanent">
+  Linking a workflow owner address is permanent. Once linked, the address cannot be transferred to or reused in another organization. The CLI prints a warning and asks for confirmation before linking; already-linked addresses skip the prompt.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="note" title="Non-interactive mode requires --yes">
+  When linking an unlinked owner in non-interactive mode (`--non-interactive`), you must also pass `--yes`. The permanence warning still prints, but the confirmation prompt is skipped. This also applies to the automatic linking step of `cre workflow deploy --non-interactive`.
+</Aside>
 
 **Examples:**
 
