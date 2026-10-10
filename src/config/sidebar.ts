@@ -2418,19 +2418,6 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
       ],
     },
     {
-      section: "VRF V2 [DEPRECATED]",
-      contents: [
-        {
-          title: "VRF V2 Subscription Method",
-          url: "vrf/v2/subscription",
-        },
-        {
-          title: "VRF V2 Direct Funding Method",
-          url: "vrf/v2/direct-funding",
-        },
-      ],
-    },
-    {
       section: "Resources",
       contents: [
         {

@@ -1,15 +1,18 @@
 /**
- * Chainlink Functions and Chainlink Automation stay reachable at their old URLs.
+ * Hidden docs stay reachable at their old URLs.
  * Site menus, search, and Markdown output leave them out.
- * Their own pages still show the left sidebar from SIDEBAR_WITH_SUNSET_PRODUCTS.
+ * Functions and Automation pages still show the left sidebar from SIDEBAR_WITH_SUNSET_PRODUCTS.
+ * VRF v1 and VRF v2 pages still show the legacy left sidebar, including the v2.5 migration links.
  * Pages send noindex. They stay in the sitemap so a crawler can recrawl and see noindex.
  * Set SUNSET_PAGES_STAY_IN_SITEMAP to false after a few weeks to drop them from the sitemap.
+ *
+ * `vrf/v2` must not match `vrf/v2-5`. The check is an exact root or a `root/` prefix.
  */
 
 /** Temporary. Flip to false after crawlers have had time to read noindex. */
 export const SUNSET_PAGES_STAY_IN_SITEMAP = true
 
-export const SUNSET_DOC_ROOTS = ["chainlink-automation", "chainlink-functions"] as const
+export const SUNSET_DOC_ROOTS = ["chainlink-automation", "chainlink-functions", "vrf/v1", "vrf/v2"] as const
 
 export const SUNSET_SIDEBAR_SECTIONS = ["automation", "chainlinkFunctions"] as const
 
