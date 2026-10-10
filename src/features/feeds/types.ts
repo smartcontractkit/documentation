@@ -20,8 +20,8 @@ export type DataFeedType =
   | "streamsExRate"
   | "streamsBacked"
 
-export type SchemaFilterValue = "all" | "v2" | "v3" | "v3-dex" | "v8" | "v11"
-export type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex"
+export type SchemaFilterValue = "all" | "v2" | "v3" | "v3-dex" | "v8" | "v11" | "v14"
+export type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex" | "futures"
 export type TradingHoursFilterValue = "all" | "regular" | "extended" | "overnight"
 
 /** Flags derived from the active feed page type. Used by tables and FeedList. */
