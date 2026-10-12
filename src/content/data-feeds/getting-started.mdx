@@ -107,7 +107,7 @@ The BTC / USD feed returns `8` for decimals. To convert the raw integer answer i
 cast format-units 3030914000000 8
 ```
 
-This prints `30309.14000000`. `cast format-units` does the decimal scaling for you, so an answer of `100000001` with 8 decimals correctly prints `1.00000001`.
+This prints `30309.14000000` which is the human-readable price in USD.
 
 </Accordion>
 
@@ -201,24 +201,23 @@ The contract has the following components:
    @chainlink/contracts/=lib/chainlink-evm/contracts/
    ```
 
-   You can write it with a single command:
+   You can write the file with a single command:
 
    ```bash
    echo '@chainlink/contracts/=lib/chainlink-evm/contracts/' > remappings.txt
    ```
 
-1. Create the directories for the sample consumer contract and deploy script:
+   The contract imports the `@chainlink/contracts` package, but `forge install` places the package at `lib/chainlink-evm/contracts/`. A remapping tells the Solidity compiler to rewrite the import path to where the files actually lives. Without it, `forge build` fails with an `Unable to resolve imports` error.
+
+1. Create the directory for the sample consumer contract:
 
    ```bash
-   mkdir -p src/DataFeeds script/DataFeeds
+   mkdir -p src/DataFeeds
    ```
 
-1. Create the following files and paste in the code from the rendered code blocks on this page:
+1. Create `src/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
 
-   - Create `src/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
-   - Create `script/DataFeeds/DeployAndReadDataConsumerV3.s.sol` and paste in the script from [Step 2.3: Deploy the contract with a Forge script](#deploy-with-forge-script).
-
-   Make sure the filenames match exactly: Foundry looks for the contract in `src/` and the script in `script/`.
+   Make sure the filename matches exactly: Foundry looks for the contract in `src/`.
 
 1. Verify the project compiles:
 
@@ -228,94 +227,47 @@ The contract has the following components:
 
    You should see `Compiler run successful`. If you see an import error, double-check the `remappings.txt` line from step 2.
 
+1. Import your deployer private key into Foundry's encrypted keystore. Replace `my-account` with a name of your choice and `0xYOUR_PRIVATE_KEY` with your deployer key:
+
+   ```bash
+   cast wallet import my-account --private-key 0xYOUR_PRIVATE_KEY
+   ```
+
+   - `cast` prompts for a password to encrypt the key. The encrypted keystore file is saved to `~/.foundry/keystores/my-account`, and the key is never written to disk in plaintext.
+   - Run `cast wallet list` to confirm the account is stored.
+
 </Accordion>
 
-<Accordion title="Deploy the contract with a Forge script" number={2.3} contentReference="deploy-with-forge-script">
+<Accordion title="Deploy the contract with forge create" number={2.3} contentReference="deploy-with-forge-script">
 
-The deploy script (`script/DataFeeds/DeployAndReadDataConsumerV3.s.sol`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
-
-{/* <CodeSample src="samples/DataFeeds/Foundry/DeployAndReadDataConsumerV3.s.sol" /> */}
-
-```solidity filename='script/DataFeeds/DeployAndReadDataConsumerV3.s.sol'
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
-
-/* solhint-disable no-console */
-
-import {DataConsumerV3} from "../../src/DataFeeds/DataConsumerV3.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-import {Script} from "forge-std/Script.sol";
-import {console2} from "forge-std/console2.sol";
-
-/**
- * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
- * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
- * DO NOT USE THIS CODE IN PRODUCTION.
- *
- * Deploy DataConsumerV3 and read the latest BTC/USD price on Sepolia.
- *
- * Usage:
- *   forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
- *     --rpc-url $SEPOLIA_RPC_URL \
- *     --broadcast \
- *     --private-key $PRIVATE_KEY
- *
- * To format the raw answer as a human-readable price, pass it together with
- * the feed's decimals to cast:
- *   cast format-units <answer> <decimals>
- */
-contract DeployAndReadDataConsumerV3 is Script {
-  // Sepolia BTC / USD price feed proxy address
-  address public constant SEPOLIA_BTC_USD = 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43;
-
-  function run() public {
-    vm.startBroadcast();
-
-    // 1. Deploy the consumer contract
-    DataConsumerV3 consumer = new DataConsumerV3();
-    console2.log("DataConsumerV3 deployed at:", address(consumer));
-
-    vm.stopBroadcast();
-
-    // 2. Read the latest price through the consumer
-    int256 answer = consumer.getChainlinkDataFeedLatestAnswer();
-    console2.log("Latest answer (raw):", answer);
-
-    // 3. Read the feed's decimals so you can scale the answer offchain
-    uint8 decimals = AggregatorV3Interface(SEPOLIA_BTC_USD).decimals();
-    console2.log("Decimals:", decimals);
-  }
-}
-```
-
-Run it against Sepolia. Replace `$SEPOLIA_RPC_URL` and `$PRIVATE_KEY` with your own values:
+Deploy `DataConsumerV3` to Sepolia with `forge create`. Replace `$SEPOLIA_RPC_URL` with your own value and `my-account` with the keystore account name from the previous step:
 
 ```bash
-forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
+forge create src/DataFeeds/DataConsumerV3.sol:DataConsumerV3 \
   --rpc-url $SEPOLIA_RPC_URL \
-  --broadcast \
-  --private-key $PRIVATE_KEY
+  --account my-account \
+  --broadcast
 ```
 
-The script logs the deployed contract address, the raw integer answer, and the feed's decimals. To see the human-readable price, pass the logged answer and decimals to `cast format-units`:
+`forge` prompts for the keystore password, then simulates the deployment and prints the transaction it would send. The `--broadcast` flag signs and submits that transaction. On success, the output looks like this:
 
 ```bash
-cast format-units 3030914000000 8
+Deployed to: 0xCONSUMER_ADDRESS
 ```
 
 Save the deployed contract address for the next step.
 
 {/* prettier-ignore */}
 <Aside type="note" title="Prefer not to broadcast?">
-  Drop `--broadcast` and `--private-key` to run the script in simulation mode. Useful for verifying your setup before
-  spending testnet ETH.
+  Drop `--broadcast` to run the deployment in simulation mode. Useful for verifying your setup before spending testnet
+  ETH.
 </Aside>
 
 </Accordion>
 
 <Accordion title="Read the latest price onchain" number={2.4}>
 
-Use `cast call` to read the latest answer through your deployed consumer. Replace `$CONSUMER_ADDRESS` with the address logged by the deploy script:
+Use `cast call` to read the latest answer through your deployed consumer. Replace `$CONSUMER_ADDRESS` with the address from the previous step:
 
 ```bash
 cast call $CONSUMER_ADDRESS "getChainlinkDataFeedLatestAnswer()(int256)" --rpc-url $SEPOLIA_RPC_URL
@@ -327,7 +279,13 @@ Read the feed's decimals directly to scale the answer yourself:
 cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
 ```
 
-The BTC / USD feed returns `8` for decimals. Convert the raw answer to a human-readable price with `cast format-units <answer> <decimals>` as shown in [step 1](#fetching-price-data-offchain).
+The BTC / USD feed returns `8` for decimals. Convert the raw answer to a human-readable price with `cast format-units <answer> <decimals>`.
+
+```bash
+cast format-units 3030914000000 8
+```
+
+This prints `30309.14000000` which is the human-readable price in USD.
 
 {/* prettier-ignore */}
 <Aside type="tip" title="Always scale by `decimals()`">
@@ -369,6 +327,10 @@ On L2s, a sequencer outage can cause stale or incorrect prices. Always pair L2 p
 ### Audit your integration
 
 The sample code is unaudited and hardcodes values for clarity. Before production, complete your own audit, review your dependencies, and apply the risk-mitigation practices described in [Developer Responsibilities](/data-feeds/developer-responsibilities).
+
+### Consider Data Streams for latency-sensitive applications
+
+Data Feeds push updates onchain at set intervals or when price thresholds are met. If your application needs market data faster than those update cadences, such as a perps DEX or real-time liquidation engine, [Chainlink Data Streams](/data-streams) delivers low-latency market data offchain that you verify onchain only when your application needs it. See [Front Running Risk](/data-feeds/selecting-data-feeds#front-running-risk) for how latency requirements factor into choosing a data source.
 
 ## FAQ
 

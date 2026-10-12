@@ -76,17 +76,20 @@ You will need:
 {/* prettier-ignore */}
 <Aside type="caution" title="Keep your private key safe">
   Never commit your private key to version control or hardcode it in a script. This guide uses Hardhat 3
-  [configuration variables](https://hardhat.org/docs/guides/configuration-variables), which read secrets from
-  environment variables or an encrypted keystore, so no `.env` file is required. If you do use a `.env` file, add it to
+  , so no `.env` file is required. If you do use a `.env` file, add it to
   your `.gitignore`.
 </Aside>
 
 {/* prettier-ignore */}
 <Aside type="note" title="Why a proxy?">
   Consumer contracts call a _proxy_ contract, which forwards reads to the current _aggregator_. When Chainlink
-  upgrades an aggregator, Chainlink repoints the proxy to the new implementation and your consumer contract keeps
-  working unchanged. Always read from the proxy address listed on the
-  [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
+  upgrades an aggregator, Chainlink repoints the proxy to the new implementation and your consumer contract keeps working unchanged. Always read from the proxy address listed on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="note" title="Coming from Hardhat 2?">
+  This guide uses features introduced in Hardhat 3: `network.create()` replaces a traditional `import` as the way to obtain an ethers instance, and [configuration variables](https://hardhat.org/docs/guides/configuration-variables), which read secrets from
+  environment variables or an encrypted keystore, so no `dotenv` setup is needed. See the [Hardhat 2 to 3 migration guide](https://hardhat.org/migrate-from-hardhat2) for the full list of changes and features.
 </Aside>
 
 ## Getting the feed address
@@ -109,13 +112,13 @@ npm install ethers
 Save the following snippet below as `readFeed.js`:
 
 ```javascript
-const { ethers } = require("ethers")
+import { ethers } from "ethers"
 
 const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL)
 const feed = new ethers.Contract(
   "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43",
   [
-    "function latestRoundData() view returns (uint80, int256, uint256, uint256, uint80)",
+    "function latestRoundData() view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
     "function decimals() view returns (uint8)",
   ],
   provider
@@ -128,7 +131,10 @@ async function main() {
   console.log("Price (USD):", ethers.formatUnits(answer, decimals))
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error)
+  process.exit(1)
+})
 ```
 
 Run it with your Sepolia RPC URL:
@@ -254,13 +260,13 @@ The contract has the following components:
    npx hardhat --init --template mocha-ethers
    ```
 
+   - `npx hardhat --init --template mocha-ethers`: This guide uses Hardhat's `mocha-ethers` scaffold template, a TypeScript project with the ethers.js plugin and the [Mocha](https://mochajs.org/) test runner pre-configured in the generated `hardhat.config.ts`.
+
 1. Install the Chainlink contracts npm package:
 
    ```bash
    npm install @chainlink/contracts
    ```
-
-   Hardhat resolves `@chainlink/contracts` from `node_modules` automatically, so no remapping file is needed (unlike Foundry).
 
 1. Create the directories for the sample consumer contract and deploy script:
 
@@ -271,49 +277,9 @@ The contract has the following components:
 1. Create the following files and paste in the code from the rendered code blocks on this page:
 
    - Create `contracts/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
-   - Create `scripts/DataFeeds/DeployAndReadDataConsumerV3.js` and paste in the script from [Step 2.3: Deploy the contract with a Hardhat script](#deploy-with-hardhat-script).
+   - Create `scripts/DataFeeds/DeployAndReadDataConsumerV3.ts` and paste in the script from [Step 2.3: Deploy the contract with a Hardhat script](#deploy-with-hardhat-script).
 
-   Make sure the filenames match exactly: Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
-
-1. Configure your `hardhat.config.ts` to compile the Chainlink contracts and use Sepolia. Replace its contents with:
-
-   ```typescript filename='hardhat.config.ts'
-   import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers"
-   import { configVariable, defineConfig } from "hardhat/config"
-
-   export default defineConfig({
-     plugins: [hardhatToolboxMochaEthersPlugin],
-     solidity: {
-       profiles: {
-         default: {
-           version: "0.8.28",
-         },
-         production: {
-           version: "0.8.28",
-           settings: {
-             optimizer: { enabled: true, runs: 200 },
-           },
-         },
-       },
-     },
-     networks: {
-       hardhatMainnet: {
-         type: "edr-simulated",
-         chainType: "l1",
-       },
-       hardhatOp: {
-         type: "edr-simulated",
-         chainType: "op",
-       },
-       sepolia: {
-         type: "http",
-         chainType: "l1",
-         url: configVariable("SEPOLIA_RPC_URL"),
-         accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
-       },
-     },
-   })
-   ```
+   _**Make sure the filenames match exactly:**_ Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
 
 1. Set your Sepolia RPC URL and deployer private key as environment variables (or store them in the Hardhat keystore as noted above):
 
@@ -328,17 +294,17 @@ The contract has the following components:
    npx hardhat compile
    ```
 
-   You should see `Compiled 2 Solidity files with solc 0.8.28`. If you see an import error, check that `@chainlink/contracts` is installed (step 2) and that the contract is under `contracts/`.
+   You should see `Compiled 3 Solidity files with solc 0.8.34`: the template's sample contract, your `DataConsumerV3`, and the Chainlink `AggregatorV3Interface` it imports. If you see an import error, check that `@chainlink/contracts` is installed (step 2) and that the contract is under `contracts/`.
 
 </Accordion>
 
 <Accordion title="Deploy the contract with a Hardhat script" number={2.3} contentReference="deploy-with-hardhat-script">
 
-The deploy script (`scripts/DataFeeds/DeployAndReadDataConsumerV3.js`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
+The deploy script (`scripts/DataFeeds/DeployAndReadDataConsumerV3.ts`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
 
-{/* <CodeSample src="samples/DataFeeds/Hardhat/DeployAndReadDataConsumerV3.js" /> */}
+{/* <CodeSample src="samples/DataFeeds/Hardhat/DeployAndReadDataConsumerV3.ts" /> */}
 
-```javascript filename='scripts/DataFeeds/DeployAndReadDataConsumerV3.js'
+```typescript filename='scripts/DataFeeds/DeployAndReadDataConsumerV3.ts'
 import { network } from "hardhat"
 
 /**
@@ -361,19 +327,10 @@ async function main() {
   const answer = await consumer.getChainlinkDataFeedLatestAnswer()
   console.log("Latest answer (raw):", answer.toString())
 
-  // 3. Read decimals directly from the feed to scale the answer
+  // 3. Read the feed's decimals so you can scale the answer offchain
   // Sepolia BTC / USD price feed proxy address
   const feedAddress = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
-  const AggregatorV3Interface = [
-    {
-      inputs: [],
-      name: "decimals",
-      outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
-      stateMutability: "view",
-      type: "function",
-    },
-  ]
-  const feed = await ethers.getContractAt(AggregatorV3Interface, feedAddress)
+  const feed = await ethers.getContractAt(["function decimals() view returns (uint8)"], feedAddress)
   const decimals = await feed.decimals()
   console.log("Decimals:", decimals)
 
@@ -390,7 +347,7 @@ main().catch((error) => {
 Run it against Sepolia:
 
 ```bash
-npx hardhat run scripts/DataFeeds/DeployAndReadDataConsumerV3.js --network sepolia
+npx hardhat run scripts/DataFeeds/DeployAndReadDataConsumerV3.ts --network sepolia
 ```
 
 The script logs the deployed contract address, the raw integer answer, the feed's decimals, and the human-readable price.
@@ -469,6 +426,10 @@ On L2s, a sequencer outage can cause stale or incorrect prices. Always pair L2 p
 ### Audit your integration
 
 The sample code is unaudited and hardcodes values for clarity. Before production, complete your own audit, review your dependencies, and apply the risk-mitigation practices described in [Developer Responsibilities](/data-feeds/developer-responsibilities).
+
+### Consider Data Streams for latency-sensitive applications
+
+Data Feeds push updates onchain at set intervals or when price thresholds are met. If your application needs market data faster than those update cadences, such as a perps DEX or real-time liquidation engine, [Chainlink Data Streams](/data-streams) delivers low-latency market data offchain that you verify onchain only when your application needs it. See [Front Running Risk](/data-feeds/selecting-data-feeds#front-running-risk) for how latency requirements factor into choosing a data source.
 
 ## FAQ
 

@@ -1179,17 +1179,20 @@ You will need:
 
 <Aside type="caution" title="Keep your private key safe">
   Never commit your private key to version control or hardcode it in a script. This guide uses Hardhat 3
-  [configuration variables](https://hardhat.org/docs/guides/configuration-variables), which read secrets from
-  environment variables or an encrypted keystore, so no `.env` file is required. If you do use a `.env` file, add it to
+  , so no `.env` file is required. If you do use a `.env` file, add it to
   your `.gitignore`.
 </Aside>
 
 
 <Aside type="note" title="Why a proxy?">
   Consumer contracts call a *proxy* contract, which forwards reads to the current *aggregator*. When Chainlink
-  upgrades an aggregator, Chainlink repoints the proxy to the new implementation and your consumer contract keeps
-  working unchanged. Always read from the proxy address listed on the
-  [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
+  upgrades an aggregator, Chainlink repoints the proxy to the new implementation and your consumer contract keeps working unchanged. Always read from the proxy address listed on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page, not from the underlying aggregator.
+</Aside>
+
+
+<Aside type="note" title="Coming from Hardhat 2?">
+  This guide uses features introduced in Hardhat 3: `network.create()` replaces a traditional `import` as the way to obtain an ethers instance, and [configuration variables](https://hardhat.org/docs/guides/configuration-variables), which read secrets from
+  environment variables or an encrypted keystore, so no `dotenv` setup is needed. See the [Hardhat 2 to 3 migration guide](https://hardhat.org/migrate-from-hardhat2) for the full list of changes and features.
 </Aside>
 
 ## Getting the feed address
@@ -1280,13 +1283,13 @@ The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the
        npx hardhat --init --template mocha-ethers
        ```
 
+       - `npx hardhat --init --template mocha-ethers`: This guide uses Hardhat's `mocha-ethers` scaffold template, a TypeScript project with the ethers.js plugin and the [Mocha](https://mochajs.org/) test runner pre-configured in the generated `hardhat.config.ts`.
+
     2. Install the Chainlink contracts npm package:
 
        ```bash
        npm install @chainlink/contracts
        ```
-
-       Hardhat resolves `@chainlink/contracts` from `node_modules` automatically, so no remapping file is needed (unlike Foundry).
 
     3. Create the directories for the sample consumer contract and deploy script:
 
@@ -1297,72 +1300,32 @@ The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the
     4. Create the following files and paste in the code from the rendered code blocks on this page:
 
        - Create `contracts/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
-       - Create `scripts/DataFeeds/DeployAndReadDataConsumerV3.js` and paste in the script from [Step 2.3: Deploy the contract with a Hardhat script](#deploy-with-hardhat-script).
+       - Create `scripts/DataFeeds/DeployAndReadDataConsumerV3.ts` and paste in the script from [Step 2.3: Deploy the contract with a Hardhat script](#deploy-with-hardhat-script).
 
-       Make sure the filenames match exactly: Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
+       ***Make sure the filenames match exactly:*** Hardhat looks for the contract in `contracts/` and the script in `scripts/`.
 
-    5. Configure your `hardhat.config.ts` to compile the Chainlink contracts and use Sepolia. Replace its contents with:
-
-       ```typescript filename='hardhat.config.ts'
-       import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers"
-       import { configVariable, defineConfig } from "hardhat/config"
-
-       export default defineConfig({
-         plugins: [hardhatToolboxMochaEthersPlugin],
-         solidity: {
-           profiles: {
-             default: {
-               version: "0.8.28",
-             },
-             production: {
-               version: "0.8.28",
-               settings: {
-                 optimizer: { enabled: true, runs: 200 },
-               },
-             },
-           },
-         },
-         networks: {
-           hardhatMainnet: {
-             type: "edr-simulated",
-             chainType: "l1",
-           },
-           hardhatOp: {
-             type: "edr-simulated",
-             chainType: "op",
-           },
-           sepolia: {
-             type: "http",
-             chainType: "l1",
-             url: configVariable("SEPOLIA_RPC_URL"),
-             accounts: [configVariable("SEPOLIA_PRIVATE_KEY")],
-           },
-         },
-       })
-       ```
-
-    6. Set your Sepolia RPC URL and deployer private key as environment variables (or store them in the Hardhat keystore as noted above):
+    5. Set your Sepolia RPC URL and deployer private key as environment variables (or store them in the Hardhat keystore as noted above):
 
        ```bash
        export SEPOLIA_RPC_URL=your_sepolia_rpc_url
        export SEPOLIA_PRIVATE_KEY=your_deployer_private_key
        ```
 
-    7. Verify the project compiles:
+    6. Verify the project compiles:
 
        ```bash
        npx hardhat compile
        ```
 
-       You should see `Compiled 2 Solidity files with solc 0.8.28`. If you see an import error, check that `@chainlink/contracts` is installed (step 2) and that the contract is under `contracts/`.
+       You should see `Compiled 3 Solidity files with solc 0.8.34`: the template's sample contract, your `DataConsumerV3`, and the Chainlink `AggregatorV3Interface` it imports. If you see an import error, check that `@chainlink/contracts` is installed (step 2) and that the contract is under `contracts/`.
   </Accordion>
 
   <Accordion title="Deploy the contract with a Hardhat script" number={2.3} contentReference="deploy-with-hardhat-script">
-    The deploy script (`scripts/DataFeeds/DeployAndReadDataConsumerV3.js`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
+    The deploy script (`scripts/DataFeeds/DeployAndReadDataConsumerV3.ts`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
 
-    {/* <CodeSample src="samples/DataFeeds/Hardhat/DeployAndReadDataConsumerV3.js" /> */}
+    {/* <CodeSample src="samples/DataFeeds/Hardhat/DeployAndReadDataConsumerV3.ts" /> */}
 
-    ```javascript filename='scripts/DataFeeds/DeployAndReadDataConsumerV3.js'
+    ```typescript filename='scripts/DataFeeds/DeployAndReadDataConsumerV3.ts'
     import { network } from "hardhat"
 
     /**
@@ -1385,19 +1348,10 @@ The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the
       const answer = await consumer.getChainlinkDataFeedLatestAnswer()
       console.log("Latest answer (raw):", answer.toString())
 
-      // 3. Read decimals directly from the feed to scale the answer
+      // 3. Read the feed's decimals so you can scale the answer offchain
       // Sepolia BTC / USD price feed proxy address
       const feedAddress = "0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43"
-      const AggregatorV3Interface = [
-        {
-          inputs: [],
-          name: "decimals",
-          outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
-          stateMutability: "view",
-          type: "function",
-        },
-      ]
-      const feed = await ethers.getContractAt(AggregatorV3Interface, feedAddress)
+      const feed = await ethers.getContractAt(["function decimals() view returns (uint8)"], feedAddress)
       const decimals = await feed.decimals()
       console.log("Decimals:", decimals)
 
@@ -1414,7 +1368,7 @@ The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the
     Run it against Sepolia:
 
     ```bash
-    npx hardhat run scripts/DataFeeds/DeployAndReadDataConsumerV3.js --network sepolia
+    npx hardhat run scripts/DataFeeds/DeployAndReadDataConsumerV3.ts --network sepolia
     ```
 
     The script logs the deployed contract address, the raw integer answer, the feed's decimals, and the human-readable price.
@@ -1564,6 +1518,10 @@ contract DataConsumerWithSequencerCheck {
 ### Audit your integration
 
 The sample code is unaudited and hardcodes values for clarity. Before production, complete your own audit, review your dependencies, and apply the risk-mitigation practices described in [Developer Responsibilities](/data-feeds/developer-responsibilities).
+
+### Consider Data Streams for latency-sensitive applications
+
+Data Feeds push updates onchain at set intervals or when price thresholds are met. If your application needs market data faster than those update cadences, such as a perps DEX or real-time liquidation engine, [Chainlink Data Streams](/data-streams) delivers low-latency market data offchain that you verify onchain only when your application needs it. See [Front Running Risk](/data-feeds/selecting-data-feeds#front-running-risk) for how latency requirements factor into choosing a data source.
 
 ## FAQ
 
@@ -1813,6 +1771,10 @@ contract DataConsumerWithSequencerCheck {
 
 The sample code is unaudited and hardcodes values for clarity. Before production, complete your own audit, review your dependencies, and apply the risk-mitigation practices described in [Developer Responsibilities](/data-feeds/developer-responsibilities).
 
+### Consider Data Streams for latency-sensitive applications
+
+Data Feeds push updates onchain at set intervals or when price thresholds are met. If your application needs market data faster than those update cadences, such as a perps DEX or real-time liquidation engine, [Chainlink Data Streams](/data-streams) delivers low-latency market data offchain that you verify onchain only when your application needs it. See [Front Running Risk](/data-feeds/selecting-data-feeds#front-running-risk) for how latency requirements factor into choosing a data source.
+
 ## FAQ
 
 ### Do I need a consumer contract to read a Data Feed?
@@ -1973,24 +1935,23 @@ The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the
        @chainlink/contracts/=lib/chainlink-evm/contracts/
        ```
 
-       You can write it with a single command:
+       You can write the file with a single command:
 
        ```bash
        echo '@chainlink/contracts/=lib/chainlink-evm/contracts/' > remappings.txt
        ```
 
-    3. Create the directories for the sample consumer contract and deploy script:
+       The contract imports the `@chainlink/contracts` package, but `forge install` places the package at `lib/chainlink-evm/contracts/`. A remapping tells the Solidity compiler to rewrite the import path to where the files actually lives. Without it, `forge build` fails with an `Unable to resolve imports` error.
+
+    3. Create the directory for the sample consumer contract:
 
        ```bash
-       mkdir -p src/DataFeeds script/DataFeeds
+       mkdir -p src/DataFeeds
        ```
 
-    4. Create the following files and paste in the code from the rendered code blocks on this page:
+    4. Create `src/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
 
-       - Create `src/DataFeeds/DataConsumerV3.sol` and paste in the contract from [Step 2.1: Examine the sample contract](#examine-the-sample-contract).
-       - Create `script/DataFeeds/DeployAndReadDataConsumerV3.s.sol` and paste in the script from [Step 2.3: Deploy the contract with a Forge script](#deploy-with-forge-script).
-
-       Make sure the filenames match exactly: Foundry looks for the contract in `src/` and the script in `script/`.
+       Make sure the filename matches exactly: Foundry looks for the contract in `src/`.
 
     5. Verify the project compiles:
 
@@ -1999,91 +1960,44 @@ The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the
        ```
 
        You should see `Compiler run successful`. If you see an import error, double-check the `remappings.txt` line from step 2.
+
+    6. Import your deployer private key into Foundry's encrypted keystore. Replace `my-account` with a name of your choice and `0xYOUR_PRIVATE_KEY` with your deployer key:
+
+       ```bash
+       cast wallet import my-account --private-key 0xYOUR_PRIVATE_KEY
+       ```
+
+       - `cast` prompts for a password to encrypt the key. The encrypted keystore file is saved to `~/.foundry/keystores/my-account`, and the key is never written to disk in plaintext.
+       - Run `cast wallet list` to confirm the account is stored.
   </Accordion>
 
-  <Accordion title="Deploy the contract with a Forge script" number={2.3} contentReference="deploy-with-forge-script">
-    The deploy script (`script/DataFeeds/DeployAndReadDataConsumerV3.s.sol`) deploys `DataConsumerV3` and immediately reads the latest price through it. For reference, here is the script:
-
-    {/* <CodeSample src="samples/DataFeeds/Foundry/DeployAndReadDataConsumerV3.s.sol" /> */}
-
-    ```solidity filename='script/DataFeeds/DeployAndReadDataConsumerV3.s.sol'
-    // SPDX-License-Identifier: MIT
-    pragma solidity ^0.8.7;
-
-    /* solhint-disable no-console */
-
-    import {DataConsumerV3} from "../../src/DataFeeds/DataConsumerV3.sol";
-    import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
-    import {Script} from "forge-std/Script.sol";
-    import {console2} from "forge-std/console2.sol";
-
-    /**
-     * THIS IS EXAMPLE CODE THAT USES HARDCODED VALUES FOR CLARITY.
-     * THIS IS EXAMPLE CODE THAT USES UN-AUDITED CODE.
-     * DO NOT USE THIS CODE IN PRODUCTION.
-     *
-     * Deploy DataConsumerV3 and read the latest BTC/USD price on Sepolia.
-     *
-     * Usage:
-     *   forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
-     *     --rpc-url $SEPOLIA_RPC_URL \
-     *     --broadcast \
-     *     --private-key $PRIVATE_KEY
-     *
-     * To format the raw answer as a human-readable price, pass it together with
-     * the feed's decimals to cast:
-     *   cast format-units <answer> <decimals>
-     */
-    contract DeployAndReadDataConsumerV3 is Script {
-      // Sepolia BTC / USD price feed proxy address
-      address public constant SEPOLIA_BTC_USD = 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43;
-
-      function run() public {
-        vm.startBroadcast();
-
-        // 1. Deploy the consumer contract
-        DataConsumerV3 consumer = new DataConsumerV3();
-        console2.log("DataConsumerV3 deployed at:", address(consumer));
-
-        vm.stopBroadcast();
-
-        // 2. Read the latest price through the consumer
-        int256 answer = consumer.getChainlinkDataFeedLatestAnswer();
-        console2.log("Latest answer (raw):", answer);
-
-        // 3. Read the feed's decimals so you can scale the answer offchain
-        uint8 decimals = AggregatorV3Interface(SEPOLIA_BTC_USD).decimals();
-        console2.log("Decimals:", decimals);
-      }
-    }
-    ```
-
-    Run it against Sepolia. Replace `$SEPOLIA_RPC_URL` and `$PRIVATE_KEY` with your own values:
+  <Accordion title="Deploy the contract with forge create" number={2.3} contentReference="deploy-with-forge-script">
+    Deploy `DataConsumerV3` to Sepolia with `forge create`. Replace `$SEPOLIA_RPC_URL` with your own value and `my-account` with the keystore account name from the previous step:
 
     ```bash
-    forge script script/DataFeeds/DeployAndReadDataConsumerV3.s.sol \
+    forge create src/DataFeeds/DataConsumerV3.sol:DataConsumerV3 \
       --rpc-url $SEPOLIA_RPC_URL \
-      --broadcast \
-      --private-key $PRIVATE_KEY
+      --account my-account \
+      --broadcast
     ```
 
-    The script logs the deployed contract address, the raw integer answer, and the feed's decimals. To see the human-readable price, pass the logged answer and decimals to `cast format-units`:
+    `forge` prompts for the keystore password, then simulates the deployment and prints the transaction it would send. The `--broadcast` flag signs and submits that transaction. On success, the output looks like this:
 
     ```bash
-    cast format-units 3030914000000 8
+    Deployed to: 0xCONSUMER_ADDRESS
     ```
 
     Save the deployed contract address for the next step.
 
 
     <Aside type="note" title="Prefer not to broadcast?">
-      Drop `--broadcast` and `--private-key` to run the script in simulation mode. Useful for verifying your setup before
-      spending testnet ETH.
+      Drop `--broadcast` to run the deployment in simulation mode. Useful for verifying your setup before spending testnet
+      ETH.
     </Aside>
   </Accordion>
 
   <Accordion title="Read the latest price onchain" number={2.4}>
-    Use `cast call` to read the latest answer through your deployed consumer. Replace `$CONSUMER_ADDRESS` with the address logged by the deploy script:
+    Use `cast call` to read the latest answer through your deployed consumer. Replace `$CONSUMER_ADDRESS` with the address from the previous step:
 
     ```bash
     cast call $CONSUMER_ADDRESS "getChainlinkDataFeedLatestAnswer()(int256)" --rpc-url $SEPOLIA_RPC_URL
@@ -2095,7 +2009,13 @@ The [Price Feed Addresses](/data-feeds/price-feeds/addresses) page lists all the
     cast call 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43 "decimals()(uint8)" --rpc-url $SEPOLIA_RPC_URL
     ```
 
-    The BTC / USD feed returns `8` for decimals. Convert the raw answer to a human-readable price with `cast format-units <answer> <decimals>` as shown in [step 1](#fetching-price-data-offchain).
+    The BTC / USD feed returns `8` for decimals. Convert the raw answer to a human-readable price with `cast format-units <answer> <decimals>`.
+
+    ```bash
+    cast format-units 3030914000000 8
+    ```
+
+    This prints `30309.14000000` which is the human-readable price in USD.
 
 
     <Aside type="tip" title="Always scale by `decimals()`">
@@ -2210,6 +2130,10 @@ contract DataConsumerWithSequencerCheck {
 ### Audit your integration
 
 The sample code is unaudited and hardcodes values for clarity. Before production, complete your own audit, review your dependencies, and apply the risk-mitigation practices described in [Developer Responsibilities](/data-feeds/developer-responsibilities).
+
+### Consider Data Streams for latency-sensitive applications
+
+Data Feeds push updates onchain at set intervals or when price thresholds are met. If your application needs market data faster than those update cadences, such as a perps DEX or real-time liquidation engine, [Chainlink Data Streams](/data-streams) delivers low-latency market data offchain that you verify onchain only when your application needs it. See [Front Running Risk](/data-feeds/selecting-data-feeds#front-running-risk) for how latency requirements factor into choosing a data source.
 
 ## FAQ
 
