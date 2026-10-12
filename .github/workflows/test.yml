@@ -50,6 +50,9 @@ jobs:
               - 'src/scripts/markdown-fidelity-exceptions.ts'
               - 'src/scripts/markdown-fidelity-baseline.json'
               - 'astro.config.*'
+              - 'lychee.toml'
+              - 'vercel.json'
+              - 'src/scripts/link-check/**'
             any_non_solidity:
               - '**'
               - '!public/samples/**/*.sol'
@@ -202,6 +205,16 @@ jobs:
             echo "node_modules not found, installing dependencies..."
             npm ci --prefer-offline --no-audit
           fi
+
+      - name: Check CCIP v2 Remap Fixture
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          lycheeVersion: v0.24.2
+          args: >-
+            --root-dir $GITHUB_WORKSPACE/src/scripts/link-check/fixtures/ccip-v2-remap/static
+            --config lychee.toml
+            src/scripts/link-check/fixtures/ccip-v2-remap/should-pass.html
+          fail: true
 
       - name: Build Site
         run: npm run build

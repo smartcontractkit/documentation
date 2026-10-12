@@ -4081,7 +4081,7 @@ Reserves are available for both offchain assets and cross-chain assets. This cat
 
 ##### Offchain reserves
 
-Offchain reserves are sourced from APIs through an [external adapter](/chainlink-nodes/external-adapters/external-adapters).
+Offchain reserves are sourced from APIs through an [external adapter](https://github.com/smartcontractkit/external-adapters-js).
 
 ![Image](/images/data-feed/off-chain-reserves.webp)
 
@@ -4093,7 +4093,7 @@ Offchain reserves provide their data using the following methods:
 
 ##### Cross-chain reserves
 
-Cross-chain reserves are sourced from the network where the reserves are held. Chainlink node operators can report cross-chain reserves by running an [external adapter](/chainlink-nodes/external-adapters/external-adapters) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
+Cross-chain reserves are sourced from the network where the reserves are held. Chainlink node operators can report cross-chain reserves by running an [external adapter](https://github.com/smartcontractkit/external-adapters-js) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
 
 ![Image](/images/data-feed/cross-chain-reserves.webp)
 
@@ -6022,9 +6022,11 @@ Before you begin, you should have:
 
 To complete this guide, you'll need:
 
-- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation.
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation. This guide uses Stellar CLI v25 or later.
 
 - **Rust toolchain**: Install [Rust](https://www.rust-lang.org/tools/install) using [rustup](https://rustup.rs/). Run cargo --version to verify your installation.
+
+- **soroban-sdk**: The `stellar contract init` command scaffolds a project that depends on the latest `soroban-sdk` (v25 or later). The contract in this guide compiles against `soroban-sdk` v21 and later. If you pin an older version, use v21 or later.
 
 - **Testnet XLM**: You'll need testnet XLM to deploy your contract. Fund a Stellar Testnet account using the friendbot faucet. Testnet XLM has no real value.
 
@@ -6106,7 +6108,7 @@ To complete this guide, you'll need:
        /// Read the latest round for a feed and return its answer.
        pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
            let client = DataFeedsProxyClient::new(&env, &proxy);
-           let round = client.latest_round(&data_id, &18).unwrap();
+           let round = client.latest_round(&data_id, &18);
            round.answer
        }
    }

@@ -1577,10 +1577,6 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "architecture-overview/architecture-overview?parent=dataFeeds",
           children: [
             {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=dataFeeds",
-            },
-            {
               title: "Decentralized Data Model",
               url: "architecture-overview/architecture-decentralized-model?parent=dataFeeds",
             },
@@ -1591,12 +1587,8 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           ],
         },
         {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=dataFeeds",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=dataFeeds" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataFeeds" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=dataFeeds",
         },
         {
           title: "Integrating EVM Networks",
@@ -1949,30 +1941,8 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview?parent=dataStreams",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=dataStreams",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=dataStreams",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=dataStreams",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=dataStreams",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=dataStreams" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataStreams" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=dataStreams",
         },
         {
           title: "Integrating EVM Networks",
@@ -2158,30 +2128,8 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview?parent=automation",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=automation",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=automation",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=automation",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=automation",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=automation" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=automation" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=automation",
         },
         {
           title: "Integrating EVM Networks",
@@ -2375,30 +2323,8 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview?parent=chainlinkFunctions",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=chainlinkFunctions",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=chainlinkFunctions",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=chainlinkFunctions",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=chainlinkFunctions",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=chainlinkFunctions" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=chainlinkFunctions" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=chainlinkFunctions",
         },
         {
           title: "Integrating EVM Networks",
@@ -2556,30 +2482,8 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview?parent=vrf",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=vrf",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=vrf",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=vrf",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=vrf",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=vrf" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=vrf" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=vrf",
         },
         {
           title: "Integrating EVM Networks",
@@ -2954,30 +2858,8 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help",
         },
         {
           title: "Integrating EVM Networks",
