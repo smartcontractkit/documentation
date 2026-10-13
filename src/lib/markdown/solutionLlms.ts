@@ -1,7 +1,7 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 import type { Solution } from "../../config/solutions/index.ts"
-import { collectSolutionPages, getOrderedSolutionPages, type SolutionPage } from "../../utils/solutions.js"
+import { collectSolutionPages, getOrderedSolutionPages, type SolutionPage } from "../../utils/solutionPages.js"
 import { assembleLlmsDocument, renderLlmsPageMarkdown } from "./llms.js"
 import { extractFrontmatter, toContentRelative } from "./utils.js"
 
