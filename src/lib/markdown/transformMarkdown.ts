@@ -54,6 +54,34 @@ function staticMdxString(value: unknown): string | undefined {
   return typeof staticValue === "string" ? staticValue : undefined
 }
 
+/** Keep an explicit JSX space inline with adjacent source text, including soft source line breaks. */
+function replaceInlineJsxSpace(parent: Parent, index: number): number {
+  const previous = parent.children[index - 1]
+  const next = parent.children[index + 1]
+  const previousText = previous?.type === "text" ? (previous as Literal) : undefined
+  const nextText = next?.type === "text" ? (next as Literal) : undefined
+
+  // Generated text (for example, {"\n"}) keeps its intentional whitespace.
+  // Hard breaks and block boundaries are separate nodes and are never crossed.
+  if (previousText?.position) {
+    previousText.value = String(previousText.value).replace(/[ \t]*\r?\n[ \t]*$/, "")
+  }
+  if (nextText?.position) {
+    nextText.value = String(nextText.value).replace(/^[ \t]*\r?\n[ \t]*/, "")
+  }
+  if (previousText) {
+    previousText.value = String(previousText.value) + " " + (nextText ? String(nextText.value) : "")
+    parent.children.splice(index, nextText ? 2 : 1)
+    return index
+  }
+  if (nextText) {
+    nextText.value = " " + String(nextText.value)
+    parent.children.splice(index, 1)
+    return index
+  }
+  return replaceNode({ type: "mdxTextExpression" }, parent, index, [{ type: "text", value: " " } as Literal])
+}
+
 /**
  * Preprocess CcipCommon components by inlining their content
  * Inlined MDX components continue through the normal remark AST visitor
@@ -347,6 +375,7 @@ export async function transformMarkdown(
           const value = staticMdxString(node)
           if (value === undefined) return replaceNode(node, parent, index, [])
           if (node.type === "mdxFlowExpression" && !value.trim()) return replaceNode(node, parent, index, [])
+          if (node.type === "mdxTextExpression" && value === " ") return replaceInlineJsxSpace(parent, index)
           return replaceNode(node, parent, index, [{ type: "text", value } as Literal])
         }
 

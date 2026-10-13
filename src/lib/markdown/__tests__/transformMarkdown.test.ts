@@ -806,3 +806,66 @@ Searchers must sign for an **exactly equal** gas price.
     expect(result).not.toMatch(/^\s*>?\s*;\s*$/m)
   })
 })
+
+describe("inline JSX space serialization", () => {
+  it.each(["ol", "ul"])("keeps a JSX space and source newline inline in %s callout items", async (list) => {
+    const source = `<Aside type="note" title="Gas limit">
+<${list}>
+<li>Foundry scripts default to <strong>400,000</strong> gas. Hardhat scripts estimate gas unless you set{" "}
+  <code>GAS_LIMIT</code> (and fall back to 400,000 if estimation fails).</li>
+<li>Test all scenarios before deployment.</li>
+</${list}>
+</Aside>`
+    const result = await transformMarkdown(source, "fixture.mdx")
+    const first = list === "ol" ? "1." : "-"
+    const second = list === "ol" ? "2." : "-"
+
+    expect(result).toBe(
+      `> **NOTE: Gas limit**\n>\n> ${first} Foundry scripts default to **400,000** gas. Hardhat scripts estimate gas unless you set \`GAS_LIMIT\` (and fall back to 400,000 if estimation fails).\n> ${second} Test all scenarios before deployment.\n`
+    )
+    expect(result).not.toContain("&#x20;")
+  })
+
+  it("keeps the Data Feeds callout's JSX spaces next to inline code", async () => {
+    const source = `<Aside type="caution" title="Important">
+<ul>
+<li>Searchers must not exceed the allowed{" "}
+  <code>SolverGasLimit</code>. Query <code>getSolverGasLimit</code> on the{" "}
+  <code>DappControl</code> contract.</li>
+</ul>
+</Aside>`
+
+    expect(await transformMarkdown(source, "fixture.mdx")).toBe(
+      "> **CAUTION: Important**\n>\n> - Searchers must not exceed the allowed `SolverGasLimit`. Query `getSolverGasLimit` on the `DappControl` contract.\n"
+    )
+  })
+
+  it.each([
+    ['Use <code>A</code>{" "}\n<code>B</code>.', "Use `A` `B`.\n"],
+    ['Read{" "}\n<a href="https://example.com">the guide</a>.', "Read [the guide](https://example.com).\n"],
+    ['Read\n{" "}next.', "Read next.\n"],
+    ['Read{" "}\r\nnext.', "Read next.\n"],
+  ])("keeps an inline separator across a source line break: %s", async (source, expected) => {
+    expect(await transformMarkdown(source, "fixture.mdx")).toBe(expected)
+  })
+
+  it.each([
+    ['Before  \n{" "}after.', "Before\\\n&#x20;after.\n"],
+    ['Before{" "}\\\nafter.', "Before \\\nafter.\n"],
+    ['First{" "}\n\nSecond paragraph.', "First&#x20;\n\nSecond paragraph.\n"],
+    ['Use <code>a{" "}\nb</code>.', "Use `a \nb`.\n"],
+    ['before{"\\n"}{" "}<code>CODE</code>.', "before\n&#x20;`CODE`.\n"],
+    ['before{"\\u00a0"}<code>CODE</code>.', "before\u00a0`CODE`.\n"],
+    ['before{"  "}<code>CODE</code>.', "before  `CODE`.\n"],
+  ])(
+    "preserves explicit breaks, paragraph boundaries, code, and other literal spaces: %s",
+    async (source, expected) => {
+      expect(await transformMarkdown(source, "fixture.mdx")).toBe(expected)
+    }
+  )
+
+  it("leaves JSX-looking text inside inline and fenced code unchanged", async () => {
+    const source = 'Inline `{" "}`.\n\n```jsx\nset{" "}\n  <code>GAS_LIMIT</code>\n```\n\nAfter.'
+    expect(await transformMarkdown(source, "fixture.mdx")).toBe(source + "\n")
+  })
+})

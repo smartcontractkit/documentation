@@ -870,7 +870,8 @@ Second requirement.
 test.each(["ol", "ul"])("coalesces projected inline HTML in %s items before a repeated later value", (list) => {
   const source = `<Aside type="note">
 <${list}>
-<li>Foundry scripts default to <strong>400,000</strong> gas unless you set <code>GAS_LIMIT</code><br /> (and fall back if estimation fails).</li>
+<li>Foundry scripts default to <strong>400,000</strong> gas unless you set{" "}
+  <code>GAS_LIMIT</code><br /> (and fall back if estimation fails).</li>
 <li>Test all scenarios before deployment.</li>
 </${list}>
 </Aside>
@@ -909,6 +910,28 @@ Follow the **required** steps and keep all values in one place for chain1.
   expect(missing).toContainEqual(
     expect.objectContaining({ status: "missing", expected: "Test all scenarios before deployment." })
   )
+})
+
+test("checks the Data Feeds JSX-space callout and detects a missing inline code value", () => {
+  const source = `<Aside type="caution" title="Important">
+<ul>
+<li>Searchers must not exceed the allowed{" "}
+  <code>SolverGasLimit</code>. Query <code>getSolverGasLimit</code> on the{" "}
+  <code>DappControl</code> contract.</li>
+</ul>
+</Aside>`
+  const output =
+    "> **CAUTION: Important**\n>\n> - Searchers must not exceed the allowed `SolverGasLimit`. Query `getSolverGasLimit` on the `DappControl` contract."
+
+  expect(
+    blockingFindings("focused", compareSourceToArtifact("fixture", "fixture.mdx", source, artifact(output)))
+  ).toEqual([])
+  const incomplete = output.replace("`SolverGasLimit`", "")
+  expect(
+    compareSourceToArtifact("fixture", "fixture.mdx", source, artifact(incomplete)).some(
+      (finding) => finding.status === "missing" && finding.expected?.includes("SolverGasLimit")
+    )
+  ).toBe(true)
 })
 
 test("keeps diagnostics for dynamic inline HTML attributes and unprojected elements", () => {
