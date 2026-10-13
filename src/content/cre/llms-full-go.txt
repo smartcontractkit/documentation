@@ -13798,6 +13798,13 @@ For most read operations, use the standard confidence levels by passing `-2` (la
 
 **Note:** The `SAFE` confidence level is not available for chain reads—only `LATEST` and `FINALIZED` are supported.
 
+> **CAUTION: Safe and finalized reads are not supported on some chains**
+>
+> Safe and finalized reads do not work reliably on the following chains. Reads that use the `SAFE` or `FINALIZED`
+> confidence level fail consistently on most of these chains, and fail frequently on Polygon. Support is planned.
+>
+> **Mainnet:** Polygon, Mantle, Scroll. **Testnet:** Polygon Amoy, Linea Sepolia.
+
 ### Custom block depths
 
 For use cases requiring fixed confirmation thresholds or historical state verification, you can specify **any explicit block number** instead of using the predefined confidence levels. This enables you to:
@@ -17608,7 +17615,7 @@ The tables below reflect chains commonly enabled for simulation. Your tenant may
 | Sonic Testnet               | sonic-testnet                         | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | Stable Testnet              | stable-testnet                        | 0x9081624a30231767C3093A5F2Ae1C57A4457C88F |
 | TAC Testnet                 | tac-testnet                           | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
-| T-REX Testnet               | t-rex-testnet                         | 0x53bC8B33F9Fd9cf5323b260CC078967cC3f30297 |
+| T-REX Testnet (deprecated)  | t-rex-testnet                         | 0x53bC8B33F9Fd9cf5323b260CC078967cC3f30297 |
 | Unichain Sepolia            | ethereum-testnet-sepolia-unichain-1   | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | World Chain Sepolia         | ethereum-testnet-sepolia-worldchain-1 | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
 | XLayer Testnet              | xlayer-testnet                        | 0x6E9EE680ef59ef64Aa8C7371279c27E496b5eDc1 |
@@ -17679,7 +17686,7 @@ These `KeystoneForwarder` addresses are used by deployed workflows. Use these ad
 | [Sonic Testnet](https://explorer.testnet.soniclabs.com/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1)           | sonic-testnet                         | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
 | [Stable Testnet](https://testnet.stablescan.xyz/address/0x701d026D1c85BA1DCbc3EEbe3636D646D88a0Aae)                  | stable-testnet                        | 0x701d026D1c85BA1DCbc3EEbe3636D646D88a0Aae |
 | [TAC Testnet](https://spb.explorer.tac.build/address/0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c)                     | tac-testnet                           | 0x7BCcaFBD064cB3658476066Cc33ceE3F3414c04c |
-| [T-REX Testnet](https://explorer.ingen.t-rex.network/address/0x8E6E6A1f2B2D4dF503bfd67951CF28F27BF3AF19)             | t-rex-testnet                         | 0x8E6E6A1f2B2D4dF503bfd67951CF28F27BF3AF19 |
+| T-REX Testnet (deprecated)                                                                                           | t-rex-testnet                         | 0x8E6E6A1f2B2D4dF503bfd67951CF28F27BF3AF19 |
 | [Unichain Sepolia](https://sepolia.uniscan.xyz/address/0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1)                   | ethereum-testnet-sepolia-unichain-1   | 0x98B8335d29Aca40840Ed8426dA1A0aAa8677d8D1 |
 | [World Chain Sepolia](https://sepolia.worldscan.org/address/0x76c9cf548b4179F8901cda1f8623568b58215E62)              | ethereum-testnet-sepolia-worldchain-1 | 0x76c9cf548b4179F8901cda1f8623568b58215E62 |
 | [XLayer Testnet](https://www.oklink.com/xlayer-test/address/0x9eF6468C5f37b976E57d52054c693269479A784d)              | xlayer-testnet                        | 0x9eF6468C5f37b976E57d52054c693269479A784d |
@@ -18340,6 +18347,11 @@ When calling contract read methods, you must specify a block number. There are t
 - **Latest block**: Use `big.NewInt(-2)` to read from the latest block
 
 For explicit block numbers, see [Custom block depths](#custom-block-depths) below.
+
+> **CAUTION: Safe and finalized reads are unreliable on some chains**
+>
+> Safe and finalized reads are not reliably supported on some chains. See [Finality and Confidence
+> Levels](/cre/concepts/finality-go#using-confidence-levels) for the current list before relying on `FINALIZED` reads.
 
 ### Custom block depths
 
@@ -26493,18 +26505,20 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 | Ink                 | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | Jovay               | v1.3.0+  | v1.4.0+  | v1.3.1+  |
 | Linea               | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Mantle              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Mantle\*            | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | MegaETH             | v1.5.0+  | v1.6.0+  | v1.3.1+  |
 | Monad               | v1.29.0+ | v1.17.0+ | v1.18.0+ |
 | OP Mainnet          | v1.0.0+  | v1.0.0+  | v1.0.1+  |
 | Pharos              | v1.3.0+  | v1.4.0+  | v1.3.1+  |
 | Plasma              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Polygon             | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Scroll              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Polygon\*           | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Scroll\*            | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | Sonic               | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | World Chain         | v1.0.11+ | v1.2.0+  | v1.0.9+  |
 | XLayer              | v1.3.0+  | v1.4.0+  | v1.1.3+  |
 | ZKSync Era          | v1.0.6+  | v1.1.3+  | v1.0.7+  |
+
+\* Safe and finalized reads are not reliably supported on these networks. See [Finality and Confidence Levels](/cre/concepts/finality-go#using-confidence-levels).
 
 ## Testnets
 
@@ -26525,24 +26539,26 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 | Hyperliquid Testnet         | v1.0.7+  | v1.1.4+  | v1.0.7+  |
 | Ink Sepolia                 | v1.0.7+  | v1.1.4+  | v1.0.7+  |
 | Jovay Testnet               | v1.0.7+  | v1.1.4+  | v1.0.7+  |
-| Linea Sepolia               | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Linea Sepolia\*             | v1.0.7+  | v1.1.4+  | v1.0.7+  |
 | Mantle Sepolia              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | MegaETH Testnet 2           | v1.5.0+  | v1.6.0+  | v1.3.1+  |
 | Monad Testnet               | v1.30.0+ | v1.19.0+ | v1.19.0+ |
 | OP Sepolia                  | v1.0.0+  | v1.0.0+  | v1.0.1+  |
 | Pharos Atlantic Testnet     | v1.3.0+  | v1.5.0+  | v1.3.1+  |
 | Plasma Testnet              | v1.0.7+  | v1.1.4+  | v1.0.7+  |
-| Polygon Amoy                | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Polygon Amoy\*              | v1.0.0+  | v1.0.0+  | v1.0.1+  |
 | Robinhood Testnet           | v1.30.0+ | v1.19.0+ | v1.19.0+ |
 | Scroll Sepolia (deprecated) | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | Sonic Testnet               | v1.5.0+  | v1.6.0+  | v1.3.1+  |
 | Stable Testnet              | v1.30.0+ | v1.19.0+ | v1.19.0+ |
 | TAC Testnet                 | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| T-REX Testnet               | v1.30.0+ | v1.19.0+ | v1.19.0+ |
+| T-REX Testnet (deprecated)  | v1.30.0+ | v1.19.0+ | v1.19.0+ |
 | Unichain Sepolia            | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | World Chain Sepolia         | v1.0.7+  | v1.1.4+  | v1.0.7+  |
 | XLayer Testnet              | v1.5.0+  | v1.6.0+  | v1.3.1+  |
 | ZKSync Era Sepolia          | v1.0.6+  | v1.1.2+  | v1.0.7+  |
+
+\* Safe and finalized reads are not reliably supported on these networks. See [Finality and Confidence Levels](/cre/concepts/finality-go#using-confidence-levels).
 
 ## Forwarder Addresses
 
