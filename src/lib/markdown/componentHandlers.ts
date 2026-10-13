@@ -1003,7 +1003,12 @@ export function handleAccordion(node: MdxJsxNode, parent: Parent, index: number)
   }
   const label = `${typeof number === "number" ? `${number}. ` : ""}${slotTitle || title}`
   const headingDepth = node.name === "AnchoredAccordion" && depth !== 3 && depth !== 4 ? 2 : depth === 4 ? 4 : 3
-  const replacement: Node[] = [headingNode(headingDepth, label), ...((node as Parent).children || [])]
+  const heading = headingNode(headingDepth, label)
+  const anchorId = staticAttribute(node, "anchorId")
+  if (node.name === "AnchoredAccordion" && typeof anchorId === "string" && anchorId.length > 0) {
+    heading.data = { markdownAnchorId: anchorId }
+  }
+  const replacement: Node[] = [heading, ...((node as Parent).children || [])]
   return replaceNode(node, parent, index, replacement)
 }
 

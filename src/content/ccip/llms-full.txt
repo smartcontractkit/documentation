@@ -103850,14 +103850,14 @@ leveraging the power of CCIP 2.0's infrastructure.
 - [Transporter UI (Testnet)](https://test.transporter.io/)
 - [Transporter UI (Mainnet)](https://www.transporter.io/)
 
-### 1. Connect Your Wallet
+### 1. Connect Your Wallet <a id="connect-your-wallet"></a>
 
 1. The Transporter UI supports most popular wallets, please make sure you have some funds on your desired chain in an account that is imported into one of these wallets.
 2. Click the `Connect +` button on the top right of the Transporter UI to connect your wallet.
 
 ![Chainlink CCIP Transporter Connect Wallet](/images/ccip/tutorials/getting-started/Transporter-ui-1.png)
 
-### 2. Select Lane and Approve Allowance
+### 2. Select Lane and Approve Allowance <a id="select-lane-approve-allowance"></a>
 
 1. Select the source and destination chains from the network dropdowns.
 2. This tutorial uses the testnet version of the Transporter UI, your view may differ depending on the version of the UI you are using, and the types of lanes that are
@@ -103870,14 +103870,14 @@ leveraging the power of CCIP 2.0's infrastructure.
 
 ![Chainlink CCIP Transporter Approve Allowance](/images/ccip/tutorials/getting-started/Transporter-ui-3.png)
 
-### 3. (Optional): Pay Gas Fee using LINK
+### 3. (Optional): Pay Gas Fee using LINK <a id="pay-gas-using-link"></a>
 
 1. The UI allows you to pay for the transfer using `LINK` tokens, as shown in the screenshot attached.
 2. If you select this option, the UI might ask for an additional approval of the `LINK` token, to pay for the gas fees.
 
 ![Chainlink CCIP Transporter Pay Gas Fee using LINK](/images/ccip/tutorials/getting-started/Transporter-ui-4.png)
 
-### 4. Initiate Transfer
+### 4. Initiate Transfer <a id="initiate-transfer"></a>
 
 1. After all the settings are configured, and allowances approved, click on the `Send` button to initiate the transfer.
 2. Approve the transfer in the wallet popup.
@@ -103908,7 +103908,7 @@ You will need:
 This section goes through the code for the `Sender` and `Receiver` contracts needed to complete the tutorial.
 We will use the same contracts for all three development environments.
 
-#### 1. Sender code
+#### 1. Sender code <a id="sender-code"></a>
 
 The sender contract interacts with CCIP to send data cross-chain. Key elements are explained below.
 
@@ -104040,7 +104040,7 @@ The `sendMessage` function:
 >
 > - **Understand CCIP Service Limits**: Review the [CCIP Service Limits](/ccip/evm/service-limits) for constraints on message data size, execution gas, and the number of tokens per transaction. If your requirements exceed these limits, you may need to [contact the Chainlink Labs Team](https://chain.link/ccip-contact).
 
-#### 2. Receiver code
+#### 2. Receiver code <a id="receiver-code"></a>
 
 The receiver contract interacts with CCIP to receive data on the destination chain.
 
@@ -104154,7 +104154,7 @@ Send and verify a cross-chain message using CCIP in under 10 minutes, with your 
 
 Best for **Solidity-native** workflows that prefer a modular, powerful scripting framework.
 
-## 1. Bootstrap a new Foundry project
+## 1. Bootstrap a new Foundry project <a id="foundry-bootstrap"></a>
 
 1. Open a new terminal in a directory of your choice and run this command to initialize a new Foundry project:
 
@@ -104210,7 +104210,7 @@ sepolia = "ENTER_YOUR_SEPOLIA_RPC_URL_HERE"
 arbitrumSepolia = "ENTER_YOUR_ARBITRUM_SEPOLIA_RPC_URL_HERE"
 ```
 
-## 2. Set up the contracts
+## 2. Set up the contracts <a id="foundry-contracts"></a>
 
 1. Create a new directory named `src` at the root of the project if it doesn't already exist.
 2. Create a new file named `Sender.sol` in this directory and paste the [sender contract code](#sender-code) inside it.
@@ -104221,7 +104221,7 @@ arbitrumSepolia = "ENTER_YOUR_ARBITRUM_SEPOLIA_RPC_URL_HERE"
 forge build
 ```
 
-## 3. Send a cross-chain message
+## 3. Send a cross-chain message <a id="foundry-send"></a>
 
 1. Create a new directory named `script` at the root of the project if it doesn't already exist.
 2. Create a new file named `SendCrossChainMessage.s.sol` in this directory and paste the following code inside it:
@@ -104323,7 +104323,7 @@ forge script script/SendCrossChainMessage.s.sol:SendCrossChainMessage --broadcas
 > - The `-vvvv` verbosity flag gives detailed runtime logs.
 > - The `--multi` flag sends transactions to multiple chains.
 
-## 4. Verify message delivery
+## 4. Verify message delivery <a id="foundry-verify"></a>
 
 1. Create a new file named `VerifyCrossChainMessage.s.sol` in the `script` directory and paste the following code inside it:
 
@@ -104376,7 +104376,7 @@ forge script script/VerifyCrossChainMessage.s.sol:VerifyCrossChainMessage
 
 Best for a `TypeScript`-based scripting workflow where you deploy contracts, send a CCIP message, and verify delivery from the command line.
 
-## 1. Bootstrap a new Hardhat project
+## 1. Bootstrap a new Hardhat project <a id="hardhat-bootstrap"></a>
 
 1. Open a new terminal in a directory of your choice and run this command:
 
@@ -104442,7 +104442,7 @@ The output of `npx hardhat keystore list` should look like this:
 
 ![Hardhat keystore list command output](/images/ccip/tutorials/ccip-getting-started-evm-1.png)
 
-## 2. Set up the contracts
+## 2. Set up the contracts <a id="hardhat-contracts"></a>
 
 1. Create a new directory named `contracts` for your smart contracts if it doesn't already exist.
 2. Create a new file named `Sender.sol` in this directory and paste the [sender contract code](#sender-code) inside it.
@@ -104453,7 +104453,7 @@ The output of `npx hardhat keystore list` should look like this:
 npx hardhat build
 ```
 
-## 3. Send a cross-chain message
+## 3. Send a cross-chain message <a id="hardhat-send"></a>
 
 1. Create a new directory named `scripts` at the root of the project if it doesn't already exist.
 2. Create a new file named `send-cross-chain-message.ts` in this directory and paste the following code inside it:
@@ -104540,7 +104540,7 @@ console.log("Run the verification script after a few minutes to check if the mes
 npx hardhat run scripts/send-cross-chain-message.ts
 ```
 
-## 4. Verify message delivery
+## 4. Verify message delivery <a id="hardhat-verify"></a>
 
 1. Wait for a few minutes for the message to be delivered to the receiver contract.
 
@@ -104588,7 +104588,7 @@ npx hardhat run scripts/verify-cross-chain-message.ts
 
 Best for **Web3-native** workflows that prefer a browser-based IDE.
 
-## 1. Deploy the sender contract
+## 1. Deploy the sender contract <a id="remix-deploy-sender"></a>
 
 Deploy the `Sender.sol` contract on *Ethereum Sepolia*. To see a detailed explanation of this contract, read the [Sender code](#sender-code) section.
 
@@ -104613,7 +104613,7 @@ Deploy the `Sender.sol` contract on *Ethereum Sepolia*. To see a detailed explan
 
    6. Open MetaMask and send 1 LINK to the contract address that you copied. Your contract will pay CCIP fees in LINK.
 
-## 2. Deploy the receiver contract
+## 2. Deploy the receiver contract <a id="remix-deploy-receiver"></a>
 
 Deploy the receiver contract on *Arbitrum Sepolia*. You will use this contract to receive data from the sender on *Ethereum Sepolia*. To see a detailed explanation of this contract, read the [Receiver code](#receiver-code) section.
 
@@ -104640,7 +104640,7 @@ Deploy the receiver contract on *Arbitrum Sepolia*. You will use this contract t
 
 You now have one *sender* contract on *Ethereum Sepolia* and one *receiver* contract on *Arbitrum Sepolia*. You sent `1` LINK to the *sender* contract to pay the CCIP fees. Next, send data from the sender contract to the receiver contract.
 
-## 3. Send data
+## 3. Send data <a id="remix-send"></a>
 
 Send a `Hello World!` string from your contract on *Ethereum Sepolia* to the contract you deployed on *Arbitrum Sepolia*:
 
@@ -104677,7 +104677,7 @@ After the transaction is finalized on the source chain, it will take a few minut
 
    ![Chainlink CCIP Explorer transaction details success](/images/ccip/tutorials/ccip-explorer-tx-details-success.webp)
 
-## 4. Read data
+## 4. Read data <a id="remix-read"></a>
 
 Read data stored by the receiver contract on *Arbitrum Sepolia*:
 
@@ -105420,7 +105420,7 @@ Best for **Solidity-native** workflows that prefer a modular, powerful scripting
 > Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
 > Foundry dev environment from scratch.
 
-#### 1. Bootstrap a new project
+#### 1. Bootstrap a new project <a id="foundry-bootstrap-a-new-project"></a>
 
 [Foundry Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -105486,7 +105486,7 @@ source .env
 forge build
 ```
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="foundry-deploy-your-contracts"></a>
 
 1. Deploy `ProgrammableTokenTransfers` on both *Ethereum Sepolia* (source) and *Arbitrum Sepolia* (destination):
 
@@ -105542,7 +105542,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=0x2a0C1c7E6fD5b3A9b8C7d6E5f4A3B2c1D0eF9a8B && e
 
 Check out the complete script code on Github.
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="foundry-configure-allowlists-receiver-finality-policy"></a>
 
 As a best practice, configure allowlists before sending messages. This script:
 
@@ -105627,7 +105627,7 @@ Arbitrum Sepolia can receive messages from Ethereum Sepolia
 
 Check out the complete script code on Github.
 
-#### 4. Fund your wallet with test tokens and gas
+#### 4. Fund your wallet with test tokens and gas <a id="foundry-fund-your-wallet-with-test-tokens-and-gas"></a>
 
 Before sending a CCIP message, your wallet needs `CCIP-BnM` on *Ethereum Sepolia*. You also need `ETH` (Sepolia) and
 `ETH` (Arbitrum Sepolia) to pay transaction gas.
@@ -105656,7 +105656,7 @@ Recipient: 0x1A2b3C4d5E6f708192A3b4C5d6E7f8091A2b3C4D
 
 Check out the faucet script on Github.
 
-#### 5. Trigger failure: send with low \`GAS_LIMIT\` and \`BLOCK_DEPTH=32\`
+#### 5. Trigger failure: send with low \`GAS_LIMIT\` and \`BLOCK_DEPTH=32\` <a id="foundry-trigger-failure-send-with-low-gas-limit-and-block-depth-32"></a>
 
 This step forces a destination execution failure by sending a programmable token transfer with:
 
@@ -105729,7 +105729,7 @@ https://ccip.chain.link/#/side-drawer/msg/0x8f3a1c9e5b7d2f4a6c8e0b3d5f7a9c1e3b5d
 
 Check out the complete script code on Github.
 
-#### 6. Option A : Manual execute in CCIP Explorer (confirm + trigger)
+#### 6. Option A : Manual execute in CCIP Explorer (confirm + trigger) <a id="foundry-option-a-manual-execute-in-ccip-explorer-confirm-trigger"></a>
 
 Use [CCIP Explorer](https://ccip.chain.link/) to confirm the message is **Ready for manual execution** and trigger manual execution.
 
@@ -105743,7 +105743,7 @@ Use [CCIP Explorer](https://ccip.chain.link/) to confirm the message is **Ready 
 4. Wait for the message status to become **Success**.
    Then skip **Option B** and continue to **Verify receipt after manual execution**.
 
-#### 7. Option B : Manual execute with CCIP CLI (show + manual-exec)
+#### 7. Option B : Manual execute with CCIP CLI (show + manual-exec) <a id="foundry-option-b-manual-execute-with-ccip-cli-show-manual-exec"></a>
 
 Use `ccip-cli` to confirm eligibility and retry execution from the terminal.
 
@@ -105819,7 +105819,7 @@ Receipt (dest):
 > retry (not the transaction gas limit). Use `--gas-limit 0` to reuse the original message gas limit. A
 > non-zero override must not be lower than the original message gas limit.
 
-#### 8. Verify receipt after manual execution
+#### 8. Verify receipt after manual execution <a id="foundry-verify-receipt-after-manual-execution"></a>
 
 After manual execution (Option A or Option B), re-run the destination receipt query. This time, the receiver should
 report a received message:
@@ -105863,7 +105863,7 @@ Best for developers who want a mature, TypeScript-based smart contract developme
 > Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
 > Hardhat dev environment from scratch.
 
-#### 1. Bootstrap a new project
+#### 1. Bootstrap a new project <a id="hardhat-bootstrap-a-new-project"></a>
 
 [CCIP Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -105925,7 +105925,7 @@ npm install -g @chainlink/ccip-cli
 ccip-cli --version
 ```
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="hardhat-deploy-your-contracts"></a>
 
 Deploy `ProgrammableTokenTransfers` on both chains:
 
@@ -105975,7 +105975,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=<Sender Contract Address> && export ARBITRUM_SE
 
 Check out the complete script code on Github.
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="hardhat-configure-allowlists-receiver-finality-policy"></a>
 
 ##### Finality configuration
 
@@ -106039,7 +106039,7 @@ Arbitrum Sepolia can receive messages from Ethereum Sepolia
 
 Check out the complete script code on Github.
 
-#### 4. Fund your wallet with test tokens and gas
+#### 4. Fund your wallet with test tokens and gas <a id="hardhat-fund-your-wallet-with-test-tokens-and-gas"></a>
 
 Drip `CCIP-BnM` to your wallet on *Ethereum Sepolia*:
 
@@ -106070,7 +106070,7 @@ Check out the faucet script on Github.
 > The manual execution retry transaction is sent on *Arbitrum Sepolia*. Make sure the wallet you use has enough
 > *Arbitrum Sepolia ETH* to pay gas.
 
-#### 5. Trigger failure: send with low \`GAS_LIMIT\` and \`BLOCK_DEPTH=32\`
+#### 5. Trigger failure: send with low \`GAS_LIMIT\` and \`BLOCK_DEPTH=32\` <a id="hardhat-trigger-failure-send-with-low-gas-limit-and-block-depth-32"></a>
 
 This step forces a destination execution failure. Hardhat estimates the receiver callback gas limit when `GAS_LIMIT` is
 unset, so set `GAS_LIMIT=20000` to trigger an out-of-gas failure.
@@ -106139,7 +106139,7 @@ https://ccip.chain.link/#/side-drawer/msg/0x6b8d0f2a4c6e8b1d3f5a7c9e2b4d6f8a0c1e
 
 Check out the complete script code on Github.
 
-#### 6. Option A : Manual execute in CCIP Explorer (confirm + trigger)
+#### 6. Option A : Manual execute in CCIP Explorer (confirm + trigger) <a id="hardhat-option-a-manual-execute-in-ccip-explorer-confirm-trigger"></a>
 
 Use [CCIP Explorer](https://ccip.chain.link/) to confirm the message is **Ready for manual execution** and trigger manual execution.
 
@@ -106153,7 +106153,7 @@ Use [CCIP Explorer](https://ccip.chain.link/) to confirm the message is **Ready 
 4. Wait for the message status to become **Success**.
    Then skip **Option B** and continue to **Verify receipt after manual execution**.
 
-#### 7. Option B : Manual execute with CCIP CLI (show + manual-exec)
+#### 7. Option B : Manual execute with CCIP CLI (show + manual-exec) <a id="hardhat-option-b-manual-execute-with-ccip-cli-show-manual-exec"></a>
 
 Use `ccip-cli` to confirm eligibility and retry execution from the terminal.
 
@@ -106235,7 +106235,7 @@ Receipt (dest):
 > retry (not the transaction gas limit). Use `--gas-limit 0` to reuse the original message gas limit. A
 > non-zero override must not be lower than the original message gas limit.
 
-#### 8. Verify receipt after manual execution
+#### 8. Verify receipt after manual execution <a id="hardhat-verify-receipt-after-manual-execution"></a>
 
 After manual execution (Option A or Option B), re-run the destination receipt query. This time, the receiver should
 report a received message:
@@ -106688,7 +106688,7 @@ Best for **Solidity-native** workflows that prefer a modular, powerful scripting
 > Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
 > Foundry dev environment from scratch.
 
-#### 1. Bootstrap a new Foundry project
+#### 1. Bootstrap a new Foundry project <a id="foundry-bootstrap-a-new-foundry-project"></a>
 
 [Foundry Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -106754,7 +106754,7 @@ source .env
 forge build
 ```
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="foundry-deploy-your-contracts"></a>
 
 In this section, you will deploy the `ProgrammableDefensiveTokenTransfers` contracts on the source and destination chains.
 
@@ -106832,7 +106832,7 @@ Check out the complete file on Github here:
 
 Check out the complete script code on Github.
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="foundry-configure-allowlists-and-finality"></a>
 
 As a best practice, allowlist specific contracts to prevent unauthorized message delivery between your sender and receiver.
 
@@ -106925,7 +106925,7 @@ Arbitrum Sepolia can receive messages from Ethereum Sepolia
 ⚠️  Messages will fail on destination (simRevert=true) to demonstrate defensive handling
 ```
 
-#### 4. Fund your wallet with test tokens
+#### 4. Fund your wallet with test tokens <a id="foundry-fund-your-wallet-with-test-tokens"></a>
 
 [DripBnMToken.s.sol](https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/faucet/DripBnMToken.s.sol)
 
@@ -106950,7 +106950,7 @@ CHAIN=ETHEREUM_SEPOLIA RECIPIENT_ADDRESS=<your-wallet-address> forge script foun
 > If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the
 > [Chainlink faucet](https://faucets.chain.link/).
 
-#### 5. Send a message
+#### 5. Send a message <a id="foundry-send-a-message"></a>
 
 `SendMessage.s.sol` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
 
@@ -107106,7 +107106,7 @@ https://ccip.chain.link/#/side-drawer/msg/0x2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192
 
 Check out the complete script code on Github.
 
-#### 6. Check failed messages and recover tokens
+#### 6. Check failed messages and recover tokens <a id="foundry-check-failed-messages-and-recover-tokens"></a>
 
 After sending the message, wait for it to arrive on the destination chain (typically 10-20 minutes). Because `s_simRevert` is `true`, the message will fail and the tokens will be locked in the receiver contract.
 
@@ -107212,7 +107212,7 @@ Best for developers who want a mature, TypeScript-based smart contract developme
 > Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
 > Hardhat dev environment from scratch.
 
-#### 1. Bootstrap a new Hardhat project
+#### 1. Bootstrap a new Hardhat project <a id="hardhat-bootstrap-a-new-hardhat-project"></a>
 
 [CCIP Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -107271,7 +107271,7 @@ npx hardhat keystore set your_keystore_name
 >
 > When prompted for your private key, include the `0x` prefix.
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="hardhat-deploy-your-contracts"></a>
 
 [deploy.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-defensive-token-transfers/deploy/deploy.ts)
 
@@ -107343,7 +107343,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=<sender-contract-address> && \
 export ARBITRUM_SEPOLIA_CONTRACT=<receiver-contract-address>
 ```
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="hardhat-configure-allowlists-and-finality"></a>
 
 As a best practice, allowlist specific contracts to prevent unauthorized message delivery between your sender and receiver.
 
@@ -107434,7 +107434,7 @@ Arbitrum Sepolia can receive messages from Ethereum Sepolia
 ⚠️  Messages will fail on destination (simRevert=true) to demonstrate defensive handling
 ```
 
-#### 4. Fund your wallet with test tokens
+#### 4. Fund your wallet with test tokens <a id="hardhat-fund-your-wallet-with-test-tokens"></a>
 
 [drip-bnm-token.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/faucet/drip-bnm-token.ts)
 
@@ -107452,7 +107452,7 @@ npx hardhat run hardhat/scripts/faucet/drip-bnm-token.ts
 
 If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the [Chainlink faucet](https://faucets.chain.link/).
 
-#### 5. Send a message
+#### 5. Send a message <a id="hardhat-send-a-message"></a>
 
 `send-message.ts` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
 
@@ -107621,7 +107621,7 @@ https://ccip.chain.link/#/side-drawer/msg/0x4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4
 
 Check out the complete script code on Github.
 
-#### 6. Check failed messages and recover tokens
+#### 6. Check failed messages and recover tokens <a id="hardhat-check-failed-messages-and-recover-tokens"></a>
 
 After sending the message, wait for it to arrive on the destination chain (typically 10-20 minutes). Because `s_simRevert` is `true`, the message will fail and the tokens will be locked in the receiver contract.
 
@@ -108087,7 +108087,7 @@ Best for **Solidity-native** workflows that prefer a modular, powerful scripting
 > Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
 > Foundry dev environment from scratch.
 
-#### 1. Bootstrap a new Foundry project
+#### 1. Bootstrap a new Foundry project <a id="foundry-bootstrap-a-new-foundry-project"></a>
 
 [Foundry Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -108157,7 +108157,7 @@ source .env
 forge build
 ```
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="foundry-deploy-your-contracts"></a>
 
 In this section, you will deploy the contracts on the source and destination chains.
 
@@ -108228,7 +108228,7 @@ Check out the complete file on Github here:
 
 Check out the complete script code on Github.
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="foundry-configure-allowlists-and-finality"></a>
 
 As a best practice, configure allowlists before sending messages: the sender contract restricts outbound sends by destination chain, and the receiver contract restricts inbound delivery by source chain-sender pair.
 
@@ -108327,7 +108327,7 @@ forge script foundry/scripts/tutorials/programmable-token-transfers/configure/Co
 --account $KEYSTORE_NAME --broadcast -vv
 ```
 
-#### 4. Fund your wallet with test tokens
+#### 4. Fund your wallet with test tokens <a id="foundry-fund-your-wallet-with-test-tokens"></a>
 
 [DripBnMToken.s.sol](https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/faucet/DripBnMToken.s.sol)
 
@@ -108354,7 +108354,7 @@ forge script foundry/scripts/faucet/DripBnMToken.s.sol \
 > If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the
 > [Chainlink faucet](https://faucets.chain.link/).
 
-#### 5. Send a message
+#### 5. Send a message <a id="foundry-send-a-message"></a>
 
 `SendMessage.s.sol` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
 
@@ -108501,7 +108501,7 @@ https://ccip.chain.link/#/side-drawer/msg/0xb2c3d4e5f60718293a4b5c6d7e8f90a1b2c3
 
 Check out the complete script code on Github.
 
-#### 6. Verify receipt on the destination chain
+#### 6. Verify receipt on the destination chain <a id="foundry-verify-receipt-on-the-destination-chain"></a>
 
 The `GetLastReceivedMessageDetails.s.sol` script queries the receiver contract for the last received message. This is a read-only operation: no transaction is broadcast.
 
@@ -108549,7 +108549,7 @@ Best for developers who want a mature, TypeScript-based smart contract developme
 > Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
 > Hardhat dev environment from scratch.
 
-#### 1. Bootstrap a new Hardhat project
+#### 1. Bootstrap a new Hardhat project <a id="hardhat-bootstrap-a-new-hardhat-project"></a>
 
 [CCIP Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -108608,7 +108608,7 @@ npx hardhat keystore set your_keystore_name
 >
 > When prompted for your private key, include the `0x` prefix.
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="hardhat-deploy-your-contracts"></a>
 
 [deploy.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-token-transfers/deploy/deploy.ts)
 
@@ -108680,7 +108680,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=<sender-contract-address> && \
 export ARBITRUM_SEPOLIA_CONTRACT=<receiver-contract-address>
 ```
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="hardhat-configure-allowlists-and-finality"></a>
 
 As a best practice, configure allowlists before sending messages: the sender contract restricts outbound sends by destination chain, and the receiver contract restricts inbound delivery by source chain-sender pair.
 
@@ -108766,7 +108766,7 @@ ALLOWED_BLOCK_DEPTH=32 \
 npx hardhat run hardhat/scripts/tutorials/programmable-token-transfers/configure/configure.ts
 ```
 
-#### 4. Fund your wallet with test tokens
+#### 4. Fund your wallet with test tokens <a id="hardhat-fund-your-wallet-with-test-tokens"></a>
 
 [drip-bnm-token.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/faucet/drip-bnm-token.ts)
 
@@ -108784,7 +108784,7 @@ npx hardhat run hardhat/scripts/faucet/drip-bnm-token.ts
 
 If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the [Chainlink faucet](https://faucets.chain.link/).
 
-#### 5. Send a message
+#### 5. Send a message <a id="hardhat-send-a-message"></a>
 
 `send-message.ts` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
 
@@ -108937,7 +108937,7 @@ https://ccip.chain.link/#/side-drawer/msg/0xd4e5f60718293a4b5c6d7e8f90a1b2c3d4e5
 
 Check out the complete script code on Github.
 
-#### 6. Verify receipt on the destination chain
+#### 6. Verify receipt on the destination chain <a id="hardhat-verify-receipt-on-the-destination-chain"></a>
 
 [get-last-received-message-details.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-token-transfers/interact/get-last-received-message-details.ts)
 
@@ -109259,7 +109259,7 @@ Best for Solidity-native workflows that prefer a modular, powerful scripting fra
 > Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
 > Foundry dev environment from scratch.
 
-#### 1. Bootstrap a new Foundry project
+#### 1. Bootstrap a new Foundry project <a id="foundry-bootstrap-a-new-foundry-project"></a>
 
 [Foundry Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -109320,7 +109320,7 @@ source .env
 forge build
 ```
 
-#### 2. Deploy your contracts (A and B)
+#### 2. Deploy your contracts (A and B) <a id="foundry-deploy-your-contracts-a-and-b"></a>
 
 [Deploy.s.sol](https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/deploy/Deploy.s.sol)
 
@@ -109391,7 +109391,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=0x...  # MessageTracker
 export ARBITRUM_SEPOLIA_CONTRACT=0x...    # Acknowledger
 ```
 
-#### 3. Fund the Acknowledger (required)
+#### 3. Fund the Acknowledger (required) <a id="foundry-fund-the-acknowledger-required"></a>
 
 The Acknowledger pays CCIP fees for acknowledgment messages with native gas held by the contract.
 Fund it with Arbitrum Sepolia ETH before sending messages.
@@ -109406,7 +109406,7 @@ cast send $ARBITRUM_SEPOLIA_CONTRACT \
 --chain arbitrum-sepolia
 ```
 
-#### 4. Configure allowlists and finality
+#### 4. Configure allowlists and finality <a id="foundry-configure-allowlists-receiver-policy"></a>
 
 [Configure.s.sol](https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/configure/Configure.s.sol)
 
@@ -109488,7 +109488,7 @@ Ethereum Sepolia (MessageTracker) can send messages to Arbitrum Sepolia (Acknowl
 Arbitrum Sepolia (Acknowledger) can receive messages from Ethereum Sepolia and send acknowledgments back
 ```
 
-#### 5. Send a message (A→B)
+#### 5. Send a message (A→B) <a id="foundry-send-a-message-a-b"></a>
 
 [SendMessage.s.sol](https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/SendMessage.s.sol)
 
@@ -109635,7 +109635,7 @@ Copy the `CCIP messageId` from the output.
 | `MESSAGE_ID`              | Message ID to query status (used by the status script)                                                                                                    | Not set                                         |
 | `CHAIN`                   | Chain name identifier used by the withdraw script (the chain where the Acknowledger is deployed)                                                          | Not set                                         |
 
-#### 6. Track status (B→A acknowledgment)
+#### 6. Track status (B→A acknowledgment) <a id="foundry-track-status-b-a-acknowledgment"></a>
 
 [GetMessageStatus.s.sol](https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/GetMessageStatus.s.sol)
 
@@ -109674,7 +109674,7 @@ https://ccip.chain.link/#/side-drawer/msg/0x9e0f1a2b3c4d5e6f708192a3b4c5d6e7f809
 ========================================
 ```
 
-#### 7. Withdraw from Acknowledger (optional cleanup)
+#### 7. Withdraw from Acknowledger (optional cleanup) <a id="foundry-withdraw-from-acknowledger-optional-cleanup"></a>
 
 [WithdrawFromAcknowledger.s.sol](https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/WithdrawFromAcknowledger.s.sol)
 
@@ -109720,7 +109720,7 @@ Best for devs looking for a mature, TypeScript-based smart contract development 
 > Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
 > Hardhat dev environment from scratch.
 
-#### 1. Bootstrap a new Hardhat project
+#### 1. Bootstrap a new Hardhat project <a id="hardhat-bootstrap-a-new-hardhat-project"></a>
 
 [CCIP Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -109774,7 +109774,7 @@ npx hardhat keystore set your_keystore_name
 >
 > When prompted for your private key, include the `0x` prefix.
 
-#### 2. Deploy your contracts (A and B)
+#### 2. Deploy your contracts (A and B) <a id="hardhat-deploy-your-contracts-a-and-b"></a>
 
 [deploy.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/deploy/deploy.ts)
 
@@ -109841,7 +109841,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=0x...  # MessageTracker
 export ARBITRUM_SEPOLIA_CONTRACT=0x...    # Acknowledger
 ```
 
-#### 3. Fund the Acknowledger (required)
+#### 3. Fund the Acknowledger (required) <a id="hardhat-fund-the-acknowledger-required"></a>
 
 The Acknowledger pays CCIP fees for acknowledgment messages with native gas held by the contract. Fund it with Arbitrum Sepolia ETH before sending messages.
 
@@ -109857,7 +109857,7 @@ cast send $ARBITRUM_SEPOLIA_CONTRACT \
 
 If you don't have `cast` installed, you can fund the contract from any wallet by sending Arbitrum Sepolia ETH to `$ARBITRUM_SEPOLIA_CONTRACT`.
 
-#### 4. Configure allowlists and finality
+#### 4. Configure allowlists and finality <a id="hardhat-configure-allowlists-receiver-policy"></a>
 
 [configure.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/configure/configure.ts)
 
@@ -109940,7 +109940,7 @@ SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA FEE_TOKEN=LINK GAS_LIM
 ========================================
 ```
 
-#### 5. Send a message (A→B)
+#### 5. Send a message (A→B) <a id="hardhat-send-a-message-a-b"></a>
 
 [send-message.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/send-message.ts)
 
@@ -110083,7 +110083,7 @@ Copy the `CCIP messageId` from the output.
 | `MESSAGE_ID`              | Message ID to query status (used by the status script)                                                                                                    | Not set                                         |
 | `CHAIN`                   | Chain name identifier used by the withdraw script (the chain where the Acknowledger is deployed)                                                          | Not set                                         |
 
-#### 6. Track status (B→A acknowledgment)
+#### 6. Track status (B→A acknowledgment) <a id="hardhat-track-status-b-a-acknowledgment"></a>
 
 [get-message-status.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/get-message-status.ts)
 
@@ -110116,7 +110116,7 @@ https://ccip.chain.link/#/side-drawer/msg/0x9e0f1a2b3c4d5e6f708192a3b4c5d6e7f809
 ========================================
 ```
 
-#### 7. Withdraw from Acknowledger (optional cleanup)
+#### 7. Withdraw from Acknowledger (optional cleanup) <a id="hardhat-withdraw-from-acknowledger-optional-cleanup"></a>
 
 [withdraw-from-acknowledger.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data-and-receive-transfer-confirmation/interact/withdraw-from-acknowledger.ts)
 
@@ -110476,7 +110476,7 @@ Best for **Solidity-native** workflows that prefer a modular, powerful scripting
 > Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
 > Foundry dev environment from scratch.
 
-#### 1. Bootstrap a new Foundry project
+#### 1. Bootstrap a new Foundry project <a id="foundry-bootstrap-a-new-foundry-project"></a>
 
 [Foundry Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -110537,7 +110537,7 @@ source .env
 forge build
 ```
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="foundry-deploy-your-contracts"></a>
 
 [Deploy.s.sol](https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/send-arbitrary-data/deploy/Deploy.s.sol)
 
@@ -110613,7 +110613,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=<sender-contract-address> && \
 export ARBITRUM_SEPOLIA_CONTRACT=<receiver-contract-address>
 ```
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="foundry-configure-allowlists"></a>
 
 As a best practice, configure allowlists before sending messages: the sender contract restricts outbound sends by destination chain, and the receiver contract restricts inbound delivery by source chain-sender pair.
 
@@ -110705,7 +110705,7 @@ forge script foundry/scripts/tutorials/send-arbitrary-data/configure/Configure.s
 --broadcast -vv
 ```
 
-#### 4. Send a message
+#### 4. Send a message <a id="foundry-send-a-message"></a>
 
 `SendMessage.s.sol` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
 
@@ -110851,7 +110851,7 @@ Check out the complete script code on Github.
 
 Check out the lane-aware extraArgs helper on Github.
 
-#### 5. Verify receipt on the destination chain
+#### 5. Verify receipt on the destination chain <a id="foundry-verify-receipt-on-the-destination-chain"></a>
 
 The `GetLastReceivedMessageDetails.s.sol` script queries the receiver contract for the last received message. This is a read-only operation: no transaction is broadcast.
 
@@ -110896,7 +110896,7 @@ Best for developers who want a mature, TypeScript-based smart contract developme
 > Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
 > Hardhat dev environment from scratch.
 
-#### 1. Bootstrap a new Hardhat project
+#### 1. Bootstrap a new Hardhat project <a id="hardhat-bootstrap-a-new-hardhat-project"></a>
 
 [CCIP Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -110955,7 +110955,7 @@ npx hardhat keystore set your_keystore_name
 >
 > When prompted for your private key, include the `0x` prefix.
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="hardhat-deploy-your-contracts"></a>
 
 [deploy.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data/deploy/deploy.ts)
 
@@ -111027,7 +111027,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=<sender-contract-address> && \
 export ARBITRUM_SEPOLIA_CONTRACT=<receiver-contract-address>
 ```
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="hardhat-configure-allowlists"></a>
 
 As a best practice, configure allowlists before sending messages: the sender contract restricts outbound sends by destination chain, and the receiver contract restricts inbound delivery by source chain-sender pair.
 
@@ -111113,7 +111113,7 @@ SOURCE_CHAIN=ARBITRUM_SEPOLIA DEST_CHAIN=ETHEREUM_SEPOLIA ALLOWED_FINALITY_CONFI
 npx hardhat run hardhat/scripts/tutorials/send-arbitrary-data/configure/configure.ts
 ```
 
-#### 4. Send a message
+#### 4. Send a message <a id="hardhat-send-a-message"></a>
 
 `send-message.ts` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
 
@@ -111255,7 +111255,7 @@ Check out the complete script code on Github.
 
 Check out the lane-aware extraArgs helper used by Hardhat scripts.
 
-#### 5. Verify receipt on the destination chain
+#### 5. Verify receipt on the destination chain <a id="hardhat-verify-receipt-on-the-destination-chain"></a>
 
 [get-last-received-message-details.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/send-arbitrary-data/interact/get-last-received-message-details.ts)
 
@@ -111544,7 +111544,7 @@ Best for **Solidity-native** workflows that prefer a modular, powerful scripting
 > Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
 > Foundry dev environment from scratch.
 
-#### 1. Bootstrap a new Foundry project
+#### 1. Bootstrap a new Foundry project <a id="foundry-bootstrap-a-new-foundry-project"></a>
 
 [Foundry Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -111614,7 +111614,7 @@ source .env
 forge build
 ```
 
-#### 2. Deploy your contract
+#### 2. Deploy your contract <a id="foundry-deploy-your-contract"></a>
 
 In this section, you will deploy `TokenTransferor` on the source chain (*Ethereum Sepolia*). \
 Unlike the programmable token transfers tutorial, no destination contract is needed because tokens are transferred to an address (EOA or contract) on the destination chain.
@@ -111669,7 +111669,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=<your-deployed-contract-address>
 
 Check out the complete script code on Github.
 
-#### 3. Configure allowlists
+#### 3. Configure allowlists <a id="foundry-configure-allowlists"></a>
 
 As a best practice, allowlist the destination chain before sending tokens.
 
@@ -111714,7 +111714,7 @@ Ethereum Sepolia can send tokens to Arbitrum Sepolia
 ** Next Step: Transfer Tokens **
 ```
 
-#### 4. Fund your wallet with test tokens
+#### 4. Fund your wallet with test tokens <a id="foundry-fund-your-wallet-with-test-tokens"></a>
 
 [DripBnMToken.s.sol](https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/faucet/DripBnMToken.s.sol)
 
@@ -111739,7 +111739,7 @@ CHAIN=ETHEREUM_SEPOLIA RECIPIENT_ADDRESS=<your-wallet-address> forge script foun
 > If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the
 > [Chainlink faucet](https://faucets.chain.link/).
 
-#### 5. Transfer Tokens
+#### 5. Transfer Tokens <a id="foundry-transfer-tokens"></a>
 
 `SendMessage.s.sol` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
 
@@ -111876,7 +111876,7 @@ Required CCIP fee (in token units): 26110523180283030
 
 Check out the complete script code on Github.
 
-#### 6. Verify transfer on the destination chain
+#### 6. Verify transfer on the destination chain <a id="foundry-verify-transfer-on-the-destination-chain"></a>
 
 After sending the transfer, you can verify it was successful:
 
@@ -111899,7 +111899,7 @@ Best for developers who want a mature, TypeScript-based smart contract developme
 > Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
 > Hardhat dev environment from scratch.
 
-#### 1. Bootstrap a new Hardhat project
+#### 1. Bootstrap a new Hardhat project <a id="hardhat-bootstrap-a-new-hardhat-project"></a>
 
 [CCIP Starter Kit](https://github.com/smartcontractkit/docs-ccip)
 
@@ -111947,7 +111947,7 @@ npx hardhat keystore set your_keystore_name
 >
 > When prompted for your private key, include the `0x` prefix.
 
-#### 2. Deploy your contract
+#### 2. Deploy your contract <a id="hardhat-deploy-your-contract"></a>
 
 [deploy.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/token-transfers/deploy/deploy.ts)
 
@@ -111999,7 +111999,7 @@ Before moving on, export the address of the deployed contract so that it's avail
 export ETHEREUM_SEPOLIA_CONTRACT=<your-deployed-contract-address>
 ```
 
-#### 3. Configure allowlists
+#### 3. Configure allowlists <a id="hardhat-configure-allowlists"></a>
 
 As a best practice, allowlist the destination chain before sending tokens.
 
@@ -112044,7 +112044,7 @@ SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA RECEIVER_ADDRESS=$RECE
 ========================================
 ```
 
-#### 4. Fund your wallet with test tokens
+#### 4. Fund your wallet with test tokens <a id="hardhat-fund-your-wallet-with-test-tokens"></a>
 
 [drip-bnm-token.ts](https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/faucet/drip-bnm-token.ts)
 
@@ -112061,7 +112061,7 @@ npx hardhat run hardhat/scripts/faucet/drip-bnm-token.ts
 
 If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the [Chainlink faucet](https://faucets.chain.link/).
 
-#### 5. Transfer Tokens
+#### 5. Transfer Tokens <a id="hardhat-transfer-tokens"></a>
 
 `send-message.ts` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
 
@@ -112201,7 +112201,7 @@ https://ccip.chain.link/#/side-drawer/msg/0xe3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a
 
 Check out the complete script code on Github.
 
-#### 6. Verify transfer on the destination chain
+#### 6. Verify transfer on the destination chain <a id="hardhat-verify-transfer-on-the-destination-chain"></a>
 
 After sending the transfer, you can verify it was successful:
 
@@ -112372,7 +112372,7 @@ Best for **Solidity-native** workflows that prefer a modular, powerful scripting
 > Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
 > Foundry dev environment from scratch.
 
-#### 1. Bootstrap a new Foundry project
+#### 1. Bootstrap a new Foundry project <a id="foundry-bootstrap-a-new-foundry-project"></a>
 
 [CCIP 2.0 template](https://github.com/smartcontractkit/docs-ccip)
 
@@ -112433,7 +112433,7 @@ source .env
 forge build
 ```
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="foundry-deploy-your-contracts"></a>
 
 `Deploy.s.sol` handles all three deployments across both chains in a single run:
 
@@ -112521,7 +112521,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=<usdc-sender-address> && export ARBITRUM_SEPOLI
 
 View the complete script on GitHub.
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="foundry-configure-allowlists-and-finality"></a>
 
 The sender and receiver start out refusing this lane. `Configure.s.sol` introduces them to each other and sets the finality policy in one run:
 
@@ -112613,7 +112613,7 @@ The script closes by printing ready-to-run send commands for both LINK and nativ
 
 View the complete script on GitHub.
 
-#### 4. Send USDC with data
+#### 4. Send USDC with data <a id="foundry-send-usdc-with-data"></a>
 
 `SendMessage.s.sol` carries out the transfer end to end:
 
@@ -112752,7 +112752,7 @@ The next step redeems the `STK` tokens after the message settles and staking suc
 
 View the complete script on GitHub.
 
-#### 5. Redeem STK for USDC
+#### 5. Redeem STK for USDC <a id="foundry-redeem-stk-for-usdc"></a>
 
 After the CCIP Explorer shows that the message has been successfully processed and the beneficiary has received `STK`, the beneficiary can redeem those tokens on *Arbitrum Sepolia*.
 
@@ -112818,7 +112818,7 @@ Best for developers who want a mature, TypeScript-based smart contract developme
 > Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
 > Hardhat dev environment from scratch.
 
-#### 1. Bootstrap a new Hardhat project
+#### 1. Bootstrap a new Hardhat project <a id="hardhat-bootstrap-a-new-hardhat-project"></a>
 
 [CCIP 2.0 template](https://github.com/smartcontractkit/docs-ccip)
 
@@ -112873,7 +112873,7 @@ source .env
 npx hardhat keystore set your_keystore_name
 ```
 
-#### 2. Deploy your contracts
+#### 2. Deploy your contracts <a id="hardhat-deploy-your-contracts"></a>
 
 `deploy.ts` handles all three deployments across both chains in a single run:
 
@@ -112958,7 +112958,7 @@ export ETHEREUM_SEPOLIA_CONTRACT=<usdc-sender-address> && export ARBITRUM_SEPOLI
 
 View the complete script on GitHub.
 
-#### 3. Configure allowlists and finality
+#### 3. Configure allowlists and finality <a id="hardhat-configure-allowlists-and-finality"></a>
 
 The sender and receiver start out refusing this lane. `configure.ts` introduces them to each other and sets the finality policy in one run:
 
@@ -113048,7 +113048,7 @@ The script closes by printing ready-to-run send commands for both LINK and nativ
 
 View the complete script on GitHub.
 
-#### 4. Send USDC with data
+#### 4. Send USDC with data <a id="hardhat-send-usdc-with-data"></a>
 
 `send-message.ts` carries out the transfer end to end:
 
@@ -113181,7 +113181,7 @@ The next step redeems the `STK` tokens after the message settles and staking suc
 
 View the complete script on GitHub.
 
-#### 5. Redeem STK for USDC
+#### 5. Redeem STK for USDC <a id="hardhat-redeem-stk-for-usdc"></a>
 
 After the CCIP Explorer shows that the message has been successfully processed and the beneficiary has received `STK`, the beneficiary can redeem those tokens on *Arbitrum Sepolia*.
 
@@ -122623,7 +122623,7 @@ forge script \
   --rpc-url $ETHEREUM_SEPOLIA_RPC_URL
 ```
 
-#### 4. (Optional) Configure Faster Than Finality for the Token Pool
+#### 4. (Optional) Configure Faster Than Finality for the Token Pool <a id="optional-configure-fast-finality-for-the-token-pool"></a>
 
 1. CCIP 2.0 supports **faster than finality** as an opt-in feature, letting token issuers control the speed vs. security
    tradeoff for cross-chain transfers of their token.
@@ -124033,7 +124033,7 @@ npx hardhat getSupportedChains --network sepolia
 npx hardhat getSupportedChains --network arbitrumSepolia
 ```
 
-#### 4. (Optional) Configure Faster Than Finality for the Token Pool
+#### 4. (Optional) Configure Faster Than Finality for the Token Pool <a id="optional-configure-fast-finality-for-the-token-pool"></a>
 
 1. CCIP 2.0 supports **faster than finality** as an opt-in feature, letting token issuers control the speed vs. security
    tradeoff for cross-chain transfers of their token.

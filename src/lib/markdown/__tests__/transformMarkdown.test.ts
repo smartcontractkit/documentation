@@ -531,6 +531,93 @@ Body remains visible.
     expect(withTitleSlot).toContain("Body remains visible.")
   })
 
+  it.each([2, 3, 4])("preserves an explicit AnchoredAccordion id at heading depth %s", async (depth) => {
+    const result = await transformMarkdown(
+      `[Fund the adapter](#fund-the-adapter)
+
+<AnchoredAccordion title="Set the return format and fund the adapter" number={4} depth={${depth}} anchorId="fund-the-adapter">
+Body instructions.
+</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(
+      `[Fund the adapter](#fund-the-adapter)\n\n${"#".repeat(depth)} 4. Set the return format and fund the adapter <a id="fund-the-adapter"></a>\n\nBody instructions.\n`
+    )
+  })
+
+  it.each(['{"static-id"}', "{`static-id`}"])("preserves a static expression anchorId=%s", async (attribute) => {
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Deploy" anchorId=${attribute}>\nInstructions.\n</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe('## Deploy <a id="static-id"></a>\n\nInstructions.\n')
+  })
+
+  it.each(["", 'anchorId=""', "anchorId={dynamicId}", "anchorId={42}"])(
+    "keeps accordion content without generating an anchor for %s",
+    async (attribute) => {
+      const result = await transformMarkdown(
+        `<AnchoredAccordion title="Deploy" ${attribute}>\nInstructions.\n</AnchoredAccordion>`,
+        "/fake/page.mdx"
+      )
+
+      expect(result).toBe("## Deploy\n\nInstructions.\n")
+    }
+  )
+
+  it("does not give a plain Accordion an AnchoredAccordion id", async () => {
+    const result = await transformMarkdown(
+      '<Accordion title="Deploy" anchorId="unused">\nInstructions.\n</Accordion>',
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("### Deploy\n\nInstructions.\n")
+  })
+
+  it("escapes an anchor id as HTML attribute content", async () => {
+    const anchorId = 'a&"<>\\_b'
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Deploy" anchorId={${JSON.stringify(anchorId)}}>\nInstructions.\n</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe('## Deploy <a id="a&amp;&quot;&lt;&gt;&#92;_b"></a>\n\nInstructions.\n')
+  })
+
+  it("keeps each nested accordion anchor on its own heading", async () => {
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Outer" anchorId="outer">
+Outer instructions.
+
+<AnchoredAccordion title="Inner" depth={3} anchorId="inner">
+Inner instructions.
+</AnchoredAccordion>
+</AnchoredAccordion>
+
+After accordions.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(
+      '## Outer <a id="outer"></a>\n\nOuter instructions.\n\n### Inner <a id="inner"></a>\n\nInner instructions.\n\nAfter accordions.\n'
+    )
+  })
+
+  it("continues dropping source HTML anchors while preserving generated accordion anchors", async () => {
+    const result = await transformMarkdown(
+      `<a id="source-anchor"></a>
+
+<AnchoredAccordion title="Deploy" anchorId="generated-anchor">
+Instructions.
+</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe('## Deploy <a id="generated-anchor"></a>\n\nInstructions.\n')
+  })
+
   it("projects Address with exact URLs and static truncation", async () => {
     const result = await transformMarkdown(
       `Exact: <Address address="0x1234567890abcdef" contractUrl="https://example.test/address/0x1234567890abcdef?view=code" />

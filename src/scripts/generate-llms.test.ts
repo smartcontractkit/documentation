@@ -150,6 +150,33 @@ describe("solution CLI exports", () => {
 })
 
 describe("renderLlmsPageMarkdown", () => {
+  test("preserves explicit accordion anchors through the shared transform and TXT cleanup", async () => {
+    const raw = `---
+title: "Deploy the adapter"
+---
+
+[Fund the adapter](#fund-the-adapter)
+
+<AnchoredAccordion title="Set the return format and fund the adapter" number={4} depth={3} anchorId="fund-the-adapter">
+Fund the adapter before sending a request.
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Escaped id" anchorId={${JSON.stringify('a&"<>\\_b')}}>
+Keep this content too.
+</AnchoredAccordion>`
+    const absFile = path.resolve("src/content/ccip/accordion-anchors.mdx")
+    const rendered = await renderLlmsPageMarkdown(raw, absFile, "ccip")
+
+    expect(rendered.transformMode).toBe("normal")
+    expect(rendered.markdown).toContain("[Fund the adapter](#fund-the-adapter)")
+    expect(rendered.markdown).toContain(
+      '### 4. Set the return format and fund the adapter <a id="fund-the-adapter"></a>'
+    )
+    expect(rendered.markdown).toContain('## Escaped id <a id="a&amp;&quot;&lt;&gt;&#92;_b"></a>')
+    expect(rendered.markdown).toContain("Fund the adapter before sending a request.")
+    expect(rendered.markdown).toContain("Keep this content too.")
+  })
+
   test("uses the same page body as the Markdown route", async () => {
     const raw = `---
 title: "Shared page"

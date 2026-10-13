@@ -74,10 +74,11 @@ export interface FidelityReport {
 
 export interface SourceFact {
   ordinal: number
-  kind: "text" | "heading" | "link" | "code"
+  kind: "text" | "heading" | "link" | "code" | "anchor"
   value: string
   url?: string
   depth?: number
+  heading?: string
   variant?: string
   line: number
   sourceText: string
@@ -105,6 +106,7 @@ interface ObservedFact {
   value: string
   url?: string
   depth?: number
+  heading?: string
 }
 
 interface ObservedAnalysis {
@@ -596,9 +598,10 @@ export function analyzeSourceMarkdown(
     url?: string,
     depth?: number,
     variant?: string,
-    coalesce = false
+    coalesce = false,
+    heading?: string
   ) => {
-    const normalized = normalizeText(value)
+    const normalized = kind === "anchor" ? value : normalizeText(value)
     if (!normalized) {
       if (coalesce) {
         const group = textGroup(node)
@@ -617,6 +620,7 @@ export function analyzeSourceMarkdown(
       url,
       depth,
       variant,
+      ...(heading === undefined ? {} : { heading }),
       line,
       sourceText: lineText(lines, line),
       ...(sourcePath ? { sourcePath } : {}),
@@ -1096,6 +1100,8 @@ export function analyzeSourceMarkdown(
         const title = staticAttribute(node, "title")
         const number = staticAttribute(node, "number")
         const depth = staticAttribute(node, "depth")
+        let heading: string | undefined
+        let level: number | undefined
         if (
           title.syntax ||
           typeof title.value !== "string" ||
@@ -1110,8 +1116,22 @@ export function analyzeSourceMarkdown(
           )
         } else {
           const prefix = number.found ? `${number.value}. ` : ""
-          const level = depth.value === 4 ? 4 : depth.value === 3 || name === "Accordion" ? 3 : 2
-          addFact("heading", `${prefix}${title.value}`, node, undefined, level)
+          level = depth.value === 4 ? 4 : depth.value === 3 || name === "Accordion" ? 3 : 2
+          heading = normalizeText(`${prefix}${title.value}`)
+          addFact("heading", heading, node, undefined, level)
+        }
+        if (name === "AnchoredAccordion") {
+          const anchor = staticAttribute(node, "anchorId")
+          if (anchor.found && (anchor.syntax || typeof anchor.value !== "string")) {
+            addDiagnostic(
+              "unverifiable",
+              "AnchoredAccordion.anchorId",
+              node,
+              `Non-static or non-string accordion anchor (${anchor.syntax ?? typeof anchor.value})`
+            )
+          } else if (typeof anchor.value === "string" && anchor.value && heading !== undefined) {
+            addFact("anchor", anchor.value, node, undefined, level, undefined, false, heading)
+          }
         }
         inspect({ type: "root", children: childrenOf(node) } as Parent)
         return SKIP
@@ -1181,7 +1201,23 @@ export function analyzeSourceMarkdown(
   return { facts: coalesceTextFacts(facts), diagnostics, languages: [...languages].sort() }
 }
 
-function analyzeObservedMarkdown(markdown: string): ObservedAnalysis {
+function staticHeadingAnchor(node: Node): string | undefined {
+  if (node.type !== "mdxJsxTextElement" || (node as Node & { name?: string }).name !== "a") return undefined
+  const attributes = (node as Node & { attributes?: AstRecord[] }).attributes ?? []
+  if (
+    childrenOf(node).length !== 0 ||
+    attributes.length !== 1 ||
+    attributes[0].type !== "mdxJsxAttribute" ||
+    attributes[0].name !== "id" ||
+    typeof attributes[0].value !== "string" ||
+    !attributes[0].value
+  ) {
+    return undefined
+  }
+  return attributes[0].value
+}
+
+function analyzeObservedMarkdown(markdown: string, expectedAnchors: readonly SourceFact[] = []): ObservedAnalysis {
   let tree: Node
   try {
     tree = processor.parse(markdown)
@@ -1262,17 +1298,64 @@ function analyzeObservedMarkdown(markdown: string): ObservedAnalysis {
       : lineText(markdown.split(/\r?\n/), nodeLine(node))
   }
 
+  const isRuntimeNode = (node: Node): boolean =>
+    node.type === "html" ||
+    node.type === "mdxJsxFlowElement" ||
+    node.type === "mdxJsxTextElement" ||
+    node.type === "mdxFlowExpression" ||
+    node.type === "mdxTextExpression" ||
+    node.type === "mdxjsEsm"
+
+  const addResidual = (node: Node) => {
+    breakTextGroup(node)
+    residuals.push({
+      name:
+        node.type === "html"
+          ? "HTML"
+          : node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement"
+            ? String((node as Node & { name?: unknown }).name ?? "MDX")
+            : node.type,
+      line: nodeLine(node),
+      text: exactText(node),
+      reason: "Served Markdown contains residual runtime syntax",
+    })
+  }
+
   visit(tree, (node) => {
     if (node.type === "heading") {
       const value = normalizeText(nodeVisibleText(node))
       const depth = "depth" in node && typeof node.depth === "number" ? node.depth : undefined
       if (value) addFact({ kind: "heading", value, depth }, node)
-      visit(node, "link", (link) => {
-        const label = normalizeText(nodeVisibleText(link))
-        if (label) {
-          addFact({ kind: "link", value: label, url: String((link as Node & { url?: unknown }).url ?? "") }, link)
+
+      const anchors = new Map<Node, string>()
+      for (const child of childrenOf(node)) {
+        const id = staticHeadingAnchor(child)
+        if (
+          id !== undefined &&
+          expectedAnchors.some(
+            (anchor) =>
+              anchor.kind === "anchor" && anchor.value === id && anchor.heading === value && anchor.depth === depth
+          )
+        ) {
+          anchors.set(child, id)
         }
-        return SKIP
+      }
+
+      visit(node, (child) => {
+        const id = anchors.get(child)
+        if (id !== undefined) {
+          addFact({ kind: "anchor", value: id, heading: value, depth }, child)
+          return SKIP
+        }
+        if (child.type === "link") {
+          const label = normalizeText(nodeVisibleText(child))
+          if (label) {
+            addFact({ kind: "link", value: label, url: String((child as Node & { url?: unknown }).url ?? "") }, child)
+          }
+        } else if (isRuntimeNode(child)) {
+          addResidual(child)
+          return SKIP
+        }
       })
       return SKIP
     }
@@ -1297,26 +1380,8 @@ function analyzeObservedMarkdown(markdown: string): ObservedAnalysis {
       addFact({ kind: "text", value }, node, raw)
       return
     }
-    if (
-      node.type === "html" ||
-      node.type === "mdxJsxFlowElement" ||
-      node.type === "mdxJsxTextElement" ||
-      node.type === "mdxFlowExpression" ||
-      node.type === "mdxTextExpression" ||
-      node.type === "mdxjsEsm"
-    ) {
-      breakTextGroup(node)
-      residuals.push({
-        name:
-          node.type === "html"
-            ? "HTML"
-            : node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement"
-              ? String((node as Node & { name?: unknown }).name ?? "MDX")
-              : node.type,
-        line: nodeLine(node),
-        text: exactText(node),
-        reason: "Served Markdown contains residual runtime syntax",
-      })
+    if (isRuntimeNode(node)) {
+      addResidual(node)
       return SKIP
     }
   })
@@ -1329,6 +1394,7 @@ function factMatches(source: SourceFact, observed: ObservedFact): boolean {
     source.kind === observed.kind &&
     source.value === observed.value &&
     (source.kind !== "heading" || source.depth === observed.depth) &&
+    (source.kind !== "anchor" || (source.depth === observed.depth && source.heading === observed.heading)) &&
     (source.kind !== "link" || source.url === observed.url)
   )
 }
@@ -1409,6 +1475,7 @@ function factSemantic(fact: SourceFact): string {
     value: fact.value,
     ...(fact.url === undefined ? {} : { url: fact.url }),
     ...(fact.depth === undefined ? {} : { depth: fact.depth }),
+    ...(fact.heading === undefined ? {} : { heading: fact.heading }),
   })
 }
 
@@ -1464,7 +1531,10 @@ export function compareSourceToArtifact(
   const directiveIndex = servedLines.findIndex((line) => line === LLMS_DIRECTIVE)
   const servedBody = directiveIndex >= 0 ? servedLines.slice(directiveIndex + 1).join("\n") : artifact.markdown
   const servedLineOffset = directiveIndex >= 0 ? directiveIndex + 1 : 0
-  const observed = analyzeObservedMarkdown(servedBody)
+  const observed = analyzeObservedMarkdown(
+    servedBody,
+    analysis.facts.filter((fact) => fact.kind === "anchor")
+  )
   const findings: FidelityFinding[] =
     artifact.sourcePath && !path.isAbsolute(artifact.sourcePath)
       ? inspectNormalEnvelope(requestPath, sourcePath, source, artifact, servedLines, lang, exceptions)

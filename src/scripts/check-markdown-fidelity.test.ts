@@ -850,6 +850,120 @@ Repository description.
   })
 })
 
+describe("explicit anchored accordion IDs", () => {
+  const title = "4. Set the return format and fund the adapter"
+  const source = (attribute = 'anchorId="fund-the-adapter"', component = "AnchoredAccordion") =>
+    `<${component} title="Set the return format and fund the adapter" number={4} depth={3} ${attribute}>
+
+Fund the adapter. [Return to this step](#fund-the-adapter).
+
+</${component}>`
+  const output = (anchor = '<a id="fund-the-adapter"></a>') =>
+    `### ${title}${anchor ? ` ${anchor}` : ""}\n\nFund the adapter. [Return to this step](#fund-the-adapter).`
+  const compare = (input: string, markdown: string) =>
+    compareSourceToArtifact("fixture", "src/content/fixture.mdx", input, artifact(markdown))
+
+  test("inventories the exact anchor together with its heading and depth", () => {
+    const analysis = analyzeSourceMarkdown(source())
+    expect(analysis.facts).toContainEqual(
+      expect.objectContaining({ kind: "anchor", value: "fund-the-adapter", heading: title, depth: 3 })
+    )
+    const findings = compare(source(), output())
+    expect(blockingFindings("focused", findings)).toEqual([])
+    expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: "fund-the-adapter" }))
+  })
+
+  test.each(['anchorId={"fund-the-adapter"}', "anchorId={`fund-the-adapter`}"])(
+    "reads a static expression ID: %s",
+    (attribute) => {
+      expect(blockingFindings("focused", compare(source(attribute), output()))).toEqual([])
+    }
+  )
+
+  test.each(["", '<a id="wrong-step"></a>'])("detects a missing or changed ID: %s", (anchor) => {
+    const findings = compare(source(), output(anchor))
+    expect(findings).toContainEqual(expect.objectContaining({ status: "missing", expected: "fund-the-adapter" }))
+    expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: title }))
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "present", expected: "Return to this step -> #fund-the-adapter" })
+    )
+  })
+
+  test.each([
+    `${output("")}\n\n### Another step <a id="fund-the-adapter"></a>`,
+    `${output("")}\n\n## ${title} <a id="fund-the-adapter"></a>`,
+    `${output("")}\n\n<a id="fund-the-adapter"></a>`,
+  ])("rejects an ID placed on another heading or outside a heading", (markdown) => {
+    const findings = compare(source(), markdown)
+    expect(findings).toContainEqual(expect.objectContaining({ status: "missing", expected: "fund-the-adapter" }))
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "unverifiable", reason: "Served Markdown contains residual runtime syntax" })
+    )
+  })
+
+  test("decodes escaped attribute characters without changing the ID", () => {
+    const id = 'deploy&"quoted"<adapter>\\_safe'
+    const input = source(`anchorId={${JSON.stringify(id)}}`)
+    const markdown = output('<a id="deploy&amp;&quot;quoted&quot;&lt;adapter&gt;&#92;_safe"></a>')
+    const findings = compare(input, markdown)
+    expect(blockingFindings("focused", findings)).toEqual([])
+    expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: id }))
+  })
+
+  test.each(["anchorId={runtimeId}", "anchorId={getId()}", "anchorId={42}", "anchorId={null}", "anchorId"])(
+    "reports an unverifiable ID without losing the heading or body: %s",
+    (attribute) => {
+      const findings = compare(source(attribute), output(""))
+      expect(findings).toContainEqual(
+        expect.objectContaining({ status: "unverifiable", name: "AnchoredAccordion.anchorId" })
+      )
+      expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: title }))
+      expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: "Fund the adapter." }))
+      expect(analyzeSourceMarkdown(source(attribute)).facts.some((fact) => fact.kind === "anchor")).toBe(false)
+    }
+  )
+
+  test.each(["", 'anchorId=""', 'anchorId={""}'])("does not invent an ID for %s", (attribute) => {
+    expect(blockingFindings("focused", compare(source(attribute), output("")))).toEqual([])
+    expect(analyzeSourceMarkdown(source(attribute)).facts.some((fact) => fact.kind === "anchor")).toBe(false)
+  })
+
+  test("keeps ordinary Accordion behavior unchanged", () => {
+    expect(
+      blockingFindings("focused", compare(source('anchorId="fund-the-adapter"', "Accordion"), output("")))
+    ).toEqual([])
+    expect(
+      analyzeSourceMarkdown(source('anchorId="fund-the-adapter"', "Accordion")).facts.some(
+        (fact) => fact.kind === "anchor"
+      )
+    ).toBe(false)
+  })
+
+  test.each([
+    '<a id="fund-the-adapter" href="https://example.com"></a>',
+    '<a id="fund-the-adapter" onClick={runtimeHandler}></a>',
+    '<a id="fund-the-adapter">Visible runtime content</a>',
+    '<a id={"fund-the-adapter"}></a>',
+    '<a id="fund-the-adapter" {...runtimeProps}></a>',
+  ])("does not exempt unsafe or unrelated anchor HTML: %s", (anchor) => {
+    const findings = compare(source(), output(anchor))
+    expect(findings).toContainEqual(expect.objectContaining({ status: "missing", expected: "fund-the-adapter" }))
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "unverifiable", reason: "Served Markdown contains residual runtime syntax" })
+    )
+  })
+
+  test.each(['<a id="unrelated"></a>', "<UnknownWidget />", "{runtimeValue}"])(
+    "reports unexpected runtime syntax inside an ordinary heading: %s",
+    (runtime) => {
+      const findings = compare("## Visible heading", `## Visible heading ${runtime}`)
+      expect(findings).toContainEqual(
+        expect.objectContaining({ status: "unverifiable", reason: "Served Markdown contains residual runtime syntax" })
+      )
+    }
+  )
+})
+
 test("checks unordered lists inside callouts without requiring artificial separators", () => {
   const source = `<Aside type="caution" title="Important">
 <ul>

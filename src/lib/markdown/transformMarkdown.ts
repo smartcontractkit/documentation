@@ -419,6 +419,22 @@ export async function transformMarkdown(
         // A replaced node is detached. Traverse its replacement instead of mutating its old children.
         return typeof nextIndex === "number" ? ([SKIP, nextIndex] as [typeof SKIP, number]) : undefined
       })
+      // Materialize generated anchors after projection, which continues to drop source HTML.
+      visit(tree, "heading", (node) => {
+        const heading = node as Parent
+        const anchorId = (heading.data as { markdownAnchorId?: unknown } | undefined)?.markdownAnchorId
+        if (typeof anchorId !== "string") return
+        const escapedId = anchorId
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\\/g, "&#92;")
+        heading.children.push(
+          { type: "text", value: " " } as Literal,
+          { type: "html", value: `<a id="${escapedId}"></a>` } as Literal
+        )
+      })
     })
     .use(remarkStringify, {
       fences: true,
