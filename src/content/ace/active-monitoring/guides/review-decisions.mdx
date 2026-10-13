@@ -1,0 +1,164 @@
+---
+section: ace
+title: "Review Decisions and Track Operations"
+date: Last Modified
+metadata:
+  description: "Read the Chainlink ACE Active Monitoring Decisions log, open a decision, resolve or enforce a flagged decision, and track its operation, using the Platform UI or the Coordinator API."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside, MethodTabs } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+A **decision** is the record Active Monitoring keeps when a monitoring rule matches a risk event for an address on one network. This guide covers four operations: list decisions, open one, resolve or enforce a flagged decision, and track the operation behind an enforced decision. For the outcomes and the evidence a decision keeps, see [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit).
+
+Most decisions need nothing from you: a **silently logged** decision is a record only, and an **enforced** decision already ran its action. You act on **flagged** decisions, which wait for a person to review the address. You can then resolve the decision, or enforce an action yourself.
+
+## Prerequisites
+
+- Screening is running, and at least one risk event matched a rule. See [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
+- To resolve or enforce a flagged decision, a signed-in user. These two actions are available in the Platform UI only.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
+
+## List decisions
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring**. The **Decisions log** tab opens first. Under the title, **Last screened … | Updates every … hrs** shows when the watchlist was last screened and the screening interval.
+    1. Read the table. Each row is one decision:
+
+       | Column             | Content                                                                              |
+       | ------------------ | ------------------------------------------------------------------------------------ |
+       | Screened address   | The address that TRM screened.                                                       |
+       | Primary token      | The monitored token whose rule matched.                                              |
+       | Network            | The network of the decision.                                                         |
+       | TRM score          | The risk level and score.                                                            |
+       | Decision           | The outcome. For an enforced decision, the function that was called.                 |
+       | Operation status   | The latest status of the operation, or a dash when there is none.                    |
+
+    1. Narrow the list with the filters **Token**, **Network**, **TRM score**, and **Decision**. The search box filters the addresses on the current page.
+
+    A decision appears when its rule matches. A rule that does not match creates no row.
+
+  </Fragment>
+  <Fragment slot="api">
+    List decisions with `GET /active-monitoring/decision-logs`. All filters are optional and combine:
+
+    ```bash
+    curl "https://ace.api.chain.link/v1/active-monitoring/decision-logs?trm_risk_level=severe&chain_selector=16015286601757825753&page=1&page_size=25" \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    | Parameter                 | Filters by                                                                            |
+    | ------------------------- | ------------------------------------------------------------------------------------- |
+    | `chain_selector`          | The network of the decision.                                                          |
+    | `rule_group_id`           | The monitoring rule.                                                                  |
+    | `primary_token`           | The `id` of the primary contract of the monitored token.                              |
+    | `decision_output`         | The outcome: `flagged_for_review`, `auto_enforced_onchain_action`, `silently_logged`, `manual_enforced_onchain_action`, or `user_ignored`. |
+    | `onchain_action_status`   | The latest status of the operation, for example `failed`.                             |
+    | `trm_risk_level`          | `severe`, `high`, `medium`, `low`, or `unknown`.                                      |
+
+    The response contains `decision_logs`, pagination fields, and `screening`, which holds `last_screened_at` and `interval_hours`. In the list, each `trm_event` payload contains only `address` and `risk_level`.
+
+  </Fragment>
+</MethodTabs>
+
+## Open a decision
+
+<MethodTabs>
+  <Fragment slot="ui">
+    Click a row. The page title shows the outcome, and the **Decision summary** panel repeats the screened address, the primary token, the network, the outcome, the time, and the operation status. The **Decision details** tab has four cards:
+
+    - **Trigger · TRM**: the screened address, the TRM risk score, when it was screened, and the top risk category with the number of others.
+    - **Rule · Matched**: the response that matched, and each condition marked **Condition met** or **Condition not met**. A balance condition shows the balance read and the block it was read at.
+    - **Action**: for an enforced decision, the contract, the function, the value of each argument, and the operation ID. For a resolved decision, the reason and who resolved it.
+    - **Operations activity**: each status of the operation with its time.
+
+    The **TRM raw data** tab shows the complete TRM response for the address.
+
+  </Fragment>
+  <Fragment slot="api">
+    Get a decision with `GET /active-monitoring/decision-logs/{decision_log_id}`, where `decision_log_id` is the `id` from the list:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/active-monitoring/decision-logs/<DECISION_LOG_ID> \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    The response contains the outcome in `output`, the `input_events` (the TRM result with `raw_response`, and the balance reading when there is one), the `condition_runs`, the `enforced_actions`, and the `activity_history`. An enforced action holds the `activity_history` of its operation, its `crec_operation_id`, and its `transaction_hash` once the hash is known.
+
+  </Fragment>
+</MethodTabs>
+
+## Resolve a flagged decision
+
+Resolve a flagged decision when you review it and decide that no onchain action is needed. The decision closes, and your reason is recorded with your name.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. Open a decision with the outcome **Flag for review** or **No balance - flag for review**.
+    1. Click **Resolve**.
+    1. Enter a **Reason**. It is required, and your team can read it later.
+    1. Click **Resolve alert**.
+
+    The outcome becomes **Resolved**.
+
+  </Fragment>
+  <Fragment slot="api">
+    <Aside type="note" title="Platform UI only">
+      Resolving a flagged decision is available in the Platform UI only. The record names the person who resolves the decision, so the action requires a signed-in user. A request authenticated with an API key returns `400`.
+    </Aside>
+
+  </Fragment>
+</MethodTabs>
+
+## Enforce an action on a flagged decision
+
+Enforce an action when you decide that the address needs an onchain action. You choose the function and the values, and Active Monitoring creates the operation on the network of the decision.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. Open a decision with the outcome **Flag for review** or **No balance - flag for review**.
+    1. Click **Enforce action**. The **Create operation** panel opens for the screened address and the network.
+    1. In **Enforce on**, select a contract that is deployed on this network.
+    1. In **Enforcement function**, select the function.
+    1. In **Parameter mapping**, select a value for each argument: **Screened address**, **Balance** when this decision has a balance reading, or **Other** to type a value. The panel sends the current value of the source you select.
+    1. Click **Enforce action**.
+
+    The outcome becomes the function signature, and the decision shows the operation. The Platform UI creates one operation for each **Enforce action**.
+
+  </Fragment>
+  <Fragment slot="api">
+    <Aside type="note" title="Platform UI only">
+      Enforcing an action on a flagged decision is available in the Platform UI only. The record names the person who enforces the action, so the action requires a signed-in user. A request authenticated with an API key returns `400`.
+    </Aside>
+
+  </Fragment>
+</MethodTabs>
+
+## Track an operation
+
+Each enforced decision links to an operation. Its status moves forward until it is final:
+
+| Status                | Meaning                                                                          |
+| --------------------- | -------------------------------------------------------------------------------- |
+| **Submitted**         | Active Monitoring created the operation.                                         |
+| **Sending**           | The operation is being sent to CRE Connect.                                      |
+| **Pending signature** | The operation waits for your signer. This status appears only with self-signing. |
+| **Executing**         | The operation is signed and executing onchain.                                   |
+| **Success**           | The operation is confirmed onchain.                                              |
+| **Failed**            | The operation failed. The most common cause is a missing onchain role.           |
+
+In the Platform UI, the status is in the **Operation status** column and in **Operations activity**. In the API, it is in `activity_history` of each enforced action, and `transaction_hash` holds the hash once the transaction is known.
+
+**Pending signature** means your signer must approve the operation before it runs. See [Signing and Ownership Model](/ace/concepts/signing-ownership#signing-in-active-monitoring) for how you sign.
+
+If an operation fails, open the decision. The **Action · Enforcement failed** card shows the CRE Connect operation ID, which you can use to see what happened. Then fix the cause, and enforce the action again from a flagged decision, or wait for the next risk event on that address. See [Troubleshoot Active Monitoring](/ace/active-monitoring/guides/troubleshooting).
+
+## Next steps
+
+- [Troubleshoot Active Monitoring](/ace/active-monitoring/guides/troubleshooting): why a decision is missing, stuck, or failed.
+- [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values): every outcome and status value.

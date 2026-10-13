@@ -1,0 +1,217 @@
+---
+section: ace
+title: "Manage Monitored Tokens"
+date: Last Modified
+metadata:
+  description: "Register a token and its associated contract with Chainlink ACE Active Monitoring, and view monitored tokens, using the Platform UI or the Coordinator API."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside, MethodTabs } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+A **monitored token** is a token contract you register with Active Monitoring, optionally with associated contracts that enforcement actions can run on. This guide covers the two operations available for monitored tokens: register one, and view them. After you register a token, you [configure a monitoring rule](/ace/active-monitoring/guides/configure-monitoring-rules) for it.
+
+## Prerequisites
+
+- A [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) on every network where the token runs. Only these networks are offered.
+- The token address on each network, and the JSON ABI of the token. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+- If enforcement runs on a separate contract, its address on every network of the token and its ABI.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
+
+## Register a monitored token
+
+A monitored token has a **primary** contract, which is your token, and optionally one or more **associated** contracts. You select the **enforcement functions** of each contract: the functions that Active Monitoring may call when a rule enforces an action. In most cases the token itself has the functions you need, such as `freezePartialTokens`, so you register the primary contract alone. Add an associated contract only when an action must run on a different contract, for example a separate blocklist that your token does not call.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring** and open the **Monitoring configuration** tab.
+    1. In **Monitored tokens**, click **Add token**.
+    1. In the **Primary token** step, complete the fields:
+       - **Name**: the name shown in the Platform and in the Decisions log.
+       - **Token address**: select one or more networks, then enter the address. Click **Add address** to register a different address on other networks. A network can appear once.
+       - **Token ABI (JSON)**: upload the ABI file.
+       - **Enforcement functions**: select the write functions Active Monitoring is allowed to call. Read functions are registered automatically.
+       - **Decimals**: the token's decimals, used to display balances.
+    1. Click **Next**. In the **Associated contract (optional)** step, add a contract only if an enforcement action must run on a contract other than the primary token. The networks are the same as the primary token and cannot be changed. Enter the contract address for each network, upload its ABI, and select its enforcement functions. Leave the step empty to skip it. The Platform UI registers one associated contract. To register several, use the API.
+    1. Click **Next**, review the details, and click **Add token**.
+
+    The token appears in **Monitored tokens** with the tag **Missing rule** until you configure a monitoring rule.
+
+    <Aside type="note" title="ACE wallets need access to the functions">
+      The wizard reminds you that ACE wallets must have access to the selected enforcement functions. Without the role, enforcements revert onchain. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+    </Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+    Create a monitored token with a `POST` request to `/active-monitoring/contract-groups`. Send one contract with `role` set to `primary`, and optionally one or more with `role` set to `associated`.
+
+    The following request registers a token together with an associated contract. Keep the part that matches your setup:
+
+    - The primary contract is the token. It has `balanceOf`, a read function that balance conditions use, and two enforcement functions, `freezePartialTokens` and `setAddressFrozen`.
+    - The associated contract is an example blocklist with one enforcement function, `addBlacklist`. Remove this object from `contracts` to register the token alone.
+    - Both contracts are registered on Ethereum Sepolia and Arbitrum Sepolia. Chain selectors come from [Supported Networks](/ace/supported-networks). The addresses are placeholders.
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/contract-groups \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "contracts": [
+          {
+            "title": "Example Treasury Fund",
+            "role": "primary",
+            "onchain_contracts": [
+              { "chain_selector": "16015286601757825753", "address": "0x1111111111111111111111111111111111111111" },
+              { "chain_selector": "3478487238524512106", "address": "0x2222222222222222222222222222222222222222" }
+            ],
+            "functions": [
+              {
+                "func_abi": {
+                  "type": "function",
+                  "name": "balanceOf",
+                  "stateMutability": "view",
+                  "inputs": [{ "name": "_userAddress", "type": "address" }],
+                  "outputs": [{ "name": "", "type": "uint256" }]
+                }
+              },
+              {
+                "func_abi": {
+                  "type": "function",
+                  "name": "freezePartialTokens",
+                  "stateMutability": "nonpayable",
+                  "inputs": [
+                    { "name": "_userAddress", "type": "address" },
+                    { "name": "_amount", "type": "uint256" }
+                  ],
+                  "outputs": []
+                }
+              },
+              {
+                "func_abi": {
+                  "type": "function",
+                  "name": "setAddressFrozen",
+                  "stateMutability": "nonpayable",
+                  "inputs": [
+                    { "name": "_userAddress", "type": "address" },
+                    { "name": "_freeze", "type": "bool" }
+                  ],
+                  "outputs": []
+                }
+              }
+            ],
+            "metadata": { "token_decimals": 6 }
+          },
+          {
+            "title": "Example Blocklist",
+            "role": "associated",
+            "onchain_contracts": [
+              { "chain_selector": "16015286601757825753", "address": "0x3333333333333333333333333333333333333333" },
+              { "chain_selector": "3478487238524512106", "address": "0x4444444444444444444444444444444444444444" }
+            ],
+            "functions": [
+              {
+                "func_abi": {
+                  "type": "function",
+                  "name": "addBlacklist",
+                  "stateMutability": "nonpayable",
+                  "inputs": [
+                    { "name": "account", "type": "address" },
+                    { "name": "reason", "type": "string" }
+                  ],
+                  "outputs": []
+                }
+              }
+            ]
+          }
+        ]
+      }'
+    ```
+
+    | Field                    | Required | Description                                                                                                       |
+    | ------------------------ | -------- | ----------------------------------------------------------------------------------------------------------------- |
+    | `contracts`              | Yes      | Exactly one contract with `role` `primary`, and zero or more with `role` `associated`.                            |
+    | `title`                  | Yes      | Name of the contract. Titles must be unique within the request.                                                   |
+    | `onchain_contracts`      | Yes      | One entry per network: `chain_selector` and `address`. Each network needs a created CRE Connect Wallet.          |
+    | `functions`              | Yes      | One `func_abi` per function, in the JSON ABI format of your compiler. See the note below.                         |
+    | `metadata.token_decimals`| No       | Decimals of the primary token. Used to display balances in token units. The Platform UI always sets it.           |
+
+    <Aside type="caution" title="Every write function you send becomes callable">
+      In the API, the `functions` array is the list of functions Active Monitoring can call. Send every read function you need, such as `balanceOf(address)`, and only the write functions you want to enforce. The API has no separate selection step like the Platform UI.
+    </Aside>
+
+    The response returns the monitored token. `group_id` is the `id` of the primary contract. Keep it, and the `func_id` of each function: a monitoring rule refers to them.
+
+    ```json
+    {
+      "group_id": "5b0f0c3e-6d1a-4f43-8e0a-1d6f3f3a9a10",
+      "active_rule_group": null,
+      "contracts": [
+        {
+          "id": "5b0f0c3e-6d1a-4f43-8e0a-1d6f3f3a9a10",
+          "title": "Example Treasury Fund",
+          "role": "primary",
+          "created_at": 1790000000,
+          "updated_at": 1790000000,
+          "onchain_contracts": [
+            { "chain_selector": "16015286601757825753", "address": "0x1111111111111111111111111111111111111111" },
+            { "chain_selector": "3478487238524512106", "address": "0x2222222222222222222222222222222222222222" }
+          ],
+          "functions": [
+            {
+              "func_id": "c1b4a9f2-3c55-4f57-9a8e-2b7f0d3e6a11",
+              "func_abi": { "type": "function", "name": "freezePartialTokens" }
+            }
+            // ... one entry per function, with the full func_abi
+          ],
+          "metadata": { "token_decimals": 6 }
+        }
+        // ... the associated contract, with "role": "associated"
+      ]
+    }
+    ```
+
+    The request fails with `400` when a network has no created CRE Connect Wallet for your organization, and with `409` when a title, a function, or an address on a network is already registered.
+
+  </Fragment>
+</MethodTabs>
+
+## View monitored tokens
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring** and open **Monitoring configuration**. **Monitored tokens** lists one card per token with its addresses, its networks, the tag **Active rule** or **Missing rule**, and the number of associated contracts.
+    1. Click a card to open the token page. The **Token details** panel shows the name, the address on each network, and the status. **Monitoring rule** shows the decision logic, and **Associated contracts** lists each associated contract with its functions.
+
+  </Fragment>
+  <Fragment slot="api">
+    List monitored tokens with `GET /active-monitoring/contract-groups`. Use `page` and `page_size` (up to 100) to paginate:
+
+    ```bash
+    curl "https://ace.api.chain.link/v1/active-monitoring/contract-groups?page=1&page_size=25" \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    Each item contains `active_rule_group`: the header of the active monitoring rule, or `null` when the token has none.
+
+    Retrieve one monitored token with the `group_id` returned at registration. The ID of an associated contract returns `404`:
+
+    ```bash
+    curl https://ace.api.chain.link/v1/active-monitoring/contract-groups/<GROUP_ID> \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+## Edit or remove a monitored token
+
+You cannot edit or remove a monitored token after you register it. Check the addresses, networks, and ABI before you submit.
+
+## Next steps
+
+- [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules): choose what happens for each risk score.
+- [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist): add the addresses to screen.

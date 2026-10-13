@@ -57,13 +57,10 @@ For all supported schedules, please refer to the [cron library documentation](ht
 
 ## Direct request jobs
 
-<Aside type="caution" title="Deprecation">
-  After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Direct Request and Run Log job
-  types. These job types will no longer be supported in Chainlink node releases. Node operators and developers that
-  continue to rely on them can choose to remain on the last compatible release, but should not expect ongoing
-  development support, including maintenance, bug fixes, security patches, or compatibility with future releases. Teams
-  using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an
-  alternative.
+<Aside type="caution" title="Not supported">
+  The `directrequest` job type is not supported in this node. The node fails the job with `job type "directrequest" has
+  been removed and is no longer supported`, so a spec with `type = "directrequest"` does not start. The node has no
+  replacement job type for it. The spec format below is kept for reference.
 </Aside>
 
 Executes a job upon receipt of an explicit request made by a user. The request is detected via a log emitted by an Oracle or Operator contract. This is similar to the legacy ethlog/runlog style of jobs.
@@ -173,13 +170,10 @@ Using an _existing_ Oracle Job makes your smart contract code more succinct. Let
 
 ## Flux Monitor Jobs
 
-<Aside type="caution" title="Deprecation">
-  After Chainlink Node version 2.47, Chainlink is deprecating support for the legacy Flux Monitor, Direct Request, and
-  Run Log job types. These job types will no longer be supported in Chainlink node releases. Node operators and
-  developers that continue to rely on them can choose to remain on the last compatible release, but should not expect
-  ongoing development support, including maintenance, bug fixes, security patches, or compatibility with future
-  releases. Teams using these legacy job types should begin planning to upgrade to the [Chainlink Runtime Environment
-  (CRE)](/cre) as an alternative.
+<Aside type="caution" title="Not supported">
+  The `fluxmonitor` job type is not supported in this node. The node fails the job with `job type "fluxmonitor" has been
+  removed and is no longer supported`, so a spec with `type = "fluxmonitor"` does not start. The node has no replacement
+  job type for it. The spec format below is kept for reference.
 </Aside>
 
 The Flux Monitor job type is for continually-updating data feeds that aggregate responses from multiple oracles. The oracles servicing the feed submit rounds based on several triggers:
@@ -257,6 +251,11 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 
 ## Keeper jobs
 
+<Aside type="caution" title="Not supported">
+  The `keeper` job type is not supported in this node. The node does not register it as a job type, so a spec with `type
+  = "keeper"` does not start. The node has no replacement job type for it. The spec format below is kept for reference.
+</Aside>
+
 Keeper jobs occasionally poll a smart contract method that expresses whether something in the contract is ready for some onchain action to be performed. When it's ready, the job executes that onchain action.
 
 Examples:
@@ -293,7 +292,7 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 
 Offchain Reporting (OCR) jobs are used very similarly to Flux Monitor jobs. They update data feeds with aggregated data from many Chainlink oracle nodes. However, they do this aggregation using a cryptographically-secure offchain protocol that makes it possible for only a single node to submit all answers from all participating nodes during each round (with proofs that the other nodes' answers were legitimately provided by those nodes), which saves a significant amount of gas.
 
-Offchain reporting jobs require the `FEATURE_OFFCHAIN_REPORTING=true` environment variable.
+The node starts `offchainreporting` jobs only when `OCR.Enabled` is `true`. The default is `false`, and the node then logs `Off-chain reporting disabled` and registers no delegate.
 
 ### Bootstrap node
 
@@ -417,19 +416,18 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 
 ## Webhook Jobs
 
-<Aside type="caution" title="Deprecation">
-  After Chainlink Node version 2.49, Chainlink is deprecating support for the legacy Webhook job type. This job type
-  will no longer be supported in Chainlink node releases. Node operators and developers that continue to rely on it can
-  choose to remain on the last compatible release, but should not expect ongoing development support, including
-  maintenance, bug fixes, security patches, or compatibility with future releases. Teams using this legacy job type
-  should begin planning to upgrade to the [Chainlink Runtime Environment (CRE)](/cre) as an alternative.
+<Aside type="caution" title="Not supported">
+  The `webhook` job type is not supported in this node. The node fails the job with `job type "webhook" has been removed
+  and is no longer supported`, so a spec with `type = "webhook"` does not start. The node has no replacement job type
+  for it. The spec format below is kept for reference.
 </Aside>
 
 Webhook jobs can be initiated by HTTP request, either by a user or external initiator.
 
 <Aside type="note">
   <p>
-    You must have `ExternalInitiatorsEnabled = true` in your config to enable these jobs. See{" "}
+    The `ExternalInitiatorsEnabled` config key is unused. It is retained for the legacy external initiator feature that
+    fed the `webhook` job type. See{" "}
     <a href="/chainlink-nodes/v1/node-config#externalinitiatorsenabled">ExternalInitiatorsEnabled</a> in the config
     reference for details.
   </p>
@@ -472,3 +470,392 @@ See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
 - `$(jobSpec.name)`: the local name of the job.
 - `$(jobRun.meta)`: a map of metadata that can be sent to a bridge, etc.
 - `$(jobRun.requestBody)`: the body of the request that initiated the job run.
+
+## VRF jobs
+
+The `vrf` job type watches a VRF coordinator contract for randomness requests and fulfills them by submitting the verifiable random proof. It covers both VRF v2 and VRF v2plus. The job pipeline uses the [VRF V2 task](/chainlink-nodes/oracle-jobs/all-tasks/#vrf-v2-task) or [VRF V2Plus task](/chainlink-nodes/oracle-jobs/all-tasks/#vrf-v2plus-task) to generate the proof.
+
+### Spec format
+
+```toml
+type                     = "vrf"
+schemaVersion            = 1
+name                     = "VRF"
+coordinatorAddress       = "0x..."
+evmChainID               = "1"
+minIncomingConfirmations = 3
+publicKey                = "0x..."
+fromAddresses            = ["0x1111111111111111111111111111111111111111"]
+pollPeriod               = "5s"
+observationSource        = """
+decode_log   [type=ethabidecodelog
+              abi="RandomWordsRequested(bytes32 indexed keyHash,uint256 requestId,uint256 preSeed,uint64 indexed subId,uint16 minimumRequestConfirmations,uint32 callbackGasLimit,uint32 numWords,address indexed sender)"
+              data="$(jobRun.logData)"
+              topics="$(jobRun.logTopics)"]
+vrf          [type=vrfv2
+              publicKey="$(jobSpec.publicKey)"
+              requestBlockHash="$(jobRun.logBlockHash)"
+              requestBlockNumber="$(jobRun.logBlockNumber)"
+              topics="$(jobRun.logTopics)"]
+estimate_gas [type=estimategaslimit
+              to="0x..."
+              multiplier="1.1"
+              data="$(vrf.output)"]
+simulate     [type=ethcall
+              to="0x..."
+              gas="$(estimate_gas)"
+              gasPrice="$(jobSpec.maxGasPrice)"
+              extractRevertReason=true
+              contract="0x..."
+              data="$(vrf.output)"]
+decode_log -> vrf -> estimate_gas -> simulate
+"""
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `coordinatorAddress`: the address of the VRF coordinator contract to watch for requests.
+- `publicKey`: the public key of the VRF key that this job uses to generate proofs.
+- `minIncomingConfirmations`: the minimum number of block confirmations before a request is fulfilled.
+- `evmChainID`: the chain ID of the EVM chain in which the job will operate.
+- `fromAddresses`: one or more addresses from which to submit fulfillment transactions. If left blank, a random address is selected on every send for the given chain ID.
+- `pollPeriod`: how often the job polls for new VRF requests.
+- `requestedConfsDelay`: optional. The number of blocks to wait, in addition to `minIncomingConfirmations`, before fulfilling a request. Defaults to `0`.
+- `requestTimeout`: optional. The timeout for a request. Defaults to 24 hours.
+- `gasLanePrice`: optional. The gas lane price for this job. If the keys in `fromAddresses` do not have the given gas price, the job does not start.
+- `chunkSize`: optional. The number of pending VRF v2 requests to process in parallel. Defaults to `20`.
+- `backoffInitialDelay`: the amount of time to wait before retrying a failed request after the first failure.
+- `backoffMaxDelay`: the maximum amount of time to wait before retrying a failed request.
+- `batchCoordinatorAddress`: the address of the batch VRF coordinator to use. Required if `batchFulfillmentEnabled` is `true`.
+- `batchFulfillmentEnabled`: whether the job uses the batch VRF coordinator to fulfill requests.
+- `batchFulfillmentGasMultiplier`: the multiplier used to determine the final gas estimate for batch fulfillment.
+- `customRevertsPipelineEnabled`: whether the job runs the custom reverted transactions pipeline alongside the VRF listener.
+- `vrfOwnerAddress`: the address of the `VRFOwner` contract to use. VRF v2 only.
+
+### Job type specific pipeline variables
+
+- `$(jobSpec.publicKey)`: the public key of the VRF key that this job uses.
+- `$(jobSpec.maxGasPrice)`: the maximum gas price configured for the job.
+- `$(jobRun.logBlockHash)`: the block hash in which the initiating log was received.
+- `$(jobRun.logBlockNumber)`: the block number in which the initiating log was received.
+- `$(jobRun.logTopics)`: the log's topics (`indexed` fields).
+
+## Blockhash store jobs
+
+The `blockhashstore` job type watches VRF coordinator contracts for unfulfilled requests and stores the blockhashes they need into a `BlockhashStore` contract. This lets a request still be fulfilled after its request block leaves the EVM blockhash window.
+
+### Spec format
+
+```toml
+type                         = "blockhashstore"
+schemaVersion                = 1
+name                         = "blockhashstore"
+coordinatorV2Address         = "0x..."
+waitBlocks                   = 59
+lookbackBlocks               = 159
+blockhashStoreAddress        = "0x..."
+trustedBlockhashStoreAddress = "0x..."
+trustedBlockhashStoreBatchSize = 20
+heartbeatPeriod              = "1h"
+pollPeriod                   = "23s"
+runTimeout                   = "10s"
+evmChainID                   = "1"
+fromAddresses                = ["0x1111111111111111111111111111111111111111"]
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `coordinatorV1Address`: a legacy VRF v1 field, kept for API and database compatibility. Non-zero values are rejected at spec validation.
+- `coordinatorV2Address`: the VRF v2 coordinator to watch for unfulfilled requests. If empty, no v2 coordinator is watched.
+- `coordinatorV2PlusAddress`: the VRF v2plus coordinator to watch for unfulfilled requests. If empty, no v2plus coordinator is watched.
+- `waitBlocks`: the minimum age of blocks whose hashes should be stored.
+- `lookbackBlocks`: the maximum age of blocks whose hashes should be stored.
+- `blockhashStoreAddress`: the address of the `BlockhashStore` contract to store blockhashes into.
+- `trustedBlockhashStoreAddress`: the address of the trusted `BlockhashStore` contract to store blockhashes into.
+- `trustedBlockhashStoreBatchSize`: the number of blockhashes to store in a single batch.
+- `heartbeatPeriod`: the period at which a blockhash is stored into the blockhash store contract even when nothing needs it, so that a blockhash is always available to anchor to.
+- `pollPeriod`: how often recent blocks are scanned for blockhash storage.
+- `runTimeout`: the timeout for a single run of the blockhash store feeder.
+- `evmChainID`: the chain ID for monitoring and storing blockhashes.
+- `fromAddresses`: the sender addresses used to store blockhashes.
+
+## Block header feeder jobs
+
+The `blockheaderfeeder` job type stores blockhashes for a batch of recent blocks into a `BatchBlockhashStore` contract, so that blockhashes remain available after the EVM blockhash window.
+
+### Spec format
+
+```toml
+type                       = "blockheaderfeeder"
+schemaVersion              = 1
+name                       = "blockheaderfeeder"
+coordinatorV2Address       = "0x..."
+waitBlocks                 = 59
+lookbackBlocks             = 159
+blockhashStoreAddress      = "0x..."
+batchBlockhashStoreAddress = "0x..."
+getBlockhashesBatchSize    = 20
+storeBlockhashesBatchSize  = 20
+pollPeriod                 = "23s"
+runTimeout                 = "10s"
+evmChainID                 = "1"
+fromAddresses              = ["0x1111111111111111111111111111111111111111"]
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `coordinatorV1Address`: a legacy VRF v1 field, kept for API and database compatibility. Non-zero values are rejected at spec validation.
+- `coordinatorV2Address`: the VRF v2 coordinator to watch for unfulfilled requests. If empty, no v2 coordinator is watched.
+- `coordinatorV2PlusAddress`: the VRF v2plus coordinator to watch for unfulfilled requests. If empty, no v2plus coordinator is watched.
+- `waitBlocks`: the minimum age of blocks whose hashes should be stored.
+- `lookbackBlocks`: the maximum age of blocks whose hashes should be stored.
+- `blockhashStoreAddress`: the address of the `BlockhashStore` contract to store blockhashes into.
+- `batchBlockhashStoreAddress`: the address of the `BatchBlockhashStore` contract to store blockhashes into.
+- `getBlockhashesBatchSize`: the RPC call batch size for retrieving blockhashes.
+- `storeBlockhashesBatchSize`: the RPC call batch size for storing blockhashes.
+- `pollPeriod`: how often recent blocks are scanned for blockhash storage.
+- `runTimeout`: the timeout for a single run of the block header feeder.
+- `evmChainID`: the chain ID for monitoring and storing blockhashes.
+- `fromAddresses`: the sender addresses used to store blockhashes.
+
+## Offchain reporting 2 jobs
+
+Offchain Reporting 2 (OCR2) jobs use the second generation of the offchain reporting protocol. The job type is `offchainreporting2`. The protocol details, such as the plugin that consumes the reports, are selected by the job itself rather than by the node.
+
+The node starts `offchainreporting2` jobs only when `OCR2.Enabled` is `true`. The default is `false`, and the node then logs `Off-chain reporting v2 disabled`.
+
+### Spec format
+
+```toml
+type               = "offchainreporting2"
+schemaVersion      = 1
+name               = "OCR2: ETH/USD"
+relay              = "evm"
+contractID         = "0x613a38AC1659769640aaE063C651F48E0250454C"
+p2pv2Bootstrappers = ["12D3KooWApUJaQB2saFjyEUfq6BmysnsSnhLnY5CF9tURYVKgoXK@10.0.0.1:9999"]
+transmitterID      = "0xF67D0290337bca0847005C7ffD1BC75BA9AAE6e4"
+pluginType         = "median"
+observationSource  = """
+    ds          [type=http method=GET url="https://chain.link/ETH-USD"];
+    ds_parse    [type=jsonparse path="data.price" separator="."];
+    ds_multiply [type=multiply times=100];
+    ds -> ds_parse -> ds_multiply;
+"""
+
+[relayConfig]
+chainID = "1"
+
+[pluginConfig]
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `relay`: the relay identifier in `RelayID.Network` form, for example `evm`.
+- `contractID`: the address of the contract that the DON reports on.
+- `feedID`: optional. The feed ID that the job reports on.
+- `chainID`: the chain ID. This field is deprecated in favor of the `chainID` key inside `relayConfig`.
+- `relayConfig`: relay-specific configuration.
+- `p2pv2Bootstrappers`: a list of `peer_id@ip_address:port` strings that identify the bootstrap nodes of the P2P network.
+- `ocrKeyBundleID`: the OCR key bundle that this node uses to sign reports.
+- `transmitterID`: the address from which to submit aggregated reports.
+- `monitoringEndpoint`: the URL of the telemetry endpoint to send OCR metrics to.
+- `blockchainTimeout`: the maximum duration to wait before an onchain request for data is considered to be failed or unfulfillable.
+- `contractConfigTrackerPollInterval`: the interval at which to proactively poll the onchain config for changes.
+- `contractConfigConfirmations`: the number of blocks to wait after an onchain config change before considering it worthy of acting upon.
+- `onchainSigningStrategy`: the strategy used to select the onchain signing key.
+- `pluginType`: the OCR2 plugin that consumes the reports, for example `median`.
+- `pluginConfig`: plugin-specific configuration.
+- `captureEATelemetry`: whether to capture telemetry for the external adapter calls made by the pipeline.
+- `allowNoBootstrappers`: whether the job may start without any bootstrappers. Useful where the node is not configured to conduct consensus.
+
+## Bootstrap jobs
+
+A `bootstrap` job configures a node as a bootstrap peer. A bootstrap node does not take part in the aggregation protocol; it lets the other nodes of a DON find one another. The `bootstrap` job type is used for OCR2, CCIP, and other DONs that use the offchain reporting protocol.
+
+The node starts `bootstrap` jobs only when `OCR2.Enabled` is `true`. The default is `false`.
+
+### Spec format
+
+```toml
+type               = "bootstrap"
+schemaVersion      = 1
+name               = "bootstrap"
+relay              = "evm"
+contractID         = "0x613a38AC1659769640aaE063C651F48E0250454C"
+
+[relayConfig]
+chainID = "1"
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `relay`: the relay identifier in `RelayID.Network` form, for example `evm`.
+- `contractID`: the contract that the DON reports on.
+- `feedID`: optional. The feed ID that the DON reports on.
+- `relayConfig`: relay-specific configuration.
+- `monitoringEndpoint`: the URL of the telemetry endpoint to send OCR metrics to.
+- `blockchainTimeout`: the maximum duration to wait before an onchain request for data is considered to be failed or unfulfillable.
+- `contractConfigTrackerPollInterval`: the interval at which to proactively poll the onchain config for changes.
+- `contractConfigConfirmations`: the number of blocks to wait after an onchain config change before considering it worthy of acting upon.
+
+## Stream jobs
+
+A `stream` job runs a pipeline on demand and publishes the results to a Data Streams feed. Each run must produce at least one stream ID, either from the top-level `streamID` field or from a `streamID` tag on a task in the pipeline.
+
+### Spec format
+
+```toml
+type              = "stream"
+schemaVersion     = 1
+name              = "ETH-USD stream"
+streamID          = 1234
+observationSource = """
+    ds          [type=http method=GET url="https://chain.link/ETH-USD"];
+    ds_parse    [type=jsonparse path="data.price" separator="."];
+    ds_multiply [type=multiply times=100];
+    ds -> ds_parse -> ds_multiply;
+"""
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `streamID`: optional. The stream ID that receives the final output of the pipeline run. Tasks in the pipeline may also carry a `streamID` tag. At least one stream ID must be present.
+
+## Gateway jobs
+
+A `gateway` job configures the node's gateway, which brokers connections between workflow nodes and external services. The `gatewayConfig` block holds the gateway settings. See [Gateway configuration](/cre) for the meaning of each setting.
+
+### Spec format
+
+```toml
+type          = "gateway"
+schemaVersion = 1
+name          = "Gateway"
+
+[gatewayConfig.ConnectionManagerConfig]
+AuthGatewayId            = "gateway"
+AuthChallengeLen         = 10
+AuthTimestampToleranceSec = 5
+HeartbeatIntervalSec     = 20
+
+[gatewayConfig.NodeServerConfig]
+Path                 = "/node"
+Port                 = 8080
+HandshakeTimeoutMillis = 1000
+MaxRequestBytes      = 100000
+ReadTimeoutMillis    = 1000
+RequestTimeoutMillis = 10000
+WriteTimeoutMillis   = 1000
+
+[gatewayConfig.UserServerConfig]
+Path                 = "/user"
+Port                 = 8081
+ContentTypeHeader    = "application/jsonrpc"
+MaxRequestBytes      = 100000
+ReadTimeoutMillis    = 1000
+RequestTimeoutMillis = 10000
+WriteTimeoutMillis   = 1000
+CORSEnabled          = false
+CORSAllowedOrigins   = []
+
+[gatewayConfig.HTTPClientConfig]
+MaxResponseBytes = 100000000
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `gatewayConfig`: the gateway configuration. It holds a `ConnectionManagerConfig` block, a `NodeServerConfig` block, a `UserServerConfig` block, an `HTTPClientConfig` block, and a list of `Dons`.
+
+## Standard capabilities jobs
+
+A `standardcapabilities` job starts a capability binary that the node hosts. The node launches the command in `command` and passes it the value of `config`.
+
+### Spec format
+
+```toml
+type                = "standardcapabilities"
+schemaVersion       = 1
+name                = "some-capability"
+forwardingAllowed   = false
+command             = "/home/capabilities/some_capability_linux_amd64"
+config              = ""
+```
+
+### Shared fields
+
+See [shared fields](/chainlink-nodes/oracle-jobs/jobs/#shared-fields).
+
+### Unique fields
+
+- `command`: the path to the capability binary that the node launches.
+- `config`: the configuration passed to the capability.
+- `oracle_factory`: the oracle factory configuration for the capability.
+
+## CCIP jobs
+
+The `ccip` job type starts a CCIP capability DON. Its configuration is defined by the CCIP capability, which is documented with the product rather than here.
+
+The node starts `ccip` jobs only when `OCR2.Enabled` is `true`. The default is `false`.
+
+### Unique fields
+
+- `p2pV2Bootstrappers`: a list of `peer_id@ip_address:port` strings that identify the bootstrap nodes of the P2P network. These bootstrappers are used to bootstrap all CCIP DONs.
+- `capabilityVersion`: the semantic version of the CCIP capability. This version must exist in the onchain capability registry.
+- `capabilityLabelledName`: the labelled name of the CCIP capability. It corresponds to the labelled name of the capability in the onchain capability registry.
+- `ocrKeyBundleIDs`: a mapping from chain type to OCR key bundle ID, for example `{"evm": "evm_key_bundle_id"}`.
+- `relayConfigs`: relay-specific configuration, keyed by chain family.
+- `p2pKeyID`: the ID of the node's P2P key. It must be present in the capability registry, otherwise the job does not start correctly.
+- `pluginConfig`: plugin-specific configuration.
+
+## CCV committee verifier jobs
+
+The `ccvcommitteeverifier` job type starts a CCV committee verifier capability. Its configuration is defined by the CCV capability, which is documented with the product rather than here.
+
+### Unique fields
+
+- `committeeVerifierConfig`: the TOML configuration for the CCV committee verifier. The configuration is multichain, using chain selectors as keys where applicable.
+
+## CCV executor jobs
+
+The `ccvexecutor` job type starts a CCV executor capability. Its configuration is defined by the CCV capability, which is documented with the product rather than here.
+
+### Unique fields
+
+- `executorConfig`: the TOML configuration for the CCV executor. The configuration is multichain, using chain selectors as keys where applicable.
+
+## CRE settings jobs
+
+The `cresettings` job type carries the settings for the Chainlink Runtime Environment on this node. It is managed by the product rather than written by node operators.
+
+### Unique fields
+
+- `hash`: the hash of the settings payload.
+- `settings`: the settings payload.

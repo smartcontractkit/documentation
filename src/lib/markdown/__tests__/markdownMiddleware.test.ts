@@ -15,6 +15,44 @@ function pageRequest(pathname: string, accept: string | null): Request {
 }
 
 describe("astro middleware", () => {
+  it.each([
+    {
+      pathname: "/data-feeds/starknet",
+      link: '</data-feeds/starknet.md>; rel="alternate"; type="text/markdown"',
+      robotsTag: null,
+    },
+    {
+      pathname: "/chainlink-functions/getting-started",
+      link: null,
+      robotsTag: "noindex, follow",
+    },
+  ])("prerenders $pathname without reading request headers", async ({ pathname, link, robotsTag }) => {
+    const request = pageRequest(pathname, "text/markdown")
+    Object.defineProperty(request, "headers", {
+      get() {
+        throw new Error("Prerendering must not read request headers")
+      },
+    })
+
+    const response = await onRequest(
+      {
+        url: new URL(request.url),
+        request,
+        isPrerendered: true,
+        rewrite: async () => {
+          throw new Error("Prerendering must not rewrite")
+        },
+      } as never,
+      async () => new Response("<html></html>", { headers: { "content-type": "text/html; charset=utf-8" } })
+    )
+
+    expect(response).toBeInstanceOf(Response)
+    if (!(response instanceof Response)) return
+    expect(response.headers.get("content-type")).toContain("text/html")
+    expect(response.headers.get("link")).toBe(link)
+    expect(response.headers.get("x-robots-tag")).toBe(robotsTag)
+  })
+
   it("rewrites to the markdown url and keeps the query string", async () => {
     const request = pageRequest("/cre/getting-started/cli-installation?lang=en", "text/markdown")
     let rewritten: string | undefined
@@ -22,6 +60,7 @@ describe("astro middleware", () => {
       {
         url: new URL(request.url),
         request,
+        isPrerendered: false,
         rewrite: async (target: string | URL | Request) => {
           rewritten = target instanceof Request ? target.url : target.toString()
           return new Response("markdown", { headers: { "content-type": "text/markdown; charset=utf-8" } })
@@ -44,6 +83,7 @@ describe("astro middleware", () => {
       {
         url: new URL(request.url),
         request,
+        isPrerendered: false,
         rewrite: async () => {
           throw new Error("html requests must not rewrite")
         },
@@ -64,6 +104,7 @@ describe("astro middleware", () => {
       {
         url: new URL(request.url),
         request,
+        isPrerendered: false,
         rewrite: async () => {
           throw new Error("html requests must not rewrite")
         },

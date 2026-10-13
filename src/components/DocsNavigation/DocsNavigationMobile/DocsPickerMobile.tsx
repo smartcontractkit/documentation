@@ -61,7 +61,7 @@ const buildSubProducts = (product: ProductItem | undefined, ccipVersion: CcipVer
   if (product.href === "/ccip") {
     const versioned = CCIP_SIDEBARS[ccipVersion]
     if (!versioned) return undefined // guard against an unknown version (avoids a render crash)
-    sections = getSubProducts(versioned, new Map())
+    sections = getSubProducts(versioned, new Map(), "ccip")
   } else {
     sections = product.subProducts as unknown as Array<{ label: string; items: Page[] }>
   }

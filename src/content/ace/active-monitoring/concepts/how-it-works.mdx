@@ -1,0 +1,87 @@
+---
+section: ace
+title: "How Active Monitoring Works"
+date: Last Modified
+metadata:
+  description: "Understand how Chainlink ACE Active Monitoring screens addresses, applies your rules, reads balances, runs enforcement operations, and records every decision."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside, ClickToZoom } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+Active Monitoring runs one loop for the tokens you register: **detect** a risk signal, **decide** with your rules, **act** onchain, and **prove** what happened. This page follows one risk alert through that loop, so you know what runs when, and which part of it you control.
+
+Four terms recur on this page:
+
+- **TRM** is TRM Labs, the blockchain analytics provider that scores the risk of each address. You use your own TRM account.
+- A **risk event** is a change in an address's TRM risk level, or its first screening.
+- A **decision** is the record Active Monitoring keeps when a rule matches a risk event.
+- An **enforcement function** is a function on your token, or on a contract associated with it, that Active Monitoring calls to act onchain.
+
+Active Monitoring is the continuous side of ACE: it reacts after the fact, on tokens that are already deployed. [Policy Management](/ace/concepts/policy-management) is the preventive side: it blocks a transaction while it executes. See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) for when to use each.
+
+<ClickToZoom
+  src="/images/ace/active-monitoring-components.svg"
+  alt="Active Monitoring components: the ACE Platform screens addresses with TRM Wallet Screening, reads balances and sends operations through CRE Connect, which executes the call from your CRE Connect Wallet on your token. CRE Connect reports balances and operation status back to ACE."
+  caption="The components involved in Active Monitoring"
+/>
+
+## What you set up
+
+Before the loop runs, you configure five things:
+
+1. A [TRM API key and a screening interval](/ace/active-monitoring/guides/configure-screening).
+1. A [monitored token](/ace/active-monitoring/concepts/monitored-tokens) with the enforcement functions Active Monitoring may call.
+1. The [onchain role](/ace/active-monitoring/guides/prepare-your-token) that lets your CRE Connect Wallet call those functions.
+1. A [monitoring rule](/ace/active-monitoring/concepts/monitoring-rules) that maps each TRM risk level to a response.
+1. A [watchlist](/ace/active-monitoring/concepts/screening) of the addresses to screen.
+
+Then you start screening. Nothing runs before that.
+
+## One alert, step by step
+
+1. **Screen.** At each scheduled run, Active Monitoring sends every watchlist address to TRM Wallet Screening with the TRM API key you stored. TRM returns the highest risk level of each address.
+1. **Detect a change.** Active Monitoring compares each risk level with the previous one. It raises a risk event for an address the first time it is screened and whenever its level changes. An address whose level stays the same raises no new event.
+1. **Match the rule.** Active Monitoring checks each risk event against the monitoring rule of every monitored token, on every network of that token. Each rule that matches creates a decision on that network.
+1. **Read the balance, if the rule asks for it.** When a rule has the balance condition and the risk level matches, Active Monitoring reads the balance of the address with `balanceOf(address)` on the token, through CRE Connect, on the network of the decision. The decision stays **Evaluating** until the balance arrives. The decision records the block of the reading.
+1. **Decide.** The rule's response sets the outcome: Silently log records it, Flag waits for a person, and Enforce creates an operation for each enforced action.
+1. **Act.** For each enforced action, Active Monitoring encodes the call to your enforcement function and creates an operation. CRE Connect executes it through your organization's CRE Connect Wallet. Who signs depends on your [signing model](/ace/active-monitoring/concepts/enforcement-and-security#signing-models).
+1. **Track.** The operation moves through the statuses **Submitted**, **Sending**, **Pending signature** (self-signing only), **Executing**, and **Success** or **Failed**. The decision shows the latest status.
+1. **Prove.** The decision keeps the TRM result as returned, the conditions that were evaluated, the balance reading, the arguments of each call, the operation, and who resolved or enforced it. See [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit).
+
+## What runs where
+
+| Part                                | What it does                                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| ACE Platform                        | Stores your configuration, calls TRM on schedule, evaluates your rules, and keeps decisions. |
+| TRM Wallet Screening                | Returns the risk level of each address. You provide your own TRM API key.                    |
+| [CRE Connect](/crec)                | Reads balances and executes operations, and reports their status back to ACE.                |
+| Your CRE Connect Wallet             | Executes the call on your token on each network. It needs the onchain role.                  |
+| Your token and associated contracts | Run the enforcement function. Active Monitoring never changes their code.                    |
+
+Active Monitoring does not run any code on your contracts and does not add a contract to your token. It needs only the ABI, the addresses, and the role.
+
+## How long each step takes
+
+The time between a risk change at TRM and a decision depends mostly on your screening interval: a change is seen at the next scheduled run. After a run, evaluation and the balance reading usually complete shortly after.
+
+For an Enforce response, the time to a confirmed operation then depends on the signing model and the network. With self-signing, the operation waits for your signer. With delegated signing, it does not wait for a signature, and the time is bounded by CRE Connect and the confirmation time of the network.
+
+A Flag response waits for a person for as long as it takes to review it.
+
+## What Active Monitoring does not do
+
+- It screens only the addresses on your watchlist. It does not discover your token holders or screen the counterparties of transfers.
+- It does not block a transaction. Preventive blocking is the role of [Policy Management](/ace/concepts/policy-management).
+- It does not grant or check onchain roles. You grant the role, and an operation fails if the role is missing.
+- It uses TRM as its only screening provider in Beta.
+
+## Next steps
+
+- [Watchlist and Screening](/ace/active-monitoring/concepts/screening): what is screened, how often, and what counts as a change.
+- [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules): how a risk level becomes an outcome.
+- [Active Monitoring Quick Start](/ace/active-monitoring/quick-start): set up the loop end to end.

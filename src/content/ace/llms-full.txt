@@ -1,8 +1,10 @@
 # What is Chainlink ACE?
 Source: https://docs.chain.link/ace/overview
-Last Updated: 2026-07-17
+Last Updated: 2026-10-05
 
 **Chainlink Automated Compliance Engine (ACE)** is a compliance layer for EVM smart contracts. It enforces rules — transfer limits, identity checks, sanctions screening, and more — at transaction time, without embedding compliance logic in your application code. Rules can be added, updated, or removed through the ACE Platform — your application contract doesn't need to change.
+
+ACE also monitors tokens that are already deployed. [Active Monitoring](/ace/active-monitoring/overview) screens the addresses you choose on a schedule and acts onchain when their risk changes, without changing the token's contract.
 
 ## What problems does ACE solve?
 
@@ -16,7 +18,7 @@ Building compliant applications on the blockchain requires handling:
 
 ACE serves three primary audiences:
 
-- **Token issuers and asset managers** — Enforce compliance rules (transfer limits, investor checks, sanctions screening) on your smart contracts. ACE separates these rules from your application code, so you can update them as regulations change — without redeploying.
+- **Token issuers and asset managers** — Enforce compliance rules (transfer limits, investor checks, sanctions screening) on your smart contracts. ACE separates these rules from your application code, so you can update them as regulations change — without redeploying. If your token is already deployed and you cannot change its contract, Active Monitoring reacts to risk changes on it.
 - **Identity verification (IDV) providers** — Issue cross-chain credentials (KYC, AML, accredited investor status) that your clients can verify on any EVM chain from a single issuance. No need for users to re-verify on every network.
 - **Compliance and legal teams** — Monitor and manage compliance rules through a visual interface — no code required. Every policy decision is recorded onchain and queryable through the Reporting API, providing a complete audit trail.
 
@@ -35,13 +37,23 @@ These contracts execute automatically at transaction time. For a detailed view o
 
 ### ACE Platform
 
-The [ACE Platform](/ace/concepts/key-terms#ace-platform) provides three managers that let you operate on these contracts:
+The [ACE Platform](/ace/concepts/key-terms#ace-platform) provides four managers. Policy Manager and Identity Manager operate on the contracts above:
 
 - **Policy Manager** (UI + API) — Configure and deploy compliance rules for your smart contracts.
 - **Identity Manager** (UI + API) — Manage cross-chain identities and issue credentials.
 - **Reporting Manager** (API) — Query policy run history, transaction data, and onchain state.
+- **Active Monitoring** (UI + API) — Screen addresses with TRM and enforce actions on tokens you already run. It uses your existing contracts instead of the ACE contracts above.
 
 ACE is currently in Beta. See [Beta Scope](/ace/beta-scope) for the current scope and supported features.
+
+## Preventive and continuous compliance
+
+ACE enforces compliance in two ways, and you can use either or both:
+
+- **Preventive**: Policy Manager and Identity Manager block a transaction while it executes. Your contract integrates with ACE, and a transaction that breaks a policy reverts.
+- **Continuous**: Active Monitoring screens a watchlist of addresses with TRM on a schedule, applies your rule when an address's risk level changes, and calls an existing function on your token, such as a freeze or a blocklist entry. Your contract does not change.
+
+Preventive enforcement acts immediately but needs a contract that integrates with ACE. Continuous monitoring works on tokens already deployed, but acts at the next screening run, after the risk change. See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) to choose, or [What is Active Monitoring?](/ace/active-monitoring/overview) to learn more.
 
 ## Key features
 
@@ -53,6 +65,7 @@ ACE is currently in Beta. See [Beta Scope](/ace/beta-scope) for the current scop
 - **Auditable and transparent** — Every policy evaluation is recorded onchain and queryable through the Reporting API, giving compliance teams a complete audit trail.
 - **Ready-to-use policy library** — Pre-built modules for common scenarios: allowlists, blocklists, volume limits, time restrictions, role-based access, Proof of Reserves minting caps, identity checks, and [grouped identity validation](/ace/reference/policy-library/grouped-identity-validator-policy).
 - **Offchain risk screening** — Screen transaction participants with TRM Wallet Screening through a managed CRE workflow, with permits delivered onchain. See [Off-Chain Policy Execution](/ace/concepts/off-chain-policies).
+- **Continuous monitoring** — Screen the addresses you choose with TRM on a schedule, and react to risk changes on deployed tokens by recording, flagging for review, or enforcing an onchain action. See [Active Monitoring](/ace/active-monitoring/overview).
 - **Flexible signing models** — Choose between delegated signing (Chainlink signs on your behalf) and self-signing (you sign with your own keys) at onboarding. See [Signing & Ownership Model](/ace/concepts/signing-ownership).
 
 ## How it works: a real-world example
@@ -77,9 +90,10 @@ The power of this model is that if regulations change tomorrow, the DEX's owners
 Start here regardless of your role:
 
 1. **[ACE Architecture](/ace/concepts/architecture)** — System components and how they connect.
-2. **[Key Terms](/ace/concepts/key-terms)** — ACE-specific terminology.
-3. **[Policy Management](/ace/concepts/policy-management)** — How compliance rules work.
-4. **[Cross-Chain Identity](/ace/concepts/cross-chain-identity)** — How identity and credentials work.
+2. **[Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous)** — The two ways ACE enforces compliance.
+3. **[Key Terms](/ace/concepts/key-terms)** — ACE-specific terminology.
+4. **[Policy Management](/ace/concepts/policy-management)** — How compliance rules work.
+5. **[Cross-Chain Identity](/ace/concepts/cross-chain-identity)** — How identity and credentials work.
 
 ### Build with ACE
 
@@ -89,13 +103,14 @@ Start here regardless of your role:
 - **[Policy Library](/ace/reference/policy-library)** — All pre-built policies with configuration details.
 - **[Policy Ordering & Composition](/ace/concepts/policy-ordering)** — How to compose effective rulesets.
 - **[Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible)** — Integration guide for developers adding ACE to new or existing smart contracts.
+- **[Active Monitoring](/ace/active-monitoring/quick-start)** — Screen addresses and act on tokens you already run.
 - **[Signing & Ownership Model](/ace/concepts/signing-ownership)** — Understand delegated and self-signing models.
 
 ---
 
 # Beta Scope
 Source: https://docs.chain.link/ace/beta-scope
-Last Updated: 2026-09-23
+Last Updated: 2026-10-07
 
 ACE Beta is an early-access release for testing and integration on supported mainnet and testnet networks. The limitations listed below are all areas of active development. Each will be addressed as ACE progresses toward general availability.
 
@@ -156,11 +171,28 @@ The following limitations apply:
 
 See [Offchain Policies](/ace/guides/policy-manager/offchain-policies) for an overview, [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies) to configure wallet screening, and [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits) to integrate evaluations into an application.
 
+## Active Monitoring is limited during Beta
+
+Active Monitoring screens a watchlist with TRM and acts on tokens you already run. See [How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works). The following limitations apply:
+
+- **TRM access required**: Your organization needs a TRM Labs account with Wallet Screening API access. You store the key in the Platform, in **General settings > API access**. This key is separate from the credential of managed offchain risk policies.
+- **TRM is the only provider**: Active Monitoring has no other screening provider.
+- **Watchlist**:
+  - You cannot remove an address after you add it.
+  - The Platform UI accepts up to 100 rows per CSV upload.
+- **One monitoring rule per token**: A rule is immutable. To change it, delete it and create a new one.
+- **Monitored tokens are fixed**: You cannot edit or remove a monitored token after you register it.
+- **Enforcement functions have conditions**: A function must be a write function with named inputs, no array or tuple inputs, and at least one input.
+- **Screening interval**: The Platform UI offers 6, 12, or 24 hours. The API accepts 1 to 168 hours.
+- **Networks**: Active Monitoring is available on the [supported networks](/ace/supported-networks) where your organization has a created CRE Connect Wallet.
+
+To get started, see the [Active Monitoring Quick Start](/ace/active-monitoring/quick-start).
+
 ---
 
 # Supported Networks
 Source: https://docs.chain.link/ace/supported-networks
-Last Updated: 2026-05-26
+Last Updated: 2026-10-05
 
 ACE Beta is available on the following networks.
 
@@ -168,6 +200,12 @@ ACE Beta is available on the following networks.
 >
 > Mainnet networks are not enabled for all ACE Beta organizations by default. Contact your Chainlink contact to request
 > mainnet access. Testnet networks are available once ACE is enabled for your organization.
+
+> **NOTE: Active Monitoring**
+>
+> [Active Monitoring](/ace/active-monitoring/overview) uses these networks. You can register a token on a network only
+> if your organization has a created [CRE Connect
+> Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) there.
 
 ## Mainnet networks
 
@@ -251,9 +289,23 @@ Polygon Amoy
 
 # Release Notes
 Source: https://docs.chain.link/ace/release-notes
-Last Updated: 2026-09-23
+Last Updated: 2026-10-07
 
-## September 14, 2026 — Custom contracts
+## October 7, 2026: Active Monitoring
+
+ACE adds a continuous mode of compliance: **Active Monitoring**. It screens the addresses you choose with TRM on a schedule, applies a rule you define when an address's risk changes, and acts onchain on tokens you already run, without changing their contracts. Policy Manager and Identity Manager stay preventive: they block a transaction while it executes. See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous).
+
+### What's new
+
+- **Monitored tokens**: Register a token and its associated contracts from their ABI, with the enforcement functions Active Monitoring may call. One configuration covers every network of the token. See [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens).
+- **Monitoring rules**: Map each TRM risk level to a response: Silently log, Flag for review, or Enforce one or more onchain actions, with an optional token balance condition. See [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules).
+- **Watchlist and screening**: Add addresses from a CSV file or an identity registry, store your TRM API key, and choose the screening interval. See [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist) and [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
+- **Decisions log**: Review every decision with the TRM result, the matched rule, and the operation status, and resolve or enforce flagged decisions. See [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions).
+- **Coordinator API**: The new Active Monitoring endpoints cover these operations, except resolving and enforcing flagged decisions, which are available in the Platform UI only. See [Active Monitoring API](/ace/active-monitoring/reference/api).
+
+For the current limits, see [Beta Scope](/ace/beta-scope#active-monitoring-is-limited-during-beta).
+
+## September 14, 2026: Custom contracts
 
 This release makes any ACE-compatible contract a first-class citizen in the platform, not just ERC-20 and ERC-3643 tokens.
 
@@ -264,7 +316,7 @@ This release makes any ACE-compatible contract a first-class citizen in the plat
 - **Contract types on engines and targets**: `POST/PUT /policy-engines` and `POST/PUT /targets` accept `contract_type_ids`, and engine, target, and extractor responses now include their associated contract types (`contract_types`, `assigned_contract_types`).
 - **ERC-3643 extractor coverage fix**: `ERC3643MintBurnExtractor` now covers `burn(address,uint256)` only; `mint(address,uint256)` is covered by `ComplianceTokenMintBurnExtractor`. If you protect `mint` on an ERC-3643 token, attach `ComplianceTokenMintBurnExtractor`.
 
-## July 17, 2026 — ACE Beta+
+## July 17, 2026: ACE Beta+
 
 ACE Beta+ builds on ACE Beta with new compliance capabilities. This release is still a Beta — see [Beta Scope](/ace/beta-scope) for the current scope and limitations.
 
@@ -277,7 +329,7 @@ ACE Beta+ builds on ACE Beta with new compliance capabilities. This release is s
 - **Self-signing model** — Organizations can now choose between **delegated signing** (Chainlink signs on your behalf) and **self-signing** (you sign operations yourself) at onboarding. With self-signing, ACE creates unsigned draft operations that you poll, sign (EIP-712), and submit using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). Both models use the same CRE Connect Wallet and all platform capabilities work identically. See [Signing & Ownership Model](/ace/concepts/signing-ownership).
 - **Managed offchain risk policies (MVP)** — Screen transaction participants with [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) before allowing a protected onchain action. Configure global and category-specific risk thresholds, request evaluations through the new Evaluation API, and receive single-use permits delivered onchain by a managed CRE workflow. Grant evaluation access to other organizations so they can request permits against your target contracts. This feature is an MVP; contact your Chainlink representative for help with setup. See [Offchain Policies](/ace/guides/policy-manager/offchain-policies), [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies), [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits), and [Granting Evaluation Access](/ace/guides/policy-manager/offchain-policies/grant-evaluation-access).
 
-## May 26, 2026 — Mainnet support
+## May 26, 2026: Mainnet support
 
 ### What's new
 
@@ -287,7 +339,7 @@ ACE Beta+ builds on ACE Beta with new compliance capabilities. This release is s
 
 - Policy Engine creation is now available in the Platform UI under **Compliance > Policy Manager** (previously API-only). See [Managing Policy Engines](/ace/guides/policy-manager/manage-engines#create-a-policy-engine).
 
-## April 15, 2026 — ACE Beta (Private Release)
+## April 15, 2026: ACE Beta (Private Release)
 
 Chainlink ACE Beta is now available to a first set of selected participants as a **private release**. This initial release provides early access to the ACE platform.
 
@@ -309,9 +361,18 @@ This is a testnet-only release. For full details on what is supported, known con
 
 # ACE Architecture
 Source: https://docs.chain.link/ace/concepts/architecture
-Last Updated: 2026-03-31
+Last Updated: 2026-10-05
 
 ACE has two layers: **onchain smart contracts** that enforce compliance rules on the blockchain, and the **[ACE Platform](/ace/concepts/key-terms#ace-platform)** (UI and APIs) that lets you manage them. Under the hood, Chainlink infrastructure connects the two — routing your platform actions to the blockchain and indexing onchain events back into the Reporting API. This page gives a bird's-eye view of how all the pieces fit together.
+
+## Two ways ACE enforces compliance
+
+ACE enforces compliance in two ways, which use the same Platform and the same CRE Connect Wallet but different components:
+
+- **Preventive enforcement** uses the onchain contracts below. A protected function calls a PolicyEngine during the transaction, and the transaction reverts if a policy rejects it.
+- **Continuous monitoring** is [Active Monitoring](/ace/active-monitoring/overview). It does not use the ACE contracts. The ACE Platform screens addresses with TRM on a schedule, reads balances and executes operations on your existing token through CRE Connect, and records each decision.
+
+See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) to choose between them.
 
 ## System overview
 
@@ -329,7 +390,7 @@ The sections below explain each layer in detail.
 
 ## ACE managers
 
-ACE Beta provides three managers that abstract away the complexity of managing onchain contracts:
+ACE Beta provides four managers. Policy Manager and Identity Manager abstract away the complexity of managing ACE onchain contracts. Active Monitoring operates on tokens you already run.
 
 ### Policy Manager
 
@@ -348,6 +409,12 @@ The Identity Manager operates on the **Cross-Chain Identity** onchain contracts:
 The Reporting Manager gives you read-only access to onchain state and transaction history. You can query policy engines and their configurations, look up identities and credentials, and view policy run transactions with filtering by network, target contract, and time range.
 
 The Reporting Manager exposes data through the **Reporting API**. Under the hood, Chainlink's indexing infrastructure monitors onchain events (such as `PolicyRunComplete`) emitted by your PolicyEngines and indexes the data so it can be queried through the API. See the [API Overview](/ace/reference/apis) for available endpoints.
+
+### Active Monitoring
+
+Active Monitoring screens the wallet addresses you choose with TRM Wallet Screening, applies a monitoring rule to each change of risk level, and acts on tokens that are already deployed. A rule can record a decision, flag it for a person to review, or enforce an action: Active Monitoring calls an enforcement function that you registered on your token, through your CRE Connect Wallet.
+
+Unlike the other managers, Active Monitoring does not deploy or configure ACE contracts. It needs the ABI of your token, its addresses, and an onchain role for your CRE Connect Wallet. Decisions and operation history are available in the Platform and through the Coordinator API. See [How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works).
 
 > **NOTE: UI and API**
 >
@@ -410,6 +477,8 @@ Every ACE management action — whether triggered from the UI or the Coordinator
 
 How the transaction gets signed depends on your organization's signing model: with **delegated signing**, Chainlink signs the operation automatically. With **self-signing**, ACE creates an unsigned draft operation that you poll, sign with your own key, and submit using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). In both cases, the CRE Connect Wallet remains the execution gateway. See [Signing & Ownership Model](/ace/concepts/signing-ownership) for details.
 
+Active Monitoring uses the same write path for the operations it creates. It also reads balances through CRE Connect: the Platform asks CRE Connect to call `balanceOf(address)` on your token, and records the result with the decision.
+
 ### How ACE observes onchain activity (read path)
 
 When a policy runs onchain, the PolicyEngine emits a `PolicyRunComplete` event. Chainlink's indexing infrastructure continuously monitors these events across all managed PolicyEngines and indexes the data. The **Reporting API** then serves this indexed data, giving you a queryable view of all policy run activity.
@@ -420,11 +489,77 @@ This means you can query transaction history and policy run results through the 
 
 ---
 
+# Preventive and Continuous Compliance
+Source: https://docs.chain.link/ace/concepts/preventive-vs-continuous
+Last Updated: 2026-10-05
+
+ACE enforces compliance in two ways: it can block a transaction while it executes, and it can keep watching addresses and act after their risk changes. This page explains the two modes, so you can choose the one that fits your token, or use both.
+
+## Two modes
+
+**Preventive enforcement** runs inside the transaction. A protected function asks a PolicyEngine to evaluate your policies, and the transaction reverts if a policy rejects it. It is provided by [Policy Management](/ace/concepts/policy-management) and, for identity checks, [Cross-Chain Identity](/ace/concepts/cross-chain-identity). Your contract must integrate with ACE: it inherits `PolicyProtected` or is upgraded to do so.
+
+**Continuous monitoring** runs outside the transaction. [Active Monitoring](/ace/active-monitoring/overview) screens a watchlist of addresses against TRM on a schedule, applies a rule you define when an address's risk level changes, and calls an existing function on your token, such as a freeze or a blocklist entry. Your contract does not change.
+
+|                                      | Preventive (Policy Manager, Identity Manager)                                                | Continuous (Active Monitoring)                                                    |
+| :----------------------------------- | :------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| **When it acts**                     | While the transaction executes                                                               | After a screening run detects a risk change                                       |
+| **What it does**                     | Reverts a transaction that breaks a policy                                                   | Calls an admin function on your token, flags a decision for review, or records it |
+| **Contract changes**                 | Yes: `PolicyProtected` or an upgrade                                                         | None: you provide the ABI and grant an onchain role                               |
+| **Works on tokens already deployed** | Only if you can upgrade them or place a contract in front                                    | Yes, if the token has admin functions you can grant a role for                    |
+| **Data it uses**                     | Transaction data, onchain state, credentials, and optionally a permit from an offchain check | TRM risk levels of the addresses on your watchlist, and balances                  |
+| **Timing**                           | Immediate: no violating transaction gets through                                             | Bounded by your screening interval: a change is seen at the next run              |
+| **Evidence**                         | `PolicyRunComplete` events and the [Reporting API](/ace/concepts/reporting)                  | The Decisions log, the TRM result, and the operation history                      |
+
+## What each mode cannot do
+
+A preventive policy cannot act on a token whose contract you cannot change, and it cannot react to something that happens outside a transaction, such as an address that is added to a sanctions list after it received tokens.
+
+Continuous monitoring cannot stop a transaction. Between a risk change at TRM and the next screening run, an address can still transact. You reduce the window with a shorter screening interval.
+
+## Choose a mode
+
+| Your situation                                                                                              | Use                                                                           |
+| :---------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------- |
+| You build a contract, or can upgrade it, and must block non-compliant transactions                          | [Policy Manager](/ace/getting-started/policy-manager)                         |
+| You must check who can hold or transfer a token, based on KYC or accreditation                              | [Identity Manager](/ace/getting-started/identity-manager) with Policy Manager |
+| Your token is already deployed and cannot be changed, and you want to react when a holder becomes high risk | [Active Monitoring](/ace/active-monitoring/quick-start)                       |
+| You need both blocking at transaction time and a reaction to holders whose risk changes later               | Both                                                                          |
+
+The two modes complement each other. Preventive policies stop a violating transaction at the moment it happens. Active Monitoring covers the holders who were compliant when they received the token and changed risk level afterward.
+
+## TRM in each mode
+
+ACE uses TRM Wallet Screening in two separate features. They use separate credentials and separate guides:
+
+|                         | Managed offchain risk policy (preventive)                                                                 | Active Monitoring (continuous)                                                                        |
+| :---------------------- | :-------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------- |
+| **When TRM is called**  | Once per transaction request, before the user submits it                                                  | On a schedule, for every address on the watchlist                                                     |
+| **Result**              | A permit that the transaction consumes onchain                                                            | A decision that follows your rule                                                                     |
+| **Where the key lives** | In the Vault DON, uploaded with the CRE CLI                                                               | In the Platform, under **General settings > API access**                                              |
+| **Guide**               | [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies) | [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening) |
+
+## What both modes share
+
+Both modes use your organization's onboarding, your [CRE Connect Wallet](/ace/concepts/signing-ownership) on each network, the same [signing models](/ace/concepts/signing-ownership), the [Coordinator API](/ace/reference/apis), and the ACE Platform. You can adopt Active Monitoring without using Policy Manager or Identity Manager.
+
+## Next steps
+
+- [What is Active Monitoring?](/ace/active-monitoring/overview): the continuous mode in detail.
+- [Policy Management](/ace/concepts/policy-management): the preventive mode in detail.
+- [Getting Started with ACE](/ace/getting-started): choose where to begin.
+
+---
+
 # Key Terms and Concepts
 Source: https://docs.chain.link/ace/concepts/key-terms
-Last Updated: 2026-07-17
+Last Updated: 2026-10-07
 
 This glossary defines the key terms used throughout the ACE documentation. Use it as a quick reference when reading other pages.
+
+### Access grant
+
+A cross-organization link that gives another organization read access to one of your resources. For registries, an access grant lets a **grantee** organization read a **grantor**'s registry and use it as a credential source. Grants are `active` or `revoked`, and only the resource owner can create or revoke them. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
 
 ### ACE Platform
 
@@ -433,10 +568,6 @@ The complete user-facing layer of ACE, consisting of the Platform UI ([app.chain
 ### AML (Anti-Money Laundering)
 
 A set of laws, regulations, and procedures designed to prevent criminals from disguising illegally obtained funds as legitimate income.
-
-### Access grant
-
-A cross-organization link that gives another organization read access to one of your resources. For registries, an access grant lets a **grantee** organization read a **grantor**'s registry and use it as a credential source. Grants are `active` or `revoked`, and only the resource owner can create or revoke them. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
 
 ### CCID (Cross-Chain Identifier)
 
@@ -458,6 +589,10 @@ The management API for creating, configuring, and deploying ACE resources (polic
 
 Chainlink infrastructure that routes [ACE Platform](#ace-platform) actions to the blockchain. When you trigger an action (deploy a policy, register an identity), CRE Connect prepares and executes the blockchain transaction through your [CRE Connect Wallet](#cre-connect-wallet).
 
+### CRE Connect Wallet
+
+A dedicated onchain smart contract wallet deployed for your organization on each network where you use ACE. Your wallet owns the CRE Connect Wallet, and the CRE Connect Wallet owns all your ACE contracts (policy engines, registries, policies). Chainlink is registered as an authorized operator, allowed to execute operations on your behalf but unable to change ownership or authorization settings. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
+
 ### Credential
 
 A verifiable attribute linked to a [CCID](#ccid-cross-chain-identifier), such as KYC verification, AML clearance, or accredited investor status. Credentials are stored in a [Credential Registry](#credential-registry) and can be validated onchain without revealing sensitive information. Only hashes or minimal references are stored on the blockchain — the actual PII stays offchain.
@@ -465,10 +600,6 @@ A verifiable attribute linked to a [CCID](#ccid-cross-chain-identifier), such as
 ### Credential Data Validator
 
 An optional onchain contract (also called a **Data Validator**) configured on a [Credential Source](#credential-source) that inspects the contents of a credential's `credentialData` field. This enables decisions based on what's inside a credential (for example, a jurisdiction code), not just whether the credential exists. ACE provides a pre-built AllowDenyList Data Validator for jurisdiction control; when no validator is configured, a source is attestation-only. Learn more in [Managing Data Validators](/ace/guides/policy-manager/manage-data-validators) and [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
-
-### Data Schema
-
-A reusable definition of the shape and format of a credential's data, linked to a [Credential Type](#credential-type-identifier) so that credentials issued against it carry validated structured data (for example, [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes). Data schemas make a credential type *typed* rather than attestation-only. Learn more in [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas).
 
 ### Credential Issuer
 
@@ -490,6 +621,10 @@ A `bytes32` value that denotes the type of credential (for example, KYC, AML, or
 
 A policy implemented by your own contract (rather than the [pre-built library](/ace/reference/policy-library)) and registered with the ACE Platform. Custom policy implementations are scoped to your organization and, once registered, are used exactly like library policies. Learn more in [Custom Policies](/ace/guides/policy-manager/custom-policies).
 
+### Data Schema
+
+A reusable definition of the shape and format of a credential's data, linked to a [Credential Type](#credential-type-identifier) so that credentials issued against it carry validated structured data (for example, [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes). Data schemas make a credential type *typed* rather than attestation-only. Learn more in [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas).
+
 ### Default result
 
 The [PolicyEngine](#policy-engine)'s fallback decision when every policy in a [policy chain](#policy-chain) returns Continue and none makes a final Allow or Reject decision. The default result can be set to either allow or reject, and it is configured per target contract via the `desired_default_allow` field. Learn more in [Policy Ordering & Composition](/ace/concepts/policy-ordering#the-default-result).
@@ -497,10 +632,6 @@ The [PolicyEngine](#policy-engine)'s fallback decision when every policy in a [p
 ### Delegated signing
 
 One of two signing models available in ACE. Chainlink signs and executes blockchain transactions on your behalf via the [CRE Connect Wallet](#cre-connect-wallet). You retain full ownership of all contracts. The signing model is chosen during onboarding. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
-
-### Self-signing
-
-One of two signing models available in ACE. ACE prepares unsigned draft operations; you poll, sign (EIP-712), and submit them using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). You retain full ownership of all contracts. The signing model is chosen during onboarding. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
 
 ### DON (Decentralized Oracle Network)
 
@@ -518,13 +649,13 @@ An Ethereum standard that enables contracts to declare the interfaces they imple
 
 A regulated token standard (also known as T-REX) designed for securities and permissioned tokens. ACE provides a reference implementation (`ComplianceTokenERC3643`) that replaces the canonical T-REX identity (ONCHAINID) and compliance (ModularCompliance) systems with ACE equivalents. Learn more in [Building an ERC-3643 Compliance Token](/ace/guides/policy-manager/contracts/erc3643-token).
 
-### External registry
-
-A registry owned by another organization that has been shared with yours through an [access grant](#access-grant). From the grantee's perspective it appears with `access_type: "granted"` and is read-only — you can reference its identities and credentials as a credential source but cannot write to it. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
-
 ### Evaluation API
 
 The MVP runtime API for requesting and monitoring managed offchain policy evaluations. An application submits a transaction intent, receives a deterministic permit ID, and polls until the permit is ready onchain or the evaluation is rejected or fails. Contact your Chainlink representative for help with setup, and see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits) and the [interactive API reference](/api/ace/evaluation/docs).
+
+### External registry
+
+A registry owned by another organization that has been shared with yours through an [access grant](#access-grant). From the grantee's perspective it appears with `access_type: "granted"` and is read-only — you can reference its identities and credentials as a credential source but cannot write to it. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
 
 ### Extractor
 
@@ -546,13 +677,13 @@ An onchain contract (typically the `CredentialRegistryIdentityValidatorPolicy`) 
 
 A compliance process requiring financial institutions to verify the identity of their clients. In ACE, KYC is represented as a credential type (`common.kyc`) attached to a user's [CCID](#ccid-cross-chain-identifier) after offchain verification by a [Credential Issuer](#credential-issuer).
 
-### Mapper
-
-An optional helper contract used to transform or combine parameters extracted from transaction data before passing them to a policy. Mappers are needed only for advanced scenarios — for example, calculating a USD value from a token amount and price before passing it to a volume policy. In most cases, the PolicyEngine's built-in name-based parameter mapping is sufficient.
-
 ### Managed offchain policy
 
 An MVP offchain compliance rule delivered as a managed service. You configure the rule and attach it to a target function; Chainlink manages the CRE workflow, external provider call, [CADV](/ace/reference/policy-library/certified-action-don-validator-policy) deployment, and onchain permit delivery. ACE Beta provides the `wallet_risk_scoring` policy for TRM Wallet Screening. Contact your Chainlink representative for help with setup, and see [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies).
+
+### Mapper
+
+An optional helper contract used to transform or combine parameters extracted from transaction data before passing them to a policy. Mappers are needed only for advanced scenarios — for example, calculating a USD value from a token amount and price before passing it to a volume policy. In most cases, the PolicyEngine's built-in name-based parameter mapping is sufficient.
 
 ### Permit
 
@@ -570,14 +701,6 @@ The web interface at [app.chain.link](https://app.chain.link) for managing ACE r
 
 A self-contained onchain contract that holds a single compliance rule. Each policy implements a `run()` function that receives parameters and returns a verdict: `Allowed` (final approval), `Continue` (defer to the next policy), or reverts with `PolicyRejected` (final rejection). Policies can optionally implement a `postRun()` function for state changes after a check passes (for example, incrementing a volume counter). See the [Policy Library](/ace/reference/policy-library) for all pre-built policies.
 
-### Policy implementation
-
-The reusable template (contract code + configuration schema) that a [policy](#policy) instance is created from. Implementations are either pre-built [library](/ace/reference/policy-library) types (global) or [custom](#custom-policy) types registered by an organization (org-scoped). See [Managing Policies](/ace/guides/policy-manager/manage-policies#policy-implementations-vs-policy-instances).
-
-### PolicyFactory
-
-An onchain factory contract that deploys [policy](#policy) instances by cloning a policy implementation. When you create a policy instance, the PolicyFactory clones the implementation, initializes it, and verifies the implementation supports the `IPolicy` interface via ERC-165.
-
 ### Policy chain
 
 The ordered sequence of policies attached to a specific function selector on a target contract. The [PolicyEngine](#policy-engine) executes policies in chain order; each policy's result (Reject, Allow, or Continue) determines whether subsequent policies run. Learn more in [Policy Ordering & Composition](/ace/concepts/policy-ordering).
@@ -586,6 +709,10 @@ The ordered sequence of policies attached to a specific function selector on a t
 
 The central onchain orchestrator. The PolicyEngine holds the registry of all policies attached to a protected contract's function selectors. When a protected function is called, the PolicyEngine calls the relevant [Extractor](#extractor) to parse the transaction data, then executes each attached policy in order. A single PolicyEngine can manage policies for multiple contracts and functions.
 
+### Policy implementation
+
+The reusable template (contract code + configuration schema) that a [policy](#policy) instance is created from. Implementations are either pre-built [library](/ace/reference/policy-library) types (global) or [custom](#custom-policy) types registered by an organization (org-scoped). See [Managing Policies](/ace/guides/policy-manager/manage-policies#policy-implementations-vs-policy-instances).
+
 ### Policy Management
 
 The onchain framework for defining, executing, and managing dynamic compliance rules. It consists of [PolicyProtected](#policyprotected) contracts (the hook), the [PolicyEngine](#policy-engine) (the orchestrator), [Policies](#policy) (the rules), and [Extractors](#extractor) (the data parsers). Learn more in [Policy Management Concepts](/ace/concepts/policy-management).
@@ -593,6 +720,10 @@ The onchain framework for defining, executing, and managing dynamic compliance r
 ### Policy Manager
 
 The ACE Beta product for managing policy engines, policy instances, extractors, and protected contracts via the platform UI or API. Policy Manager operates on the [Policy Management](/ace/concepts/policy-management) onchain contracts.
+
+### PolicyFactory
+
+An onchain factory contract that deploys [policy](#policy) instances by cloning a policy implementation. When you create a policy instance, the PolicyFactory clones the implementation, initializes it, and verifies the implementation supports the `IPolicy` interface via ERC-165.
 
 ### PolicyProtected
 
@@ -614,19 +745,87 @@ The API for querying onchain state, transaction history, and policy run results.
 
 The ACE Beta product for querying onchain state, transaction history, and policy run results. Currently available via API only. Reporting Manager exposes data from the Reporting API, which indexes onchain events and state.
 
-### CRE Connect Wallet
+### Self-signing
 
-A dedicated onchain smart contract wallet deployed for your organization on each network where you use ACE. Your wallet owns the CRE Connect Wallet, and the CRE Connect Wallet owns all your ACE contracts (policy engines, registries, policies). Chainlink is registered as an authorized operator, allowed to execute operations on your behalf but unable to change ownership or authorization settings. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
+One of two signing models available in ACE. ACE prepares unsigned draft operations; you poll, sign (EIP-712), and submit them using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). You retain full ownership of all contracts. The signing model is chosen during onboarding. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
 
 ### Trusted Verifier
 
 See [Credential Issuer](#credential-issuer). A trusted verifier is an offchain entity authorized to conduct external checks (KYC, AML, document verification) and register the resulting credentials onchain.
 
+## Active Monitoring terms
+
+The following terms are specific to [Active Monitoring](/ace/active-monitoring/overview). Some reuse words from Policy Management, such as decision and operation, with a different meaning.
+
+### Active Monitoring
+
+The ACE capability that screens the addresses on a [watchlist](#watchlist) with TRM on a schedule, applies a [monitoring rule](#monitoring-rule) to each change of risk level, and acts on tokens that are already deployed, without changing their contracts. It is the continuous counterpart of the preventive Policy Manager and Identity Manager. Learn more in [What is Active Monitoring?](/ace/active-monitoring/overview) and [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous).
+
+### Associated contract
+
+A contract registered with a [monitored token](#monitored-token), other than the token itself, on which an enforced action can run. A separate blocklist contract is a common example. Learn more in [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens).
+
+### Balance condition
+
+The option **Only execute if the address holds a balance on this token** on an [enforced action](#enforced-action). Active Monitoring reads the balance of the screened address with `balanceOf(address)` and runs the action only if the balance is greater than zero. Learn more in [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#the-balance-condition).
+
+### Decision
+
+The record that Active Monitoring keeps each time a [monitoring rule](#monitoring-rule) matches a [risk event](#risk-event) for an address on one network. The **Decisions log** lists decisions. A decision holds the TRM result, the rule that matched, the outcome, and the operation. It is unrelated to a policy run in Policy Management. Learn more in [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit).
+
+### Enforced action
+
+One call to an [enforcement function](#enforcement-function), defined in the Enforce [response](#response) of a monitoring rule. It names the contract, the function, and a [parameter mapping](#parameter-mapping-active-monitoring) for each argument. Learn more in [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#enforced-actions).
+
+### Enforcement function
+
+A write function on your token, or on an [associated contract](#associated-contract), that Active Monitoring calls when a rule enforces an action, such as a freeze or a blocklist function. You select it when you register the contract. It must have named inputs, no array or tuple inputs, and at least one input. Learn more in [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens#contract-abi-and-functions).
+
+### Monitored token
+
+A token contract registered with Active Monitoring, optionally with associated contracts. A monitored token has one monitoring rule. It is not a target: a target is a contract protected by a PolicyEngine. Learn more in [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens).
+
+### Monitoring rule
+
+The rule of a monitored token that maps each TRM risk level to a [response](#response). A monitoring rule cannot be edited: you delete it and create a new one. It is not a policy. Learn more in [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules).
+
+### Operation
+
+An onchain call that CRE Connect executes through your CRE Connect Wallet. Active Monitoring creates one operation for each enforced action. Its status moves from **Submitted** to **Success** or **Failed**, with **Pending signature** under self-signing. See [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values#operation-statuses).
+
+### Parameter mapping (Active Monitoring)
+
+In Active Monitoring, the choice of a value for each argument of an enforcement function: **Screened address**, **Balance**, or a constant. It is unrelated to the extractor and mapper pattern of Policy Management. See [Mapper](#mapper) and [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#parameter-mapping).
+
+### Response
+
+What a monitoring rule does for a risk level: **Silently log** records the decision, **Flag** waits for a person to review it, and **Enforce** creates an operation for each enforced action. Learn more in [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#risk-levels-and-responses).
+
+### Risk event
+
+A change in the TRM [risk level](#risk-level-trm-risk-score) of a watchlist address, or its first screening. A risk event is what a monitoring rule reacts to: each rule that matches creates a [decision](#decision). An address that stays at the same level raises no new event. Learn more in [Watchlist and Screening](/ace/active-monitoring/concepts/screening#when-a-result-becomes-a-risk-event).
+
+### Risk level (TRM risk score)
+
+The highest risk level that TRM reports for an address: **Severe** (score 15), **High** (10), **Medium** (5), **Low** (1), or **Unknown** (0). A monitoring rule maps each level to a response. See [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values#trm-risk-levels).
+
+### Screening interval
+
+The number of hours between two Active Monitoring screening runs. The Platform UI offers 6, 12, and 24 hours. Learn more in [Watchlist and Screening](/ace/active-monitoring/concepts/screening#schedule).
+
+### TRM API key
+
+Your TRM Labs API key, which Active Monitoring uses to screen the watchlist. You store it in **General settings > API access**. It is different from your ACE organization API key, and from the credential used by managed offchain policies. See [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
+
+### Watchlist
+
+The list of wallet addresses that Active Monitoring screens with TRM. Learn more in [Watchlist and Screening](/ace/active-monitoring/concepts/screening).
+
 ---
 
 # Signing and Ownership Model
 Source: https://docs.chain.link/ace/concepts/signing-ownership
-Last Updated: 2026-07-17
+Last Updated: 2026-10-05
 
 Every ACE management action — deploying a policy engine, registering an identity, issuing a credential — is a blockchain transaction. Blockchain transactions require a signer: someone who authorizes the operation onchain.
 
@@ -740,11 +939,25 @@ The SDK supports multiple signer backends: local ECDSA keys, AWS KMS, HashiCorp 
 
 The same safety net applies as with delegated signing. Because your wallet owns the CRE Connect Wallet, you can at any time interact with it directly, add or remove authorized signers, or take over operational responsibility entirely.
 
+## Signing in Active Monitoring
+
+[Active Monitoring](/ace/active-monitoring/overview) creates an operation each time a monitoring rule enforces an action, or a person enforces an action on a flagged decision. The operation follows your organization's signing model and runs through your CRE Connect Wallet, like any other ACE operation.
+
+|                         | Delegated signing                                                                                     | Self-signing                                                                                 |
+| :---------------------- | :---------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| **Who signs**           | Chainlink signs and executes the operation on your behalf.                                            | You sign the operation with your own key.                                                    |
+| **Operation statuses**  | Submitted, Sending, Executing, Success or Failed                                                      | Submitted, Sending, **Pending signature**, Executing, Success or Failed                      |
+| **Automatic execution** | Yes. An Enforce response executes as soon as a risk event matches, within your rule and onchain role. | No. An Enforce response prepares the operation, and your signer signs it before it executes. |
+
+In both models, the CRE Connect Wallet needs the onchain role that each enforcement function requires. The role is the limit of what an operation can do. See [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security).
+
+With self-signing, find and sign pending Active Monitoring operations the same way as other pending operations, with the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk).
+
 ---
 
 # Security Model
 Source: https://docs.chain.link/ace/concepts/security
-Last Updated: 2026-03-31
+Last Updated: 2026-10-05
 
 This page covers the governance and operational security principles behind how ACE protects onchain assets and identity data — the controls, ordering guarantees, and privacy properties that administrators, auditors, and compliance teams should understand.
 
@@ -788,11 +1001,22 @@ ACE is designed so that no personally identifiable information (PII) is stored o
 - **CCID-to-address mappings** are publicly readable onchain. This is by design — it enables cross-chain verification — but it means anyone can see which addresses share the same identity. For applications where this transparency is a concern, multiple CCIDs per user can be used to limit correlation across domains. See [Cross-Chain Identity: Privacy and correlation](/ace/concepts/cross-chain-identity#privacy-and-correlation) for details.
 - **Credential type identifiers** are hashed (`keccak256`) but use known namespaced strings (e.g., `common.kyc`), so standard types are effectively public knowledge.
 
+## Active Monitoring controls
+
+[Active Monitoring](/ace/active-monitoring/overview) acts on tokens you already run, so its controls differ from the controls above. They sit on your token and on your organization:
+
+- **The onchain role is the authority.** Active Monitoring can call only the functions you registered, and only if your CRE Connect Wallet holds the role on your contract. You can revoke the role at any time.
+- **Registered functions only.** Active Monitoring builds a call only from the ABI functions you selected, so it cannot construct a call to any other function.
+- **Review before action.** The Flag response sends a decision to a person. Resolving or enforcing a flagged decision is recorded with the person who did it.
+- **Credentials stay out of the interface.** The TRM API key is stored encrypted and never shown again.
+
+See [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security) for the full model.
+
 ---
 
 # Policy Management
 Source: https://docs.chain.link/ace/concepts/policy-management
-Last Updated: 2026-09-23
+Last Updated: 2026-10-05
 
 This page explains in depth how ACE's Policy Management system works — the design rationale, the execution model, and how the components interact. For a high-level overview of the components themselves (PolicyProtected, PolicyEngine, Policies, Extractors), see the [Architecture page](/ace/concepts/architecture#policy-management-contracts).
 
@@ -1287,9 +1511,15 @@ Separate registries and validators allow:
 
 # Reporting Manager
 Source: https://docs.chain.link/ace/concepts/reporting
-Last Updated: 2026-03-31
+Last Updated: 2026-10-05
 
 This page explains what the Reporting Manager provides, why it matters for compliance, and how the data pipeline works. For a high-level overview of how the Reporting Manager fits into the ACE architecture, see the [Architecture page](/ace/concepts/architecture#reporting-manager).
+
+> **NOTE: Active Monitoring decisions**
+>
+> The Reporting Manager covers policy runs, identities, and credentials. The **Decisions log** of [Active
+> Monitoring](/ace/active-monitoring/overview) is separate: it is available in the Platform and through the Coordinator
+> API. See [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit).
 
 ## Why reporting matters
 
@@ -1395,7 +1625,7 @@ The API provides read-only access. All compliance configuration changes (deployi
 
 # Off-Chain Policy Execution
 Source: https://docs.chain.link/ace/concepts/off-chain-policies
-Last Updated: 2026-07-17
+Last Updated: 2026-10-05
 
 ACE policies are not limited to on-chain logic. Off-chain policy execution lets you enforce compliance rules that depend on data or systems outside the blockchain — your internal compliance engine, third-party risk APIs, or any custom business logic. The checks happen off-chain before the transaction, and the result is delivered on-chain as a cryptographic **permit** that authorizes the action.
 
@@ -1409,6 +1639,13 @@ ACE provides two ways to use offchain policies:
 > To configure the managed TRM policy, see [Managing Offchain Risk Policies
 > (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies). To request permits from an application,
 > see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits).
+
+> **NOTE: Active Monitoring also uses TRM**
+>
+> Managed wallet risk screening calls TRM once for each transaction request and delivers a permit. [Active
+> Monitoring](/ace/active-monitoring/overview) calls TRM on a schedule for a watchlist of addresses and acts on risk
+> changes. The two features use separate credentials and separate guides. See [Preventive and Continuous
+> Compliance](/ace/concepts/preventive-vs-continuous#trm-in-each-mode).
 
 > **CAUTION: Managed service is an MVP**
 >
@@ -1487,19 +1724,28 @@ From the policy engine's perspective, the CertifiedActionDONValidatorPolicy is j
 
 # Getting Started with ACE
 Source: https://docs.chain.link/ace/getting-started
-Last Updated: 2026-04-15
+Last Updated: 2026-10-05
 
-ACE offers three managers. Choose the path that matches what you need to do:
+ACE enforces compliance in two ways. Start with what you need:
 
-| Manager               | What it does                                                                                                                                       | Get started                                                                              |
-| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| **Policy Manager**    | Attach and configure compliance policies on smart contracts — volume limits, allowlists, RBAC, identity-based checks, and more                     | [Policy Manager Quick Start](/ace/getting-started/policy-manager)                        |
-| **Identity Manager**  | Manage identity registries, register cross-chain identities (CCIDs), and issue credentials such as Proof of Identity or accreditation attestations | [Identity Manager Quick Start](/ace/getting-started/identity-manager)                    |
-| **Reporting Manager** | Query on-chain transaction history, policy configurations, and identity states via a read-only API for compliance verification                     | [Reporting concepts](/ace/concepts/reporting) — [API Reference](/api/ace/reporting/docs) |
+- **Block non-compliant transactions** in a contract you build or can upgrade: use the preventive managers, Policy Manager and Identity Manager.
+- **Monitor addresses and react when their risk changes** on a token you already run, without changing its contract: use Active Monitoring.
+- **Both**: the two modes complement each other and share the same setup.
+
+See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) for the differences.
+
+ACE offers four managers. Choose the path that matches what you need to do:
+
+| Manager               | What it does                                                                                                                                              | Get started                                                                              |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| **Policy Manager**    | Attach and configure compliance policies on smart contracts — volume limits, allowlists, RBAC, identity-based checks, and more                            | [Policy Manager Quick Start](/ace/getting-started/policy-manager)                        |
+| **Identity Manager**  | Manage identity registries, register cross-chain identities (CCIDs), and issue credentials such as Proof of Identity or accreditation attestations        | [Identity Manager Quick Start](/ace/getting-started/identity-manager)                    |
+| **Active Monitoring** | Screen the addresses you choose with TRM on a schedule, and record, flag, or enforce an onchain action when their risk changes, on tokens you already run | [Active Monitoring Quick Start](/ace/active-monitoring/quick-start)                      |
+| **Reporting Manager** | Query on-chain transaction history, policy configurations, and identity states via a read-only API for compliance verification                            | [Reporting concepts](/ace/concepts/reporting) — [API Reference](/api/ace/reporting/docs) |
 
 ### Shared first step
 
-All three managers require **account setup** first — creating your organization, sharing your Org ID for enablement, generating an API key, and setting up [CRE Connect Wallets](/ace/concepts/key-terms#cre-connect-wallet):
+All managers require **account setup** first — creating your organization, sharing your Org ID for enablement, generating an API key, and setting up [CRE Connect Wallets](/ace/concepts/key-terms#cre-connect-wallet):
 
 - [Account Setup](/ace/getting-started/account-setup) — the four steps every ACE user completes before using any manager
 
@@ -1507,7 +1753,8 @@ All three managers require **account setup** first — creating your organizatio
 
 - If you are a **token issuer or protocol team** deciding which compliance rules to enforce, start with the [Policy Manager Quick Start](/ace/getting-started/policy-manager).
 - If you are an **identity provider (IDV)** or **credential issuer**, or **sanctions data provider** supplying data for others to consume, start with the [Identity Manager Quick Start](/ace/getting-started/identity-manager).
-- Many organizations use **both managers**. Start with whichever is most relevant to your first use case — the guides cross-reference each other where the workflows intersect.
+- If your token is already deployed and you want to screen its holders and react to risk changes without changing the contract, start with the [Active Monitoring Quick Start](/ace/active-monitoring/quick-start).
+- Many organizations use **more than one manager**. Start with whichever is most relevant to your first use case — the guides cross-reference each other where the workflows intersect.
 
 ### Background reading
 
@@ -1516,13 +1763,14 @@ Before diving in, these pages provide essential context:
 - [Signing & Ownership Model](/ace/concepts/signing-ownership) — how ACE manages keys and the delegated and self-signing models
 - [ACE Architecture](/ace/concepts/architecture) — system components and how they connect
 - [Key Terms](/ace/concepts/key-terms) — ACE-specific terminology
+- [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) — the two ways ACE enforces compliance
 - [Beta Scope](/ace/beta-scope) — what is and is not available during the Beta program
 
 ---
 
 # Account Setup
 Source: https://docs.chain.link/ace/getting-started/account-setup
-Last Updated: 2026-04-15
+Last Updated: 2026-10-05
 
 This page walks through the shared setup steps for all ACE users. Whether you use the [Policy Manager](/ace/getting-started/policy-manager) to enforce compliance on smart contracts or the [Identity Manager](/ace/getting-started/identity-manager) to manage cross-chain identities and credentials, complete these steps first.
 
@@ -1573,6 +1821,12 @@ curl https://ace.api.chain.link/v1/<endpoint> \
   -H "Authorization: Apikey <API_KEY>"
 ```
 
+> **NOTE: Active Monitoring uses a second key**
+>
+> This key authenticates you to ACE. [Active Monitoring](/ace/active-monitoring/overview) also needs your own TRM API
+> key, which you store separately. See [Configure the TRM API Key and Screening
+> Schedule](/ace/active-monitoring/guides/configure-screening).
+
 ## 4. Set up CRE Connect Wallets
 
 Before you can use ACE — whether from the Platform UI or the Coordinator API — you need a **CRE Connect Wallet** on each blockchain network where you want to operate.
@@ -1590,18 +1844,19 @@ Key points:
 
 Your next step depends on what you need to do:
 
-| If you need to...                                   | Next step                                                                                                                             |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| Enforce compliance policies on smart contracts      | Deploy a PolicyEngine and integrate your contract. Continue to the [Policy Manager Quick Start](/ace/getting-started/policy-manager). |
-| Manage cross-chain identities and issue credentials | Set up identity and credential registries. Continue to the [Identity Manager Quick Start](/ace/getting-started/identity-manager).     |
+| If you need to...                                    | Next step                                                                                                                                                  |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Enforce compliance policies on smart contracts       | Deploy a PolicyEngine and integrate your contract. Continue to the [Policy Manager Quick Start](/ace/getting-started/policy-manager).                      |
+| Manage cross-chain identities and issue credentials  | Set up identity and credential registries. Continue to the [Identity Manager Quick Start](/ace/getting-started/identity-manager).                          |
+| Monitor addresses and act on a token you already run | Prepare the token, store a TRM API key, and create a monitoring rule. Continue to the [Active Monitoring Quick Start](/ace/active-monitoring/quick-start). |
 
-Many organizations do both. Start with whichever is most relevant to your first use case — the quick start guides cross-reference each other where the workflows intersect.
+Many organizations use more than one. Start with whichever is most relevant to your first use case — the quick start guides cross-reference each other where the workflows intersect.
 
 ---
 
 # Policy Manager Quick Start
 Source: https://docs.chain.link/ace/getting-started/policy-manager
-Last Updated: 2026-09-23
+Last Updated: 2026-10-05
 
 This guide walks you through the **Policy Manager** — the ACE component for attaching and configuring compliance policies on smart contracts. By the end you will have a policy-protected contract running on a supported network.
 
@@ -1850,7 +2105,7 @@ The Policy Manager revolves around a handful of entities that work together to e
 
 # Making Your Contract ACE-Compatible
 Source: https://docs.chain.link/ace/guides/policy-manager/contracts/ace-compatible
-Last Updated: 2026-09-23
+Last Updated: 2026-10-05
 
 A contract is ACE-compatible when it routes function calls through a Policy Engine for compliance checks before execution. Most contracts inherit `PolicyProtected` and add the `runPolicy` modifier. A contract can also construct the ACE payload and call the Policy Engine directly, as `AdvancedPoolHooks` does.
 
@@ -1918,7 +2173,7 @@ How you integrate ACE depends on where your contract is today:
 
 - **[Upgrading Existing Contracts](/ace/guides/policy-manager/contracts/upgrade-existing)** — Already have a deployed contract behind a proxy? You can add ACE compliance through a standard proxy upgrade without disrupting existing state, balances, or integrations.
 
-- **Non-upgradeable contract?** — If your contract is not behind a proxy, the upgrade guide also covers [alternative approaches](/ace/guides/policy-manager/contracts/upgrade-existing#alternatives-for-non-upgradeable-contracts) — wrapped contracts, contract migration, and edge protection — each with different tradeoffs depending on your constraints.
+- **Non-upgradeable contract?** — If your contract is not behind a proxy, the upgrade guide also covers [alternative approaches](/ace/guides/policy-manager/contracts/upgrade-existing#alternatives-for-non-upgradeable-contracts) — wrapped contracts, contract migration, edge protection, and [Active Monitoring](/ace/active-monitoring/overview), which reacts to risk changes without modifying the contract — each with different tradeoffs depending on your constraints.
 
 ---
 
@@ -2247,7 +2502,7 @@ The full source code for the ERC-3643 compliance token:
 
 # Upgrading Existing Contracts
 Source: https://docs.chain.link/ace/guides/policy-manager/contracts/upgrade-existing
-Last Updated: 2026-05-26
+Last Updated: 2026-10-07
 
 This guide explains how to add ACE compliance to a contract that is already deployed. The process is a standard proxy upgrade — your existing state (balances, allowances, mappings) is fully preserved, your contract address stays the same, and all existing integrations continue to work.
 
@@ -2688,7 +2943,7 @@ MyToken(proxyAddress).migrateToACE(policyEngineAddress);
 
 ## Alternatives for non-upgradeable contracts
 
-If your contract is not deployed behind a proxy, a standard upgrade is not possible. Depending on your situation, there are three alternative approaches to bring ACE compliance to your application.
+If your contract is not deployed behind a proxy, a standard upgrade is not possible. Depending on your situation, there are four alternative approaches to bring ACE compliance to your application. The first three place ACE policies in front of your contract. The fourth, Active Monitoring, reacts after the fact and needs no policy integration.
 
 ### Wrapped contract
 
@@ -2732,6 +2987,22 @@ Instead of modifying your contract, apply ACE policies at the integration points
 - **Does not protect direct contract interactions** — any user who calls your contract directly (bypassing the protected integration point) is not subject to policy checks.
 - Only covers the specific integration points where ACE is applied. Comprehensive coverage requires wrapping all relevant entry points.
 - The original contract's functionality is unchanged, which may be a regulatory concern if direct access remains open.
+
+### Active Monitoring
+
+Screen the addresses you choose with TRM and react when their risk changes, using functions your contract already has, such as a freeze or a blocklist entry.
+
+**How it works:** You register the token and select its existing admin functions. ACE screens a watchlist on a schedule. When an address's risk level changes, a rule you define records it, flags it for review, or calls the function through your CRE Connect Wallet. The contract is not modified, and you grant the wallet an onchain role.
+
+**When to use:** You cannot change the contract, it has admin functions that restrict an address, and you want to react to holders whose risk changes after they receive tokens.
+
+**Tradeoffs:**
+
+- It is reactive, not preventive. It does not block a transaction: between a risk change and the next screening run, the address can still transact.
+- It needs an existing admin function and an onchain role for your CRE Connect Wallet.
+- It acts on the watchlist of addresses you maintain, and it does not apply ACE policies such as volume limits or credential checks to each transfer.
+
+See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) and the [Active Monitoring Quick Start](/ace/active-monitoring/quick-start).
 
 > **NOTE: Need guidance?**
 >
@@ -3191,7 +3462,7 @@ Archiving a policy engine deactivates it and prevents any further operations. Al
 
 # Managing Targets
 Source: https://docs.chain.link/ace/guides/policy-manager/manage-targets
-Last Updated: 2026-09-23
+Last Updated: 2026-10-05
 
 A **target** is a smart contract protected by ACE and associated with a Policy Engine. ACE can detect a target from its onchain attachment to the engine, or you can register it through the Coordinator API. Once the target appears under the engine, you can configure its [default policy result](#default-allow-behavior) and attach [policy instances](/ace/guides/policy-manager/manage-policies) to its functions through [protections](/ace/guides/policy-manager/manage-protections).
 
@@ -3201,6 +3472,12 @@ A **target** is a smart contract protected by ACE and associated with a Policy E
 > Most contracts inherit `PolicyProtected` and use the `runPolicy` modifier. A contract can also call the Policy Engine
 > directly and call `attach()` when it connects, as `AdvancedPoolHooks` does. See [Making Your Contract
 > ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible) for both integration paths.
+
+> **NOTE: Targets and monitored tokens**
+>
+> A target is a contract protected by a Policy Engine. A [monitored
+> token](/ace/active-monitoring/concepts/monitored-tokens) in Active Monitoring is a different resource: it needs no
+> Policy Engine and no contract integration.
 
 ## Register a target
 
@@ -4070,7 +4347,7 @@ See [Security Considerations](/ace/guides/policy-manager/contracts/security-cons
 
 # Offchain Policies
 Source: https://docs.chain.link/ace/guides/policy-manager/offchain-policies
-Last Updated: 2026-07-17
+Last Updated: 2026-10-05
 
 ACE offchain policies evaluate data or logic outside the blockchain before authorizing a protected onchain action. The authorization is delivered onchain as a permit that is bound to a specific transaction intent.
 
@@ -4083,6 +4360,11 @@ ACE supports two offchain policy models:
 >
 > Managed offchain policies and the Evaluation API are an MVP. Their interfaces and capabilities can change during Beta.
 > Contact your Chainlink representative before using this feature and for help with setup.
+
+> **NOTE: Looking for continuous screening?**
+>
+> Managed offchain policies check an address for each transaction request. To screen a watchlist on a schedule and act
+> on tokens you already run, see [Active Monitoring](/ace/active-monitoring/overview). It uses its own TRM API key.
 
 ## Managed offchain policy guides
 
@@ -4098,7 +4380,7 @@ See [Offchain Policies](/ace/concepts/off-chain-policies) for the architecture a
 
 # Managing Offchain Policies (MVP)
 Source: https://docs.chain.link/ace/guides/policy-manager/offchain-policies/manage-offchain-policies
-Last Updated: 2026-07-17
+Last Updated: 2026-10-05
 
 ACE managed offchain risk policies screen wallet addresses with [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) before allowing a protected onchain action. You configure the risk rules and the target functions to protect. Chainlink manages the CRE workflow, deploys the onchain permit validator, calls TRM, and delivers approved permits onchain.
 
@@ -4109,6 +4391,13 @@ This guide covers policy setup. To integrate permit requests into your applicati
 > Managed offchain risk policies are an MVP. Their interfaces and capabilities can change during Beta. Contact your
 > Chainlink representative before using this feature and for help with setup. This guide does not cover custom offchain
 > policy integrations, where you host your own policy endpoint and work with Chainlink to configure a custom workflow.
+
+> **NOTE: Active Monitoring uses a different TRM key**
+>
+> This guide stores your TRM credential in the Vault DON for managed offchain policies. [Active
+> Monitoring](/ace/active-monitoring/overview) stores a TRM API key in the Platform, under **General settings > API access**.
+> The two are configured separately. See [Configure the TRM API Key and Screening
+> Schedule](/ace/active-monitoring/guides/configure-screening).
 
 ## How the managed policy works
 
@@ -4774,7 +5063,7 @@ These guides cover the day-to-day operations of an Identity Manager — from set
 
 # Managing Registries
 Source: https://docs.chain.link/ace/guides/identity-manager/manage-registries
-Last Updated: 2026-04-06
+Last Updated: 2026-10-05
 
 ## What are registries?
 
@@ -4784,6 +5073,12 @@ A **registry** in ACE is the top-level organizational unit for the Identity Mana
 - **Credential registries** — manage the lifecycle of credentials linked to CCIDs.
 
 Each sub-registry corresponds to a smart contract deployed on a specific blockchain. A single registry can span multiple chains by including sub-registries on each target network. For a deeper explanation of the registry model and how it fits into the identity lifecycle, see [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
+
+> **TIP: Use a registry as a watchlist**
+>
+> [Active Monitoring](/ace/active-monitoring/overview) can import the addresses of the identities in a registry to its
+> watchlist. See [Manage the
+> Watchlist](/ace/active-monitoring/guides/manage-watchlist#add-addresses-from-an-identity-registry).
 
 ## Create a registry
 
@@ -6615,7 +6910,7 @@ The [cross-chain-identity docs](https://github.com/smartcontractkit/chainlink-ac
 
 # ACE API Overview
 Source: https://docs.chain.link/ace/reference/apis
-Last Updated: 2026-07-17
+Last Updated: 2026-10-05
 
 ACE exposes three APIs. They share the same host and authentication model, but serve different purposes and use different base paths.
 
@@ -6668,6 +6963,16 @@ The Coordinator API is the management interface for all ACE resources. Everythin
 - Register cross-chain identities (CCIDs) and map wallet addresses
 - Define credential types (optionally typed with data schemas) and issue credentials
 
+**Active Monitoring operations:**
+
+- Register monitored tokens and their associated contracts
+- Create and archive the monitoring rule of a token
+- Add addresses to the watchlist
+- Store the TRM API key, set the screening interval, and start or stop screening
+- List decisions and read their details
+
+Active Monitoring uses the same host, base URL, and API key as the rest of the Coordinator API. For the endpoints by task, see [Active Monitoring API](/ace/active-monitoring/reference/api).
+
 The Coordinator API also exposes cross-organization access grants (sharing registries and policies), organization settings, and off-chain policy management. For the full schema, parameters, and request/response examples, see the [Coordinator API Reference](/api/ace/coordinator/docs).
 
 ## Evaluation API (MVP)
@@ -6709,8 +7014,1353 @@ For the full schema, parameters, and request/response examples, see the [Reporti
 
 ---
 
+# What is Active Monitoring?
+Source: https://docs.chain.link/ace/active-monitoring/overview
+Last Updated: 2026-10-05
+
+**Chainlink ACE Active Monitoring** screens the wallet addresses you choose with TRM, a blockchain analytics provider that scores address risk, on a schedule, applies the rules you define when an address's risk changes, and acts onchain on tokens you already run, without changing their contracts. Every decision is recorded, so you can show what was detected, what the rule decided, and what was executed.
+
+Active Monitoring is the continuous part of ACE. [Policy Manager and Identity Manager](/ace/concepts/preventive-vs-continuous) are preventive: they block a transaction while it executes. Active Monitoring is reactive: it covers holders who were compliant when they received your token and changed risk level afterward.
+
+## What problem does it solve?
+
+A regulated token issuer has to react when a holder becomes a risk, for example when an address you onboarded months ago is flagged for sanctions exposure. Without automation, the steps are spread across tools: an alert in one system, a decision in a chat, an action in a wallet interface, and an audit trail rebuilt afterward. That is slow, easy to get wrong, and hard to prove.
+
+Active Monitoring closes that loop for tokens that are already deployed:
+
+1. **Detect.** It screens your watchlist with [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) at the interval you choose.
+2. **Decide.** It applies your monitoring rule to each risk change: record it, flag it for a person, or enforce an action.
+3. **Act.** For an enforced action, it calls the enforcement function you registered, through your CRE Connect Wallet.
+4. **Prove.** It keeps the TRM result, the rule, the balance reading, the operation, and who acted, in one record.
+
+![Active Monitoring loop: detect a risk change with TRM, decide with your rule, act onchain, and prove with one record. Screening repeats at the next run.](/images/ace/active-monitoring-loop.svg)
+
+## Who is it for?
+
+- **Compliance teams** define the rule for each token, review flagged decisions, and read the audit trail.
+- **Platform and custody engineers** register the token and its ABI, set up wallets and the TRM API key, and grant the onchain role. Your keys and your signer stay with you.
+- **Token issuers and asset managers** with tokens already in production. You do not need to use Policy Manager or Identity Manager.
+
+## How it works: a real-world example
+
+An issuer runs **Example Treasury Fund (EXTF)** on Ethereum Sepolia and Arbitrum Sepolia. It uses an ERC-3643 token with `freezePartialTokens` and `setAddressFrozen`, and a separate blocklist contract with `addBlacklist`. The blocklist is optional: it shows that an action can run on a second contract. The issuer sets this rule:
+
+| TRM risk level                   | Response                                                                                        |
+| :------------------------------- | :---------------------------------------------------------------------------------------------- |
+| 15 - Severe                      | Enforce: freeze the full balance if the address holds one, and add the address to the blocklist |
+| 10 - High                        | Flag for a person to review                                                                     |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log                                                                                    |
+
+At the next screening run, TRM reports one watchlist address as **Severe**. The address holds EXTF on Ethereum Sepolia and none on Arbitrum Sepolia. Active Monitoring creates these **decisions**:
+
+| Network          | Freeze rule                  | Blocklist rule                        |
+| :--------------- | :--------------------------- | :------------------------------------ |
+| Ethereum Sepolia | The balance is frozen        | The address is added to the blocklist |
+| Arbitrum Sepolia | No balance - flag for review | The address is added to the blocklist |
+
+Each enforced decision links to its operation and shows the status until it succeeds. On Arbitrum Sepolia, a person reviews the decision that has no balance to freeze, and resolves it or enforces another action. No contract was changed, and the issuer can remove the onchain role at any time to stop all enforcement.
+
+This example is for illustration. You choose which levels to enforce, and you can start with Silently log and Flag only.
+
+## Key features
+
+- **No contract changes.** You upload the ABI of your token and select the functions Active Monitoring may call. It works with any contract that has such functions, such as ERC-3643 tokens or your own blocklist contract.
+- **One configuration, every network.** You register a token once with its address on each network. One rule applies everywhere, and each network gets its own decisions.
+- **Three responses.** Silently log, Flag for human review, or Enforce an action automatically.
+- **Balance-aware actions.** An action can run only if the address holds a balance, and can use the balance as an argument.
+- **Human review.** A person resolves a flagged decision with a recorded reason, or enforces an action, and the record names them.
+- **Your signer.** You choose the signing model. With delegated signing, Chainlink signs and executes operations on your behalf, within the rule and the onchain role you set. With self-signing, your own key signs each operation. Both run through your CRE Connect Wallet, which you own.
+- **Audit trail.** Each decision keeps the TRM result as returned, the conditions evaluated, and the operation history.
+- **Platform UI and API.** You configure and run Active Monitoring in the [Chainlink Platform](https://app.chain.link) UI or with the Coordinator API.
+
+## What you need
+
+- An organization with ACE enabled and a [CRE Connect Wallet](/ace/getting-started/account-setup) on each network where your token runs.
+- A TRM Labs account with access to the [Wallet Screening API](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening).
+- Admin authority on your token, to grant the onchain role that its enforcement functions require.
+
+ACE is in Beta. See [Beta Scope](/ace/beta-scope#active-monitoring-is-limited-during-beta) for the current limits.
+
+## Where to go next
+
+### Understand Active Monitoring
+
+1. **[Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous)**: how Active Monitoring differs from Policy Manager.
+2. **[How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works)**: one alert, step by step.
+3. **[Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules)**: how a risk level becomes an outcome.
+4. **[Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security)**: what Active Monitoring can and cannot do.
+
+### Build with Active Monitoring
+
+- **[Active Monitoring Quick Start](/ace/active-monitoring/quick-start)**: set up the loop end to end.
+- **[Guides](/ace/active-monitoring/guides)**: prepare a token, configure rules, manage the watchlist, and review decisions.
+- **[Active Monitoring API](/ace/active-monitoring/reference/api)**: the endpoints by task.
+
+---
+
+# Active Monitoring Quick Start
+Source: https://docs.chain.link/ace/active-monitoring/quick-start
+Last Updated: 2026-10-07
+
+By the end of this guide, Active Monitoring screens a watchlist for a token you already run, applies a monitoring rule to each risk change, and shows its first decisions in the Decisions log. Each step links to the full guide for options.
+
+**Active Monitoring** screens wallet addresses with TRM on a schedule and acts onchain on tokens you already run, without changing their contracts. For the model, see [How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works). If you are choosing between Active Monitoring and Policy Manager, see [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous).
+
+The examples use a token called Example Treasury Fund (EXTF) on Ethereum Sepolia and Arbitrum Sepolia, with a separate blocklist contract. The blocklist only shows that an action can run on a second contract: a token that has the functions you need does not require one.
+
+## Prerequisites
+
+- An organization with ACE enabled, and Active Monitoring available to it. Complete [Account Setup](/ace/getting-started/account-setup) first: steps 1 and 2 (organization and enablement), and for the API, step 3 (API key).
+- A TRM Labs account with access to the [Wallet Screening API](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening), and its API key.
+- A token that has admin functions you can call to restrict an address, such as a freeze or a blocklist function, and the account that can grant roles on it.
+- The JSON ABI of the token, and of any associated contract you want to enforce on.
+- One or more wallet addresses to screen.
+
+## 1. Create your CRE Connect Wallets
+
+Active Monitoring executes enforcement operations through your CRE Connect Wallet, one per network. If you do not have one on every network where your token runs, create it. See [Set up CRE Connect Wallets](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets).
+
+Only networks with a created wallet are offered when you register a token.
+
+## 2. Grant the onchain role
+
+An enforcement operation reverts unless your CRE Connect Wallet is allowed to call the function. Copy the wallet address of each network, then allow it on your token and on each associated contract. For a standard ERC-3643 token, call `addAgent(address)` from the owner account. The following example uses [Foundry's `cast`](https://book.getfoundry.sh/cast/), but any tool that sends transactions works:
+
+```bash
+cast send <TOKEN_ADDRESS> "addAgent(address)" <CRE_CONNECT_WALLET_ADDRESS> \
+  --rpc-url <RPC_URL> \
+  --private-key <TOKEN_OWNER_PRIVATE_KEY>
+```
+
+Repeat on every network. Other contracts use other mechanisms, such as an `AccessControl` role or a policy. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token), which also explains how to revoke the role and prepare the ABI.
+
+To try Active Monitoring without any onchain action, skip this step and map every risk level to Silently log or Flag in step 5.
+
+## 3. Store your TRM API key
+
+Saving the key does not start screening. See [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
+
+## 4. Register your token
+
+The token appears with the tag **Missing rule**. You cannot edit a registered token, so check the addresses and the ABI before you submit. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens).
+
+## 5. Create the monitoring rule
+
+A rule maps each TRM risk level to a response. This example enforces on Severe, flags High, and logs the rest. In the table, **Screened address** is the address that TRM flagged, and **Balance** is that address's balance of the token:
+
+| Risk level                       | Response                                                                                                                                                                               |
+| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 15 - Severe                      | Enforce: `freezePartialTokens` with **Screened address** and **Balance**, only if the address holds a balance; `addBlacklist` with **Screened address** and the constant `Severe risk` |
+| 10 - High                        | Flag                                                                                                                                                                                   |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log                                                                                                                                                                           |
+
+The token tag changes to **Active rule**. A rule cannot be edited: to change it, delete it and create a new one. See [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules).
+
+Enforce acts without review. For a first run, you can map Severe to Flag instead, review what the rule catches, and move levels to Enforce later.
+
+## 6. Add the watchlist
+
+You cannot remove an address after you add it. See [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist).
+
+## 7. Start screening
+
+The first run starts immediately and repeats at the interval you chose.
+
+## 8. Read your first decisions
+
+When the first run completes, the **Decisions log** lists a decision for each rule that matched a risk event. Every address creates a risk event at its first screening, so each address appears for each rule it matches.
+
+1. Click a decision to see the TRM result, the rule that matched, the action, and the operation status.
+2. For an enforced decision, watch the **Operation status** move to **Success**. A status of **Failed** usually means the onchain role is missing.
+3. For a flagged decision, click **Resolve** or **Enforce action**.
+
+With the API, call `GET /active-monitoring/decision-logs`. See [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions).
+
+If nothing appears, see [Troubleshoot Active Monitoring](/ace/active-monitoring/guides/troubleshooting).
+
+## Next steps
+
+- [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security): what Active Monitoring can do with the role you granted.
+- [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit): the evidence each decision keeps.
+- [Active Monitoring API](/ace/active-monitoring/reference/api): every endpoint by task.
+
+---
+
+# How Active Monitoring Works
+Source: https://docs.chain.link/ace/active-monitoring/concepts/how-it-works
+Last Updated: 2026-10-05
+
+Active Monitoring runs one loop for the tokens you register: **detect** a risk signal, **decide** with your rules, **act** onchain, and **prove** what happened. This page follows one risk alert through that loop, so you know what runs when, and which part of it you control.
+
+Four terms recur on this page:
+
+- **TRM** is TRM Labs, the blockchain analytics provider that scores the risk of each address. You use your own TRM account.
+- A **risk event** is a change in an address's TRM risk level, or its first screening.
+- A **decision** is the record Active Monitoring keeps when a rule matches a risk event.
+- An **enforcement function** is a function on your token, or on a contract associated with it, that Active Monitoring calls to act onchain.
+
+Active Monitoring is the continuous side of ACE: it reacts after the fact, on tokens that are already deployed. [Policy Management](/ace/concepts/policy-management) is the preventive side: it blocks a transaction while it executes. See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) for when to use each.
+
+![Active Monitoring components: the ACE Platform screens addresses with TRM Wallet Screening, reads balances and sends operations through CRE Connect, which executes the call from your CRE Connect Wallet on your token. CRE Connect reports balances and operation status back to ACE.](/images/ace/active-monitoring-components.svg)
+
+## What you set up
+
+Before the loop runs, you configure five things:
+
+1. A [TRM API key and a screening interval](/ace/active-monitoring/guides/configure-screening).
+2. A [monitored token](/ace/active-monitoring/concepts/monitored-tokens) with the enforcement functions Active Monitoring may call.
+3. The [onchain role](/ace/active-monitoring/guides/prepare-your-token) that lets your CRE Connect Wallet call those functions.
+4. A [monitoring rule](/ace/active-monitoring/concepts/monitoring-rules) that maps each TRM risk level to a response.
+5. A [watchlist](/ace/active-monitoring/concepts/screening) of the addresses to screen.
+
+Then you start screening. Nothing runs before that.
+
+## One alert, step by step
+
+1. **Screen.** At each scheduled run, Active Monitoring sends every watchlist address to TRM Wallet Screening with the TRM API key you stored. TRM returns the highest risk level of each address.
+2. **Detect a change.** Active Monitoring compares each risk level with the previous one. It raises a risk event for an address the first time it is screened and whenever its level changes. An address whose level stays the same raises no new event.
+3. **Match the rule.** Active Monitoring checks each risk event against the monitoring rule of every monitored token, on every network of that token. Each rule that matches creates a decision on that network.
+4. **Read the balance, if the rule asks for it.** When a rule has the balance condition and the risk level matches, Active Monitoring reads the balance of the address with `balanceOf(address)` on the token, through CRE Connect, on the network of the decision. The decision stays **Evaluating** until the balance arrives. The decision records the block of the reading.
+5. **Decide.** The rule's response sets the outcome: Silently log records it, Flag waits for a person, and Enforce creates an operation for each enforced action.
+6. **Act.** For each enforced action, Active Monitoring encodes the call to your enforcement function and creates an operation. CRE Connect executes it through your organization's CRE Connect Wallet. Who signs depends on your [signing model](/ace/active-monitoring/concepts/enforcement-and-security#signing-models).
+7. **Track.** The operation moves through the statuses **Submitted**, **Sending**, **Pending signature** (self-signing only), **Executing**, and **Success** or **Failed**. The decision shows the latest status.
+8. **Prove.** The decision keeps the TRM result as returned, the conditions that were evaluated, the balance reading, the arguments of each call, the operation, and who resolved or enforced it. See [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit).
+
+## What runs where
+
+| Part                                | What it does                                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| ACE Platform                        | Stores your configuration, calls TRM on schedule, evaluates your rules, and keeps decisions. |
+| TRM Wallet Screening                | Returns the risk level of each address. You provide your own TRM API key.                    |
+| [CRE Connect](/crec)                | Reads balances and executes operations, and reports their status back to ACE.                |
+| Your CRE Connect Wallet             | Executes the call on your token on each network. It needs the onchain role.                  |
+| Your token and associated contracts | Run the enforcement function. Active Monitoring never changes their code.                    |
+
+Active Monitoring does not run any code on your contracts and does not add a contract to your token. It needs only the ABI, the addresses, and the role.
+
+## How long each step takes
+
+The time between a risk change at TRM and a decision depends mostly on your screening interval: a change is seen at the next scheduled run. After a run, evaluation and the balance reading usually complete shortly after.
+
+For an Enforce response, the time to a confirmed operation then depends on the signing model and the network. With self-signing, the operation waits for your signer. With delegated signing, it does not wait for a signature, and the time is bounded by CRE Connect and the confirmation time of the network.
+
+A Flag response waits for a person for as long as it takes to review it.
+
+## What Active Monitoring does not do
+
+- It screens only the addresses on your watchlist. It does not discover your token holders or screen the counterparties of transfers.
+- It does not block a transaction. Preventive blocking is the role of [Policy Management](/ace/concepts/policy-management).
+- It does not grant or check onchain roles. You grant the role, and an operation fails if the role is missing.
+- It uses TRM as its only screening provider in Beta.
+
+## Next steps
+
+- [Watchlist and Screening](/ace/active-monitoring/concepts/screening): what is screened, how often, and what counts as a change.
+- [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules): how a risk level becomes an outcome.
+- [Active Monitoring Quick Start](/ace/active-monitoring/quick-start): set up the loop end to end.
+
+---
+
+# Monitored Tokens and Associated Contracts
+Source: https://docs.chain.link/ace/active-monitoring/concepts/monitored-tokens
+Last Updated: 2026-10-05
+
+A **monitored token** is a token contract you register with Active Monitoring so that [monitoring rules](/ace/active-monitoring/concepts/monitoring-rules) can read an address's balance and call enforcement functions on it. This page explains what you register, which functions Active Monitoring can call, and how one token maps to several networks.
+
+Registering a token does not change the contract and does not grant anything onchain. You grant the required role separately: see [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+
+## What you register
+
+A monitored token is a group of one primary token and, optionally, associated contracts.
+
+| Part                    | Purpose                                                                                                                                       | Required         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| **Primary token**       | The token you monitor. Rules attach to it, and Active Monitoring calls its `balanceOf(address)` function to read balances.                    | Yes, exactly one |
+| **Associated contract** | Another contract that an enforced action runs on, such as a separate blocklist or registry contract that your token's compliance logic reads. | No               |
+
+Use an associated contract when the control you need does not live on the token. A freeze acts on a balance, so it belongs on the token. A deny list often has its own owner and upgrade path, so it lives in its own contract. A rule can enforce on either contract. The Platform UI registers one associated contract. To register several, use the API.
+
+## Contract ABI and functions
+
+You upload the JSON ABI of each contract. Active Monitoring uses it to encode the calldata of the functions it calls. Only functions of type `function` are read from the file.
+
+- **Enforcement functions** are the write functions you select when you register the contract. Active Monitoring can call only these. A function that is in the ABI but not selected cannot be used in a rule or in a manual enforcement.
+- **Read functions** (`view` and `pure`) are registered automatically. Active Monitoring needs `balanceOf(address)` on the primary token to evaluate balance conditions.
+
+A function is available as an enforcement function when it meets all of these conditions:
+
+| Condition                                          | Why                                                                                    |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| It is a write function (`nonpayable` or `payable`) | Read functions cannot change state.                                                    |
+| Every input has a name                             | Rules map each argument by name.                                                       |
+| No input is an array or a tuple                    | Active Monitoring cannot type-check a mapping for these types.                         |
+| It has at least one input                          | Current Beta limit. A function with no arguments does not appear in the function list. |
+
+## Networks and addresses
+
+A token can have a different address on each network, or the same address on several.
+
+- Register each address with its network. The Platform UI lets you pick several networks for one address.
+- Only networks where your organization has a created [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) are available.
+- Register an associated contract on every network of the primary token. The Platform UI locks the networks of the associated contract to those of the primary token. The API does not check this: an action that targets a network where the associated contract has no address cannot run.
+- You can register a given address on a given network once. A second registration returns a conflict.
+
+## Decimals
+
+You enter the token's decimals when you register the primary token. Active Monitoring stores them to display balances in token units on a decision.
+
+Rules and parameter mapping use **raw base units**. The `Balance` parameter passes the exact `balanceOf` value, and a constant you type is sent as written, with no decimal scaling. For a token with 6 decimals, `1000000` is one token.
+
+## One configuration, one decision per network
+
+You configure the token once, and one monitoring rule applies to all of its networks. Active Monitoring evaluates the rule on every network of the token, so a single risk alert can produce a different decision on each network. For example, an address that holds a balance on one network and none on another gets a freeze on the first only.
+
+Each network produces its own decisions and operations. An operation that reverts on one network does not change what happens on another.
+
+## Limits in Beta
+
+You cannot edit or remove a monitored token after you register it. Check the addresses, networks, and ABI before you submit.
+
+## Next steps
+
+- [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): grant the role and prepare the ABI.
+- [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): register the token in the Platform UI or with the API.
+- [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules): decide what happens for each risk score.
+
+---
+
+# Monitoring Rules and Responses
+Source: https://docs.chain.link/ace/active-monitoring/concepts/monitoring-rules
+Last Updated: 2026-10-05
+
+A **monitoring rule** tells Active Monitoring what to do when TRM reports a risk level for a screened address. Each monitored token has one rule. Active Monitoring does nothing for a token until its rule exists: registering a token only describes it.
+
+## Risk levels and responses
+
+A rule maps each of the five TRM risk levels to one of three responses.
+
+| Response         | What happens                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| **Silently log** | Active Monitoring records the decision. Nothing else happens.                        |
+| **Flag**         | The decision waits in the Decisions log. A person resolves it or enforces an action. |
+| **Enforce**      | Active Monitoring creates an operation for each enforced action, with no review.     |
+
+In the Platform UI, you group levels that share a response in one **Decision logic** card. Every level must be in exactly one card. For example:
+
+| Risk level                       | Response     |
+| -------------------------------- | ------------ |
+| 15 - Severe                      | Enforce      |
+| 10 - High                        | Flag         |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log |
+
+Use Silently log and Flag while you learn how your watchlist behaves. Use Enforce for the levels where you accept an automatic action. See [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security) for what Enforce can do under each signing model.
+
+## Enforced actions
+
+An Enforce response contains one or more **enforced actions**. Each action calls one enforcement function:
+
+- **Enforce on**: the contract that runs the function, either the primary token or an associated contract. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens).
+- **Enforcement function**: one of the write functions you selected when you registered that contract.
+- **Parameter mapping**: where each argument of the function gets its value.
+
+The same contract and function pair cannot appear twice in one Decision logic card.
+
+### Parameter mapping
+
+Active Monitoring reads the argument names and types from the ABI. You choose only the value of each argument:
+
+| Source               | Value sent                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| **Screened address** | The address that TRM screened.                                                                    |
+| **Balance**          | The raw `balanceOf` value of the screened address on the primary token, in base units.            |
+| **Other** (constant) | A value you type. Active Monitoring sends it as written, and checks it against the argument type. |
+
+The Platform UI lists only the sources whose type fits the argument. For example, an `address` argument offers **Screened address**, and a `uint256` argument offers **Balance**. See [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values#parameter-mapping) for the full compatibility table.
+
+This is Active Monitoring's own parameter mapping. It is unrelated to the extractor mapping of [Policy Management](/ace/concepts/policy-management#the-extractor-and-mapper-pattern).
+
+### The balance condition
+
+Many enforcement functions only make sense when the address holds tokens. Freezing a balance of zero costs a transaction and changes nothing. Each enforced action has the option **Only execute if the address holds a balance on this token**.
+
+When you select it, Active Monitoring reads the balance of the screened address on the primary token, on the network of the decision, and runs the action only if the balance is greater than zero. When you do not select it, the action runs without reading the balance.
+
+> **CAUTION: Select the condition when you map Balance**
+>
+> The `Balance` source needs a balance reading, and the reading exists only when the condition is selected. Select the
+> condition on every enforced action that maps `Balance`.
+
+If the risk level matches but the balance is zero, the action does not run. The decision becomes **No balance - flag for review**, so that a person can decide what to do for an address that holds nothing.
+
+## One rule, several decisions
+
+An Enforce response with several actions is not one decision. The Platform UI turns the response into separate rules: actions with the balance condition go in one rule, and actions without it go in another. Active Monitoring evaluates each rule independently, so one risk event can create several decisions.
+
+For example, this Enforce response applies to **15 - Severe** on a token with two actions:
+
+| Action                                                                                       | Balance condition |
+| -------------------------------------------------------------------------------------------- | ----------------- |
+| `freezePartialTokens(_userAddress, _amount)` on the token, with `_amount` set to **Balance** | Selected          |
+| `addBlacklist(account, reason)` on an associated blocklist contract                          | Not selected      |
+
+For a Severe address, Active Monitoring evaluates two rules:
+
+| Address holds a balance on the network | Decision from the freeze rule | Decision from the blocklist rule |
+| -------------------------------------- | ----------------------------- | -------------------------------- |
+| Yes                                    | Freeze enforced               | Blocklist entry enforced         |
+| No                                     | No balance - flag for review  | Blocklist entry enforced         |
+
+Every decision is for one address on one network, so the same alert can produce different results on different networks. The blocklist entry above is added on every network, and the freeze runs only on networks where the address holds a balance.
+
+## A rule is immutable
+
+You cannot edit a rule. To change it, delete it and create a new one. Deleting the rule of a token removes the rule only: the token and its configuration stay.
+
+While a token has no rule, Active Monitoring creates no decisions for it. Risk events that occur in that period are not evaluated against the new rule later.
+
+## Next steps
+
+- [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules): create a rule in the Platform UI or with the API.
+- [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit): what each outcome means.
+
+---
+
+# Watchlist and Screening
+Source: https://docs.chain.link/ace/active-monitoring/concepts/screening
+Last Updated: 2026-10-07
+
+Screening is how Active Monitoring detects risk: it checks the addresses on your watchlist against TRM Wallet Screening on a schedule you choose. TRM Labs is the blockchain analytics provider that scores the risk of each address, and you use your own TRM account. This page explains what is screened, how a result becomes a risk event, and what limits apply.
+
+## The watchlist
+
+The **watchlist** is the list of wallet addresses that Active Monitoring screens. You build it from a CSV file or from an [ACE identity registry](/ace/guides/identity-manager/manage-registries). See [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist).
+
+The watchlist belongs to your organization, not to one token. Active Monitoring evaluates every watchlist address against the monitoring rule of every monitored token, on each network of that token.
+
+Active Monitoring screens only these addresses. It does not read your token's holder list and does not screen the counterparties of transfers.
+
+## TRM risk levels
+
+TRM returns one risk level for each screened address: **Severe** (score 15), **High** (10), **Medium** (5), **Low** (1), or **Unknown** (0). Active Monitoring asks TRM about the address across all the networks that TRM covers, so the level applies to the address as a whole, not to one network.
+
+Your monitoring rule maps each level to a response. See [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values#trm-risk-levels) for the scores and API values.
+
+TRM also returns the categories behind the level, for example sanctions exposure or mixer activity. Active Monitoring keeps the full TRM result with each decision. You can read it in the **TRM raw data** tab of the decision.
+
+## Schedule
+
+You choose how often Active Monitoring screens, in whole hours, when you [add your TRM API key](/ace/active-monitoring/guides/configure-screening). The Platform UI offers 6, 12, and 24 hours. The API accepts 1 to 168 hours.
+
+Screening starts when you click **Start screening**, or call `POST /active-monitoring/screening-interval/start`. The first run starts immediately, and later runs repeat at the interval. Each run screens the whole watchlist.
+
+The **Decisions log** header shows when the least recently screened address was screened, and the interval: for example, "Last screened 2:15 hrs ago | Updates every 6 hrs".
+
+If TRM cannot screen some addresses in a run, for example because the API key is invalid or TRM is unavailable, those addresses keep their previous result and are tried again at the next run.
+
+## When a result becomes a risk event
+
+A screening result does not always lead to a decision. Active Monitoring raises a **risk event** only when:
+
+- an address is screened for the first time, or
+- the highest risk level of an address differs from the level of the previous run.
+
+An address that stays at the same level raises no new event, so it produces no new decision. For example, an address that is **Severe** at the first run, and **Severe** at every later run, produces one decision for each matching rule, at the first run only.
+
+This has three consequences:
+
+- A monitoring rule reacts to **new** events. When you create or replace a rule, addresses whose level does not change are not evaluated again.
+- A decision reflects the balance at the moment of the event, not later. An address that gets a balance after its decision does not trigger a new decision until its level changes.
+- To see Active Monitoring act on an address again, its risk level must change.
+
+## Limits
+
+| Item               | Limit                                                            |
+| ------------------ | ---------------------------------------------------------------- |
+| Watchlist size     | No fixed limit                                                   |
+| Screening provider | TRM only                                                         |
+| Screening interval | 6, 12, or 24 hours in the Platform UI; 1 to 168 hours in the API |
+| TRM API keys       | One per organization                                             |
+
+You need a TRM API key for [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening). Active Monitoring does not provide TRM credentials. See the TRM website for how to get access.
+
+## Next steps
+
+- [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist): add the addresses to screen.
+- [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening): store the key and start screening.
+- [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules): decide what happens for each risk level.
+
+---
+
+# Decisions, Review, and Audit Trail
+Source: https://docs.chain.link/ace/active-monitoring/concepts/decisions-and-audit
+Last Updated: 2026-10-05
+
+A **decision** is the record Active Monitoring keeps each time a monitoring rule matches a risk event for an address on one network. The **Decisions log** lists them. This page explains the outcomes, how a person reviews a flagged decision, and what each decision keeps as evidence.
+
+## One decision per rule, address, and network
+
+When a risk event matches a rule, Active Monitoring creates one decision for that rule, that address, and each network of the monitored token. A rule that does not match creates no decision, so the log lists only what Active Monitoring acted on or recorded.
+
+A single risk alert can therefore produce several decisions: one per matching rule and per network. See [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#one-rule-several-decisions).
+
+## Decision outcomes
+
+| Outcome in the Decisions log                                         | What it means                                                                                |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **Evaluating**                                                       | The rule is still being evaluated, usually while the balance is read.                        |
+| **Logged**                                                           | A rule with the Silently log response matched. Nothing else happens.                         |
+| **Flag for review**                                                  | A rule with the Flag response matched. A person must act.                                    |
+| **No balance - flag for review**                                     | The risk level matched an Enforce rule, but the address holds no balance. A person must act. |
+| A function signature, such as `freezePartialTokens(address,uint256)` | A rule with the Enforce response created an operation.                                       |
+| The same, from a person                                              | A person enforced an action on a flagged decision.                                           |
+| **Resolved**                                                         | A person closed a flagged decision with a reason, and no action was taken.                   |
+
+For the API values and the operation statuses, see [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values).
+
+## Review a flagged decision
+
+A flagged decision stays open until a person closes it. There are two ways to close it:
+
+- **Resolve** records a required reason and closes the decision without any onchain action. The reason is recorded with the person who resolved it.
+- **Enforce action** lets the reviewer choose a contract, an enforcement function, and the argument values, and creates an operation. Every argument is a constant: a source such as **Balance** is replaced by the value read for that decision.
+
+Both actions are final. A decision that is resolved or enforced cannot be flagged again, and a person cannot act on a decision that is not flagged. Both actions require a signed-in user, so the record always names a person.
+
+See [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions) for the steps.
+
+## Operations
+
+When a decision creates an operation, the decision shows the status of the operation, from **Submitted** to **Success** or **Failed**. The **Operations activity** card keeps every status with its time.
+
+An operation that fails stays failed. To try again, enforce the action manually from a flagged decision, or wait for the next risk event on that address. The most common cause of a failure is a missing onchain role. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+
+A failed operation shows as **Failed** in the **Operation status** column of the Decisions log. Open the decision: the **Action · Enforcement failed** card shows the CRE Connect operation ID. Use it to look up what happened to the operation in CRE Connect.
+
+## What each decision keeps
+
+A decision is the audit record of one evaluation. It holds:
+
+| Evidence                    | Where to find it                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| The TRM result, as returned | **TRM raw data** tab. Active Monitoring stores the full response for the address.                            |
+| The rule that matched       | **Rule · Matched** card: the response and each condition, marked **Condition met** or **Condition not met**. |
+| The balance reading         | **Rule · Matched** card: the balance, the time of the reading, and the block it was read at.                 |
+| The enforced action         | **Action** card: the contract, the function, and the value sent for each argument.                           |
+| The operation               | **Action** card and **Operations activity**: the operation ID, and each status with its time.                |
+| Who acted on it             | **Action** card: the person who resolved the decision and the reason, or who enforced the action.            |
+| Every step, in order        | The activity history of the decision, in the API: append-only, oldest first, with the actor of each step.    |
+
+The record is created as the events happen, not rebuilt afterward. The API returns the same data, including the transaction hash of an operation once it is known.
+
+Read decisions with the Coordinator API. The [Reporting API](/ace/concepts/reporting) does not cover Active Monitoring data.
+
+## Next steps
+
+- [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions): read the log and act on flagged decisions.
+- [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security): what Active Monitoring can and cannot do.
+
+---
+
+# Enforcement and Security Model
+Source: https://docs.chain.link/ace/active-monitoring/concepts/enforcement-and-security
+Last Updated: 2026-10-05
+
+This page explains what Active Monitoring can do with the role you grant on your token, which controls you keep, and how to start with limited authority. Read it before you set a response to Enforce.
+
+## What Active Monitoring can do
+
+An enforced action calls a function on your token or on an associated contract. Active Monitoring can create such a call only when all of these hold:
+
+- The function is one you selected when you registered the contract. Active Monitoring builds calls only from the ABI functions you registered, so it cannot construct a call to any other function.
+- The call comes from a monitoring rule you created, or from a signed-in user who enforces an action on a flagged decision.
+- The arguments come from the rule: the screened address, the balance read for that address, or constants you typed.
+- The call runs through your organization's CRE Connect Wallet on the network of the decision.
+
+## What Active Monitoring cannot do
+
+- It cannot call a function you did not register, or run code on your contracts.
+- It cannot act on another organization's tokens.
+- It cannot succeed without the onchain role. If your CRE Connect Wallet lacks the role, the call reverts and the operation fails.
+- It does not grant, check, or manage roles. You do that on your contract.
+
+## The onchain role is the boundary
+
+The role you grant to your CRE Connect Wallet defines what an operation can do. ACE configuration narrows it further, but the contract enforces it:
+
+- **Grant only what you need.** Roles are defined by your contract. In an ERC-3643 (T-REX) token, the agent role covers every `onlyAgent` function, including `mint`, `burn`, and `pause`, not only the functions you selected in ACE. Active Monitoring calls only the registered functions, but the role allows more. If you need onchain least privilege, put a guard contract in front of the token and register that contract, or restrict the wallet with an access check that lists exact functions.
+- **Revoke at any time.** Removing the role stops enforcement immediately: the next operation reverts. You do not need ACE for this.
+- **Rules cannot exceed the role.** A rule that enforces a function your wallet cannot call produces failed operations, not unauthorized changes.
+
+See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token) for the steps.
+
+## Signing models
+
+Your organization chooses a signing model when it is onboarded. Both models use the same CRE Connect Wallet, and you own your contracts in both. Only the approval step differs. See [Signing and Ownership Model](/ace/concepts/signing-ownership) for the full model.
+
+| Signing model    | What happens when a rule enforces an action                                                                                                                 | Automatic execution |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| **Delegated**    | Chainlink signs and executes the operation on your behalf, as the authorized operator of your CRE Connect Wallet, within the rule and onchain role you set. | Yes                 |
+| **Self-signing** | The operation waits with the status **Pending signature** until you sign it with your own key.                                                              | No                  |
+
+Choose the model that fits how much automation you accept. With delegated signing, an Enforce response executes as soon as a risk event matches, within the rule you defined and the onchain role you granted. With self-signing, an Enforce response prepares each operation, and your signer signs it before it executes. This adds a human checkpoint to every action and delays it until someone signs.
+
+## Start with limited authority
+
+You can run Active Monitoring without enforcement and add it step by step:
+
+1. Map every risk level to **Silently log** or **Flag**. You see what the rule would have caught, and no operation is created.
+2. Review flagged decisions. Use **Enforce action** on the cases you decide to act on.
+3. Move the risk levels you trust to **Enforce**.
+
+Until you grant the onchain role, an Enforce response creates operations that revert. The token is effectively detect-only.
+
+## Control who can change monitoring
+
+Anyone with your organization API key can create and delete monitoring rules, register tokens, and change the watchlist. Resolving or enforcing a flagged decision requires a signed-in user, so the record names a person. Protect the API key as described in [ACE API Overview](/ace/reference/apis#authentication).
+
+## Data and keys
+
+- **TRM API key.** Active Monitoring stores your key encrypted and never shows it again. The API returns only its last four characters. Removing the key deletes it.
+- **TRM results.** Each decision keeps the full TRM response for the address. It can contain entity names and risk categories. Your organization can read it in the Platform and the API.
+- **Onchain data.** The arguments of an enforced call are written onchain. A constant such as a reason string is public. Do not put personal data in it.
+
+## Next steps
+
+- [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): grant the role and prepare the ABI.
+- [Signing and Ownership Model](/ace/concepts/signing-ownership): how each signing model works across ACE.
+
+---
+
+# Active Monitoring Guides
+Source: https://docs.chain.link/ace/active-monitoring/guides
+Last Updated: 2026-10-05
+
+These guides cover the tasks you repeat when you run Active Monitoring: from preparing a token to reviewing the decisions that screening produces. Each guide has Platform UI steps and Coordinator API requests.
+
+> **NOTE**
+>
+> New to Active Monitoring? Start with the [Active Monitoring Quick Start](/ace/active-monitoring/quick-start) for a
+> step-by-step setup, or read [How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works) first.
+
+## Typical order
+
+1. [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): grant your CRE Connect Wallet the onchain role and prepare the ABI.
+2. [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening): store the key and choose how often to screen.
+3. [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): register the token and its associated contracts.
+4. [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules): map each risk level to a response.
+5. [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist): add the addresses to screen.
+6. Start screening, from the same guide as step 2.
+7. [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions): read the Decisions log, and resolve or enforce flagged decisions.
+
+## Available guides
+
+- [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): the onchain role that enforcement needs, and the ABI file.
+- [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening): store or remove the key, set the interval, start or stop screening.
+- [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): register and view tokens and associated contracts.
+- [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules): create, view, and delete the rule of a token.
+- [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist): add addresses from a CSV file or an identity registry.
+- [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions): list and open decisions, resolve or enforce, track operations.
+- [Troubleshoot Active Monitoring](/ace/active-monitoring/guides/troubleshooting): causes and fixes for common problems.
+- [Rule Examples](/ace/active-monitoring/guides/rule-examples): ready-to-adapt rules for common token designs.
+
+## Related pages
+
+- [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values): every value and limit.
+- [Active Monitoring API](/ace/active-monitoring/reference/api): the endpoints by task.
+
+---
+
+# Prepare Your Token
+Source: https://docs.chain.link/ace/active-monitoring/guides/prepare-your-token
+Last Updated: 2026-10-05
+
+Before Active Monitoring can enforce an action on your token, grant your CRE Connect Wallet the onchain role that each enforcement function requires, and prepare the JSON ABI you will upload.
+
+An **enforcement function** is a function on your token or on an associated contract that Active Monitoring calls when a rule enforces an action, such as `freezePartialTokens` or a blocklist function. Active Monitoring calls it through your organization's [CRE Connect Wallet](/ace/concepts/signing-ownership) on that network. If the wallet lacks the required role, the call reverts. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens) for the full model.
+
+## Prerequisites
+
+- A [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) on every network where your token runs.
+- Admin authority on the token and on each associated contract: the account that can change who may call their functions.
+- The JSON ABI of the token, and of any associated contract you plan to enforce on.
+
+> **NOTE: The role depends on your contract**
+>
+> Active Monitoring needs only one thing: your CRE Connect Wallet must be allowed to call the enforcement functions. How
+> you allow it depends on the contract. This guide uses a standard ERC-3643 (T-REX) token, where the owner adds the
+> wallet as an agent. Other contracts use an OpenZeppelin `AccessControl` role, an owner-only function, or another
+> check. Use the access check your contract implements.
+
+## Grant the role to your CRE Connect Wallet
+
+1. List the actions you want Active Monitoring to take, and the function that performs each one. For example, freeze a balance with `freezePartialTokens(address,uint256)` and block an address with a blocklist function.
+2. For each function, find the access check in the contract.
+3. Copy the address of your CRE Connect Wallet on each network. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Home**, click **View settings**, and open the **ACE wallets** tab. Through the API, send `GET /wallets`.
+4. On each network, allow the wallet to call each function, as described in the next sections.
+
+### Example: a standard ERC-3643 token
+
+In a standard ERC-3643 (T-REX) token, the owner adds the wallet as an agent. The agent role covers every `onlyAgent` function, including `mint`, `burn`, and `pause`, not only the functions you select. Active Monitoring calls only the functions you register and map in a rule, but the role allows more. Review your contract to know what else the role allows.
+
+Call `addAgent(address)` on the token from the owner account, with any tool you use to send transactions, such as a multisig, a script, or a block explorer. The following example uses [Foundry's `cast`](https://book.getfoundry.sh/cast/). Replace the placeholders with your token address, the wallet address of the network, and your RPC URL:
+
+```bash
+cast send <TOKEN_ADDRESS> "addAgent(address)" <CRE_CONNECT_WALLET_ADDRESS> \
+  --rpc-url <RPC_URL> \
+  --private-key <TOKEN_OWNER_PRIVATE_KEY>
+```
+
+Confirm the grant by calling `isAgent(address)`. It returns `true` when the wallet is an agent:
+
+```bash
+cast call <TOKEN_ADDRESS> "isAgent(address)(bool)" <CRE_CONNECT_WALLET_ADDRESS> \
+  --rpc-url <RPC_URL>
+```
+
+Repeat on every network of the token.
+
+### Example: an associated contract
+
+An associated contract has its own access check. For a blocklist that has an operator role, grant the wallet that role on each network. The following example uses `cast` again:
+
+```bash
+cast send <BLOCKLIST_ADDRESS> "setOperator(address,bool)" <CRE_CONNECT_WALLET_ADDRESS> true \
+  --rpc-url <RPC_URL> \
+  --private-key <BLOCKLIST_OWNER_PRIVATE_KEY>
+```
+
+### Example: a token that uses ACE policies
+
+If your token also uses ACE for preventive enforcement, a [RoleBasedAccessControlPolicy](/ace/reference/policy-library/role-based-access-control-policy) on its policy engine can decide who calls each function. In that case, [create the policy](/ace/guides/policy-manager/manage-policies#create-a-policy-instance), assign the role to your CRE Connect Wallet, and [attach the policy](/ace/guides/policy-manager/manage-protections#create-a-target-protection) to each enforcement function. Active Monitoring does not require ACE policies on your token.
+
+> **CAUTION: Without the role, the token is detect-only**
+>
+> Active Monitoring still screens addresses and creates decisions when the role is missing. Each enforcement operation
+> is submitted and reverts onchain, and the decision shows the operation status **Failed**. Grant the role on every
+> network before you start screening if you want enforcement to work.
+
+## Prepare the ABI
+
+Active Monitoring needs a JSON ABI for each contract you register. Use the ABI that your compiler produces: a JSON array of entries. Only entries with `type` set to `function` are read.
+
+For each function, the entry must include `name`, `inputs`, `outputs`, and `stateMutability`. To enforce a function, every input must have a name and none can be an array or tuple. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens#contract-abi-and-functions) for all conditions.
+
+If you plan to use the balance condition in a rule, the primary token ABI must include `balanceOf(address)`.
+
+The following fragment is a valid ABI for a token that has a balance getter and two enforcement functions:
+
+```json
+[
+  {
+    "type": "function",
+    "name": "balanceOf",
+    "stateMutability": "view",
+    "inputs": [{ "name": "_userAddress", "type": "address" }],
+    "outputs": [{ "name": "", "type": "uint256" }]
+  },
+  {
+    "type": "function",
+    "name": "freezePartialTokens",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "_userAddress", "type": "address" },
+      { "name": "_amount", "type": "uint256" }
+    ],
+    "outputs": []
+  },
+  {
+    "type": "function",
+    "name": "setAddressFrozen",
+    "stateMutability": "nonpayable",
+    "inputs": [
+      { "name": "_userAddress", "type": "address" },
+      { "name": "_freeze", "type": "bool" }
+    ],
+    "outputs": []
+  }
+]
+```
+
+## Stop Active Monitoring from acting
+
+You control enforcement from your token, not only from ACE:
+
+- **Revoke the role.** Use the revocation mechanism of your contract: remove the wallet's role assignment from the `RoleBasedAccessControlPolicy`, call `removeAgent(address)` on an ERC-3643 token, or the equivalent. Enforcement operations then revert. The change takes effect on the next operation.
+- **Delete the monitoring rule.** Active Monitoring stops creating decisions for the token. See [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules).
+
+## Next steps
+
+- [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): register the token and its associated contract.
+- [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security): what Active Monitoring can and cannot do with the role you grant.
+
+---
+
+# Configure the TRM API Key and Screening Schedule
+Source: https://docs.chain.link/ace/active-monitoring/guides/configure-screening
+Last Updated: 2026-10-05
+
+Active Monitoring screens your watchlist with TRM Wallet Screening, using your own TRM API key, on the schedule you choose. TRM Labs is the blockchain analytics provider that scores the risk of each address. The **screening interval** is how often Active Monitoring screens the whole watchlist. This guide covers four operations: store the key, set the screening interval, start screening, and remove the key. For how screening works, see [Watchlist and Screening](/ace/active-monitoring/concepts/screening).
+
+## Prerequisites
+
+- A TRM Labs account with access to the [Wallet Screening API](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening), and its API key from your TRM Labs dashboard.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key). It is a different key from your TRM API key.
+
+## Store the TRM API key and choose the interval
+
+## Start screening
+
+Starting screening needs four things to exist: the TRM API key, a screening interval, a [monitoring rule](/ace/active-monitoring/guides/configure-monitoring-rules) on at least one token, and at least one address on the [watchlist](/ace/active-monitoring/guides/manage-watchlist). The first run starts immediately and repeats at the interval.
+
+## Stop screening
+
+## Remove the TRM API key
+
+Removing the key stops screening: Active Monitoring has no key to call TRM with, and it screens nothing until you store a new key. Decisions already created stay in the log.
+
+## Next steps
+
+- [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions): read the decisions that screening produces.
+- [Troubleshoot Active Monitoring](/ace/active-monitoring/guides/troubleshooting): find out why no decision appears.
+
+---
+
+# Manage Monitored Tokens
+Source: https://docs.chain.link/ace/active-monitoring/guides/manage-monitored-tokens
+Last Updated: 2026-10-05
+
+A **monitored token** is a token contract you register with Active Monitoring, optionally with associated contracts that enforcement actions can run on. This guide covers the two operations available for monitored tokens: register one, and view them. After you register a token, you [configure a monitoring rule](/ace/active-monitoring/guides/configure-monitoring-rules) for it.
+
+## Prerequisites
+
+- A [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) on every network where the token runs. Only these networks are offered.
+- The token address on each network, and the JSON ABI of the token. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+- If enforcement runs on a separate contract, its address on every network of the token and its ABI.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
+
+## Register a monitored token
+
+A monitored token has a **primary** contract, which is your token, and optionally one or more **associated** contracts. You select the **enforcement functions** of each contract: the functions that Active Monitoring may call when a rule enforces an action. In most cases the token itself has the functions you need, such as `freezePartialTokens`, so you register the primary contract alone. Add an associated contract only when an action must run on a different contract, for example a separate blocklist that your token does not call.
+
+## View monitored tokens
+
+## Edit or remove a monitored token
+
+You cannot edit or remove a monitored token after you register it. Check the addresses, networks, and ABI before you submit.
+
+## Next steps
+
+- [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules): choose what happens for each risk score.
+- [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist): add the addresses to screen.
+
+---
+
+# Configure Monitoring Rules
+Source: https://docs.chain.link/ace/active-monitoring/guides/configure-monitoring-rules
+Last Updated: 2026-10-05
+
+A **monitoring rule** maps each TRM risk level to a response (Silently log, Flag, or Enforce) for one monitored token. This guide covers three operations: create the rule, view it, and delete it. For how rules behave, including why one rule can create several decisions, see [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules).
+
+A token has one active rule, and you cannot edit it. To change a rule, delete it and create a new one.
+
+## Prerequisites
+
+- A [monitored token](/ace/active-monitoring/guides/manage-monitored-tokens), with the enforcement functions you want to use.
+- For an Enforce response with the balance condition, a primary token ABI that includes `balanceOf(address)`.
+- The [onchain role](/ace/active-monitoring/guides/prepare-your-token) granted to your CRE Connect Wallet on every network, so that enforced actions do not revert.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
+
+## Create a monitoring rule
+
+The following rule is used in both tabs. It applies to a token called Example Treasury Fund, registered as in [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): the token has the enforcement function `freezePartialTokens`, and an associated contract called Example Blocklist has `addBlacklist`. The blocklist is only an example of an action on a second contract. If you registered your token alone, keep the freeze and leave out the blocklist action.
+
+TRM gives each address a risk level, from 0 - Unknown to 15 - Severe. See [Watchlist and Screening](/ace/active-monitoring/concepts/screening) for how the level is chosen. The rule chooses a response for each level:
+
+| Risk level                       | Response     | Detail                                                                                                                                                                          |
+| -------------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 15 - Severe                      | Enforce      | Freeze the balance with `freezePartialTokens(_userAddress, _amount)`, only if the address holds a balance. Add the address to a blocklist with `addBlacklist(account, reason)`. |
+| 10 - High                        | Flag         | A person reviews the address.                                                                                                                                                   |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log | Record only.                                                                                                                                                                    |
+
+## View a monitoring rule
+
+## Delete a monitoring rule
+
+Deleting a rule archives it. Active Monitoring stops creating decisions for the token until you create a new rule. Existing decisions stay in the log.
+
+## Next steps
+
+- [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist): add the addresses to screen.
+- [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening): start screening.
+
+---
+
+# Manage the Watchlist
+Source: https://docs.chain.link/ace/active-monitoring/guides/manage-watchlist
+Last Updated: 2026-10-07
+
+The **watchlist** is the set of wallet addresses that Active Monitoring screens with TRM. This guide covers the three watchlist operations: add addresses from a CSV file, add addresses from an identity registry, and view the list. For how screening uses the watchlist, see [Watchlist and Screening](/ace/active-monitoring/concepts/screening).
+
+The watchlist belongs to your organization and is shared by all your monitored tokens. Add the addresses you want to watch, such as holders of your token. Each address is listed with one or more networks, identified by **chain selector**: the unique ID that Chainlink assigns to a network. Find selectors in [Supported Networks](/ace/supported-networks).
+
+The watchlist has no fixed size limit. The Platform UI accepts up to 100 rows per CSV upload: upload several files to add more. The API does not enforce this limit per request.
+
+## Prerequisites
+
+- To upload a file, a CSV with one row per address. The format is described in the next section.
+- To import from a registry, an [identity registry](/ace/guides/identity-manager/manage-registries) in your organization that contains registered identities. Only organizations that use the Identity Manager can use this option.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
+
+## Add addresses from a CSV file
+
+### CSV format
+
+The file needs two columns, with these exact header names (case-insensitive): `address` and `chain_selector`.
+
+- Use one row per address.
+- Set `chain_selector` to the chain selector of the network, not its name. Find selectors in [Supported Networks](/ace/supported-networks).
+- To list several networks for one address, wrap the selectors in quotes and separate them with commas.
+
+The following file adds two addresses. The second address is listed on two networks:
+
+```csv
+address,chain_selector
+0x5555555555555555555555555555555555555555,16015286601757825753
+0x6666666666666666666666666666666666666666,"16015286601757825753,3478487238524512106"
+```
+
+The Platform UI checks the file before it sends anything: the headers, the address format, that each network is supported, and the 100-row limit. It does not check for duplicates. If an address appears twice in the file, or is already on the watchlist, the whole upload fails and no address is added.
+
+The networks you list for an address do not change what is screened or where decisions are created. TRM screens an address across all the networks it covers, and Active Monitoring evaluates a risk event on every network of each monitored token.
+
+## Add addresses from an identity registry
+
+An identity registry holds the wallet addresses of your registered identities. Importing a registry adds every active onchain address of its identities to the watchlist, so you do not maintain a separate list.
+
+The import is a snapshot of the registry at the time you import it. Addresses you add to the registry later are not added to the watchlist.
+
+## View the watchlist
+
+## Remove addresses
+
+You cannot remove an address from the watchlist in Beta, in the Platform UI or in the API.
+
+## Next steps
+
+- [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening): start screening the watchlist.
+- [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions): see the decisions that screening produces.
+
+---
+
+# Review Decisions and Track Operations
+Source: https://docs.chain.link/ace/active-monitoring/guides/review-decisions
+Last Updated: 2026-10-05
+
+A **decision** is the record Active Monitoring keeps when a monitoring rule matches a risk event for an address on one network. This guide covers four operations: list decisions, open one, resolve or enforce a flagged decision, and track the operation behind an enforced decision. For the outcomes and the evidence a decision keeps, see [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit).
+
+Most decisions need nothing from you: a **silently logged** decision is a record only, and an **enforced** decision already ran its action. You act on **flagged** decisions, which wait for a person to review the address. You can then resolve the decision, or enforce an action yourself.
+
+## Prerequisites
+
+- Screening is running, and at least one risk event matched a rule. See [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
+- To resolve or enforce a flagged decision, a signed-in user. These two actions are available in the Platform UI only.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
+
+## List decisions
+
+## Open a decision
+
+## Resolve a flagged decision
+
+Resolve a flagged decision when you review it and decide that no onchain action is needed. The decision closes, and your reason is recorded with your name.
+
+## Enforce an action on a flagged decision
+
+Enforce an action when you decide that the address needs an onchain action. You choose the function and the values, and Active Monitoring creates the operation on the network of the decision.
+
+## Track an operation
+
+Each enforced decision links to an operation. Its status moves forward until it is final:
+
+| Status                | Meaning                                                                          |
+| --------------------- | -------------------------------------------------------------------------------- |
+| **Submitted**         | Active Monitoring created the operation.                                         |
+| **Sending**           | The operation is being sent to CRE Connect.                                      |
+| **Pending signature** | The operation waits for your signer. This status appears only with self-signing. |
+| **Executing**         | The operation is signed and executing onchain.                                   |
+| **Success**           | The operation is confirmed onchain.                                              |
+| **Failed**            | The operation failed. The most common cause is a missing onchain role.           |
+
+In the Platform UI, the status is in the **Operation status** column and in **Operations activity**. In the API, it is in `activity_history` of each enforced action, and `transaction_hash` holds the hash once the transaction is known.
+
+**Pending signature** means your signer must approve the operation before it runs. See [Signing and Ownership Model](/ace/concepts/signing-ownership#signing-in-active-monitoring) for how you sign.
+
+If an operation fails, open the decision. The **Action · Enforcement failed** card shows the CRE Connect operation ID, which you can use to see what happened. Then fix the cause, and enforce the action again from a flagged decision, or wait for the next risk event on that address. See [Troubleshoot Active Monitoring](/ace/active-monitoring/guides/troubleshooting).
+
+## Next steps
+
+- [Troubleshoot Active Monitoring](/ace/active-monitoring/guides/troubleshooting): why a decision is missing, stuck, or failed.
+- [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values): every outcome and status value.
+
+---
+
+# Troubleshoot Active Monitoring
+Source: https://docs.chain.link/ace/active-monitoring/guides/troubleshooting
+Last Updated: 2026-10-07
+
+This guide lists the problems you are most likely to hit with Active Monitoring, with the cause and the fix for each. Find your symptom, then follow the steps.
+
+## The Start screening button is disabled
+
+Starting screening needs a TRM API key, a monitored token with an active monitoring rule, and at least one watchlist address. Hover over the button to see which one is missing, then complete it:
+
+- [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening)
+- [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules)
+- [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist)
+
+The API returns `400` from `POST /active-monitoring/screening-interval/start` in the same case, and also when no screening interval is set.
+
+## No decision appears
+
+Check these causes in order:
+
+1. **Screening has not started, or has not run yet.** The **Decisions log** header shows when the watchlist was last screened. If it shows no time, start screening. After you start, the first run creates decisions as soon as it completes. Later runs follow the screening interval.
+2. **The risk level of the address did not change.** Active Monitoring raises a risk event the first time an address is screened and when its level changes. An address that keeps the same level creates no new decision. See [Watchlist and Screening](/ace/active-monitoring/concepts/screening#when-a-result-becomes-a-risk-event).
+3. **The token has no active rule.** A token without a rule shows **Missing rule** in **Monitored tokens**. Create the rule, then wait for the next risk event.
+4. **No rule matches the risk level.** The Platform UI requires all five levels. If you created the rule with the API, a level without a rule creates no decision.
+5. **TRM could not screen the address.** If the TRM API key is wrong or removed, Active Monitoring screens nothing. Add the key again. Active Monitoring does not check the key when you save it.
+
+## A decision stays on Evaluating
+
+A rule that has the balance condition reads the balance of the address through CRE Connect before it decides. The decision shows **Evaluating** until the reading arrives. Wait a few minutes and refresh the log.
+
+If it stays on **Evaluating**, check that the primary token ABI includes `balanceOf(address)` and that the address and network of the token are correct.
+
+## The decision says No balance - flag for review
+
+The risk level matched an Enforce rule, but the rule runs the action only if the address holds a balance, and the address holds none on that network. Active Monitoring does not run the action. Review the decision, then resolve it or enforce a different action. See [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#the-balance-condition).
+
+## An operation stays on Pending signature
+
+Your organization uses self-signing. The operation waits for your signer to approve it before CRE Connect executes it. See [Signing and Ownership Model](/ace/concepts/signing-ownership#signing-in-active-monitoring).
+
+## An operation failed
+
+The operation was submitted and did not succeed. Open the decision: the **Action · Enforcement failed** card shows the CRE Connect operation ID, which you can use to see what happened. Check these causes:
+
+- **The CRE Connect Wallet has no role on the contract.** The function call reverts. Grant the role on that network. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+- **The role was revoked.** Operations revert from the moment you revoke it.
+- **The contract rejects the call.** For example, the function refuses an amount larger than the balance, or the address is already in the state the function sets. Open the transaction in the block explorer of the network, using the operation ID or the transaction hash in the decision.
+- **The wrong contract address was registered.** Compare the addresses on the token page with the deployed contracts.
+
+After you fix the cause, enforce the action again from a flagged decision, or wait for the next risk event on that address.
+
+## Creating a monitoring rule fails
+
+| Message or status                                                  | Cause and fix                                                                                                                          |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| This token already has a monitoring rule (`409`)                   | A token has one active rule. Delete the rule, then create the new one.                                                                 |
+| The primary contract needs a `balanceOf(address)` function (`400`) | The balance condition reads the balance with this function. You cannot edit a registered token: contact your Chainlink representative. |
+| An argument is not mapped, or has the wrong type (`400`)           | Map every argument of the function. Use a source that fits the argument type, or a valid constant.                                     |
+| The function is not a write function (`400`)                       | Select a function that changes state. Read functions cannot be enforced.                                                               |
+
+## A watchlist upload fails
+
+| Symptom                                  | Cause and fix                                                                                                      |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Missing required column(s)               | The file needs the headers `address` and `chain_selector`.                                                         |
+| CSV exceeds 100 items limit              | Split the file. The Platform UI accepts up to 100 rows per upload. Upload several files.                           |
+| A row shows an address or network error  | Fix the row. Addresses must be valid, and `chain_selector` must be a supported chain selector, not a network name. |
+| The upload fails and no address is added | An address appears twice in the file or is already on the watchlist. Remove the duplicates and upload again.       |
+
+## Registering a token fails
+
+- **A network is missing from the network list.** Only networks where your organization has a created CRE Connect Wallet appear. Create the wallet in the general settings.
+- **The token already exists.** An address can be registered once on a network.
+- **You registered a wrong address or ABI.** You cannot edit or remove a registered token in Beta. Contact your Chainlink representative.
+- **No enforcement function in the list.** The ABI has no write function that qualifies. A function must have named inputs, no array or tuple inputs, and at least one input. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens#contract-abi-and-functions).
+
+## Next steps
+
+- [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): the onchain role that enforcement needs.
+- [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values): every status and limit.
+
+---
+
+# Rule Examples
+Source: https://docs.chain.link/ace/active-monitoring/guides/rule-examples
+Last Updated: 2026-10-05
+
+These examples show how to fill the **Decision logic** cards of a [monitoring rule](/ace/active-monitoring/concepts/monitoring-rules) for common token designs. Each one lists the settings for the Platform UI. To create the same rule with the API, see [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules#create-a-monitoring-rule).
+
+The examples illustrate what is possible. They are not recommendations: the right responses depend on your token, your compliance policy, and how much automation you accept. Function names and argument names come from each example's ABI, so match them to your own contract. In the tables, **Screened address** is the address that TRM flagged, and **Balance** is that address's balance of the token.
+
+## Detect only
+
+Use this to learn what your watchlist produces before any onchain action. No role is needed, and no operation is created.
+
+| Risk level                       | Response     |
+| :------------------------------- | :----------- |
+| 15 - Severe, 10 - High           | Flag         |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log |
+
+Severe and High addresses appear as **Flag for review**. A person resolves each one or enforces an action. When you trust the results, [delete the rule and create a new one](/ace/active-monitoring/guides/configure-monitoring-rules#delete-a-monitoring-rule) that enforces.
+
+## A blocklist function on the token
+
+Use this when the token itself has a function that blocks an address, for example `blacklist(address account)`. No associated contract is needed.
+
+| Risk level                       | Response     |
+| :------------------------------- | :----------- |
+| 15 - Severe                      | Enforce      |
+| 10 - High                        | Flag         |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log |
+
+For the Enforce response, add one action:
+
+| Field                                           | Value                                                                                                      |
+| :---------------------------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| **Enforce on**                                  | The token                                                                                                  |
+| **Enforcement function**                        | `blacklist(address)`                                                                                       |
+| **Parameter mapping**, `account`                | **Screened address**                                                                                       |
+| **Only execute if the address holds a balance** | Not selected: the address is blocked even if it holds nothing, which stops it from receiving tokens later. |
+
+## Freeze an address
+
+Use this on a token with a function that freezes an address, for example `setAddressFrozen(address _userAddress, bool _freeze)` on an ERC-3643 token. A frozen address cannot send or receive tokens through regular transfers.
+
+For the Enforce response, add one action:
+
+| Field                                           | Value                               |
+| :---------------------------------------------- | :---------------------------------- |
+| **Enforce on**                                  | The token                           |
+| **Enforcement function**                        | `setAddressFrozen(address,bool)`    |
+| **Parameter mapping**, `_userAddress`           | **Screened address**                |
+| **Parameter mapping**, `_freeze`                | **Other**, with the constant `true` |
+| **Only execute if the address holds a balance** | Not selected                        |
+
+The `Balance` source does not fit a `bool` argument, so you type the constant. `setAddressFrozen` blocks inbound transfers too, which a balance-based freeze does not.
+
+## Freeze a balance and add a blocklist entry
+
+This is the rule used in the [Quick Start](/ace/active-monitoring/quick-start). It freezes the tokens an address holds and blocks the address.
+
+For the Enforce response, add two actions:
+
+|                                                 | Action 1                                                   | Action 2                                                          |
+| :---------------------------------------------- | :--------------------------------------------------------- | :---------------------------------------------------------------- |
+| **Enforce on**                                  | The token                                                  | An associated blocklist contract                                  |
+| **Enforcement function**                        | `freezePartialTokens(address,uint256)`                     | `addBlacklist(address,string)`                                    |
+| **Parameter mapping**                           | `_userAddress`: **Screened address**`_amount`: **Balance** | `account`: **Screened address**`reason`: **Other**, `Severe risk` |
+| **Only execute if the address holds a balance** | Selected                                                   | Not selected                                                      |
+
+The freeze runs on networks where the address holds a balance. The blocklist entry runs on every network. Where the address holds no balance, the decision for the freeze is **No balance - flag for review**.
+
+## A lighter response for High
+
+Use two Enforce cards to apply a lighter action to High addresses than to Severe addresses. For example:
+
+| Risk level                       | Response                                                        |
+| :------------------------------- | :-------------------------------------------------------------- |
+| 15 - Severe                      | Enforce: freeze the balance and add a blocklist entry, as above |
+| 10 - High                        | Enforce: add a blocklist entry only                             |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log                                                    |
+
+Each card has its own **Enforced action** fields, so the two cards can use different functions.
+
+## Next steps
+
+- [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules): create the rule.
+- [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token): grant the role that these functions require.
+
+---
+
+# Active Monitoring API
+Source: https://docs.chain.link/ace/active-monitoring/reference/api
+Last Updated: 2026-10-05
+
+Use the Active Monitoring endpoints of the Coordinator API to set up monitoring, run it, and read its decisions without the Platform UI. This page lists the endpoints by task and explains which identifier goes where. For request and response schemas, see the [Coordinator API Reference](/api/ace/coordinator/docs), where these endpoints appear under the **Active Monitoring** tags.
+
+## Authentication and base URL
+
+Active Monitoring endpoints share the host, base URL, and API key of the rest of the Coordinator API. All paths on this page are relative to `https://ace.api.chain.link/v1`. Pass your [API key](/ace/getting-started/account-setup#3-create-an-api-key) in the `Authorization` header:
+
+```bash
+curl https://ace.api.chain.link/v1/active-monitoring/contract-groups \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+## Endpoints by task
+
+| Task                                        | Method and path                                                    | Guide                                                                                  |
+| ------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| Store, check, or remove the TRM API key     | `POST /active-monitoring/provider-api-keys`                        | [Configure Screening](/ace/active-monitoring/guides/configure-screening)               |
+|                                             | `GET /active-monitoring/provider-api-keys/{screening_provider}`    |                                                                                        |
+|                                             | `DELETE /active-monitoring/provider-api-keys/{screening_provider}` |                                                                                        |
+| Set, read, or remove the screening interval | `POST`, `GET`, `DELETE /active-monitoring/screening-interval`      | [Configure Screening](/ace/active-monitoring/guides/configure-screening)               |
+| Start or stop screening                     | `POST /active-monitoring/screening-interval/start`                 | [Configure Screening](/ace/active-monitoring/guides/configure-screening)               |
+|                                             | `POST /active-monitoring/screening-interval/stop`                  |                                                                                        |
+| Register or list monitored tokens           | `POST`, `GET /active-monitoring/contract-groups`                   | [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens)       |
+| Get one monitored token                     | `GET /active-monitoring/contract-groups/{contract_group_id}`       | [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens)       |
+| List the action variables for a rule        | `GET /active-monitoring/action-variables`                          | [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules) |
+| Create or list monitoring rules             | `POST`, `GET /active-monitoring/rule-groups`                       | [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules) |
+| Get or archive a monitoring rule            | `GET`, `PATCH /active-monitoring/rule-groups/{rule_group_id}`      | [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules) |
+| Add or list watchlist addresses             | `POST`, `GET /active-monitoring/monitored-addresses`               | [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist)                 |
+| List decisions                              | `GET /active-monitoring/decision-logs`                             | [Review Decisions](/ace/active-monitoring/guides/review-decisions)                     |
+| Get a decision                              | `GET /active-monitoring/decision-logs/{decision_log_id}`           | [Review Decisions](/ace/active-monitoring/guides/review-decisions)                     |
+
+Resolving and enforcing a flagged decision are not available with an API key: they require a signed-in user. Use the Platform UI. See [Review Decisions](/ace/active-monitoring/guides/review-decisions).
+
+The API uses the names `contract group` for a monitored token, `rule group` for a monitoring rule, `monitored address` for a watchlist address, and `decision log` for a decision.
+
+## Identifiers to carry between requests
+
+Several requests need an identifier returned by an earlier one.
+
+| You need                          | Where it comes from                                                              | Where you use it                                                                       |
+| --------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `group_id` of the monitored token | Response of `POST /contract-groups`. It equals the `id` of the primary contract. | `contract_group_id` when you create a monitoring rule                                  |
+| `id` of a contract                | `contracts[].id` in the monitored token response                                 | `contract_id` in an enforced action, and in a balance condition (the primary contract) |
+| `func_id` of a function           | `contracts[].functions[].func_id` in the monitored token response                | `admin_function_id` in an enforced action                                              |
+| `id` of a monitoring rule         | Response of `POST /rule-groups`                                                  | `rule_group_id` to get or archive the rule                                             |
+| `id` of a decision                | `decision_logs[].id` in the list response                                        | `decision_log_id` to get the decision                                                  |
+| `registry_id`                     | `id` of an [identity registry](/ace/guides/identity-manager/manage-registries)   | `registry_id` when you import a watchlist from a registry                              |
+
+## Status codes
+
+Errors return a JSON body with `error` and `message`.
+
+| Status | When                                                                                                                                                                                                                           |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `400`  | The request is invalid. For example, a network has no created CRE Connect Wallet, a rule does not cover an ABI argument, or `POST /screening-interval/start` is called before a prerequisite is met.                           |
+| `401`  | The API key is missing or invalid.                                                                                                                                                                                             |
+| `404`  | The resource does not exist, or a `contract_group_id` is the `id` of an associated contract.                                                                                                                                   |
+| `409`  | The resource already exists: a token address on a network, an address on the watchlist, or a second active rule on one token. Also returned when `POST /screening-interval/stop` is called while a screening run is executing. |
+
+Start screening returns `400` until a screening interval, a TRM API key, an active monitoring rule, and at least one watchlist address exist.
+
+## Related pages
+
+- [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values): the values these endpoints accept and return.
+- [Active Monitoring Quick Start](/ace/active-monitoring/quick-start): the full setup in order, with UI and API steps.
+
+---
+
+# Limits, Statuses, and Values
+Source: https://docs.chain.link/ace/active-monitoring/reference/limits-and-values
+Last Updated: 2026-10-07
+
+This page lists the fixed values and limits of Active Monitoring, with the label you see in the Platform UI and the value the API uses. For how they fit together, see [How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works).
+
+## TRM risk levels
+
+A monitoring rule matches the highest TRM risk level of a screened address. The Platform UI shows the TRM score next to the label.
+
+| Platform UI label | TRM score | API value (`risk_level`) |
+| ----------------- | --------- | ------------------------ |
+| Severe            | 15        | `severe`                 |
+| High              | 10        | `high`                   |
+| Medium            | 5         | `medium`                 |
+| Low               | 1         | `low`                    |
+| Unknown           | 0         | `unknown`                |
+
+TRM returns `Unknown` when it has no risk label for the address. Active Monitoring applies the same value when the label is missing or empty.
+
+## Rule responses
+
+| Platform UI label | API value (`action_type`)     | Effect                                                   |
+| ----------------- | ----------------------------- | -------------------------------------------------------- |
+| Silently log      | `silently_log`                | Records the decision. No other action.                   |
+| Flag              | `flag_for_review`             | Creates a decision that waits for a human to resolve it. |
+| Enforce           | `auto_enforce_onchain_action` | Creates one onchain operation per enforced action.       |
+
+## Decision outcomes
+
+The **Decision** column of the Decisions log shows the outcome. The API returns it in the `output` field of a decision log.
+
+| Platform UI label (table)                             | API value (`output`)             | Meaning                                                                                                          |
+| ----------------------------------------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Evaluating                                            | `null`                           | The rule is still being evaluated, for example while the balance is being read.                                  |
+| Logged                                                | `silently_logged`                | A rule with the Silently log response matched.                                                                   |
+| Flag for review                                       | `flagged_for_review`             | A rule with the Flag response matched. A person must resolve it.                                                 |
+| No balance - flag for review                          | `flagged_for_review`             | The risk score matched an Enforce rule, but its balance condition was not met.                                   |
+| Function signature, such as `freeze(address,uint256)` | `auto_enforced_onchain_action`   | A rule with the Enforce response matched and created an operation.                                               |
+| Function signature                                    | `manual_enforced_onchain_action` | A person enforced a flagged decision with **Enforce action**.                                                    |
+| Resolved                                              | `user_ignored`                   | A person dismissed a flagged decision with **Resolve** and a reason. The Decision filter calls this **Ignored**. |
+
+A rule whose conditions do not match produces no entry in the Decisions log.
+
+## Operation statuses
+
+An enforced decision links to an operation. The **Operation status** column shows its latest status.
+
+| Platform UI label | API value           | Terminal | Meaning                                                       |
+| ----------------- | ------------------- | -------- | ------------------------------------------------------------- |
+| Submitted         | `pending`           | No       | The operation is created and queued.                          |
+| Sending           | `sending`           | No       | The operation is being sent to CRE Connect.                   |
+| Pending signature | `pending_signature` | No       | The operation waits for your signer. Applies to self-signing. |
+| Executing         | `executing`         | No       | The operation is signed and being executed onchain.           |
+| Success           | `success`           | Yes      | The operation is confirmed onchain.                           |
+| Failed            | `failed`            | Yes      | The operation failed, expired, or was cancelled.              |
+
+## Parameter mapping
+
+Each argument of an enforcement function gets a value from an action variable or from a constant you type.
+
+### Action variables
+
+| Platform UI label | API key (`reference` value) | Type    | Resolves to                                                                                                     |
+| ----------------- | --------------------------- | ------- | --------------------------------------------------------------------------------------------------------------- |
+| Screened address  | `screened_address`          | address | The address that TRM screened.                                                                                  |
+| Balance           | `holder_balance`            | number  | The raw `balanceOf` value of the screened address on the primary token, in base units, read at evaluation time. |
+
+> **CAUTION: Use Balance with the balance condition**
+>
+> The `Balance` variable needs a balance reading. Select **Only execute if the address holds a balance on this token**
+> on every enforced action that maps `Balance`. Without it, the rule has no balance to resolve.
+
+### Which variable fits which argument
+
+The Platform UI lists only the variables whose type fits the argument.
+
+| ABI type of the argument | Available variables | Constant ("Other") format                      |
+| ------------------------ | ------------------- | ---------------------------------------------- |
+| `address`                | Screened address    | A valid address                                |
+| `uint*`                  | Balance             | Digits only, no sign                           |
+| `int*`                   | Balance             | A whole number, with an optional leading minus |
+| `bool`                   | None                | `true` or `false`                              |
+| `string`                 | Screened address    | Any non-empty text                             |
+| `bytes*`                 | Screened address    | A value that starts with `0x`                  |
+
+In the API, a mapping has a `mapping_type` of `reference` (the value is an action variable key) or `constant` (the value is the literal).
+
+## Limits
+
+| Item                                     | Limit                                                                                          |
+| ---------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Watchlist size                           | No fixed limit                                                                                 |
+| CSV upload                               | 100 rows per file in the Platform UI. Columns `address` and `chain_selector`.                  |
+| Screening interval, Platform UI          | 6, 12, or 24 hours                                                                             |
+| Screening interval, API                  | Whole hours from 1 to 168                                                                      |
+| Monitoring rules per token               | 1                                                                                              |
+| Risk levels covered by a rule            | All 5, each in exactly one **Decision logic** card (Platform UI)                               |
+| Monitoring rule edits                    | None. Delete the rule and create a new one.                                                    |
+| Actions in one enforced response         | One or more. The same contract and function pair cannot repeat in one **Decision logic** card. |
+| Operations per manual **Enforce action** | 1. Every argument is a constant.                                                               |
+| Primary tokens per monitored token       | 1                                                                                              |
+| A token address on a network             | Registered once                                                                                |
+| TRM API keys per organization            | 1. The key is never shown again after you save it.                                             |
+| List endpoints, `page_size`              | Up to 100                                                                                      |
+
+## Related pages
+
+- [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens): which functions qualify as enforcement functions.
+- [Active Monitoring API](/ace/active-monitoring/reference/api): endpoints and request examples.
+
+---
+
 # Chainlink ACE - Automated Compliance Engine
 Source: https://docs.chain.link/ace
-Last Updated: 2026-09-16
+Last Updated: 2026-10-05
 
 

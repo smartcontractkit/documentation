@@ -1,0 +1,162 @@
+---
+section: ace
+title: "Configure the TRM API Key and Screening Schedule"
+date: Last Modified
+metadata:
+  description: "Store your TRM API key, choose how often Chainlink ACE Active Monitoring screens your watchlist, and start or stop screening, using the Platform UI or the Coordinator API."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside, MethodTabs } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+Active Monitoring screens your watchlist with TRM Wallet Screening, using your own TRM API key, on the schedule you choose. TRM Labs is the blockchain analytics provider that scores the risk of each address. The **screening interval** is how often Active Monitoring screens the whole watchlist. This guide covers four operations: store the key, set the screening interval, start screening, and remove the key. For how screening works, see [Watchlist and Screening](/ace/active-monitoring/concepts/screening).
+
+## Prerequisites
+
+- A TRM Labs account with access to the [Wallet Screening API](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening), and its API key from your TRM Labs dashboard.
+- To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key). It is a different key from your TRM API key.
+
+## Store the TRM API key and choose the interval
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), open the general settings (**Compliance > Home**, then **View settings**) and go to the **API access** tab.
+    1. Click **Add API key**.
+    1. Enter a **Name** to recognize the key. Leave it empty to use the default name.
+    1. Paste your TRM API key in **Key**.
+    1. Under **Screen address every**, select **6 hours**, **12 hours**, or **24 hours**.
+    1. Click **Add API key**.
+
+    The key appears in the **API access** table with its name and the date it was added. The Platform never shows the key again. The **Add API key** button is hidden while a key exists.
+
+    Saving the key does not start screening. You start it in the next section.
+
+  </Fragment>
+  <Fragment slot="api">
+    Store the key with `POST /active-monitoring/provider-api-keys`. `provider` must be `trm`. `name` is optional.
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/provider-api-keys \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "provider": "trm",
+        "api_key": "<TRM_API_KEY>",
+        "name": "TRM Labs API key"
+      }'
+    ```
+
+    The response contains metadata only. The key is encrypted and never returned:
+
+    ```json
+    {
+      "id": "9f1c2d3e-4a5b-6c7d-8e9f-0a1b2c3d4e5f",
+      "provider": "trm",
+      "status": "active",
+      "name": "TRM Labs API key",
+      "key_last4": "4f2a",
+      "created_at": 1790000000,
+      "updated_at": 1790000000
+    }
+    ```
+
+    An organization has one TRM key. Posting a key again replaces the existing one. Active Monitoring does not validate the key when you store it: `status` is always `active`.
+
+    Set the interval with `POST /active-monitoring/screening-interval`. `interval_hours` is a whole number from 1 to 168:
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{ "interval_hours": 6 }'
+    ```
+
+    A new interval applies from the next scheduled run. A run that is already scheduled keeps its time.
+
+  </Fragment>
+</MethodTabs>
+
+## Start screening
+
+Starting screening needs four things to exist: the TRM API key, a screening interval, a [monitoring rule](/ace/active-monitoring/guides/configure-monitoring-rules) on at least one token, and at least one address on the [watchlist](/ace/active-monitoring/guides/manage-watchlist). The first run starts immediately and repeats at the interval.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. Open **Active Monitoring** and go to the **Decisions log** tab. Before the first run, the tab shows **Get started with these 3 steps**.
+    1. Click **Start screening**. The button is disabled until the key, a token, and a watchlist address are configured. Hover over it to see what is missing.
+
+    A message confirms that the first run is queued. Decisions appear in the log as soon as the run completes. After the first run, the log header shows when the watchlist was last screened and the interval.
+
+    <Aside type="note" title="Current limitation">
+      The Platform UI cannot stop screening or change the interval after you start it. To do either, use the **API** tab:
+      [change the interval](#store-the-trm-api-key-and-choose-the-interval) or [stop screening](#stop-screening).
+    </Aside>
+
+  </Fragment>
+  <Fragment slot="api">
+    Call `POST /active-monitoring/screening-interval/start`. It takes no body:
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval/start \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    The response is `202` with `{ "result": "enqueued" }`, or `{ "result": "already_enqueued" }` when screening was already running. It returns `400` when the key, the interval, an active rule, or a watchlist address is missing.
+
+    To see whether screening is running, call `GET /active-monitoring/screening-interval`. It returns `interval_hours` and `screening_active`.
+
+  </Fragment>
+</MethodTabs>
+
+## Stop screening
+
+<MethodTabs>
+  <Fragment slot="ui">
+    The Platform UI has no control to stop screening. This is a current limitation: use the **API** tab to stop screening and keep the key. Removing the TRM API key also stops it, as described in [Remove the TRM API key](#remove-the-trm-api-key).
+  </Fragment>
+  <Fragment slot="api">
+    Call `POST /active-monitoring/screening-interval/stop` to cancel the next scheduled run without changing the interval:
+
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval/stop \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    The response is `202` with `{ "result": "canceled" }`, or `{ "result": "not_active" }` when screening was not running. A run that is executing finishes first, and the call returns `409`: call it again when the run completes. Call the start endpoint to resume at the same interval.
+
+    `DELETE /active-monitoring/screening-interval` removes the interval. The scheduled run still executes once, then screening stops until you set a new interval and start screening again.
+
+  </Fragment>
+</MethodTabs>
+
+## Remove the TRM API key
+
+Removing the key stops screening: Active Monitoring has no key to call TRM with, and it screens nothing until you store a new key. Decisions already created stay in the log.
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In **API access**, open the actions menu of the key and click **Remove key**.
+    1. Confirm in the dialog.
+
+    To replace a key, remove it, then add the new one.
+
+  </Fragment>
+  <Fragment slot="api">
+    ```bash
+    curl -X DELETE https://ace.api.chain.link/v1/active-monitoring/provider-api-keys/trm \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    The response is `204`. To check whether a key is stored, call `GET /active-monitoring/provider-api-keys/trm`. It returns the metadata above, or `404` when no key is stored.
+
+  </Fragment>
+</MethodTabs>
+
+## Next steps
+
+- [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions): read the decisions that screening produces.
+- [Troubleshoot Active Monitoring](/ace/active-monitoring/guides/troubleshooting): find out why no decision appears.

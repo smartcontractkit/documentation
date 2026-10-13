@@ -3,9 +3,9 @@ section: ace
 title: "What is Chainlink ACE?"
 date: Last Modified
 metadata:
-  description: "Chainlink ACE (Automated Compliance Engine) provides programmable, cross-chain compliance for smart contracts. Learn how ACE enables modular policy management and cross-chain identity verification."
+  description: "Chainlink ACE (Automated Compliance Engine) provides programmable, cross-chain compliance for smart contracts and deployed tokens. Learn how ACE enables modular policy management, cross-chain identity verification, and continuous monitoring."
   datePublished: "2026-03-31"
-  lastModified: "2026-07-17"
+  lastModified: "2026-10-05"
 ---
 
 import { ClickToZoom } from "@components"
@@ -14,6 +14,8 @@ import AceCallout from "@features/ace/callouts/AceCallout.astro"
 <AceCallout callout="privateBeta" />
 
 **Chainlink Automated Compliance Engine (ACE)** is a compliance layer for EVM smart contracts. It enforces rules — transfer limits, identity checks, sanctions screening, and more — at transaction time, without embedding compliance logic in your application code. Rules can be added, updated, or removed through the ACE Platform — your application contract doesn't need to change.
+
+ACE also monitors tokens that are already deployed. [Active Monitoring](/ace/active-monitoring/overview) screens the addresses you choose on a schedule and acts onchain when their risk changes, without changing the token's contract.
 
 ## What problems does ACE solve?
 
@@ -27,7 +29,7 @@ Building compliant applications on the blockchain requires handling:
 
 ACE serves three primary audiences:
 
-- **Token issuers and asset managers** — Enforce compliance rules (transfer limits, investor checks, sanctions screening) on your smart contracts. ACE separates these rules from your application code, so you can update them as regulations change — without redeploying.
+- **Token issuers and asset managers** — Enforce compliance rules (transfer limits, investor checks, sanctions screening) on your smart contracts. ACE separates these rules from your application code, so you can update them as regulations change — without redeploying. If your token is already deployed and you cannot change its contract, Active Monitoring reacts to risk changes on it.
 - **Identity verification (IDV) providers** — Issue cross-chain credentials (KYC, AML, accredited investor status) that your clients can verify on any EVM chain from a single issuance. No need for users to re-verify on every network.
 - **Compliance and legal teams** — Monitor and manage compliance rules through a visual interface — no code required. Every policy decision is recorded onchain and queryable through the Reporting API, providing a complete audit trail.
 
@@ -46,13 +48,23 @@ These contracts execute automatically at transaction time. For a detailed view o
 
 ### ACE Platform
 
-The [ACE Platform](/ace/concepts/key-terms#ace-platform) provides three managers that let you operate on these contracts:
+The [ACE Platform](/ace/concepts/key-terms#ace-platform) provides four managers. Policy Manager and Identity Manager operate on the contracts above:
 
 - **Policy Manager** (UI + API) — Configure and deploy compliance rules for your smart contracts.
 - **Identity Manager** (UI + API) — Manage cross-chain identities and issue credentials.
 - **Reporting Manager** (API) — Query policy run history, transaction data, and onchain state.
+- **Active Monitoring** (UI + API) — Screen addresses with TRM and enforce actions on tokens you already run. It uses your existing contracts instead of the ACE contracts above.
 
 ACE is currently in Beta. See [Beta Scope](/ace/beta-scope) for the current scope and supported features.
+
+## Preventive and continuous compliance
+
+ACE enforces compliance in two ways, and you can use either or both:
+
+- **Preventive**: Policy Manager and Identity Manager block a transaction while it executes. Your contract integrates with ACE, and a transaction that breaks a policy reverts.
+- **Continuous**: Active Monitoring screens a watchlist of addresses with TRM on a schedule, applies your rule when an address's risk level changes, and calls an existing function on your token, such as a freeze or a blocklist entry. Your contract does not change.
+
+Preventive enforcement acts immediately but needs a contract that integrates with ACE. Continuous monitoring works on tokens already deployed, but acts at the next screening run, after the risk change. See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) to choose, or [What is Active Monitoring?](/ace/active-monitoring/overview) to learn more.
 
 ## Key features
 
@@ -64,6 +76,7 @@ ACE is currently in Beta. See [Beta Scope](/ace/beta-scope) for the current scop
 - **Auditable and transparent** — Every policy evaluation is recorded onchain and queryable through the Reporting API, giving compliance teams a complete audit trail.
 - **Ready-to-use policy library** — Pre-built modules for common scenarios: allowlists, blocklists, volume limits, time restrictions, role-based access, Proof of Reserves minting caps, identity checks, and [grouped identity validation](/ace/reference/policy-library/grouped-identity-validator-policy).
 - **Offchain risk screening** — Screen transaction participants with TRM Wallet Screening through a managed CRE workflow, with permits delivered onchain. See [Off-Chain Policy Execution](/ace/concepts/off-chain-policies).
+- **Continuous monitoring** — Screen the addresses you choose with TRM on a schedule, and react to risk changes on deployed tokens by recording, flagging for review, or enforcing an onchain action. See [Active Monitoring](/ace/active-monitoring/overview).
 - **Flexible signing models** — Choose between delegated signing (Chainlink signs on your behalf) and self-signing (you sign with your own keys) at onboarding. See [Signing & Ownership Model](/ace/concepts/signing-ownership).
 
 ## How it works: a real-world example
@@ -91,6 +104,7 @@ The power of this model is that if regulations change tomorrow, the DEX's owners
 Start here regardless of your role:
 
 1. **[ACE Architecture](/ace/concepts/architecture)** — System components and how they connect.
+1. **[Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous)** — The two ways ACE enforces compliance.
 1. **[Key Terms](/ace/concepts/key-terms)** — ACE-specific terminology.
 1. **[Policy Management](/ace/concepts/policy-management)** — How compliance rules work.
 1. **[Cross-Chain Identity](/ace/concepts/cross-chain-identity)** — How identity and credentials work.
@@ -103,4 +117,5 @@ Start here regardless of your role:
 - **[Policy Library](/ace/reference/policy-library)** — All pre-built policies with configuration details.
 - **[Policy Ordering & Composition](/ace/concepts/policy-ordering)** — How to compose effective rulesets.
 - **[Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible)** — Integration guide for developers adding ACE to new or existing smart contracts.
+- **[Active Monitoring](/ace/active-monitoring/quick-start)** — Screen addresses and act on tokens you already run.
 - **[Signing & Ownership Model](/ace/concepts/signing-ownership)** — Understand delegated and self-signing models.

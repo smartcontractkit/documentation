@@ -106,6 +106,11 @@ export default defineConfig({
           return false
         }
 
+        // Old v1 glossary. The URL stays. It is not a current product page.
+        if (cleanPath === "/resources/glossary") {
+          return false
+        }
+
         return !redirectSources.has(cleanPath)
       },
       serialize(item) {
