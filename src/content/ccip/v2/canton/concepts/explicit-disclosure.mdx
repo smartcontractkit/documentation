@@ -6,7 +6,7 @@ metadata:
   description: "Explicit Disclosure Services for CCIP on Canton: global CCIP API, token pool operator APIs, CNS discovery, and reference EDS deployment."
   excerpt: "CCIP Canton EDS, explicit disclosure, token pool API, Global CCIP API, CNS discovery, chainlink-canton"
   datePublished: "2026-06-27"
-  lastModified: "2026-06-27"
+  lastModified: "2026-10-13"
   difficulty: "intermediate"
   estimatedTime: "10 minutes"
 whatsnext:
@@ -38,7 +38,7 @@ curl --request POST \
   --header 'content-type: application/json' \
   --data '{
   "addresses": [
-    "tokenadminregistry-lzrnd@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+    "tokenadminregistry-nbehb@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
   ]
 }'
 ```
@@ -80,14 +80,15 @@ Most issuers only need the `token_pool_api` block. Set `type = ""` or omit the b
 
 ### Configuration reference
 
-| Field                        | Meaning                                                                                       |
-| :--------------------------- | :-------------------------------------------------------------------------------------------- |
-| `chain_selector`             | Local Canton chain selector (distinct from remote selectors in `ApplyChainUpdates`).          |
-| `[node].url`                 | Participant gRPC Ledger API endpoint. EDS reads the Active Contract Set over this connection. |
-| `[node.auth].type`           | `static`, `insecureStatic`, `clientCredentials`, or `authorizationCode`.                      |
-| `map key / instance_address` | Each pool keyed by instance address hex; map key **must** equal `instance_address`.           |
-| `type`                       | `burnMint` or `lockRelease`.                                                                  |
-| `pool_owner`                 | Pool owner party (should equal `instrumentId.admin`).                                         |
+| Field                        | Meaning                                                                                                                                                                                                                                                                                                           |
+| :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `chain_selector`             | Local Canton chain selector (distinct from remote selectors in `ApplyChainUpdates`).                                                                                                                                                                                                                              |
+| `[node].url`                 | Participant gRPC Ledger API endpoint. EDS reads the Active Contract Set over this connection.                                                                                                                                                                                                                     |
+| `[node.auth].type`           | `static`, `insecureStatic`, `clientCredentials`, or `authorizationCode`.                                                                                                                                                                                                                                          |
+| `map key / instance_address` | Each pool keyed by instance address hex; map key **must** equal `instance_address`.                                                                                                                                                                                                                               |
+| `type`                       | `burnMint` or `lockRelease`.                                                                                                                                                                                                                                                                                      |
+| `pool_owner`                 | Pool owner party (should equal `instrumentId.admin`).                                                                                                                                                                                                                                                             |
+| `[factory].type`             | BurnMint pools only: `address` (EDS reads the factory from the ACS — needs `template_id`, `party`, `instance_address`) or `url` (DA registry resolves it — needs `token_standard_url`). See the [BurnMint guide](/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool#serve-the-factory-from-your-eds). |
 
 Operators using the provided token pool contracts can run the reference implementation without custom code. **Custom pool implementations** must implement the standardized API endpoints or adapt the reference.
 
