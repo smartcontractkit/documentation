@@ -1043,6 +1043,7 @@ const SELECTOR_COMPONENTS = {
   FeedsCommonCallout: { astro: "src/features/feeds/callouts/FeedsCommonCallout.astro", attribute: "callout" },
   ResourcesCallout: { astro: "src/features/resources/callouts/ResourcesCallout.astro", attribute: "callout" },
   DataStreams: { astro: "src/features/data-streams/common/DataStreams.astro", attribute: "section" },
+  VrfDeprecation: { astro: "src/features/vrf/VrfDeprecation.astro", attribute: "version" },
 } as const
 
 function handleAstroSelector(
@@ -1117,6 +1118,15 @@ export function handleDataStreams(
   context: ComponentContext
 ): number | void {
   return handleAstroSelector(node, parent, index, context, "DataStreams")
+}
+
+export function handleVrfDeprecation(
+  node: MdxJsxNode,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  return handleAstroSelector(node, parent, index, context, "VrfDeprecation")
 }
 
 function escapeTableCell(value: string): string {
