@@ -16,6 +16,14 @@ describe("sunset docs paths", () => {
     "https://docs.chain.link/chainlink-automation/llms-full.txt",
     "/quickstarts/time-based-upkeep",
     "/quickstarts/functions-demo-app?parent=automation",
+    "/any-api",
+    "/any-api/introduction",
+    "/any-api/get-request/examples/single-word-response",
+    "/chainlink-nodes/external-initiators/external-initiators-introduction",
+    "/chainlink-nodes/external-initiators/building-external-initiators",
+    "/chainlink-nodes/job-specs/direct-request-get-uint256",
+    "/chainlink-nodes/job-specs/multi-word-job",
+    "https://docs.chain.link/chainlink-nodes/job-specs/direct-request-existing-job",
   ])("hides %s", (pathname) => {
     expect(isSunsetDocsPath(pathname)).toBe(true)
   })
@@ -28,6 +36,11 @@ describe("sunset docs paths", () => {
     "/quickstarts/circuit-breaker",
     "/chainlink-local",
     "chainlink-functions-extra",
+    "/chainlink-nodes",
+    "/chainlink-nodes/oracle-jobs/jobs",
+    "/chainlink-nodes/oracle-jobs/all-jobs",
+    "/chainlink-nodes/v1/fulfilling-requests",
+    "/any-api-extra",
   ])("keeps %s", (pathname) => {
     expect(isSunsetDocsPath(pathname)).toBe(false)
   })
@@ -38,7 +51,24 @@ describe("sunset docs paths", () => {
     expect(isSunsetSidebarSection("vrf")).toBe(false)
     expect(isSunsetContentFile("/repo/src/content/chainlink-functions/getting-started.mdx")).toBe(true)
     expect(isSunsetContentFile("/repo/src/content/quickstarts/eth-balance-monitor.mdx")).toBe(true)
+    expect(isSunsetContentFile("/repo/src/content/any-api/introduction.mdx")).toBe(true)
+    expect(
+      isSunsetContentFile("/repo/src/content/chainlink-nodes/external-initiators/building-external-initiators.mdx")
+    ).toBe(true)
+    expect(isSunsetContentFile("/repo/src/content/chainlink-nodes/job-specs/direct-request-get-bool.mdx")).toBe(true)
     expect(isSunsetContentFile("/repo/src/content/quickstarts/circuit-breaker.mdx")).toBe(false)
+    expect(isSunsetContentFile("/repo/src/content/chainlink-nodes/oracle-jobs/all-jobs.mdx")).toBe(false)
+    expect(isSunsetContentFile("/repo/src/content/chainlink-nodes/oracle-jobs/jobs.mdx")).toBe(false)
+  })
+
+  it("removes Any API and external initiators from the Nodes menu and keeps OCR jobs", () => {
+    const sectionNames = SIDEBAR.nodeOperator?.map((group) => group.section) ?? []
+    const urls = SIDEBAR.nodeOperator?.flatMap((group) => group.contents.map((item) => item.url)) ?? []
+
+    expect(sectionNames).not.toContain("Connect to Any API")
+    expect(sectionNames).not.toContain("External Initiators")
+    expect(sectionNames).toContain("Job and Task Reference")
+    expect(urls).toContain("chainlink-nodes/oracle-jobs/jobs")
   })
 
   it("keeps the product trees for their own pages and keeps the pages in the sitemap", () => {
