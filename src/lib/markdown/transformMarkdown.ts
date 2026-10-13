@@ -7,7 +7,7 @@ import remarkParse from "remark-parse"
 import remarkMdx from "remark-mdx"
 import remarkGfm from "remark-gfm"
 import remarkStringify from "remark-stringify"
-import { visit } from "unist-util-visit"
+import { SKIP, visit } from "unist-util-visit"
 import type { Node, Parent, Literal } from "unist"
 import type { TransformConfig, MdxJsxNode, ComponentContext } from "./types.js"
 import {
@@ -27,6 +27,8 @@ import {
   handlePackageManagerTabs,
   handleFragment,
   handleAccordion,
+  handleGitHubCard,
+  handleHtmlList,
   handleAddress,
   handleCallout,
   handleAnyApiCallout,
@@ -124,7 +126,7 @@ export async function transformMarkdown(
         processor,
       }
 
-      visit(tree, (node: Node, index: number | undefined, parent: Parent | undefined) => {
+      const projectNode = (node: Node, index: number | undefined, parent: Parent | undefined) => {
         if (!parent || typeof index !== "number") return
 
         // Handle CodeHighlightBlockMulti
@@ -180,8 +182,15 @@ export async function transformMarkdown(
           return handlePackageManagerTabs(node as MdxJsxNode, parent, index)
         }
 
-        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Accordion") {
+        if (
+          node.type === "mdxJsxFlowElement" &&
+          ((node as MdxJsxNode).name === "Accordion" || (node as MdxJsxNode).name === "AnchoredAccordion")
+        ) {
           return handleAccordion(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "GitHubCard") {
+          return handleGitHubCard(node as MdxJsxNode, parent, index)
         }
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Callout") {
@@ -255,6 +264,10 @@ export async function transformMarkdown(
           const mdxNode = node as MdxJsxNode
           const nodeName = mdxNode.name
           const children = (mdxNode as Parent).children || []
+
+          if (nodeName === "ol" || (nodeName === "ul" && mdxNode.type === "mdxJsxFlowElement")) {
+            return handleHtmlList(mdxNode, parent, index)
+          }
 
           if (nodeName === "a") {
             const hrefAttribute = mdxNode.attributes?.find((attribute) => attribute.name === "href")
@@ -366,6 +379,11 @@ export async function transformMarkdown(
         }
 
         // Note: We preserve link nodes as-is so they're rendered as markdown links [text](url)
+      }
+      visit(tree, (node, index, parent) => {
+        const nextIndex = projectNode(node, index, parent)
+        // A replaced node is detached. Traverse its replacement instead of mutating its old children.
+        return typeof nextIndex === "number" ? ([SKIP, nextIndex] as [typeof SKIP, number]) : undefined
       })
     })
     .use(remarkStringify, {

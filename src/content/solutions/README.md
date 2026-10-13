@@ -104,6 +104,24 @@ That is the whole change. You do not touch `src/config/sidebar.ts`, any layout, 
 Sidebar placement, the hub card, the hub filters, whether a navigation renders, and the legal disclaimer are all
 derived from what you wrote.
 
+## Complete documentation for AI agents
+
+Every published solution automatically exposes `/solutions/<your-slug>/llms-full.txt`. The right sidebar on every
+page includes **More > Complete Your Solution docs (TXT)** to download it.
+
+The file is generated from the current content during `npm run build`, using the same MDX-to-Markdown conversion as
+the product LLM files. It includes page titles, source URLs, and the page bodies. Single-page solutions include only
+their landing page; multi-page solutions include every page in the order declared in `nav`. The landing-page summary and the complete disclaimer rendered by the layout are also included. Every page
+keeps its own disclaimer; solution exports do not deduplicate disclaimers. The `.md` page exports use the same content
+and conversion pipeline. No additional registration is needed when adding or updating a solution.
+
+`npm run generate:llms` also writes `src/content/solutions/<your-slug>/llms-full.txt` for every published solution,
+using the same generator as the Astro route. Hidden solutions are excluded. To generate only solutions, run
+`npm run generate:llms -- --section solutions`; to generate one, use `--section solutions/<your-slug>`.
+The command logs each generated solution and includes it in `reports/llms-report.json`. `npm run check:llms` checks
+these files, including their page order and the complete disclaimer on every page. The build still generates the
+download from the current sources, so a stale local TXT cannot make the site's download stale.
+
 ## Copy an existing solution
 
 Two fixtures in this directory show both shapes:

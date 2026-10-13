@@ -1,22 +1,34 @@
-import { getCollection, type CollectionEntry } from "astro:content"
-import { toPageId, toPagePath } from "~/config/solutions/index.ts"
-import type { Solution } from "~/config/solutions/index.ts"
+import type { CollectionEntry } from "astro:content"
+import { toPageId, toPagePath } from "../config/solutions/index.ts"
+import type { Solution } from "../config/solutions/index.ts"
 
 const README = "src/content/solutions/README.md"
 
 export type SolutionEntry = CollectionEntry<"solutions">
+/** The page information needed by navigation and by the standalone LLM generator. */
+export type SolutionPage = { id: string; filePath?: string; data: { title: string } }
 export type SolutionNavItem = { title: string; url: string }
 export type ResolvedNavGroup = { section: string; contents: SolutionNavItem[] }
 
 /** All content pages belonging to one solution, keyed by page id ("index", "users/failed-transfers", ...). */
 export async function getSolutionPages(slug: string): Promise<Map<string, SolutionEntry>> {
+  // Keep Astro's virtual module out of standalone Node scripts that reuse the pure helpers below.
+  const { getCollection } = await import("astro:content")
   const all = await getCollection("solutions")
-  const pages = new Map<string, SolutionEntry>()
+  return collectSolutionPages(slug, all)
+}
 
-  for (const entry of all) {
+export function collectSolutionPages<T extends SolutionPage>(slug: string, entries: readonly T[]): Map<string, T> {
+  const pages = new Map<string, T>()
+
+  for (const entry of entries) {
     const id = entry.id.replace(/\.mdx?$/, "")
     if (id !== slug && !id.startsWith(`${slug}/`)) continue
-    pages.set(toPageId(slug, entry.id), entry)
+    const pageId = toPageId(slug, entry.id)
+    if (pages.has(pageId)) {
+      throw new Error(`[solutions] "${slug}" has more than one source for page "${pageId}". See ${README}.`)
+    }
+    pages.set(pageId, entry)
   }
 
   if (!pages.has("index")) {
@@ -29,7 +41,7 @@ export async function getSolutionPages(slug: string): Promise<Map<string, Soluti
 }
 
 /** A solution is multi-page when it has more than its landing page. This is the ONLY definition. */
-export function isMultiPage(pages: Map<string, SolutionEntry>): boolean {
+export function isMultiPage(pages: ReadonlyMap<string, SolutionPage>): boolean {
   return pages.size > 1
 }
 
@@ -37,7 +49,10 @@ export function isMultiPage(pages: Map<string, SolutionEntry>): boolean {
  * Resolves the left navigation, or null when the solution is single-page and no sidebar
  * should render. Validates the manifest against what is actually on disk, in both directions.
  */
-export function buildSolutionNav(solution: Solution, pages: Map<string, SolutionEntry>): ResolvedNavGroup[] | null {
+export function buildSolutionNav(
+  solution: Solution,
+  pages: ReadonlyMap<string, SolutionPage>
+): ResolvedNavGroup[] | null {
   const { slug } = solution
 
   if (!isMultiPage(pages)) {
@@ -89,8 +104,23 @@ export function buildSolutionNav(solution: Solution, pages: Map<string, Solution
   return groups
 }
 
+/** Validate the complete page set and return it in the order declared by the manifest. */
+export function getOrderedSolutionPages<T extends SolutionPage>(
+  solution: Solution,
+  pages: ReadonlyMap<string, T>
+): T[] {
+  buildSolutionNav(solution, pages)
+  const pageIds = solution.nav?.flatMap((group) => group.pages) ?? ["index"]
+  return pageIds.map((pageId) => {
+    const entry = pages.get(pageId)
+    if (!entry) throw new Error(`[solutions] "${solution.slug}" is missing page "${pageId}".`)
+    return entry
+  })
+}
+
 /** Fails the build when a registered manifest has no content directory. */
 export async function assertRegisteredSolutionsHaveContent(solutions: Solution[]): Promise<void> {
+  const { getCollection } = await import("astro:content")
   const all = await getCollection("solutions")
   for (const solution of solutions) {
     const has = all.some((e) => {

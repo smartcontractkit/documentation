@@ -701,3 +701,61 @@ describe("getPageLanguage", () => {
     expect(getPageLanguage("/path/to/file.mdx")).toBeNull()
   })
 })
+
+describe("solution content projections", () => {
+  it.each([
+    "<ol><li>First item.</li><li>[Second item](https://example.com).</li></ol>",
+    "<ol>\n  <li>First item.</li>\n  <li>[Second item](https://example.com).</li>\n</ol>",
+    '<Aside type="note">\n\n<ol>\n<li>First item.</li>\n<li>[Second item](https://example.com).</li>\n</ol>\n\n</Aside>',
+  ])("preserves ordered HTML lists, including their links", async (source) => {
+    const result = await transformMarkdown(source, "fixture.mdx")
+    expect(result).toContain("1. First item.")
+    expect(result).toContain("2. [Second item](https://example.com).")
+    expect(result).not.toContain("<ol")
+  })
+
+  it("reuses Accordion projection for anchored sections and retains nested cards and code", async () => {
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Deploy" number={1} depth={2}>
+
+<GitHubCard title="Repository" href="https://example.com/repo" badge="New">
+Repository description.
+</GitHubCard>
+
+\`\`\`bash
+forge create ExampleVault
+\`\`\`
+
+</AnchoredAccordion>`,
+      "fixture.mdx"
+    )
+    expect(result).toContain("## 1. Deploy")
+    expect(result).toContain("[Repository](https://example.com/repo) New")
+    expect(result).toContain("Repository description.")
+    expect(result).toContain("```bash\nforge create ExampleVault\n```")
+    expect(result).not.toContain("<AnchoredAccordion")
+    expect(result).not.toContain("<GitHubCard")
+  })
+})
+
+describe("unordered list serialization regression", () => {
+  it("keeps callout list items as bullets without standalone encoded semicolon separators", async () => {
+    const result = await transformMarkdown(
+      `<Aside type="caution" title="Important">
+<ul>
+<li>
+The final transaction is submitted by the oracle.
+</li>
+<li>
+Searchers must sign for an **exactly equal** gas price.
+</li>
+</ul>
+</Aside>`,
+      "fixture.mdx"
+    )
+    expect(result).toContain("> - The final transaction is submitted by the oracle.")
+    expect(result).toContain("> - Searchers must sign for an **exactly equal** gas price.")
+    expect(result).not.toContain(";&#x20;")
+    expect(result).not.toMatch(/^\s*>?\s*;\s*$/m)
+  })
+})

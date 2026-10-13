@@ -752,3 +752,107 @@ describe("stable report JSON", () => {
     })
   })
 })
+
+describe("solution component fidelity", () => {
+  const source = `<ol><li>First item.</li><li>Second item.</li></ol>
+
+<AnchoredAccordion title="Deploy" number={2} depth={3}>
+
+\`\`\`bash
+forge create ExampleVault
+\`\`\`
+
+<GitHubCard title="Repository" href="https://example.com/repo">
+Repository description.
+</GitHubCard>
+
+</AnchoredAccordion>`
+  const complete =
+    "1. First item.\n2. Second item.\n\n### 2. Deploy\n\n```bash\nforge create ExampleVault\n```\n\n[Repository](https://example.com/repo)\n\nRepository description."
+
+  test("checks ordered lists, anchored accordion bodies, and GitHub cards independently", () => {
+    const findings = compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(complete))
+    expect(findings.length).toBeGreaterThan(5)
+    expect(blockingFindings("focused", findings)).toEqual([])
+  })
+
+  test("detects missing commands inside an anchored accordion", () => {
+    const missing = complete.replace("```bash\nforge create ExampleVault\n```", "")
+    const findings = compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(missing))
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "missing", expected: "forge create ExampleVault" })
+    )
+  })
+})
+
+test("checks unordered lists inside callouts without requiring artificial separators", () => {
+  const source = `<Aside type="caution" title="Important">
+<ul>
+<li>
+First requirement.
+</li>
+<li>
+Second requirement.
+</li>
+</ul>
+</Aside>`
+  const output = "> **CAUTION: Important**\n>\n> - First requirement.\n> - Second requirement."
+  expect(
+    blockingFindings("focused", compareSourceToArtifact("fixture", "fixture.mdx", source, artifact(output)))
+  ).toEqual([])
+})
+
+test.each(["ol", "ul"])("coalesces projected inline HTML in %s items before a repeated later value", (list) => {
+  const source = `<Aside type="note">
+<${list}>
+<li>Foundry scripts default to <strong>400,000</strong> gas unless you set <code>GAS_LIMIT</code><br /> (and fall back if estimation fails).</li>
+<li>Test all scenarios before deployment.</li>
+</${list}>
+</Aside>
+
+## Before you begin
+
+Follow the <b>required</b> steps and keep <span>all</span> values in <nobr>one place</nobr> for chain<sub>1</sub>.
+
+## Later reference
+
+\`GAS_LIMIT\``
+  const marker = list === "ol" ? "1." : "-"
+  const nextMarker = list === "ol" ? "2." : "-"
+  const output = `> **NOTE**
+>
+> ${marker} Foundry scripts default to **400,000** gas unless you set \`GAS_LIMIT\` (and fall back if estimation fails).
+> ${nextMarker} Test all scenarios before deployment.
+
+## Before you begin
+
+Follow the **required** steps and keep all values in one place for chain1.
+
+## Later reference
+
+\`GAS_LIMIT\``
+
+  const findings = compareSourceToArtifact("fixture", "fixture.mdx", source, artifact(output))
+  expect(blockingFindings("focused", findings)).toEqual([])
+  expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: "Before you begin" }))
+  const missing = compareSourceToArtifact(
+    "fixture",
+    "fixture.mdx",
+    source,
+    artifact(output.replace("Test all scenarios before deployment.", ""))
+  )
+  expect(missing).toContainEqual(
+    expect.objectContaining({ status: "missing", expected: "Test all scenarios before deployment." })
+  )
+})
+
+test("keeps diagnostics for dynamic inline HTML attributes and unprojected elements", () => {
+  const source = "Keep <strong title={runtimeTitle}>this fact</strong> and <em>unprojected emphasis</em>."
+  const analysis = analyzeSourceMarkdown(source, "fixture.mdx")
+  expect(analysis.diagnostics).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ status: "unverifiable", name: "strong.title" }),
+      expect.objectContaining({ status: "unverifiable", name: "em" }),
+    ])
+  )
+})
