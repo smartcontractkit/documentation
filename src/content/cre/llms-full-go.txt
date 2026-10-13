@@ -572,13 +572,40 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-10-01
+Last Updated: 2026-10-09
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
 > **CAUTION: Ethereum Glamsterdam upgrade**
 >
 > Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Sepolia upgrades on 6 October 2026 at 13:53:36 UTC; Ethereum Hoodi and Mainnet follow in Q4 2026. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
+
+## CLI v1.38.0 - October 8, 2026
+
+**[CRE CLI version 1.38.0](https://github.com/smartcontractkit/cre-cli/releases/tag/v1.38.0) is now available.**
+
+- **Permanent link warning for workflow owner addresses**: `cre account link-key` now warns that linking a workflow owner address is permanent and asks you to confirm before linking. Once an address is linked to an organization, it can never be transferred to or reused in another organization. In non-interactive mode, `cre account link-key --non-interactive` and `cre workflow deploy --non-interactive` now require `--yes` when linking an unlinked owner. See [Linking Wallet Keys](/cre/organization/linking-keys).
+- **Refreshed user context cache**: The CLI now refreshes your cached user context when it was written by a different CLI version or is older than 24 hours, so new environments and server-side configuration changes appear without a manual `cre login`. If a refresh fails (for example, while offline), the CLI falls back to the cached copy.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.37.0...v1.38.0)
+
+## CLI v1.37.0 - October 5, 2026
+
+**[CRE CLI version 1.37.0](https://github.com/smartcontractkit/cre-cli/releases/tag/v1.37.0) is now available.**
+
+- **Deployment type in access requests**: When you request deploy access with `cre account access`, the CLI now asks you the purpose of your request. See [Requesting Deploy Access](/cre/account/deploy-access).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.36.0...v1.37.0)
 
 ## CLI v1.36.0 - October 1, 2026
 
@@ -7620,7 +7647,7 @@ After logging out, you'll need to run `cre login` again to authenticate future C
 
 # Requesting Deploy Access
 Source: https://docs.chain.link/cre/account/deploy-access
-Last Updated: 2026-02-26
+Last Updated: 2026-10-09
 
 Deploying workflows to a Chainlink DON requires approval. Run `cre account access` to check your status or submit a request directly from your terminal.
 
@@ -7656,9 +7683,14 @@ If your organization does not have deploy access, `cre account access` will prom
   Request deployment access? Yes
 ```
 
-After confirming, you'll be asked to briefly describe what you're building:
+After confirming, you'll be asked to select the purpose of your request and briefly describe what you're building:
 
 ```
+  Purpose of this request
+  > Hackathon
+    Evaluation
+    Production Integration
+
   Briefly describe your use case
   What are you building with CRE?
 ```
@@ -7806,7 +7838,7 @@ CRE uses a simple role-based access control system with two roles:
 
 # Linking Wallet Keys
 Source: https://docs.chain.link/cre/organization/linking-keys
-Last Updated: 2026-06-24
+Last Updated: 2026-10-09
 
 Before you can deploy workflows to the public onchain registry (`deployment-registry: "onchain:ethereum-mainnet"`), you must link a public key address to your CRE organization. This process registers your wallet address onchain in the Workflow Registry contract—the smart contract on Ethereum Mainnet that stores and manages public CRE workflows—associating it with your organization and allowing you to deploy and manage workflows through the onchain registry.
 
@@ -7881,9 +7913,15 @@ The easiest way to link a key is to let the deployment process handle it automat
 
 4. Enter a descriptive label for your address
 
-5. Review the transaction details and confirm
+5. Review the permanence warning and confirm that you want to link the address permanently
+
+6. Review the transaction details and confirm
 
 The CLI will submit the transaction and continue with the deployment once the key is linked.
+
+> **CAUTION: Linking is permanent**
+>
+> Linking a workflow owner address is permanent. Once linked, the address cannot be transferred to or reused in another organization. The CLI prints a warning and asks for confirmation before linking. In non-interactive mode, `cre workflow deploy --non-interactive` requires `--yes` when linking an unlinked owner.
 
 ### Manual linking
 
@@ -7898,9 +7936,10 @@ cre account link-key --target production-settings
 1. The CLI derives your public address from the private key in `.env`
 2. You're prompted to provide a label
 3. The CLI checks if the address is already linked
-4. Transaction details are displayed (chain, contract address, estimated gas cost)
-5. You confirm to execute the transaction
-6. The transaction is submitted and you receive a block explorer link
+4. A permanence warning is displayed and you confirm that you want to link the address permanently
+5. Transaction details are displayed (chain, contract address, estimated gas cost)
+6. You confirm to execute the transaction
+7. The transaction is submitted and you receive a block explorer link
 
 **Example output:**
 
@@ -7913,6 +7952,8 @@ Provide a label for your owner address: <your_owner_label>
 
 Checking existing registrations...
 ✓ No existing link found for this address
+! Linking this address is permanent. Once linked, it cannot be transferred to or reused in another organization.
+? Do you want to link this address permanently?: Yes
 Starting linking: owner=<your_owner_address>, label=<your_owner_label>
 Contract address validation passed
 Transaction details:
@@ -9186,7 +9227,7 @@ PRODUCTION:
 
 # Account Management
 Source: https://docs.chain.link/cre/reference/cli/account
-Last Updated: 2026-02-26
+Last Updated: 2026-10-09
 
 The `cre account` commands manage linked public key addresses for public onchain registry workflows. Private registry workflows do not require linked keys; they use your CRE login session for workflow management.
 
@@ -9218,8 +9259,9 @@ When you run this command, the CLI will:
 
 1. Check whether your organization has deployment access enabled
 2. If not, prompt you to submit a request
-3. Ask you to briefly describe your use case
-4. Confirm the request was submitted — the Chainlink team will follow up via email
+3. Ask you to select the **purpose of this request** — **Hackathon**, **Evaluation**, or **Production Integration**
+4. Ask you to briefly describe your use case
+5. Confirm the request was submitted — the Chainlink team will follow up via email
 
 **Example output (access not yet enabled):**
 
@@ -9227,6 +9269,11 @@ When you run this command, the CLI will:
 ! Deployment access is not yet enabled for your organization.
 
   Request deployment access? Yes
+
+  Purpose of this request
+  > Hackathon
+    Evaluation
+    Production Integration
 
   Briefly describe your use case
   What are you building with CRE?
@@ -9290,9 +9337,18 @@ When you run this command, the CLI will:
 1. Extract your public address from the private key in your `.env` file
 2. Prompt you to provide a label for this address (e.g., "Production Wallet")
 3. Check if the address is already linked
-4. Display transaction details (chain, contract, estimated gas cost)
-5. Ask for confirmation to execute the transaction
-6. Submit the transaction and provide a block explorer link
+4. **Display a permanence warning** and ask you to confirm that you want to link the address permanently
+5. Display transaction details (chain, contract, estimated gas cost)
+6. Ask for confirmation to execute the transaction
+7. Submit the transaction and provide a block explorer link
+
+> **CAUTION: Linking is permanent**
+>
+> Linking a workflow owner address is permanent. Once linked, the address cannot be transferred to or reused in another organization. The CLI prints a warning and asks for confirmation before linking; already-linked addresses skip the prompt.
+
+> **NOTE: Non-interactive mode requires --yes**
+>
+> When linking an unlinked owner in non-interactive mode (`--non-interactive`), you must also pass `--yes`. The permanence warning still prints, but the confirmation prompt is skipped. This also applies to the automatic linking step of `cre workflow deploy --non-interactive`.
 
 **Examples:**
 
@@ -9391,7 +9447,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-07-09
+Last Updated: 2026-10-09
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -9659,6 +9715,10 @@ cre workflow deploy <workflow-name-or-path> [flags]
 > **NOTE: Deploying over a paused workflow**
 >
 > If you deploy an update to a workflow that is currently paused, the CLI will complete the update and then print a warning: `Your workflow is paused and has been updated`. The workflow remains paused after the update — run `cre workflow activate` to resume it.
+
+> **CAUTION: Automatic key linking is permanent**
+>
+> If your workflow owner address is not yet linked, `cre workflow deploy` prompts you to link it. Linking is permanent: once linked, the address cannot be transferred to or reused in another organization. The CLI prints a warning and asks for confirmation before linking. In non-interactive mode, `cre workflow deploy --non-interactive` requires `--yes` when linking an unlinked owner. See [Linking Wallet Keys](/cre/organization/linking-keys).
 
 For more details, see [Deploying Workflows](/cre/guides/operations/deploying-workflows).
 
