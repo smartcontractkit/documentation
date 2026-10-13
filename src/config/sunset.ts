@@ -33,13 +33,18 @@ export const SUNSET_EXACT_PATHS = [
   "chainlink-nodes/job-specs/multi-word-job",
 ] as const
 
-/** Quickstarts that document only Functions, only Automation, or both. */
+/**
+ * Quickstarts hidden with Functions or Automation, plus two archived VRF v2 samples.
+ * The demo app and lootbox still call VRF v2. Their subscription steps stay on v2.
+ */
 export const SUNSET_QUICKSTART_SLUGS = [
   "automation-station",
+  "chainlink-demo-app",
   "dynamic-metadata",
   "eth-balance-monitor",
   "functions-demo-app",
   "time-based-upkeep",
+  "vrf-enabled-lootbox-pack",
 ] as const
 
 const SUNSET_SIDEBAR_SECTION_SET = new Set<string>(SUNSET_SIDEBAR_SECTIONS)

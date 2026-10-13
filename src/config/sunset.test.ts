@@ -24,6 +24,8 @@ describe("sunset docs paths", () => {
     "/chainlink-nodes/job-specs/direct-request-get-uint256",
     "/chainlink-nodes/job-specs/multi-word-job",
     "https://docs.chain.link/chainlink-nodes/job-specs/direct-request-existing-job",
+    "/quickstarts/chainlink-demo-app",
+    "/quickstarts/vrf-enabled-lootbox-pack",
     "/vrf/v1",
     "/vrf/v1/introduction",
     "/vrf/v2",
@@ -44,8 +46,6 @@ describe("sunset docs paths", () => {
     "/vrf/v25",
     "vrf/v2-extra",
     "/quickstarts/vrf-mystery-box",
-    "/quickstarts/vrf-enabled-lootbox-pack",
-    "/quickstarts/chainlink-demo-app",
     "/quickstarts/circuit-breaker",
     "/chainlink-local",
     "chainlink-functions-extra",
@@ -76,6 +76,8 @@ describe("sunset docs paths", () => {
     expect(isSunsetContentFile("/repo/src/content/vrf/index.mdx")).toBe(false)
     expect(isSunsetContentFile("/repo/src/content/quickstarts/circuit-breaker.mdx")).toBe(false)
     expect(isSunsetContentFile("/repo/src/content/quickstarts/vrf-mystery-box.mdx")).toBe(false)
+    expect(isSunsetContentFile("/repo/src/content/quickstarts/chainlink-demo-app.mdx")).toBe(true)
+    expect(isSunsetContentFile("/repo/src/content/quickstarts/vrf-enabled-lootbox-pack.mdx")).toBe(true)
     expect(isSunsetContentFile("/repo/src/content/chainlink-nodes/oracle-jobs/all-jobs.mdx")).toBe(false)
     expect(isSunsetContentFile("/repo/src/content/chainlink-nodes/oracle-jobs/jobs.mdx")).toBe(false)
   })
