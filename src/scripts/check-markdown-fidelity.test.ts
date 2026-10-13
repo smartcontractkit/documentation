@@ -753,6 +753,71 @@ describe("stable report JSON", () => {
   })
 })
 
+describe("card container fidelity", () => {
+  const source = (wrapper: string) => `<${wrapper}>
+  <GitHubCard title="First repository" href="https://example.com/first" badge="New">
+    First repository description.
+  </GitHubCard>
+  <GitHubCard title="Second repository" href="https://example.com/second">
+    Second repository description.
+  </GitHubCard>
+</${wrapper}>`
+  const firstCard = "[First repository](https://example.com/first) New\n\nFirst repository description."
+  const secondCard = "[Second repository](https://example.com/second)\n\nSecond repository description."
+
+  test.each(["GitHubCards", "OverviewWrapper"])("inventories cards inside %s", (wrapper) => {
+    const findings = compareSourceToArtifact(
+      "fixture",
+      "src/content/fixture.mdx",
+      source(wrapper),
+      artifact(`${firstCard}\n\n${secondCard}`)
+    )
+
+    expect(blockingFindings("focused", findings)).toEqual([])
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ status: "present", expected: "First repository -> https://example.com/first" }),
+        expect.objectContaining({ status: "present", expected: "New" }),
+        expect.objectContaining({ status: "present", expected: "First repository description." }),
+        expect.objectContaining({ status: "present", expected: "Second repository -> https://example.com/second" }),
+        expect.objectContaining({ status: "present", expected: "Second repository description." }),
+      ])
+    )
+  })
+
+  test.each(["GitHubCards", "OverviewWrapper"])("detects a missing card inside %s", (wrapper) => {
+    const findings = compareSourceToArtifact(
+      "fixture",
+      "src/content/fixture.mdx",
+      source(wrapper),
+      artifact(secondCard)
+    )
+
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ status: "missing", expected: "First repository -> https://example.com/first" }),
+        expect.objectContaining({ status: "missing", expected: "First repository description." }),
+        expect.objectContaining({ status: "present", expected: "Second repository -> https://example.com/second" }),
+      ])
+    )
+  })
+
+  test("reads nested overview and card containers", () => {
+    const nested = `<OverviewWrapper>${source("GitHubCards")}</OverviewWrapper>`
+    const findings = compareSourceToArtifact(
+      "fixture",
+      "src/content/fixture.mdx",
+      nested,
+      artifact(`${firstCard}\n\n${secondCard}`)
+    )
+
+    expect(blockingFindings("focused", findings)).toEqual([])
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "present", expected: "First repository -> https://example.com/first" })
+    )
+  })
+})
+
 describe("solution component fidelity", () => {
   const source = `<ol><li>First item.</li><li>Second item.</li></ol>
 

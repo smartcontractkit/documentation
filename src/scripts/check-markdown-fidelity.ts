@@ -118,6 +118,8 @@ const processor = unified().use(remarkParse).use(remarkMdx).use(remarkGfm)
 const containerElements: Record<string, true> = {
   div: true,
   Fragment: true,
+  GitHubCards: true,
+  OverviewWrapper: true,
   ol: true,
   li: true,
 }

@@ -460,6 +460,53 @@ Choose an installation path.
     expect(result).not.toContain("Fragment")
   })
 
+  it.each(["GitHubCards", "OverviewWrapper"])(
+    "preserves cards inside %s and continues with siblings",
+    async (wrapper) => {
+      const result = await transformMarkdown(
+        `Before wrapper.
+
+<${wrapper}>
+  <GitHubCard title="First repository" href="https://example.com/first" badge="New">
+    First repository description.
+  </GitHubCard>
+  <GitHubCard title="Second repository" href="https://example.com/second">
+    Second repository description.
+  </GitHubCard>
+</${wrapper}>
+
+After wrapper.`,
+        "/fake/page.mdx"
+      )
+
+      expect(result).toBe(
+        [
+          "Before wrapper.",
+          "[First repository](https://example.com/first) New",
+          "First repository description.",
+          "[Second repository](https://example.com/second)",
+          "Second repository description.",
+          "After wrapper.",
+        ].join("\n\n") + "\n"
+      )
+    }
+  )
+
+  it("preserves a card inside nested overview and card containers", async () => {
+    const result = await transformMarkdown(
+      `<OverviewWrapper>
+  <GitHubCards columns={2}>
+    <GitHubCard title="Repository" href="https://example.com/repo">
+      Repository description.
+    </GitHubCard>
+  </GitHubCards>
+</OverviewWrapper>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("[Repository](https://example.com/repo)\n\nRepository description.\n")
+  })
+
   it("projects Accordion number, title, and body", async () => {
     const result = await transformMarkdown(
       `<Accordion title="Deploy the contract" number={2}>
