@@ -118,6 +118,17 @@ const processor = unified().use(remarkParse).use(remarkMdx).use(remarkGfm)
 const containerElements: Record<string, true> = {
   div: true,
   Fragment: true,
+  ol: true,
+  li: true,
+}
+const projectedInlineElements: Record<string, true> = {
+  b: true,
+  strong: true,
+  code: true,
+  sub: true,
+  span: true,
+  br: true,
+  nobr: true,
 }
 
 const selectorComponents = {
@@ -535,7 +546,16 @@ export function analyzeSourceMarkdown(
 
   const inlineBlock = (node: Node): Node | null => {
     let current: Node | undefined = node
+    let inlineElement: Node | null = null
     while (current) {
+      if (
+        (current.type === "mdxJsxFlowElement" || current.type === "mdxJsxTextElement") &&
+        projectedInlineElements[String((current as Node & { name?: unknown }).name ?? "")]
+      ) {
+        inlineElement ??= current
+        current = parentByNode.get(current)
+        continue
+      }
       if (
         current.type === "paragraph" ||
         current.type === "tableCell" ||
@@ -546,7 +566,7 @@ export function analyzeSourceMarkdown(
       }
       current = parentByNode.get(current)
     }
-    return null
+    return inlineElement
   }
 
   const textGroup = (node: Node): string | undefined => {
@@ -712,7 +732,16 @@ export function analyzeSourceMarkdown(
         inspect({ type: "root", children: childrenOf(node) } as Parent)
         return SKIP
       }
-      if (containerElements[name]) {
+      if (containerElements[name] || (name === "ul" && node.type === "mdxJsxFlowElement")) {
+        if (name === "li") breakTextGroup(node)
+        for (const failure of expressionAttributes(node)) {
+          addDiagnostic("unverifiable", `${name}.${failure.name}`, node, `Dynamic JSX attribute (${failure.syntax})`)
+        }
+        inspect({ type: "root", children: childrenOf(node) } as Parent)
+        if (name === "li") breakTextGroup(node)
+        return SKIP
+      }
+      if (projectedInlineElements[name]) {
         for (const failure of expressionAttributes(node)) {
           addDiagnostic("unverifiable", `${name}.${failure.name}`, node, `Dynamic JSX attribute (${failure.syntax})`)
         }
@@ -1045,9 +1074,25 @@ export function analyzeSourceMarkdown(
         return SKIP
       }
 
-      if (name === "Accordion") {
+      if (name === "GitHubCard") {
+        const title = staticAttribute(node, "title")
+        const href = staticAttribute(node, "href")
+        const badge = staticAttribute(node, "badge")
+        if (title.syntax || typeof title.value !== "string" || href.syntax || typeof href.value !== "string") {
+          addDiagnostic("unverifiable", name, node, "Dynamic or missing GitHub card title or href")
+        } else {
+          addFact("link", title.value, node, href.value)
+        }
+        if (badge.syntax) addDiagnostic("unverifiable", name, node, "Dynamic GitHub card badge")
+        else if (typeof badge.value === "string") addFact("text", badge.value, node)
+        inspect({ type: "root", children: childrenOf(node) } as Parent)
+        return SKIP
+      }
+
+      if (name === "Accordion" || name === "AnchoredAccordion") {
         const title = staticAttribute(node, "title")
         const number = staticAttribute(node, "number")
+        const depth = staticAttribute(node, "depth")
         if (
           title.syntax ||
           typeof title.value !== "string" ||
@@ -1056,13 +1101,14 @@ export function analyzeSourceMarkdown(
         ) {
           addDiagnostic(
             "unverifiable",
-            "Accordion",
+            name,
             node,
             `Dynamic accordion heading (${title.syntax ?? number.syntax ?? "missing title"})`
           )
         } else {
           const prefix = number.found ? `${number.value}. ` : ""
-          addFact("heading", `${prefix}${title.value}`, node, undefined, 3)
+          const level = depth.value === 4 ? 4 : depth.value === 3 || name === "Accordion" ? 3 : 2
+          addFact("heading", `${prefix}${title.value}`, node, undefined, level)
         }
         inspect({ type: "root", children: childrenOf(node) } as Parent)
         return SKIP
