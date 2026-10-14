@@ -9,6 +9,7 @@ import { isSunsetSidebarSection } from "./sunset.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
 import { CCIP_V16_SIDEBAR_CONTENT } from "./sidebar/ccip-v1.ts"
 import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
+import { CHAINLINK_PLATFORM_SECTION } from "./sidebar/chainlink-platform.ts"
 import type { ChainType, CcipVersion } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
@@ -2725,6 +2726,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
   ],
   [SIDEBAR_SECTIONS.GLOBAL]: [
     AI_AGENT_RESOURCES_SECTION,
+    CHAINLINK_PLATFORM_SECTION,
     {
       section: "General Documentation",
       contents: [
