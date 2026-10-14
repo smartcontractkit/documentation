@@ -2,8 +2,15 @@
 import * as CONFIG from "../../config"
 import { SUPPORTED_LLM_SECTIONS, LLM_SECTIONS_CONFIG } from "../../config/llms"
 import { LlmsLink } from "./LlmsLink"
+import type { Solution } from "../../config/solutions/index.ts"
 
-const { editHref, frontmatter } = Astro.props
+interface Props {
+  editHref?: string
+  frontmatter?: { sdkLang?: string }
+  solution?: Solution
+}
+
+const { editHref, frontmatter, solution } = Astro.props
 const pathname = Astro.url.pathname
 const section = pathname.split("/").filter(Boolean)[0]
 // Determine language from frontmatter or filename
@@ -12,12 +19,11 @@ const filename = pathname.split("/").pop() || ""
 const filenameLang = filename.match(/-(go|ts)(?:\/|$)/) ? filename.match(/-(go|ts)(?:\/|$)/)?.[1] : null
 const currentPageLang = sdkLang || filenameLang
 
-const showMoreSection = CONFIG.COMMUNITY_INVITE_URL || editHref
-
 // Check if section supports LLMs
-const llmsExists = (SUPPORTED_LLM_SECTIONS as readonly string[]).includes(section)
+const llmsExists = !!solution || (SUPPORTED_LLM_SECTIONS as readonly string[]).includes(section)
 const cfg = LLM_SECTIONS_CONFIG[section as keyof typeof LLM_SECTIONS_CONFIG]
-const supportedLanguages = cfg?.languages || []
+const supportedLanguages = solution ? [] : cfg?.languages || []
+const showMoreSection = llmsExists || CONFIG.COMMUNITY_INVITE_URL || editHref
 ---
 
 {showMoreSection && <h2 class="heading">More</h2>}
@@ -26,7 +32,9 @@ const supportedLanguages = cfg?.languages || []
     llmsExists && (
       <LlmsLink
         client:load
-        section={section}
+        section={solution ? `solutions/${solution.slug}` : section}
+        displayName={solution?.title}
+        downloadName={solution ? `${solution.slug}-llms-full.txt` : undefined}
         supportedLanguages={supportedLanguages}
         currentPageLanguage={currentPageLang}
       />

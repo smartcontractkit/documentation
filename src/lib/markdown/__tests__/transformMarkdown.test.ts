@@ -460,6 +460,53 @@ Choose an installation path.
     expect(result).not.toContain("Fragment")
   })
 
+  it.each(["GitHubCards", "OverviewWrapper"])(
+    "preserves cards inside %s and continues with siblings",
+    async (wrapper) => {
+      const result = await transformMarkdown(
+        `Before wrapper.
+
+<${wrapper}>
+  <GitHubCard title="First repository" href="https://example.com/first" badge="New">
+    First repository description.
+  </GitHubCard>
+  <GitHubCard title="Second repository" href="https://example.com/second">
+    Second repository description.
+  </GitHubCard>
+</${wrapper}>
+
+After wrapper.`,
+        "/fake/page.mdx"
+      )
+
+      expect(result).toBe(
+        [
+          "Before wrapper.",
+          "[First repository](https://example.com/first) New",
+          "First repository description.",
+          "[Second repository](https://example.com/second)",
+          "Second repository description.",
+          "After wrapper.",
+        ].join("\n\n") + "\n"
+      )
+    }
+  )
+
+  it("preserves a card inside nested overview and card containers", async () => {
+    const result = await transformMarkdown(
+      `<OverviewWrapper>
+  <GitHubCards columns={2}>
+    <GitHubCard title="Repository" href="https://example.com/repo">
+      Repository description.
+    </GitHubCard>
+  </GitHubCards>
+</OverviewWrapper>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("[Repository](https://example.com/repo)\n\nRepository description.\n")
+  })
+
   it("projects Accordion number, title, and body", async () => {
     const result = await transformMarkdown(
       `<Accordion title="Deploy the contract" number={2}>
@@ -482,6 +529,93 @@ Body remains visible.
     expect(withTitleSlot).toContain("### 3. Review the deployment")
     expect(withTitleSlot).not.toContain("Ignored prop title")
     expect(withTitleSlot).toContain("Body remains visible.")
+  })
+
+  it.each([2, 3, 4])("preserves an explicit AnchoredAccordion id at heading depth %s", async (depth) => {
+    const result = await transformMarkdown(
+      `[Fund the adapter](#fund-the-adapter)
+
+<AnchoredAccordion title="Set the return format and fund the adapter" number={4} depth={${depth}} anchorId="fund-the-adapter">
+Body instructions.
+</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(
+      `[Fund the adapter](#fund-the-adapter)\n\n${"#".repeat(depth)} 4. Set the return format and fund the adapter <a id="fund-the-adapter"></a>\n\nBody instructions.\n`
+    )
+  })
+
+  it.each(['{"static-id"}', "{`static-id`}"])("preserves a static expression anchorId=%s", async (attribute) => {
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Deploy" anchorId=${attribute}>\nInstructions.\n</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe('## Deploy <a id="static-id"></a>\n\nInstructions.\n')
+  })
+
+  it.each(["", 'anchorId=""', "anchorId={dynamicId}", "anchorId={42}"])(
+    "keeps accordion content without generating an anchor for %s",
+    async (attribute) => {
+      const result = await transformMarkdown(
+        `<AnchoredAccordion title="Deploy" ${attribute}>\nInstructions.\n</AnchoredAccordion>`,
+        "/fake/page.mdx"
+      )
+
+      expect(result).toBe("## Deploy\n\nInstructions.\n")
+    }
+  )
+
+  it("does not give a plain Accordion an AnchoredAccordion id", async () => {
+    const result = await transformMarkdown(
+      '<Accordion title="Deploy" anchorId="unused">\nInstructions.\n</Accordion>',
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("### Deploy\n\nInstructions.\n")
+  })
+
+  it("escapes an anchor id as HTML attribute content", async () => {
+    const anchorId = 'a&"<>\\_b'
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Deploy" anchorId={${JSON.stringify(anchorId)}}>\nInstructions.\n</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe('## Deploy <a id="a&amp;&quot;&lt;&gt;&#92;_b"></a>\n\nInstructions.\n')
+  })
+
+  it("keeps each nested accordion anchor on its own heading", async () => {
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Outer" anchorId="outer">
+Outer instructions.
+
+<AnchoredAccordion title="Inner" depth={3} anchorId="inner">
+Inner instructions.
+</AnchoredAccordion>
+</AnchoredAccordion>
+
+After accordions.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(
+      '## Outer <a id="outer"></a>\n\nOuter instructions.\n\n### Inner <a id="inner"></a>\n\nInner instructions.\n\nAfter accordions.\n'
+    )
+  })
+
+  it("continues dropping source HTML anchors while preserving generated accordion anchors", async () => {
+    const result = await transformMarkdown(
+      `<a id="source-anchor"></a>
+
+<AnchoredAccordion title="Deploy" anchorId="generated-anchor">
+Instructions.
+</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe('## Deploy <a id="generated-anchor"></a>\n\nInstructions.\n')
   })
 
   it("projects Address with exact URLs and static truncation", async () => {
@@ -699,5 +833,126 @@ describe("getPageLanguage", () => {
 
   it("should return null for common files", () => {
     expect(getPageLanguage("/path/to/file.mdx")).toBeNull()
+  })
+})
+
+describe("solution content projections", () => {
+  it.each([
+    "<ol><li>First item.</li><li>[Second item](https://example.com).</li></ol>",
+    "<ol>\n  <li>First item.</li>\n  <li>[Second item](https://example.com).</li>\n</ol>",
+    '<Aside type="note">\n\n<ol>\n<li>First item.</li>\n<li>[Second item](https://example.com).</li>\n</ol>\n\n</Aside>',
+  ])("preserves ordered HTML lists, including their links", async (source) => {
+    const result = await transformMarkdown(source, "fixture.mdx")
+    expect(result).toContain("1. First item.")
+    expect(result).toContain("2. [Second item](https://example.com).")
+    expect(result).not.toContain("<ol")
+  })
+
+  it("reuses Accordion projection for anchored sections and retains nested cards and code", async () => {
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Deploy" number={1} depth={2}>
+
+<GitHubCard title="Repository" href="https://example.com/repo" badge="New">
+Repository description.
+</GitHubCard>
+
+\`\`\`bash
+forge create ExampleVault
+\`\`\`
+
+</AnchoredAccordion>`,
+      "fixture.mdx"
+    )
+    expect(result).toContain("## 1. Deploy")
+    expect(result).toContain("[Repository](https://example.com/repo) New")
+    expect(result).toContain("Repository description.")
+    expect(result).toContain("```bash\nforge create ExampleVault\n```")
+    expect(result).not.toContain("<AnchoredAccordion")
+    expect(result).not.toContain("<GitHubCard")
+  })
+})
+
+describe("unordered list serialization regression", () => {
+  it("keeps callout list items as bullets without standalone encoded semicolon separators", async () => {
+    const result = await transformMarkdown(
+      `<Aside type="caution" title="Important">
+<ul>
+<li>
+The final transaction is submitted by the oracle.
+</li>
+<li>
+Searchers must sign for an **exactly equal** gas price.
+</li>
+</ul>
+</Aside>`,
+      "fixture.mdx"
+    )
+    expect(result).toContain("> - The final transaction is submitted by the oracle.")
+    expect(result).toContain("> - Searchers must sign for an **exactly equal** gas price.")
+    expect(result).not.toContain(";&#x20;")
+    expect(result).not.toMatch(/^\s*>?\s*;\s*$/m)
+  })
+})
+
+describe("inline JSX space serialization", () => {
+  it.each(["ol", "ul"])("keeps a JSX space and source newline inline in %s callout items", async (list) => {
+    const source = `<Aside type="note" title="Gas limit">
+<${list}>
+<li>Foundry scripts default to <strong>400,000</strong> gas. Hardhat scripts estimate gas unless you set{" "}
+  <code>GAS_LIMIT</code> (and fall back to 400,000 if estimation fails).</li>
+<li>Test all scenarios before deployment.</li>
+</${list}>
+</Aside>`
+    const result = await transformMarkdown(source, "fixture.mdx")
+    const first = list === "ol" ? "1." : "-"
+    const second = list === "ol" ? "2." : "-"
+
+    expect(result).toBe(
+      `> **NOTE: Gas limit**\n>\n> ${first} Foundry scripts default to **400,000** gas. Hardhat scripts estimate gas unless you set \`GAS_LIMIT\` (and fall back to 400,000 if estimation fails).\n> ${second} Test all scenarios before deployment.\n`
+    )
+    expect(result).not.toContain("&#x20;")
+  })
+
+  it("keeps the Data Feeds callout's JSX spaces next to inline code", async () => {
+    const source = `<Aside type="caution" title="Important">
+<ul>
+<li>Searchers must not exceed the allowed{" "}
+  <code>SolverGasLimit</code>. Query <code>getSolverGasLimit</code> on the{" "}
+  <code>DappControl</code> contract.</li>
+</ul>
+</Aside>`
+
+    expect(await transformMarkdown(source, "fixture.mdx")).toBe(
+      "> **CAUTION: Important**\n>\n> - Searchers must not exceed the allowed `SolverGasLimit`. Query `getSolverGasLimit` on the `DappControl` contract.\n"
+    )
+  })
+
+  it.each([
+    ['Use <code>A</code>{" "}\n<code>B</code>.', "Use `A` `B`.\n"],
+    ['Read{" "}\n<a href="https://example.com">the guide</a>.', "Read [the guide](https://example.com).\n"],
+    ['Read\n{" "}next.', "Read next.\n"],
+    ['Read{" "}\r\nnext.', "Read next.\n"],
+  ])("keeps an inline separator across a source line break: %s", async (source, expected) => {
+    expect(await transformMarkdown(source, "fixture.mdx")).toBe(expected)
+  })
+
+  it.each([
+    ['Before  \n{" "}after.', "Before\\\n&#x20;after.\n"],
+    ['Before{" "}\\\nafter.', "Before \\\nafter.\n"],
+    ['First{" "}\n\nSecond paragraph.', "First&#x20;\n\nSecond paragraph.\n"],
+    ['Use <code>a{" "}\nb</code>.', "Use `a \nb`.\n"],
+    ['before{"\\n"}{" "}<code>CODE</code>.', "before\n&#x20;`CODE`.\n"],
+    ['before{"\\u00a0"}<code>CODE</code>.', "before\u00a0`CODE`.\n"],
+    ['before{"  "}<code>CODE</code>.', "before  `CODE`.\n"],
+  ])(
+    "preserves explicit breaks, paragraph boundaries, code, and other literal spaces: %s",
+    async (source, expected) => {
+      expect(await transformMarkdown(source, "fixture.mdx")).toBe(expected)
+    }
+  )
+
+  it("leaves JSX-looking text inside inline and fenced code unchanged", async () => {
+    const source = 'Inline `{" "}`.\n\n```jsx\nset{" "}\n  <code>GAS_LIMIT</code>\n```\n\nAfter.'
+    expect(await transformMarkdown(source, "fixture.mdx")).toBe(source + "\n")
   })
 })

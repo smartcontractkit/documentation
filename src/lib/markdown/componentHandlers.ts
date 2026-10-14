@@ -1002,8 +1002,54 @@ export function handleAccordion(node: MdxJsxNode, parent: Parent, index: number)
     titleSlot.parent.children.splice(titleSlot.parent.children.indexOf(titleSlot.node), 1)
   }
   const label = `${typeof number === "number" ? `${number}. ` : ""}${slotTitle || title}`
-  const replacement: Node[] = [headingNode(depth === 4 ? 4 : 3, label), ...((node as Parent).children || [])]
+  const headingDepth = node.name === "AnchoredAccordion" && depth !== 3 && depth !== 4 ? 2 : depth === 4 ? 4 : 3
+  const heading = headingNode(headingDepth, label)
+  const anchorId = staticAttribute(node, "anchorId")
+  if (node.name === "AnchoredAccordion" && typeof anchorId === "string" && anchorId.length > 0) {
+    heading.data = { markdownAnchorId: anchorId }
+  }
+  const replacement: Node[] = [heading, ...((node as Parent).children || [])]
   return replaceNode(node, parent, index, replacement)
+}
+
+export function handleGitHubCard(node: MdxJsxNode, parent: Parent, index: number): number | void {
+  const title = staticAttribute(node, "title")
+  const href = staticAttribute(node, "href")
+  const badge = staticAttribute(node, "badge")
+  if (typeof title !== "string" || typeof href !== "string" || badge === NON_STATIC) return dropNode(parent, index)
+  const label: Node[] = [linkNode(title, href)]
+  if (typeof badge === "string") label.push(textNode(` ${badge}`))
+  return replaceNode(node, parent, index, [paragraphNode(label), ...((node as Parent).children || [])])
+}
+
+export function handleHtmlList(node: MdxJsxNode, parent: Parent, index: number): number | void {
+  const start = staticAttribute(node, "start")
+  const parsedStart = typeof start === "number" || typeof start === "string" ? Number(start) : 1
+  const items: Parent[] = []
+  const children = ((node as Parent).children || []).flatMap((child) =>
+    child.type === "paragraph" ? (child as Parent).children : [child]
+  )
+  for (const child of children) {
+    if (
+      (child.type !== "mdxJsxFlowElement" && child.type !== "mdxJsxTextElement") ||
+      (child as MdxJsxNode).name !== "li"
+    ) {
+      continue
+    }
+    const item: Parent = { type: "listItem", children: [] }
+    // Reuse the flow/phrasing normalization used by all component projections.
+    replaceNode({ type: "mdxJsxFlowElement" }, item, 0, (child as Parent).children || [])
+    items.push(item)
+  }
+  return replaceNode(node, parent, index, [
+    {
+      type: "list",
+      ordered: node.name === "ol",
+      start: node.name === "ol" && Number.isInteger(parsedStart) ? parsedStart : undefined,
+      spread: false,
+      children: items,
+    } as Parent,
+  ])
 }
 
 export function handleAddress(node: MdxJsxNode, parent: Parent, index: number): number | void {
