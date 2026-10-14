@@ -13798,10 +13798,14 @@ For most read operations, use the standard confidence levels by passing `-2` (la
 
 **Note:** The `SAFE` confidence level is not available for chain reads—only `LATEST` and `FINALIZED` are supported.
 
-> **CAUTION: Safe and finalized reads are not supported on some chains**
+> **CAUTION: Finalized reads can fail on RPC nodes**
 >
-> Safe and finalized reads do not work reliably on the following chains. Reads that use the `SAFE` or `FINALIZED`
-> confidence level fail consistently on most of these chains, and fail frequently on Polygon. Support is planned.
+> RPC nodes are not archival nodes. On a P99.9 basis they should have the latest `finalized` - `latest` blocks in memory.
+> However, changes in the chain environment can cause the gap between `finalized` and `latest` to temporarily exceed what
+> RPCs have in memory. When this happens, calls to the `finalized` block will return an error.
+>
+> On the following chains, safe and finalized reads do not work reliably: reads that use the `SAFE` or `FINALIZED`
+> confidence level fail consistently, and fail frequently on Polygon. Support is planned.
 >
 > **Mainnet:** Polygon, Mantle, Scroll. **Testnet:** Polygon Amoy, Linea Sepolia.
 
