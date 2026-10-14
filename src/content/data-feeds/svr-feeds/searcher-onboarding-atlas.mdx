@@ -11,27 +11,8 @@ whatsnext:
 ---
 
 import { Aside, CopyText } from "@components"
-import { Tabs } from "@components/Tabs"
 import { FeedList } from "~/features/feeds/components/FeedList.tsx"
-
-export const contracts = {
-  base: {
-    atlas: "0x583dcFef0D240DC80753F0F0B26513feE27D9B77",
-    dappControl: "0xa5E1a36938769cbd5a26f5e19D8FCB379f597c83",
-  },
-  arbitrum: {
-    atlas: "0x8ad1aE9D97C79aA68A0a151E83ff3942f68F86C1",
-    dappControl: "0xe15BBa987C002ecc3586e81244517877D294d291",
-  },
-  bnb: {
-    atlas: "0x21B7d28B882772A1Cfe633Daee6f42ebb95DeC4E",
-    dappControl: "0x7D50b32444609A9B53BcF208c159C8d0d0767835",
-  },
-  monad: {
-    atlas: "0x006DD7813C90CaB67c1Dc185c21Abb2C7414b061",
-    dappControl: "0xa40d9f38621b4ffb2181508b973519e8133951c0",
-  },
-}
+import { AtlasContractsTable } from "~/features/feeds/components/AtlasContractsTable.tsx"
 
 <Aside type="note" title="Searcher Onboarding">
   SVR on Atlas (every chain outside of ETH mainnet) uses a reputation system with **two groups**. Unless otherwise specified for a chain, Atlas includes up to **2 searcher bids** per transaction for on-chain settlement:
@@ -46,7 +27,9 @@ Searchers can [subscribe here](https://chainlinkcommunity.typeform.com/to/s55Hu2
 
 </Aside>
 
-[Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded to Base, Arbitrum, BNB Chain, and Monad with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
+[Chainlink Smart Value Recapture (SVR)](/data-feeds/svr-feeds) has expanded beyond Ethereum Mainnet with a new auction system, **Atlas**. This guide provides existing Chainlink SVR searchers with the technical specifications and integration requirements for participating in all non-ETH mainnet SVR auctions.
+
+Atlas is currently live on the following networks: Base, Arbitrum, BNB Chain, Monad, Arc, HyperEVM, Ink, Robinhood Chain, and Unichain. See [Contract References](#contract-references) for the deployed addresses.
 
 ## Core Components
 
@@ -73,110 +56,12 @@ Recommended native token amounts for bonding:
 
 ## Contract References
 
-The following contracts are deployed at version **v1.6.4**.
+Each chain has a live Atlas deployment and a live DappControl:
 
-<Tabs client:visible>
-  <Fragment slot="tab.1">Base</Fragment>
-  <Fragment slot="tab.2">Arbitrum</Fragment>
-  <Fragment slot="tab.3">BNB Chain</Fragment>
-  <Fragment slot="tab.4">Monad</Fragment>
-  <Fragment slot="panel.1">
-    <table>
-      <thead>
-        <tr>
-          <th>Contract</th>
-          <th>Address</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Atlas (v1.6.4)</td>
-          <td>
-            <CopyText text={contracts.base.atlas} code />
-          </td>
-        </tr>
-        <tr>
-          <td>DappControl</td>
-          <td>
-            <CopyText text={contracts.base.dappControl} code />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </Fragment>
-  <Fragment slot="panel.2">
-    <table>
-      <thead>
-        <tr>
-          <th>Contract</th>
-          <th>Address</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Atlas (v1.6.4)</td>
-          <td>
-            <CopyText text={contracts.arbitrum.atlas} code />
-          </td>
-        </tr>
-        <tr>
-          <td>DappControl</td>
-          <td>
-            <CopyText text={contracts.arbitrum.dappControl} code />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </Fragment>
-  <Fragment slot="panel.3">
-    <table>
-      <thead>
-        <tr>
-          <th>Contract</th>
-          <th>Address</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Atlas (v1.6.4)</td>
-          <td>
-            <CopyText text={contracts.bnb.atlas} code />
-          </td>
-        </tr>
-        <tr>
-          <td>DappControl</td>
-          <td>
-            <CopyText text={contracts.bnb.dappControl} code />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </Fragment>
-  <Fragment slot="panel.4">
-    <table>
-      <thead>
-        <tr>
-          <th>Contract</th>
-          <th>Address</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Atlas (v1.6.4)</td>
-          <td>
-            <CopyText text={contracts.monad.atlas} code />
-          </td>
-        </tr>
-        <tr>
-          <td>DappControl</td>
-          <td>
-            <CopyText text={contracts.monad.dappControl} code />
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </Fragment>
-</Tabs>
+- **Atlas**: The auction contract, deployed at version **v1.6.4**. Searchers bond native tokens here to cover the gas costs of their operation and the oracle update, and call it to unbond and redeem.
+- **DappControl**: The dApp-specific module that defines the auction rules for Chainlink SVR. Searchers read parameters such as the solver gas limit from it, and filter incoming user operations by its address.
+
+<AtlasContractsTable client:visible />
 
 ## Feed Aggregator Addresses
 
@@ -184,9 +69,8 @@ The following contracts are deployed at version **v1.6.4**.
   <p>
     Searchers need to listen to the **Aggregator address** for price reports, not the proxy address. You can find the
     aggregator address by reading `aggregator` in the proxy contract. For convenience, we've included the aggregator
-    address in the table below. Use **Aave-SVR** type feeds for Aave, **SVR** type feeds for other protocols, and
-    **SVR-Backup** for the legacy shared feeds. For the full list of SVR feeds, see the [SVR Feeds
-    page](/data-feeds/svr-feeds).
+    address in the table below. Each feed is labeled with its SVR variant (for example, **Shared SVR**, **Aave SVR**, or
+    **Compound SVR**). For the full list of SVR feeds, see the [SVR Feeds page](/data-feeds/svr-feeds).
   </p>
 </Aside>
 
@@ -401,7 +285,7 @@ interface IAtlas {
     function depositAndBond(uint256 amountToBond) external payable;
 }
 
-address atlasAddress = address(0x8e098Dfd60aEC9bCf07fd3cA5933e9F22b1b4A0d);
+address atlasAddress = address(0x583dcFef0D240DC80753F0F0B26513feE27D9B77);
 uint256 amountToBond = 1e18;
 
 IAtlas(atlasAddress).depositAndBond{ value: amountToBond }(amountToBond);
@@ -427,7 +311,7 @@ interface IAtlas {
     function ESCROW_DURATION() external view returns (uint256);
 }
 
-address atlasAddress = address(0x8e098Dfd60aEC9bCf07fd3cA5933e9F22b1b4A0d);
+address atlasAddress = address(0x583dcFef0D240DC80753F0F0B26513feE27D9B77);
 uint256 amountToUnbond = 1e18;
 
 IAtlas(atlasAddress).unbond(amountToUnbond);
@@ -795,7 +679,7 @@ var (
 	chainId = big.NewInt(8453)
 
 	// Filtering notifications for the Chainlink dApp control (module) address only
-	dAppControlAddress = common.HexToAddress("0xe15BBa987C002ecc3586e81244517877D294d291")
+	dAppControlAddress = common.HexToAddress("0xa5E1a36938769cbd5a26f5e19D8FCB379f597c83")
 )
 
 // This function returns true if the notification is of interest and false
