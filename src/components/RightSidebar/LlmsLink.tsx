@@ -6,6 +6,8 @@ interface LlmsLinkProps {
   section: string
   supportedLanguages: string[]
   currentPageLanguage?: string | null
+  displayName?: string
+  downloadName?: string
 }
 
 // Map section slugs to display names
@@ -21,7 +23,13 @@ const SECTION_DISPLAY_NAMES: Record<string, string> = {
   // Add more as needed
 }
 
-export function LlmsLink({ section, supportedLanguages, currentPageLanguage }: LlmsLinkProps) {
+export function LlmsLink({
+  section,
+  supportedLanguages,
+  currentPageLanguage,
+  displayName,
+  downloadName,
+}: LlmsLinkProps) {
   // Subscribe to the language store for reactive updates
   const storeLanguage = useStore(selectedLanguage)
 
@@ -50,13 +58,13 @@ export function LlmsLink({ section, supportedLanguages, currentPageLanguage }: L
   } else {
     // Single file section - include product name
     llmsHref = `/${section}/llms-full.txt`
-    const productName = SECTION_DISPLAY_NAMES[section] || section.toUpperCase()
+    const productName = displayName || SECTION_DISPLAY_NAMES[section] || section.toUpperCase()
     llmsLabel = `Complete ${productName} docs (TXT)`
   }
 
   return (
     <li className={styles.headerLink}>
-      <a href={llmsHref} target="_blank" className={styles.llmsLink}>
+      <a href={llmsHref} target="_blank" download={downloadName} className={styles.llmsLink}>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"

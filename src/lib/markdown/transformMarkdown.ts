@@ -7,7 +7,7 @@ import remarkParse from "remark-parse"
 import remarkMdx from "remark-mdx"
 import remarkGfm from "remark-gfm"
 import remarkStringify from "remark-stringify"
-import { visit } from "unist-util-visit"
+import { SKIP, visit } from "unist-util-visit"
 import type { Node, Parent, Literal } from "unist"
 import type { TransformConfig, MdxJsxNode, ComponentContext } from "./types.js"
 import {
@@ -27,6 +27,8 @@ import {
   handlePackageManagerTabs,
   handleFragment,
   handleAccordion,
+  handleGitHubCard,
+  handleHtmlList,
   handleAddress,
   handleCallout,
   handleAnyApiCallout,
@@ -50,6 +52,34 @@ function staticMdxString(value: unknown): string | undefined {
   )?.data?.estree?.body?.[0]?.expression
   const staticValue = staticEstreeValue(expression)
   return typeof staticValue === "string" ? staticValue : undefined
+}
+
+/** Keep an explicit JSX space inline with adjacent source text, including soft source line breaks. */
+function replaceInlineJsxSpace(parent: Parent, index: number): number {
+  const previous = parent.children[index - 1]
+  const next = parent.children[index + 1]
+  const previousText = previous?.type === "text" ? (previous as Literal) : undefined
+  const nextText = next?.type === "text" ? (next as Literal) : undefined
+
+  // Generated text (for example, {"\n"}) keeps its intentional whitespace.
+  // Hard breaks and block boundaries are separate nodes and are never crossed.
+  if (previousText?.position) {
+    previousText.value = String(previousText.value).replace(/[ \t]*\r?\n[ \t]*$/, "")
+  }
+  if (nextText?.position) {
+    nextText.value = String(nextText.value).replace(/^[ \t]*\r?\n[ \t]*/, "")
+  }
+  if (previousText) {
+    previousText.value = String(previousText.value) + " " + (nextText ? String(nextText.value) : "")
+    parent.children.splice(index, nextText ? 2 : 1)
+    return index
+  }
+  if (nextText) {
+    nextText.value = " " + String(nextText.value)
+    parent.children.splice(index, 1)
+    return index
+  }
+  return replaceNode({ type: "mdxTextExpression" }, parent, index, [{ type: "text", value: " " } as Literal])
 }
 
 /**
@@ -125,7 +155,7 @@ export async function transformMarkdown(
         processor,
       }
 
-      visit(tree, (node: Node, index: number | undefined, parent: Parent | undefined) => {
+      const projectNode = (node: Node, index: number | undefined, parent: Parent | undefined) => {
         if (!parent || typeof index !== "number") return
 
         // Handle CodeHighlightBlockMulti
@@ -181,8 +211,15 @@ export async function transformMarkdown(
           return handlePackageManagerTabs(node as MdxJsxNode, parent, index)
         }
 
-        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Accordion") {
+        if (
+          node.type === "mdxJsxFlowElement" &&
+          ((node as MdxJsxNode).name === "Accordion" || (node as MdxJsxNode).name === "AnchoredAccordion")
+        ) {
           return handleAccordion(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "GitHubCard") {
+          return handleGitHubCard(node as MdxJsxNode, parent, index)
         }
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Callout") {
@@ -226,7 +263,7 @@ export async function transformMarkdown(
 
         if (
           (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
-          (node as MdxJsxNode).name === "Fragment"
+          ["Fragment", "GitHubCards", "OverviewWrapper"].includes((node as MdxJsxNode).name ?? "")
         ) {
           return handleFragment(node as MdxJsxNode, parent, index)
         }
@@ -260,6 +297,10 @@ export async function transformMarkdown(
           const mdxNode = node as MdxJsxNode
           const nodeName = mdxNode.name
           const children = (mdxNode as Parent).children || []
+
+          if (nodeName === "ol" || (nodeName === "ul" && mdxNode.type === "mdxJsxFlowElement")) {
+            return handleHtmlList(mdxNode, parent, index)
+          }
 
           if (nodeName === "a") {
             const hrefAttribute = mdxNode.attributes?.find((attribute) => attribute.name === "href")
@@ -334,6 +375,7 @@ export async function transformMarkdown(
           const value = staticMdxString(node)
           if (value === undefined) return replaceNode(node, parent, index, [])
           if (node.type === "mdxFlowExpression" && !value.trim()) return replaceNode(node, parent, index, [])
+          if (node.type === "mdxTextExpression" && value === " ") return replaceInlineJsxSpace(parent, index)
           return replaceNode(node, parent, index, [{ type: "text", value } as Literal])
         }
 
@@ -371,6 +413,27 @@ export async function transformMarkdown(
         }
 
         // Note: We preserve link nodes as-is so they're rendered as markdown links [text](url)
+      }
+      visit(tree, (node, index, parent) => {
+        const nextIndex = projectNode(node, index, parent)
+        // A replaced node is detached. Traverse its replacement instead of mutating its old children.
+        return typeof nextIndex === "number" ? ([SKIP, nextIndex] as [typeof SKIP, number]) : undefined
+      })
+      // Materialize generated anchors after projection, which continues to drop source HTML.
+      visit(tree, "heading", (node) => {
+        const heading = node as Parent
+        const anchorId = (heading.data as { markdownAnchorId?: unknown } | undefined)?.markdownAnchorId
+        if (typeof anchorId !== "string") return
+        const escapedId = anchorId
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\\/g, "&#92;")
+        heading.children.push(
+          { type: "text", value: " " } as Literal,
+          { type: "html", value: `<a id="${escapedId}"></a>` } as Literal
+        )
       })
     })
     .use(remarkStringify, {
