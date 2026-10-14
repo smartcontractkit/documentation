@@ -148,6 +148,28 @@ npm install
 yarn add
 \`\`\``,
     },
+    {
+      name: "MethodTabs",
+      component: `<MethodTabs>
+  <Fragment slot="ui">
+Open the app.
+  </Fragment>
+  <Fragment slot="api">
+\`\`\`sh
+curl https://api.example.com
+\`\`\`
+  </Fragment>
+</MethodTabs>`,
+      projection: `**Platform UI**
+
+Open the app.
+
+**API**
+
+\`\`\`sh
+curl https://api.example.com
+\`\`\``,
+    },
   ])("keeps block siblings around a flow-position $name projection", async ({ component, projection }) => {
     const result = await transformMarkdown(
       `Intro paragraph.
@@ -452,6 +474,61 @@ Choose an installation path.
     expect(result.indexOf("### npm")).toBeLessThan(result.indexOf("npm install example"))
     expect(result.indexOf("npm install example")).toBeLessThan(result.indexOf("### yarn"))
     expect(result.indexOf("### yarn")).toBeLessThan(result.indexOf("yarn add example"))
+  })
+
+  it("projects indented MethodTabs content as Platform UI then API with nested components", async () => {
+    const result = await transformMarkdown(
+      `### Create a wallet
+
+<MethodTabs>
+  <Fragment slot="api">
+    Create wallets in a single request:
+
+    <PolicyInstanceBuilder client:only="react" />
+
+    \`\`\`bash
+    curl -X POST https://ace.api.chain.link/v1/wallets \\
+      -H "Authorization: Apikey <API_KEY>"
+    \`\`\`
+
+    | Field | Required |
+    | --- | --- |
+    | \`owner_address\` | Yes |
+
+    <Aside type="tip" title="Chain selectors">
+      Use chain selectors, not chain IDs.
+    </Aside>
+  </Fragment>
+  <Fragment slot="ui">
+    1. Open **Compliance** and click **Home**.
+    1. Click **Enable new network**.
+       <ClickToZoom src="/images/ace/add-wallets.webp" />
+  </Fragment>
+</MethodTabs>
+
+## Next steps`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toContain(`**Platform UI**
+
+1. Open **Compliance** and click **Home**.
+2. Click **Enable new network**.`)
+    expect(result).toContain("/images/ace/add-wallets.webp")
+    expect(result).toContain(`**API**
+
+Create wallets in a single request:
+
+\`\`\`bash
+curl -X POST https://ace.api.chain.link/v1/wallets \\
+  -H "Authorization: Apikey <API_KEY>"
+\`\`\``)
+    expect(result).toContain("| `owner_address` | Yes      |")
+    expect(result).toContain("> **TIP: Chain selectors**")
+    expect(result).toContain("> Use chain selectors, not chain IDs.")
+    expect(result.indexOf("**Platform UI**")).toBeLessThan(result.indexOf("**API**"))
+    expect(result.indexOf("**API**")).toBeLessThan(result.indexOf("## Next steps"))
+    expect(result).not.toMatch(/MethodTabs|Fragment|PolicyInstanceBuilder|slot=/)
   })
 
   it("unwraps Fragment content", async () => {

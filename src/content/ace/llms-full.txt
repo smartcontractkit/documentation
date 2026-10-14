@@ -1840,6 +1840,77 @@ Key points:
 - **Chainlink operates through it.** Chainlink is registered as an authorized operator — allowed to execute operations on your behalf, but unable to change ownership or authorization settings.
 - **Self-signing organizations** must also provide the `address` of the ECDSA signer authorized to sign operations. See [Signing & Ownership Model](/ace/concepts/signing-ownership) for details on how each signing model works.
 
+**Platform UI**
+
+1. In the [Chainlink App](https://app.chain.link), open the **Compliance** section from the left sidebar and click **Home**.
+2. Click **View settings**, then click **Enable new network**.
+3. Select the network you want to enable and provide an EOA address as the wallet owner. To deploy wallets on multiple chains at once, click **Add more** to add additional networks before submitting.
+
+   ![Image](/images/ace/account-setup/add-ace-wallets.webp)
+4. The platform deploys your CRE Connect Wallet onchain. Once created, the wallet appears in your settings with its onchain address and deployment status.
+
+**API**
+
+The Coordinator API identifies networks using **chain selectors** — unique numeric identifiers used by Chainlink infrastructure to reference specific blockchains. These are different from standard chain IDs. You can find the chain selector for each supported network on the [Supported Networks](/ace/supported-networks) page.
+
+Create wallets on one or more networks in a single request. The `owner_address` is the EOA that becomes the onchain owner of the CRE Connect Wallet. This example creates wallets on Ethereum Sepolia and Arbitrum Sepolia:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/wallets \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "wallets": [
+      {
+        "owner_address": "<YOUR_WALLET_ADDRESS>",
+        "chain_selector": "16015286601757825753"
+      },
+      {
+        "owner_address": "<YOUR_WALLET_ADDRESS>",
+        "chain_selector": "3478487238524512106"
+      }
+    ]
+  }'
+```
+
+The response includes the deployed wallet address and status for each chain:
+
+```json
+{
+  "wallets": [
+    {
+      "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+      "org_id": "org-123",
+      "chain_selector": "16015286601757825753",
+      "owner_address": "0x1234...5678",
+      "wallet_address": "0xabcd...ef01",
+      "status": "created",
+      "created_at": 1775580000,
+      "updated_at": 1775580000
+    },
+    {
+      "id": "8b2e1c4a-9f3d-4a7b-b6e8-1d2f3a4b5c6d",
+      "org_id": "org-123",
+      "chain_selector": "3478487238524512106",
+      "owner_address": "0x1234...5678",
+      "wallet_address": "0x9876...5432",
+      "status": "created",
+      "created_at": 1775580000,
+      "updated_at": 1775580000
+    }
+  ]
+}
+```
+
+Verify your wallets at any time:
+
+```bash
+curl https://ace.api.chain.link/v1/wallets \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+For the full API schema and parameters, see the [Coordinator API Reference](/api/ace/coordinator/docs).
+
 ## What happens next
 
 Your next step depends on what you need to do:
@@ -1872,6 +1943,147 @@ Complete the [Account Setup](/ace/getting-started/account-setup) steps — organ
 ### 3. Create a PolicyEngine
 
 A **PolicyEngine** is the onchain contract that evaluates compliance rules on your smart contract. When you create a PolicyEngine, you also attach **extractors** — modules that decode transaction calldata so the PolicyEngine can evaluate policies against function arguments (sender, recipient, amount, etc.).
+
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager**.
+2. Click **Create a new engine**.
+3. Complete the three-step wizard:
+   - **Basic details** — enter an engine name and optional description. This metadata is internal and is not written onchain.
+   - **Networks** — select every chain where you want this engine deployed. Only networks enabled in your CRE account appear. Deploy a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) on each selected chain before creating the engine.
+   - **Contract types** — select **ERC-20**, **ERC-3643**, and/or **CCIP-AdvancedPoolHooks**. ACE attaches the pre-built extractors for the selected types automatically — you do not pick individual extractors in the UI. For the CCIP setup, see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools).
+4. Submit the wizard and wait for onchain deployment to complete.
+5. Open the engine in Policy Manager and confirm its status is **Active**. Click the **gear icon** to copy the onchain PolicyEngine contract address for each network — you need these addresses in the next step.
+
+For full UI steps, see [Create a policy engine](/ace/guides/policy-manager/manage-engines#create-a-policy-engine).
+
+> **NOTE: Mainnet access**
+>
+> Mainnet networks are not enabled for all organizations by default. If you do not see mainnet networks in the
+> **Networks** step, contact your Chainlink contact to request access.
+
+**API**
+
+The platform ships with built-in ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks` contract types. Attach **all** extractors for your contract type at creation time so you don't have to add more later. For the CCIP-specific workflow, see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools). For contracts with other function signatures, see [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
+
+#### Extractor IDs for API creation
+
+##### ERC-20 extractors
+
+| Extractor                              | ID                                     | Functions covered                                                     |
+| -------------------------------------- | -------------------------------------- | --------------------------------------------------------------------- |
+| ERC20TransferExtractor                 | `d4b8cd51-7d5a-487a-9ba5-bb7236e3184c` | `transfer(address,uint256)`, `transferFrom(address,address,uint256)`  |
+| ERC20ApproveExtractor                  | `572201bb-170b-4fda-ab89-a65b5bbc594b` | `approve(address,uint256)`                                            |
+| ComplianceTokenMintBurnExtractor       | `245c24a9-6fdd-48e0-a418-725ed0b2056c` | `mint(address,uint256)`, `burnFrom(address,uint256)`, `burn(uint256)` |
+| ComplianceTokenFreezeUnfreezeExtractor | `89df90a8-7f93-4ce1-9752-c0568062ae41` | `freeze(address,uint256,bytes)`, `unfreeze(address,uint256,bytes)`    |
+| ComplianceTokenForceTransferExtractor  | `c360c6f1-1df5-43b3-bd53-ad7d4c0bba54` | `forceTransfer(address,address,uint256,bytes)`                        |
+
+##### ERC-3643 extractors
+
+| Extractor                        | ID                                     | Functions covered                                                                |
+| -------------------------------- | -------------------------------------- | -------------------------------------------------------------------------------- |
+| ERC20TransferExtractor           | `d4b8cd51-7d5a-487a-9ba5-bb7236e3184c` | `transfer(address,uint256)`, `transferFrom(address,address,uint256)`             |
+| ERC20ApproveExtractor            | `572201bb-170b-4fda-ab89-a65b5bbc594b` | `approve(address,uint256)`                                                       |
+| ERC3643MintBurnExtractor         | `f17bbe8b-8462-4dd7-8fb7-a4973dff04fc` | `burn(address,uint256)`                                                          |
+| ComplianceTokenMintBurnExtractor | `245c24a9-6fdd-48e0-a418-725ed0b2056c` | `mint(address,uint256)`, `burnFrom(address,uint256)`, `burn(uint256)`            |
+| ERC3643FreezeUnfreezeExtractor   | `a6422540-76fb-46bc-90e2-16cc7b0aaa1e` | `freezePartialTokens(address,uint256)`, `unfreezePartialTokens(address,uint256)` |
+| ERC3643SetAddressFrozenExtractor | `bd80dda1-fa6c-4028-a26e-a1802ae41ec7` | `setAddressFrozen(address,bool)`                                                 |
+| ERC3643ForcedTransferExtractor   | `d9015eeb-3345-478f-b2f1-2194b6689078` | `forcedTransfer(address,address,uint256)`                                        |
+
+> **TIP: Listing extractors via the API**
+>
+> You can retrieve the full list of available extractors and their IDs at any time with `GET
+>       https://ace.api.chain.link/v1/extractors`. See the [Coordinator API Reference](/api/ace/coordinator/docs) for details.
+
+Use `POST /policy-engines` with the `extractor_ids` for your contract type. Deploy on all available networks upfront to avoid additional updates later (see [Supported Networks](/ace/supported-networks) for chain selectors).
+
+**For an ERC-20 contract:**
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/policy-engines \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Policy Engine",
+    "description": "Policy engine for my ERC-20 token",
+    "extractor_ids": [
+      "d4b8cd51-7d5a-487a-9ba5-bb7236e3184c",
+      "572201bb-170b-4fda-ab89-a65b5bbc594b",
+      "245c24a9-6fdd-48e0-a418-725ed0b2056c",
+      "89df90a8-7f93-4ce1-9752-c0568062ae41",
+      "c360c6f1-1df5-43b3-bd53-ad7d4c0bba54"
+    ],
+    "onchain_policy_engines": [
+      { "chain_selector": "16015286601757825753" },
+      { "chain_selector": "3478487238524512106" },
+      { "chain_selector": "14767482510784806043" },
+      { "chain_selector": "16281711391670634445" },
+      { "chain_selector": "10344971235874465080" }
+    ]
+  }'
+```
+
+**For an ERC-3643 contract:**
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/policy-engines \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My Policy Engine",
+    "description": "Policy engine for my ERC-3643 token",
+    "extractor_ids": [
+      "d4b8cd51-7d5a-487a-9ba5-bb7236e3184c",
+      "572201bb-170b-4fda-ab89-a65b5bbc594b",
+      "f17bbe8b-8462-4dd7-8fb7-a4973dff04fc",
+      "a6422540-76fb-46bc-90e2-16cc7b0aaa1e",
+      "bd80dda1-fa6c-4028-a26e-a1802ae41ec7",
+      "d9015eeb-3345-478f-b2f1-2194b6689078"
+    ],
+    "onchain_policy_engines": [
+      { "chain_selector": "16015286601757825753" },
+      { "chain_selector": "3478487238524512106" },
+      { "chain_selector": "14767482510784806043" },
+      { "chain_selector": "16281711391670634445" },
+      { "chain_selector": "10344971235874465080" }
+    ]
+  }'
+```
+
+The response includes the PolicyEngine `id` and the onchain addresses for each chain:
+
+```json
+{
+  "id": "28755f4d-81c4-4df8-b424-a65782704d89",
+  "name": "My Policy Engine",
+  "type": "standard",
+  "chain_selectors": [
+    "16015286601757825753",
+    "3478487238524512106",
+    "14767482510784806043",
+    "16281711391670634445",
+    "10344971235874465080"
+  ],
+  "onchain_policy_engines": [
+    {
+      "id": "a3f7c2e1-9b04-4d6a-8e5f-1c2d3e4f5a6b",
+      "chain_selector": "16015286601757825753",
+      "address": "0x1234567890abcdef1234567890abcdef12345678",
+      "status": "creation_pending"
+    },
+    {
+      "id": "b4e8d3f2-0c15-4e7b-9f6a-2d3e4f5a6b7c",
+      "chain_selector": "3478487238524512106",
+      "address": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+      "status": "creation_pending"
+    }
+    // ... one entry per chain
+  ],
+  "extractor_registrations": [],
+  "created_at": 1775580000,
+  "updated_at": 1775580000
+}
+```
 
 #### Verify deployment
 
@@ -2010,9 +2222,76 @@ A **registry** is the top-level resource that groups an **identity registry** an
 
 See [Managing Registries](/ace/guides/identity-manager/manage-registries) for full details.
 
+**Platform UI**
+
+1. In the [Chainlink App](https://app.chain.link), navigate to **Compliance > Identity Manager** in the left sidebar.
+2. Click the **Add a new registry** card.
+3. Enter a **Registry name** and optional **Description**, then click **Continue**.
+4. Select the networks you want to deploy the registry to, then click **Deploy registry**. ACE deploys the identity and credential registry contracts on each selected chain.
+5. Once deployed, click the **gear icon** next to the registry name to view the on-chain contract addresses for each identity and credential registry.
+
+   ![Image](/images/ace/identity-manager-getting-started/registry-1.webp)
+
+**API**
+
+Create a registry with a `POST` request:
+
+```bash
+curl -X POST "https://ace.api.chain.link/v1/registries" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "My First Registry",
+    "description": "Identity and credential registries for my organization",
+    "identity_registries": [
+      { "name": "Identity Registry - Sepolia", "description": "Identity registry on Ethereum Sepolia", "chain_selector": "16015286601757825753" },
+      { "name": "Identity Registry - Arbitrum", "description": "Identity registry on Arbitrum Sepolia", "chain_selector": "3478487238524512106" }
+    ],
+    "credential_registries": [
+      { "name": "Credential Registry - Sepolia", "description": "Credential registry on Ethereum Sepolia", "chain_selector": "16015286601757825753" },
+      { "name": "Credential Registry - Arbitrum", "description": "Credential registry on Arbitrum Sepolia", "chain_selector": "3478487238524512106" }
+    ]
+  }'
+```
+
+ACE deploys the identity and credential registry contracts on each specified chain. The response includes the registry `id` you will use in subsequent steps.
+
 ### 4. Define credential types
 
 Credential types represent the categories of attestation you issue — for example, Proof of Identity, accredited investor, or sanctions clearance. Each credential type is scoped to a specific registry and identified by a `credential_type` string that gets hashed on-chain to a `credential_type_hash`. This value is hashed using keccak256 — the standard cryptographic hash function used by Ethereum and EVM-compatible blockchains — and the resulting `credential_type_hash` is what gets recorded on-chain and referenced by policies.
+
+**Platform UI**
+
+1. In the [Chainlink App](https://app.chain.link), navigate to **Compliance > Identity Manager** and click on your registry card.
+2. Select the **Credential types** tab, then click **+ Add credential type**.
+3. In the drawer that opens, fill in:
+   - **Internal Display Name** — A label used by your team to identify and track this credential (not stored on-chain).
+   - **Credential** — The credential type string (e.g., `proof_of_identity_basic`).
+   - **Description** — Optional description.
+4. Click **Save**.
+
+**API**
+
+Create a credential type with a `POST` request. The `registry_id` was returned in the response when you created your registry. To retrieve it later, list your registries with `GET /registries`.
+
+```bash
+curl -X POST "https://ace.api.chain.link/v1/credential-types" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "registry_id": "<YOUR_REGISTRY_ID>",
+    "title": "KYC Verification",
+    "credential_type": "kyc_basic",
+    "description": "Basic KYC identity verification"
+  }'
+```
+
+You can list existing credential types for a registry at any time:
+
+```bash
+curl -X GET "https://ace.api.chain.link/v1/credential-types?registry_id=a1b2c3d4-5678-9abc-def0-1234567890ab" \
+  -H "Authorization: Apikey <API_KEY>"
+```
 
 ### 5. Register identities and issue credentials
 
@@ -2021,6 +2300,57 @@ A cross-chain identity (CCID) aggregates one or more wallet addresses across EVM
 A single CCID can span multiple chains and addresses — for example, one entity might have wallets on Ethereum, Arbitrum, and Avalanche that all resolve to the same CCID.
 
 Credentials are attestations linked to a registered identity. During Beta, ACE uses an **attestation-only** model — the Identity Manager asserts that a credential holds for a given CCID, and the credential registry records that attestation on-chain.
+
+**Platform UI**
+
+The Platform UI lets you register an identity and assign credentials in a single flow:
+
+1. In the [Chainlink App](https://app.chain.link), navigate to **Compliance > Identity Manager** and click on your registry card.
+2. Click **+ Add identity**.
+3. Fill in:
+   - **Alias** — An internal name for this identity. This is never written on-chain.
+   - **Metadata** — Optional internal reference data, also never written on-chain.
+4. Click **Continue**.
+5. Enter the wallet address(es) for the identity on each network where your registry is deployed. Click **Add more** to add multiple addresses per network or addresses on different networks.
+6. Click **Continue**.
+7. Assign credential types to this identity and set an expiration date for each credential. The expiration is optional — if omitted, the credential does not expire.
+8. Click **Deploy identity**. ACE registers the identity and issues the assigned credentials on-chain in one transaction.
+
+**API**
+
+Register an identity and issue credentials in a single `POST` request by including the optional `credentials` array:
+
+```bash
+curl -X POST "https://ace.api.chain.link/v1/identities" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "My First Identity",
+    "entity_id": "user-12345",
+    "registry_id": "<YOUR_REGISTRY_ID>",
+    "description": "Test identity for getting started",
+    "onchain_identities": [
+      {
+        "address": "0x1234567890abcdef1234567890abcdef12345678",
+        "chain_selector": "16015286601757825753"
+      }
+    ],
+    "credentials": [
+      {
+        "credential_type_id": "<YOUR_CREDENTIAL_TYPE_ID>",
+        "expires_at": 1800000000
+      }
+    ]
+  }'
+```
+
+The `credentials` array is optional — omit it to register an identity without credentials. Within each credential, `expires_at` is also optional (a Unix timestamp); if omitted, the credential does not expire.
+
+You can also issue credentials separately after the identity is created using `POST /credentials`. See [Managing Credentials](/ace/guides/identity-manager/manage-credentials) for details.
+
+> **TIP: Bulk import identities**
+>
+> Need to register many identities at once? Use the batch endpoint to create multiple identities (with credentials) in a single atomic request. See [Bulk import identities](/ace/guides/identity-manager/manage-identities#bulk-import-identities) for details.
 
 ### 6. Verify via Reporting
 
@@ -3360,11 +3690,134 @@ A **policy engine** is the on-chain orchestrator that evaluates policies wheneve
 
 ## Create a policy engine
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager**.
+2. Click **Create a new engine**.
+3. Complete the three-step wizard:
+   - **Basic details** — enter an engine name and optional description. This metadata is internal and is not written onchain.
+   - **Networks** — select every chain where you want this engine deployed. Only networks enabled in your CRE account appear. If you do not see a network, contact your admin to ensure it is enabled in your CRE account first. Deploy a [CRE Connect Wallet](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) on each selected chain before creating the engine.
+   - **Contract types** — select **ERC-20**, **ERC-3643**, and/or **CCIP-AdvancedPoolHooks**. ACE attaches the pre-built extractors for the selected types automatically. For the CCIP-specific setup, see [Protect CCIP Token Pools with ACE](/ace/guides/policy-manager/ccip-token-pools).
+4. Submit the wizard and wait for onchain deployment to complete. The engine starts in `creation_pending` status until deployment finishes.
+5. Open the engine in Policy Manager and confirm its status is **Active**. Click the **gear icon** to view the onchain contract addresses and attached extractors.
+
+For verification and troubleshooting during deployment, see [Create a PolicyEngine](/ace/getting-started/policy-manager#3-create-a-policyengine) in the Policy Manager Quick Start.
+
+> **NOTE: Mainnet access**
+>
+> Mainnet networks are not enabled for all organizations by default. If you do not see mainnet networks in the
+> **Networks** step, contact your Chainlink contact to request access.
+
+**API**
+
+Create a policy engine with a `POST` request. Each entry in `onchain_policy_engines` specifies a `chain_selector` for a target chain (see [Supported Networks](/ace/supported-networks) for available chain selectors):
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/policy-engines \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "name": "Production Policy Engine",
+    "description": "Main policy engine for compliance enforcement",
+    "onchain_policy_engines": [
+      { "chain_selector": "16015286601757825753" },
+      { "chain_selector": "3478487238524512106" },
+      { "chain_selector": "14767482510784806043" },
+      { "chain_selector": "16281711391670634445" },
+      { "chain_selector": "10344971235874465080" }
+    ]
+  }'
+```
+
+| Field                    | Required | Description                                                             |
+| ------------------------ | -------- | ----------------------------------------------------------------------- |
+| `name`                   | Yes      | Human-readable name                                                     |
+| `description`            | No       | Description of the engine's purpose                                     |
+| `extractor_ids`          | No       | Array of extractor UUIDs to register with the engine                    |
+| `contract_type_ids`      | No       | Array of contract type UUIDs to register on the engine                  |
+| `onchain_policy_engines` | Yes      | Array of objects with `chain_selector` values for each deployment chain |
+
+> **TIP: Attach extractors at creation time**
+>
+> Include the `extractor_ids` field when creating your engine so extractors are registered immediately. For ERC-20
+> and ERC-3643 contracts, see the [Policy Manager Quick
+> Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for the pre-built extractor IDs. For
+> `CCIP-AdvancedPoolHooks`, see [Protect CCIP Token Pools with
+> ACE](/ace/guides/policy-manager/ccip-token-pools). For a custom contract type, register your extractor first. See
+> [Custom Contract Types & Extractors](/ace/guides/policy-manager/contracts/custom-contract-types).
+
+Each on-chain engine starts in `creation_pending` status until deployment completes. The response includes the engine `id` and the on-chain contract addresses.
+
 ## View policy engines
+
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar. You see all the policy engines in your organization.
+
+2. Click on a policy engine to open it. The detail view has two tabs:
+   - **Contracts** — lists the target contracts protected by this policy engine.
+   - **Policy instances** — lists all deployed policy instances associated with this policy engine.
+
+3. To view the engine's on-chain details, click the **gear icon** to open the settings page. There you can see:
+
+   - The **PolicyEngine contract addresses** on each network the engine is deployed to.
+   - The **Extractors** currently attached to this policy engine.
+
+   ![Image](/images/ace/policy-engines/policy-engine-settings-2.webp)
+
+**API**
+
+List all policy engines:
+
+```bash
+curl https://ace.api.chain.link/v1/policy-engines \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+| Parameter          | Description                                         |
+| ------------------ | --------------------------------------------------- |
+| `page`             | Page number (default: 1)                            |
+| `page_size`        | Results per page (max: 100)                         |
+| `include_onchains` | Include on-chain deployment details (default: true) |
+
+To retrieve a specific engine by ID:
+
+```bash
+curl https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
 
 ## Update a policy engine
 
 You can update a policy engine's name, description, and extractor associations.
+
+**Platform UI**
+
+> **NOTE**
+>
+> Updating a policy engine is not yet available through the Platform UI. Use the **API** tab to update one via the Coordinator API.
+
+**API**
+
+Update a policy engine with a `PUT` request. Both `name` and `onchain_policy_engines` are required:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "name": "Production Policy Engine (Updated)",
+    "description": "Updated description",
+    "extractor_ids": ["<EXTRACTOR_ID>"],
+    "onchain_policy_engines": [
+      { "chain_selector": "16015286601757825753" },
+      { "chain_selector": "3478487238524512106" },
+      { "chain_selector": "14767482510784806043" },
+      { "chain_selector": "16281711391670634445" },
+      { "chain_selector": "10344971235874465080" }
+    ]
+  }'
+```
 
 ## Add or remove extractors
 
@@ -3443,6 +3896,25 @@ curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
 ## Archive a policy engine
 
 Archiving a policy engine deactivates it and prevents any further operations. All policy instances associated with the engine must be archived first.
+
+**Platform UI**
+
+> **NOTE**
+>
+> Archiving a policy engine is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+
+**API**
+
+Archive a policy engine with a `PATCH` request:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "status": "archived"
+  }'
+```
 
 > **CAUTION**
 >
@@ -3536,7 +4008,68 @@ For more on how policy evaluation ordering works, see [Policy Ordering & Composi
 
 ### Change the default policy result
 
+**Platform UI**
+
+> **NOTE**
+>
+> Changing the default policy result is not yet available through the Platform UI. Use the **API** tab to update it via the Coordinator API.
+
+**API**
+
+Update an existing target's default with a `PUT` request. Set `desired_default_allow` to `true` (allow by default) or `false` (reject by default). Because PUT is a full replacement, include all fields you want to keep:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/targets/<TARGET_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "title": "My ERC-20 Token",
+    "description": "Production ERC-20 token with compliance enforcement",
+    "protected_methods": [
+      "transfer(address,uint256)",
+      "transferFrom(address,address,uint256)"
+    ],
+    "desired_default_allow": false,
+    "metadata": {"contract_type": "ERC-20"}
+  }'
+```
+
+The Coordinator calls `SetTargetDefaultPolicyAllow` on the PolicyEngine contract for each chain where the target is deployed.
+
 ## View targets
+
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar. You see all the policy engines in your organization.
+2. Click on a policy engine to open it. The **Contracts** tab lists all target contracts protected by this policy engine.
+3. Click on a target contract card to see its details. You can switch between two views:
+   - **Functions** — shows unprotected and protected functions, along with the policies protecting each protected function.
+   - **Policies** — shows the list of policies protecting this target contract and which specific functions each policy applies to.
+
+**API**
+
+List all targets:
+
+```bash
+curl https://ace.api.chain.link/v1/targets \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+| Parameter          | Description                                       |
+| ------------------ | ------------------------------------------------- |
+| `page`             | Page number (default: 1)                          |
+| `page_size`        | Results per page (max: 100)                       |
+| `include_onchains` | Include on-chain contract details (default: true) |
+| `policy_engine_id` | Filter by policy engine                           |
+| `chain_selector`   | Filter by chain                                   |
+| `search`           | Search by target title or on-chain address        |
+
+To retrieve a specific target by ID:
+
+```bash
+curl https://ace.api.chain.link/v1/targets/<TARGET_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
 
 ## Update a target
 
@@ -3547,6 +4080,40 @@ You can update a target's name, description, contract type, protected methods, d
 > The `PUT /targets/{id}` endpoint **replaces the entire resource** — any field you omit is reset to its default (empty
 > string, empty array, or `true` for `desired_default_allow`). Always include every field you want to keep, not just the
 > ones you are changing.
+
+**Platform UI**
+
+1. In the [ACE Platform](https://app.chain.link), go to **Compliance > Policy Manager** and click on your policy engine.
+2. In the **Contracts** tab, click on the target contract you want to update.
+3. Click the **Edit** icon in the contract header. A drawer opens on the right.
+4. Update the **Name**, **Contract type**, or **Description** as needed.
+5. Click **Save changes**.
+
+> **NOTE**
+>
+> The UI supports editing the contract name, type, and description. To update `protected_methods`,
+> `desired_default_allow`, or other fields, use the **API** tab.
+
+**API**
+
+Update a target with a `PUT` request. Include all fields you want to preserve:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/targets/<TARGET_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "title": "My ERC-20 Token (Updated)",
+    "description": "Updated description",
+    "protected_methods": [
+      "transfer(address,uint256)",
+      "transferFrom(address,address,uint256)",
+      "mint(address,uint256)"
+    ],
+    "desired_default_allow": true,
+    "metadata": {"contract_type": "ERC-20"}
+  }'
+```
 
 ## Link targets
 
@@ -3566,6 +4133,34 @@ If no valid destination exists, the detected target cannot be merged — you can
 
 Merging transfers the on-chain addresses from the source target(s) to the destination target, then archives the sources. After the merge, the destination target contains all chain deployments and any protections remain on the destination.
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** and open your policy engine.
+2. In the **Contracts** tab, locate the detected contract (shown as "unknown target").
+3. Click the **three-dot menu** on the detected contract card.
+4. Click **Link to existing contract**.
+5. Select the destination contract you want to merge into.
+6. Confirm the merge. The detected contract's on-chain address is transferred to the destination and the detected target is archived.
+
+**API**
+
+Merge one or more source targets into a destination target with a `POST` request:
+
+```bash
+curl -X POST "https://ace.api.chain.link/v1/targets/<DESTINATION_TARGET_ID>/merge" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "source_target_ids": ["<SOURCE_TARGET_ID>"]
+  }'
+```
+
+| Field               | Required | Description                                                                                             |
+| ------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `source_target_ids` | Yes      | Array of UUID(s) — the detected targets whose on-chain addresses will be transferred to the destination |
+
+The response returns the updated destination target with all merged on-chain addresses. The source targets are archived automatically.
+
 > **CAUTION**
 >
 > Merging is irreversible. The source targets are archived and their on-chain addresses become part of the destination
@@ -3574,6 +4169,25 @@ Merging transfers the on-chain addresses from the source target(s) to the destin
 ## Archive a target
 
 Archiving a target removes it from active use. All target protections associated with the target must be archived first.
+
+**Platform UI**
+
+> **NOTE**
+>
+> Archiving a target is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+
+**API**
+
+Archive a target with a `PATCH` request:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/targets/<TARGET_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "status": "archived"
+  }'
+```
 
 > **CAUTION**
 >
@@ -3607,19 +4221,160 @@ For example, the "Allow List Policy" implementation can be instantiated multiple
 
 ## Browse policy implementations
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar.
+2. Click on the policy engine you want to browse policies for.
+3. Select the **Policy types** tab. You see a list of all available policy implementations with their descriptions.
+
+   ![Image](/images/ace/managing-policies/policy-implementations-list.webp)
+
+**API**
+
+List all policy implementations:
+
+```bash
+curl https://ace.api.chain.link/v1/policy-implementations \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+| Parameter          | Description                                       |
+| ------------------ | ------------------------------------------------- |
+| `page`             | Page number (default: 1)                          |
+| `page_size`        | Results per page (max: 100)                       |
+| `include_onchains` | Include on-chain contract details (default: true) |
+
+To retrieve a specific implementation by ID:
+
+```bash
+curl https://ace.api.chain.link/v1/policy-implementations/<IMPLEMENTATION_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
 ## Create a policy instance
 
 A policy instance is created from a policy implementation and deployed on-chain within a policy engine.
 
+**Platform UI**
+
+1. From the **Policy types** tab (see [Browse policy implementations](#browse-policy-implementations) above), click on the policy implementation you want to use.
+2. Click the **+ Add instance** button.
+3. Follow the wizard to configure and create your policy instance.
+
+**API**
+
+Select a policy implementation below to see its configuration fields and get a ready-to-use curl command. Each implementation has a `policy_config_schema` that describes its configurable fields — the tool below extracts the key information you need.
+
+| Field                      | Required | Description                                                               |
+| -------------------------- | -------- | ------------------------------------------------------------------------- |
+| `name`                     | Yes      | Human-readable name for the policy instance                               |
+| `description`              | No       | Description of the instance's purpose                                     |
+| `policy_implementation_id` | Yes      | UUID of the policy implementation to instantiate                          |
+| `policy_engine_id`         | Yes      | UUID of the policy engine to associate with                               |
+| `onchain_policies`         | No       | Array of per-chain deployments with `chain_selector` and `initial_config` |
+
+Each on-chain policy starts in `creation_pending` status until deployment completes.
+
+> **TIP: Fields not required at creation**
+>
+> Fields marked "No" in the **Required at creation** column can be configured after the policy instance is deployed
+> using `PATCH /policies/<ID>/configs`. See [Update policy configuration](#update-policy-configuration) below.
+
 ## View and filter policies
+
+**Platform UI**
+
+1. From the **Policy types** tab (see [Browse policy implementations](#browse-policy-implementations) above), click on the policy implementation type you are interested in.
+2. The list of policy instances created for that implementation type is displayed.
+
+**API**
+
+List all policy instances:
+
+```bash
+curl https://ace.api.chain.link/v1/policies \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+| Parameter                      | Description                                                                  |
+| ------------------------------ | ---------------------------------------------------------------------------- |
+| `page`                         | Page number (default: 1)                                                     |
+| `page_size`                    | Results per page (max: 100)                                                  |
+| `include_onchains`             | Include on-chain deployment details (default: true)                          |
+| `target_id`                    | Filter by target                                                             |
+| `policy_engine_id`             | Filter by policy engine                                                      |
+| `name`                         | Filter by name                                                               |
+| `status`                       | Filter by on-chain status (`creation_pending`, `creation_failed`, `created`) |
+| `only_with_active_protections` | Return only policies attached to at least one target function                |
+| `target_address`               | Filter by target contract address                                            |
+
+To retrieve a specific policy by ID:
+
+```bash
+curl https://ace.api.chain.link/v1/policies/<POLICY_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
 
 ## Update policy configuration
 
 After deploying a policy instance, you can update its on-chain configuration parameters — for example, adding an address to an allowlist or changing a volume threshold — without redeploying the policy.
 
+**Platform UI**
+
+1. From the policy instances list (see [View and filter policies](#view-and-filter-policies) above), click on the policy instance you want to update.
+2. A detail drawer opens on the right side of the screen.
+3. Click the **Edit configuration** button to modify the policy's parameters.
+4. Follow the wizard to update the policy's configuration.
+
+**API**
+
+Update policy configurations with a `PATCH` request using JSON patch operations:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/policies/<POLICY_ID>/configs \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "patches": [
+      {
+        "op": "add",
+        "path": "/allowList/-",
+        "value": "0x3333333333333333333333333333333333333333"
+      }
+    ]
+  }'
+```
+
+The JSON patch format follows [RFC 6902](https://datatracker.ietf.org/doc/html/rfc6902). Common operations:
+
+| Operation | Description     | Example                        |
+| --------- | --------------- | ------------------------------ |
+| `add`     | Add a value     | Add an address to an allowlist |
+| `remove`  | Remove a value  | Remove an address from a list  |
+| `replace` | Replace a value | Change a threshold             |
+
 ## Archive a policy
 
 Archiving a policy instance removes it from active use. All target protections that reference this policy must be archived first.
+
+**Platform UI**
+
+> **NOTE**
+>
+> Archiving a policy is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+
+**API**
+
+Archive a policy with a `PATCH` request:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/policies/<POLICY_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "status": "archived"
+  }'
+```
 
 > **CAUTION**
 >
@@ -3656,6 +4411,66 @@ Before creating a target protection, you need:
 
 A protection binds a policy instance to a specific function on your target contract. Once created, every call to that function is evaluated against the policy.
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar.
+
+2. Click on the policy engine that manages your target contract.
+
+3. In the **Contracts** tab, click on the target contract you want to protect.
+
+4. Click the **Attach Policy** button.
+
+5. **Step 1 — Select policy:** Choose the policy type and the specific policy instance you want to use.
+
+6. **Step 2 — Define protected functions:** Use the **Contract functions** dropdown to select a function to protect. For each function, choose the **Execution order**:
+
+   - **Last (default)** — the policy is added at the end of the evaluation chain.
+   - **First** — the policy is evaluated before all other policies on this function.
+
+   To protect multiple functions with the same policy, click **Add more** and repeat for each function.
+
+   > **TIP**
+   >
+   > Execution order matters when multiple policies protect the same function. Policies are evaluated sequentially — if an
+   > earlier policy rejects, the transaction is reverted immediately. See [Policy Ordering & Composition](/ace/concepts/policy-ordering)
+   > for guidance on composing effective rulesets.
+
+7. **Step 3 — Review and deploy:** Confirm your selections and deploy the protection.
+
+**API**
+
+Create a target protection with a `POST` request:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "function_signature": "transfer(address,uint256)",
+    "policy_instance_id": "<POLICY_ID>",
+    "desired_position": 0,
+    "extractor_output_ids": [
+      "<EXTRACTOR_OUTPUT_ID_FOR_ACCOUNT>",
+      "<EXTRACTOR_OUTPUT_ID_FOR_AMOUNT>"
+    ],
+    "onchain_target_protections": [
+      { "chain_selector": "16015286601757825753" }
+    ]
+  }'
+```
+
+| Field                        | Required | Description                                                                                                                     |
+| ---------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `function_signature`         | Yes      | The function to protect (e.g., `transfer(address,uint256)`)                                                                     |
+| `policy_instance_id`         | Yes      | UUID of the policy to bind: the onchain policy instance ID, or the offchain (CADV) policy ID when `policy_kind` is `"offchain"` |
+| `policy_kind`                | No       | Kind of policy being protected: `"onchain"` (default) or `"offchain"`                                                           |
+| `desired_position`           | No       | Evaluation order (0 is first). Determines where in the policy chain this policy runs                                            |
+| `extractor_output_ids`       | No       | Array of extractor output UUIDs mapping extracted calldata to the policy's parameters                                           |
+| `onchain_target_protections` | No       | Array of objects with `chain_selector` to specify deployment chains                                                             |
+
+Each on-chain protection starts in `creation_pending` status until the `AddPolicy` call completes. The combination of policy instance, target, and function selector must be unique.
+
 ## Position and evaluation order
 
 The `desired_position` determines the order in which policies are evaluated when a protected function is called:
@@ -3668,6 +4483,42 @@ For detailed information on composing effective rulesets, see [Policy Ordering &
 
 ## View protections
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Policy Manager** in the left sidebar.
+2. Click on the policy engine, then click on the target contract.
+3. Choose one of two views:
+
+   - **Functions** — groups protections by function. You see two sections: **Unprotected functions** (no policies attached) and **Protected functions** (with the policies protecting each function and their deployment status).
+   - **Policies** — groups protections by policy instance. Each policy card shows which functions it protects.
+
+   You can also filter by **Policy** or **Status** using the dropdowns at the top.
+
+**API**
+
+List all protections for a target:
+
+```bash
+curl https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+| Parameter            | Description                                                                        |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| `page`               | Page number (default: 1)                                                           |
+| `page_size`          | Results per page (max: 100)                                                        |
+| `include_onchains`   | Include per-chain deployment details (default: true)                               |
+| `function_signature` | Filter by function signature                                                       |
+| `policy_instance_id` | Filter by policy instance                                                          |
+| `status`             | Filter by on-chain status (`creation_pending`, `created`, `removal_pending`, etc.) |
+
+To retrieve a specific protection:
+
+```bash
+curl https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections/<PROTECTION_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
 ## Manage an existing protection
 
 From the **Functions** or **Policies** view on your target contract (see [View protections](#view-protections) above), click on a policy instance to open a detail drawer. From there you can:
@@ -3679,9 +4530,55 @@ From the **Functions** or **Policies** view on your target contract (see [View p
 
 If you created a protection on one chain and later want it to apply on additional chains, you can extend it via the API.
 
+**Platform UI**
+
+> **NOTE**
+>
+> When you attach a policy through the UI, the protection is automatically created on all chains where both the target
+> contract and the policy instance are deployed. To extend a protection to a chain added later, use the **API** tab.
+
+**API**
+
+Extend a protection to additional chains with a `PUT` request:
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections/<PROTECTION_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "onchain_target_protections": [
+      { "chain_selector": "16015286601757825753" },
+      { "chain_selector": "3478487238524512106" }
+    ]
+  }'
+```
+
+> **NOTE**
+>
+> The function, policy instance, and evaluation order on a protection are immutable. To change those, archive the
+> existing protection and create a new one.
+
 ### Archive a protection
 
 Archiving a protection unbinds the policy from the function. Once archived, the policy no longer evaluates transactions on that function.
+
+**Platform UI**
+
+1. From the **Functions** or **Policies** view on your target contract, click on the policy instance you want to detach.
+2. In the detail drawer, click **Detach policy**.
+
+**API**
+
+Archive a protection with a `PATCH` request:
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections/<PROTECTION_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "status": "archived"
+  }'
+```
 
 > **NOTE**
 >
@@ -5082,7 +5979,149 @@ Each sub-registry corresponds to a smart contract deployed on a specific blockch
 
 ## Create a registry
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** in the left sidebar.
+2. Click **Add a new registry**.
+3. **Step 1 — Registry details:** Set your registry's name and description.
+4. **Step 2 — Select networks:** Choose the networks you want your registry to be deployed to.
+5. Click **Deploy registry**.
+
+**API**
+
+Use the Coordinator API to create a registry with identity and credential sub-registries. Each entry in `identity_registries` and `credential_registries` specifies a `chain_selector` for the target network (see [Supported Networks](/ace/supported-networks) for chain selector values).
+
+This example creates a registry with sub-registries on Ethereum Sepolia and Arbitrum Sepolia:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/registries \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "name": "Production Identity Registry",
+    "description": "Identity and credential registries for compliance verification",
+    "identity_registries": [
+      { "name": "Identity Registry - Sepolia", "description": "Identity registry on Ethereum Sepolia", "chain_selector": "16015286601757825753" },
+      { "name": "Identity Registry - Arbitrum", "description": "Identity registry on Arbitrum Sepolia", "chain_selector": "3478487238524512106" }
+    ],
+    "credential_registries": [
+      { "name": "Credential Registry - Sepolia", "description": "Credential registry on Ethereum Sepolia", "chain_selector": "16015286601757825753" },
+      { "name": "Credential Registry - Arbitrum", "description": "Credential registry on Arbitrum Sepolia", "chain_selector": "3478487238524512106" }
+    ]
+  }'
+```
+
+When you omit the `address` field, ACE deploys a new managed contract on that chain. To import an existing contract instead, provide its address.
+
+The response includes the registry ID and the status of each sub-registry deployment:
+
+```json
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "Production Identity Registry",
+  "description": "Identity and credential registries for compliance verification",
+  "org_id": "org-123",
+  "mode": "managed",
+  "chain_selectors": ["16015286601757825753", "3478487238524512106"],
+  "identity_registries": [
+    {
+      "id": "d4c3b2a1-f6e5-0987-dcba-0987654321fe",
+      "name": "Identity Registry - Sepolia",
+      "description": "Identity registry on Ethereum Sepolia",
+      "chain_selector": "16015286601757825753",
+      "address": "0x1a2b3c4d5e6f7890abcdef1234567890abcdef12",
+      "registry_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "org_id": "org-123",
+      "status": "created",
+      "created_at": 1775580000,
+      "updated_at": 1775580000
+    },
+    {
+      "id": "e5d4c3b2-a1f6-8907-edcb-a09876543210",
+      "name": "Identity Registry - Arbitrum",
+      "description": "Identity registry on Arbitrum Sepolia",
+      "chain_selector": "3478487238524512106",
+      "address": "0x2b3c4d5e6f7890abcdef1234567890abcdef1234",
+      "registry_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "org_id": "org-123",
+      "status": "created",
+      "created_at": 1775580000,
+      "updated_at": 1775580000
+    }
+  ],
+  "credential_registries": [
+    {
+      "id": "f6e5d4c3-b2a1-9078-fedc-ba0987654321",
+      "name": "Credential Registry - Sepolia",
+      "description": "Credential registry on Ethereum Sepolia",
+      "chain_selector": "16015286601757825753",
+      "address": "0x3c4d5e6f7890abcdef1234567890abcdef123456",
+      "registry_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "org_id": "org-123",
+      "status": "created",
+      "created_at": 1775580000,
+      "updated_at": 1775580000
+    },
+    {
+      "id": "07f6e5d4-c3b2-1098-0fed-cb1098765432",
+      "name": "Credential Registry - Arbitrum",
+      "description": "Credential registry on Arbitrum Sepolia",
+      "chain_selector": "3478487238524512106",
+      "address": "0x4d5e6f7890abcdef1234567890abcdef12345678",
+      "registry_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "org_id": "org-123",
+      "status": "created",
+      "created_at": 1775580000,
+      "updated_at": 1775580000
+    }
+  ],
+  "archived_at": null,
+  "created_at": 1775580000,
+  "updated_at": 1775580000
+}
+```
+
 ## View registries
+
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** in the left sidebar. You see all registries in your organization.
+2. Click on a registry to open it. The detail view has two tabs:
+   - **Identities** — lists the identities registered in this registry.
+   - **Credential types** — lists the credential types configured for this registry.
+
+**API**
+
+List all registries:
+
+```bash
+curl https://ace.api.chain.link/v1/registries \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Use query parameters to paginate and filter results:
+
+| Parameter          | Description                                                                                                                                                                                                                 |
+| :----------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `page`             | Page number (default: 1)                                                                                                                                                                                                    |
+| `page_size`        | Results per page                                                                                                                                                                                                            |
+| `include_onchains` | Include onchain sub-registry details in the response                                                                                                                                                                        |
+| `type`             | Filter by type: `pair` (default), `identity`, or `credential`                                                                                                                                                               |
+| `include_granted`  | When `true`, also include registries other organizations have shared with you. Each registry carries an `access_type` of `owned` or `granted`. See [External Registries](/ace/guides/identity-manager/external-registries). |
+
+To retrieve a specific registry by ID:
+
+```bash
+curl https://ace.api.chain.link/v1/registries/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Use the `type` query parameter to filter by sub-registry type:
+
+```bash
+curl "https://ace.api.chain.link/v1/registries/a1b2c3d4-e5f6-7890-abcd-ef1234567890?type=identity" \
+  -H "Authorization: Apikey <API_KEY>"
+```
 
 ## Multi-chain setup
 
@@ -5104,6 +6143,35 @@ Because CCIDs are chain-agnostic identifiers, a credential issued on one chain's
 
 You can update a registry's name, description, and add new sub-registries. Updates are **additive** — you can add new identity or credential sub-registries to additional chains, but you cannot remove existing sub-registry pairs.
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** and click on the registry you want to update.
+2. Click on the gear icon to open the settings page. Edit the registry's **name** or **description**.
+
+> **NOTE**
+>
+> Adding sub-registries on additional chains is not available through the Platform UI. Use the **API** tab to extend a registry to new networks.
+
+**API**
+
+```bash
+curl -X PUT https://ace.api.chain.link/v1/registries/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "name": "Updated Registry Name",
+    "description": "Updated description with expanded chain coverage",
+    "identity_registries": [
+      { "name": "Identity Registry - Base", "description": "Identity registry on Base Sepolia", "chain_selector": "10344971235874465080" }
+    ],
+    "credential_registries": [
+      { "name": "Credential Registry - Base", "description": "Credential registry on Base Sepolia", "chain_selector": "10344971235874465080" }
+    ]
+  }'
+```
+
+This example adds sub-registries on Base Sepolia to an existing registry. The existing sub-registries on other chains are unaffected.
+
 ## Share across organizations
 
 You can grant another organization read access to a registry you own, so it can use your identities and credentials as a credential source without re-issuing them. Grants are read-only for the recipient and can be revoked at any time. For the full workflow — granting, discovering registries shared with you, using them, and revoking — see [External Registries](/ace/guides/identity-manager/external-registries).
@@ -5116,6 +6184,23 @@ Archiving a registry deactivates it and prevents any further operations. Before 
 >
 > All identities in the registry must be archived or removed before the registry itself can be archived. Attempting to
 > archive a registry with active identities returns an error.
+
+**Platform UI**
+
+> **NOTE**
+>
+> Archiving a registry is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+
+**API**
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/registries/a1b2c3d4-e5f6-7890-abcd-ef1234567890 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "status": "archived"
+  }'
+```
 
 ## Related pages
 
@@ -5153,6 +6238,67 @@ Each identity includes:
 For a deeper look at how CCIDs work, how they are generated, and the privacy considerations involved, see [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
 
 ## Register an identity
+
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** and click on the registry you want to add an identity to.
+2. In the **Identities** tab, click **+ Add identity**.
+3. **Step 1 — Identity details:** Enter an alias and optional description for this identity. This metadata is for internal use only and is never written on-chain.
+4. **Step 2 — Add wallets:** Add the wallet address(es) for this identity on each chain where you need them. Your registry must be deployed on these chains.
+5. **Step 3 — Assign credentials (optional):** Optionally assign credentials to this identity, along with an optional expiration date for each.
+
+**API**
+
+Send a `POST` request to `/identities`:
+
+```bash
+curl -X POST "https://ace.api.chain.link/v1/identities" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Jane Doe",
+    "entity_id": "jane-doe-001",
+    "registry_id": "a1b2c3d4-5678-9abc-def0-1234567890ab",
+    "description": "Jane Doe's multi-chain wallets",
+    "onchain_identities": [
+      {
+        "chain_selector": "16015286601757825753",
+        "address": "0x1234567890abcdef1234567890abcdef12345678"
+      },
+      {
+        "chain_selector": "3478487238524512106",
+        "address": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+      }
+    ]
+  }'
+```
+
+You can also issue credentials inline at creation time by including a `credentials` array. This is useful when you already have the credential types and want to skip a separate issuance step:
+
+```bash
+curl -X POST "https://ace.api.chain.link/v1/identities" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Jane Doe",
+    "entity_id": "jane-doe-001",
+    "registry_id": "a1b2c3d4-5678-9abc-def0-1234567890ab",
+    "onchain_identities": [
+      {
+        "chain_selector": "16015286601757825753",
+        "address": "0x1234567890abcdef1234567890abcdef12345678"
+      }
+    ],
+    "credentials": [
+      {
+        "credential_type_id": "f0e1d2c3-b4a5-6789-0123-456789abcdef",
+        "expires_at": 1800000000
+      }
+    ]
+  }'
+```
+
+See [Managing Credentials](/ace/guides/identity-manager/manage-credentials) for the full credential issuance workflow.
 
 ## Bulk import identities
 
@@ -5213,9 +6359,103 @@ The `credentials` array is optional on each identity. The second identity in thi
 
 ## View and search identities
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Identity Manager** and click on the registry you want to browse.
+2. The **Identities** tab displays a list of all identities with their alias, CCID, and the networks they are deployed on. You can search by name or filter by network using the controls at the top.
+3. Click on any identity to view its details:
+   - **Credentials** — the credentials assigned to this identity.
+   - **Wallets** — the wallet addresses registered for this identity on each network.
+
+**API**
+
+Send a `GET` request to `/identities`:
+
+```bash
+curl -X GET "https://ace.api.chain.link/v1/identities?page=1&page_size=25&include_onchains=true" \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+To search for identities by title, use the `query` parameter:
+
+```bash
+curl -X GET "https://ace.api.chain.link/v1/identities?query=jane&include_onchains=true" \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+To retrieve a specific identity by ID:
+
+```bash
+curl -X GET "https://ace.api.chain.link/v1/identities/98765432-10fe-dcba-9876-543210fedcba" \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
 ## Update an identity
 
 You can update an identity's title, description, and on-chain address mappings. ACE offers two update approaches: full replacement and partial update.
+
+**Platform UI**
+
+1. Open the identity detail page (see [View and search identities](#view-and-search-identities) above).
+2. Click the **Edit** button next to the alias name.
+3. A drawer opens where you can edit the alias and description.
+
+> **NOTE**
+>
+> Updating on-chain wallet mappings is not available through the Platform UI. Use the **API** tab to add or remove wallet addresses.
+
+**API**
+
+### Full update (PUT)
+
+A `PUT` request replaces the identity's mutable fields entirely. The `onchain_identities` array you provide becomes the complete set of address mappings — any existing mappings not included in the request are removed.
+
+```bash
+curl -X PUT "https://ace.api.chain.link/v1/identities/98765432-10fe-dcba-9876-543210fedcba" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Jane Doe (Updated)",
+    "onchain_identities": [
+      {
+        "chain_selector": "16015286601757825753",
+        "address": "0x1234567890abcdef1234567890abcdef12345678"
+      },
+      {
+        "chain_selector": "3478487238524512106",
+        "address": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+      },
+      {
+        "chain_selector": "10344971235874465080",
+        "address": "0x5555555555555555555555555555555555555555"
+      }
+    ]
+  }'
+```
+
+> **CAUTION: Full replacement**
+>
+> `PUT` replaces the entire `onchain_identities` list. To add a new chain, include all existing address mappings plus the
+> new one. Omitting an existing mapping removes it.
+
+### Partial update (PATCH)
+
+A `PATCH` request updates only the fields you include. Use this when you want to change the title or description without touching the on-chain mappings.
+
+```bash
+curl -X PATCH "https://ace.api.chain.link/v1/identities/98765432-10fe-dcba-9876-543210fedcba" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Jane Doe — Primary",
+    "description": "Updated description for primary treasury wallets"
+  }'
+```
+
+> **NOTE**
+>
+> The `PATCH` endpoint treats `status` changes and field updates as mutually exclusive. You cannot update the title and
+> archive the identity in the same request. See [Archive an identity](#archive-an-identity) for status changes.
 
 ## Cross-chain identity mapping
 
@@ -5261,6 +6501,25 @@ To add or remove chains later, use the [full update (PUT)](#full-update-put) end
 ## Archive an identity
 
 Archiving marks an identity as inactive. Archived identities are retained for audit purposes but are no longer considered active.
+
+**Platform UI**
+
+> **NOTE**
+>
+> Archiving an identity is not yet available through the Platform UI. Use the **API** tab to archive one via the Coordinator API.
+
+**API**
+
+Send a `PATCH` request with the `status` field:
+
+```bash
+curl -X PATCH "https://ace.api.chain.link/v1/identities/98765432-10fe-dcba-9876-543210fedcba" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "archived"
+  }'
+```
 
 > **CAUTION: Archive credentials first**
 >
@@ -7138,9 +8397,40 @@ To try Active Monitoring without any onchain action, skip this step and map ever
 
 ## 3. Store your TRM API key
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), open the general settings (**Compliance > Home**, then **View settings**) and go to the **API access** tab.
+2. Click **Add API key**, paste your TRM API key, and select how often to screen: **6 hours**, **12 hours**, or **24 hours**.
+3. Click **Add API key**.
+
+**API**
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/provider-api-keys \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{ "provider": "trm", "api_key": "<TRM_API_KEY>" }'
+
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{ "interval_hours": 6 }'
+```
+
 Saving the key does not start screening. See [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
 
 ## 4. Register your token
+
+**Platform UI**
+
+1. Go to **Compliance > Active Monitoring**, open **Monitoring configuration**, and click **Add token**.
+2. In **Primary token**, enter the name, the address on each network, the ABI file, the enforcement functions, and the decimals.
+3. In **Associated contract**, add your blocklist contract with its addresses, ABI, and enforcement function. Skip this step if all enforcement runs on the token.
+4. Review the details and click **Add token**.
+
+**API**
+
+Send `POST /active-monitoring/contract-groups` with the token and its associated contract. See the full request in [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens#register-a-monitored-token). Keep the `group_id` and the `id` and `func_id` values from the response.
 
 The token appears with the tag **Missing rule**. You cannot edit a registered token, so check the addresses and the ABI before you submit. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens).
 
@@ -7154,15 +8444,60 @@ A rule maps each TRM risk level to a response. This example enforces on Severe, 
 | 10 - High                        | Flag                                                                                                                                                                                   |
 | 5 - Medium, 1 - Low, 0 - Unknown | Silently log                                                                                                                                                                           |
 
+**Platform UI**
+
+1. Open the token and click **Configure rule**.
+2. Create one **Decision logic** card for each response, select its risk levels, and complete the **Enforced action** fields for **Enforce**.
+3. Click **Next**, review the rule, and click **Add rule**.
+
+**API**
+
+Send `POST /active-monitoring/rule-groups` with one rule for each response. See the full request in [Configure
+Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules#create-a-monitoring-rule).
+
 The token tag changes to **Active rule**. A rule cannot be edited: to change it, delete it and create a new one. See [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules).
 
 Enforce acts without review. For a first run, you can map Severe to Flag instead, review what the rule catches, and move levels to Enforce later.
 
 ## 6. Add the watchlist
 
+**Platform UI**
+
+1. In **Monitoring configuration**, open the **Watchlist** tab and click **Add address**.
+2. Click **Upload a CSV** and drop a file of up to 100 rows with the columns `address` and `chain_selector`, or click **Reference an identity registry**.
+3. Click **Save**.
+
+**API**
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/monitored-addresses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "source": "list",
+    "addresses": [
+      { "address": "0x5555555555555555555555555555555555555555", "chain_selectors": ["16015286601757825753"] }
+    ]
+  }'
+```
+
 You cannot remove an address after you add it. See [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist).
 
 ## 7. Start screening
+
+**Platform UI**
+
+1. Open the **Decisions log** tab.
+2. Click **Start screening**. The button is enabled when the TRM API key, a token with a rule, and a watchlist address exist.
+
+**API**
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval/start \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+The response is `202` with `"result": "enqueued"`.
 
 The first run starts immediately and repeats at the interval you chose.
 
@@ -7808,15 +9143,128 @@ Active Monitoring screens your watchlist with TRM Wallet Screening, using your o
 
 ## Store the TRM API key and choose the interval
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), open the general settings (**Compliance > Home**, then **View settings**) and go to the **API access** tab.
+2. Click **Add API key**.
+3. Enter a **Name** to recognize the key. Leave it empty to use the default name.
+4. Paste your TRM API key in **Key**.
+5. Under **Screen address every**, select **6 hours**, **12 hours**, or **24 hours**.
+6. Click **Add API key**.
+
+The key appears in the **API access** table with its name and the date it was added. The Platform never shows the key again. The **Add API key** button is hidden while a key exists.
+
+Saving the key does not start screening. You start it in the next section.
+
+**API**
+
+Store the key with `POST /active-monitoring/provider-api-keys`. `provider` must be `trm`. `name` is optional.
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/provider-api-keys \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "provider": "trm",
+    "api_key": "<TRM_API_KEY>",
+    "name": "TRM Labs API key"
+  }'
+```
+
+The response contains metadata only. The key is encrypted and never returned:
+
+```json
+{
+  "id": "9f1c2d3e-4a5b-6c7d-8e9f-0a1b2c3d4e5f",
+  "provider": "trm",
+  "status": "active",
+  "name": "TRM Labs API key",
+  "key_last4": "4f2a",
+  "created_at": 1790000000,
+  "updated_at": 1790000000
+}
+```
+
+An organization has one TRM key. Posting a key again replaces the existing one. Active Monitoring does not validate the key when you store it: `status` is always `active`.
+
+Set the interval with `POST /active-monitoring/screening-interval`. `interval_hours` is a whole number from 1 to 168:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{ "interval_hours": 6 }'
+```
+
+A new interval applies from the next scheduled run. A run that is already scheduled keeps its time.
+
 ## Start screening
 
 Starting screening needs four things to exist: the TRM API key, a screening interval, a [monitoring rule](/ace/active-monitoring/guides/configure-monitoring-rules) on at least one token, and at least one address on the [watchlist](/ace/active-monitoring/guides/manage-watchlist). The first run starts immediately and repeats at the interval.
 
+**Platform UI**
+
+1. Open **Active Monitoring** and go to the **Decisions log** tab. Before the first run, the tab shows **Get started with these 3 steps**.
+2. Click **Start screening**. The button is disabled until the key, a token, and a watchlist address are configured. Hover over it to see what is missing.
+
+A message confirms that the first run is queued. Decisions appear in the log as soon as the run completes. After the first run, the log header shows when the watchlist was last screened and the interval.
+
+> **NOTE: Current limitation**
+>
+> The Platform UI cannot stop screening or change the interval after you start it. To do either, use the **API** tab:
+> [change the interval](#store-the-trm-api-key-and-choose-the-interval) or [stop screening](#stop-screening).
+
+**API**
+
+Call `POST /active-monitoring/screening-interval/start`. It takes no body:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval/start \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+The response is `202` with `{ "result": "enqueued" }`, or `{ "result": "already_enqueued" }` when screening was already running. It returns `400` when the key, the interval, an active rule, or a watchlist address is missing.
+
+To see whether screening is running, call `GET /active-monitoring/screening-interval`. It returns `interval_hours` and `screening_active`.
+
 ## Stop screening
+
+**Platform UI**
+
+The Platform UI has no control to stop screening. This is a current limitation: use the **API** tab to stop screening and keep the key. Removing the TRM API key also stops it, as described in [Remove the TRM API key](#remove-the-trm-api-key).
+
+**API**
+
+Call `POST /active-monitoring/screening-interval/stop` to cancel the next scheduled run without changing the interval:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval/stop \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+The response is `202` with `{ "result": "canceled" }`, or `{ "result": "not_active" }` when screening was not running. A run that is executing finishes first, and the call returns `409`: call it again when the run completes. Call the start endpoint to resume at the same interval.
+
+`DELETE /active-monitoring/screening-interval` removes the interval. The scheduled run still executes once, then screening stops until you set a new interval and start screening again.
 
 ## Remove the TRM API key
 
 Removing the key stops screening: Active Monitoring has no key to call TRM with, and it screens nothing until you store a new key. Decisions already created stay in the log.
+
+**Platform UI**
+
+1. In **API access**, open the actions menu of the key and click **Remove key**.
+2. Confirm in the dialog.
+
+To replace a key, remove it, then add the new one.
+
+**API**
+
+```bash
+curl -X DELETE https://ace.api.chain.link/v1/active-monitoring/provider-api-keys/trm \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+The response is `204`. To check whether a key is stored, call `GET /active-monitoring/provider-api-keys/trm`. It returns the metadata above, or `404` when no key is stored.
 
 ## Next steps
 
@@ -7842,7 +9290,180 @@ A **monitored token** is a token contract you register with Active Monitoring, o
 
 A monitored token has a **primary** contract, which is your token, and optionally one or more **associated** contracts. You select the **enforcement functions** of each contract: the functions that Active Monitoring may call when a rule enforces an action. In most cases the token itself has the functions you need, such as `freezePartialTokens`, so you register the primary contract alone. Add an associated contract only when an action must run on a different contract, for example a separate blocklist that your token does not call.
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring** and open the **Monitoring configuration** tab.
+2. In **Monitored tokens**, click **Add token**.
+3. In the **Primary token** step, complete the fields:
+   - **Name**: the name shown in the Platform and in the Decisions log.
+   - **Token address**: select one or more networks, then enter the address. Click **Add address** to register a different address on other networks. A network can appear once.
+   - **Token ABI (JSON)**: upload the ABI file.
+   - **Enforcement functions**: select the write functions Active Monitoring is allowed to call. Read functions are registered automatically.
+   - **Decimals**: the token's decimals, used to display balances.
+4. Click **Next**. In the **Associated contract (optional)** step, add a contract only if an enforcement action must run on a contract other than the primary token. The networks are the same as the primary token and cannot be changed. Enter the contract address for each network, upload its ABI, and select its enforcement functions. Leave the step empty to skip it. The Platform UI registers one associated contract. To register several, use the API.
+5. Click **Next**, review the details, and click **Add token**.
+
+The token appears in **Monitored tokens** with the tag **Missing rule** until you configure a monitoring rule.
+
+> **NOTE: ACE wallets need access to the functions**
+>
+> The wizard reminds you that ACE wallets must have access to the selected enforcement functions. Without the role, enforcements revert onchain. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token).
+
+**API**
+
+Create a monitored token with a `POST` request to `/active-monitoring/contract-groups`. Send one contract with `role` set to `primary`, and optionally one or more with `role` set to `associated`.
+
+The following request registers a token together with an associated contract. Keep the part that matches your setup:
+
+- The primary contract is the token. It has `balanceOf`, a read function that balance conditions use, and two enforcement functions, `freezePartialTokens` and `setAddressFrozen`.
+- The associated contract is an example blocklist with one enforcement function, `addBlacklist`. Remove this object from `contracts` to register the token alone.
+- Both contracts are registered on Ethereum Sepolia and Arbitrum Sepolia. Chain selectors come from [Supported Networks](/ace/supported-networks). The addresses are placeholders.
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/contract-groups \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "contracts": [
+      {
+        "title": "Example Treasury Fund",
+        "role": "primary",
+        "onchain_contracts": [
+          { "chain_selector": "16015286601757825753", "address": "0x1111111111111111111111111111111111111111" },
+          { "chain_selector": "3478487238524512106", "address": "0x2222222222222222222222222222222222222222" }
+        ],
+        "functions": [
+          {
+            "func_abi": {
+              "type": "function",
+              "name": "balanceOf",
+              "stateMutability": "view",
+              "inputs": [{ "name": "_userAddress", "type": "address" }],
+              "outputs": [{ "name": "", "type": "uint256" }]
+            }
+          },
+          {
+            "func_abi": {
+              "type": "function",
+              "name": "freezePartialTokens",
+              "stateMutability": "nonpayable",
+              "inputs": [
+                { "name": "_userAddress", "type": "address" },
+                { "name": "_amount", "type": "uint256" }
+              ],
+              "outputs": []
+            }
+          },
+          {
+            "func_abi": {
+              "type": "function",
+              "name": "setAddressFrozen",
+              "stateMutability": "nonpayable",
+              "inputs": [
+                { "name": "_userAddress", "type": "address" },
+                { "name": "_freeze", "type": "bool" }
+              ],
+              "outputs": []
+            }
+          }
+        ],
+        "metadata": { "token_decimals": 6 }
+      },
+      {
+        "title": "Example Blocklist",
+        "role": "associated",
+        "onchain_contracts": [
+          { "chain_selector": "16015286601757825753", "address": "0x3333333333333333333333333333333333333333" },
+          { "chain_selector": "3478487238524512106", "address": "0x4444444444444444444444444444444444444444" }
+        ],
+        "functions": [
+          {
+            "func_abi": {
+              "type": "function",
+              "name": "addBlacklist",
+              "stateMutability": "nonpayable",
+              "inputs": [
+                { "name": "account", "type": "address" },
+                { "name": "reason", "type": "string" }
+              ],
+              "outputs": []
+            }
+          }
+        ]
+      }
+    ]
+  }'
+```
+
+| Field                     | Required | Description                                                                                             |
+| ------------------------- | -------- | ------------------------------------------------------------------------------------------------------- |
+| `contracts`               | Yes      | Exactly one contract with `role` `primary`, and zero or more with `role` `associated`.                  |
+| `title`                   | Yes      | Name of the contract. Titles must be unique within the request.                                         |
+| `onchain_contracts`       | Yes      | One entry per network: `chain_selector` and `address`. Each network needs a created CRE Connect Wallet. |
+| `functions`               | Yes      | One `func_abi` per function, in the JSON ABI format of your compiler. See the note below.               |
+| `metadata.token_decimals` | No       | Decimals of the primary token. Used to display balances in token units. The Platform UI always sets it. |
+
+> **CAUTION: Every write function you send becomes callable**
+>
+> In the API, the `functions` array is the list of functions Active Monitoring can call. Send every read function you need, such as `balanceOf(address)`, and only the write functions you want to enforce. The API has no separate selection step like the Platform UI.
+
+The response returns the monitored token. `group_id` is the `id` of the primary contract. Keep it, and the `func_id` of each function: a monitoring rule refers to them.
+
+```json
+{
+  "group_id": "5b0f0c3e-6d1a-4f43-8e0a-1d6f3f3a9a10",
+  "active_rule_group": null,
+  "contracts": [
+    {
+      "id": "5b0f0c3e-6d1a-4f43-8e0a-1d6f3f3a9a10",
+      "title": "Example Treasury Fund",
+      "role": "primary",
+      "created_at": 1790000000,
+      "updated_at": 1790000000,
+      "onchain_contracts": [
+        { "chain_selector": "16015286601757825753", "address": "0x1111111111111111111111111111111111111111" },
+        { "chain_selector": "3478487238524512106", "address": "0x2222222222222222222222222222222222222222" }
+      ],
+      "functions": [
+        {
+          "func_id": "c1b4a9f2-3c55-4f57-9a8e-2b7f0d3e6a11",
+          "func_abi": { "type": "function", "name": "freezePartialTokens" }
+        }
+        // ... one entry per function, with the full func_abi
+      ],
+      "metadata": { "token_decimals": 6 }
+    }
+    // ... the associated contract, with "role": "associated"
+  ]
+}
+```
+
+The request fails with `400` when a network has no created CRE Connect Wallet for your organization, and with `409` when a title, a function, or an address on a network is already registered.
+
 ## View monitored tokens
+
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring** and open **Monitoring configuration**. **Monitored tokens** lists one card per token with its addresses, its networks, the tag **Active rule** or **Missing rule**, and the number of associated contracts.
+2. Click a card to open the token page. The **Token details** panel shows the name, the address on each network, and the status. **Monitoring rule** shows the decision logic, and **Associated contracts** lists each associated contract with its functions.
+
+**API**
+
+List monitored tokens with `GET /active-monitoring/contract-groups`. Use `page` and `page_size` (up to 100) to paginate:
+
+```bash
+curl "https://ace.api.chain.link/v1/active-monitoring/contract-groups?page=1&page_size=25" \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+Each item contains `active_rule_group`: the header of the active monitoring rule, or `null` when the token has none.
+
+Retrieve one monitored token with the `group_id` returned at registration. The ID of an associated contract returns `404`:
+
+```bash
+curl https://ace.api.chain.link/v1/active-monitoring/contract-groups/<GROUP_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
 
 ## Edit or remove a monitored token
 
@@ -7882,11 +9503,188 @@ TRM gives each address a risk level, from 0 - Unknown to 15 - Severe. See [Watch
 | 10 - High                        | Flag         | A person reviews the address.                                                                                                                                                   |
 | 5 - Medium, 1 - Low, 0 - Unknown | Silently log | Record only.                                                                                                                                                                    |
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring**, open **Monitoring configuration**, and click the token. A token without a rule shows the tag **Missing rule**.
+2. Click **Configure rule**.
+3. In the **Decision logic** card, select the risk levels in **If risk score is**, for example **15 - Severe**.
+4. In **then**, select **Silently log**, **Flag**, or **Enforce**.
+5. For **Enforce**, complete the **Enforced action** fields:
+   - **Enforce on**: the contract that runs the function.
+   - **Enforcement function**: the function to call.
+   - **Parameter mapping**: for each argument of the function, choose what Active Monitoring sends. Select **Screened address** for the address that TRM flagged, or **Balance** for that address's balance of the token, in the smallest unit of the token. Select **Other** to type a fixed value.
+   - **Only execute if the address holds a balance on this token**: select it for any action that maps **Balance**, or that is useless without a balance, such as a freeze.
+6. To add another action to the same response, click **Add action**. In the example, the second action is `addBlacklist` on the associated contract, mapped to **Screened address** and the constant `Severe risk`, without the balance condition.
+7. To define another response, click **Add condition**. A new **Decision logic** card opens. Every risk level must be in exactly one card before you can continue.
+8. Click **Next**. The **Review and add** step lists each action with its risk level and response.
+9. Click **Add rule**.
+
+The token tag changes to **Active rule**, and the token page shows the **Decision logic** table.
+
+> **CAUTION: Map Balance only with the balance condition**
+>
+> An action that maps **Balance** needs the balance reading that the balance condition creates. Select **Only execute if the address holds a balance on this token** on that action.
+
+**API**
+
+Create the rule with `POST /active-monitoring/rule-groups`. You need the identifiers returned when you [registered the token](/ace/active-monitoring/guides/manage-monitored-tokens): `group_id` for `contract_group_id`, the `id` of each contract for `contract_id`, and the `func_id` of each function for `admin_function_id`.
+
+A rule has conditions and actions. Every condition must be true for the rule to apply, and all actions of a rule have the same type. The first condition checks the TRM risk level. A second condition on `balance` implements the balance condition.
+
+The following request creates the example rule from the table. The conditions of a rule must all be true, so the Severe response is two rules: the freeze, which also requires a balance, and the blocklist entry, which does not. The blocklist entry then happens even when the address holds nothing. Leave out the second rule if you registered your token alone.
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/rule-groups \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "title": "Example Treasury Fund - monitoring rule",
+    "trigger_event_type": "trm_event",
+    "contract_group_id": "<GROUP_ID>",
+    "rules": [
+      {
+        "conditions": [
+          { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "severe" },
+          {
+            "data_source_type": "read_balance_event",
+            "data_source_metadata": { "contract_id": "<PRIMARY_CONTRACT_ID>" },
+            "path": "balance",
+            "operator": "greater",
+            "value": "0"
+          }
+        ],
+        "actions": [
+          {
+            "action_type": "auto_enforce_onchain_action",
+            "onchain_enforcement_definition": {
+              "contract_id": "<PRIMARY_CONTRACT_ID>",
+              "admin_function_id": "<FREEZE_FUNC_ID>",
+              "argument_mapping": [
+                { "argument_name": "_userAddress", "mapping_type": "reference", "value": "screened_address" },
+                { "argument_name": "_amount", "mapping_type": "reference", "value": "holder_balance" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "conditions": [
+          { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "severe" }
+        ],
+        "actions": [
+          {
+            "action_type": "auto_enforce_onchain_action",
+            "onchain_enforcement_definition": {
+              "contract_id": "<BLOCKLIST_CONTRACT_ID>",
+              "admin_function_id": "<ADD_BLACKLIST_FUNC_ID>",
+              "argument_mapping": [
+                { "argument_name": "account", "mapping_type": "reference", "value": "screened_address" },
+                { "argument_name": "reason", "mapping_type": "constant", "value": "Severe risk" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "conditions": [
+          { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "high" }
+        ],
+        "actions": [{ "action_type": "flag_for_review" }]
+      },
+      {
+        "conditions": [
+          { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "medium" }
+        ],
+        "actions": [{ "action_type": "silently_log" }]
+      },
+      {
+        "conditions": [
+          { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "low" }
+        ],
+        "actions": [{ "action_type": "silently_log" }]
+      },
+      {
+        "conditions": [
+          { "data_source_type": "trm_event", "path": "risk_level", "operator": "equals", "value": "unknown" }
+        ],
+        "actions": [{ "action_type": "silently_log" }]
+      }
+    ]
+  }'
+```
+
+| Field                               | Description                                                                                                                                                                                                           |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trigger_event_type`                | Always `trm_event`.                                                                                                                                                                                                   |
+| `contract_group_id`                 | The `group_id` of the monitored token. The token must not have an active rule.                                                                                                                                        |
+| `conditions[].path` and `value`     | `risk_level` with `severe`, `high`, `medium`, `low`, or `unknown`. For `balance`, a raw integer in token base units; `greater` with `0` means "holds a balance".                                                      |
+| `conditions[].data_source_metadata` | For `read_balance_event`, `contract_id` is the primary contract, which must have `balanceOf(address)`.                                                                                                                |
+| `actions[].action_type`             | `silently_log`, `flag_for_review`, or `auto_enforce_onchain_action`.                                                                                                                                                  |
+| `argument_mapping`                  | One entry per argument of the function, matched by `argument_name`. `mapping_type` is `reference`, which Active Monitoring fills in for each decision with an action variable, or `constant`, a fixed value you type. |
+
+List the action variables with `GET /active-monitoring/action-variables`. The system variables are `screened_address`, the address that TRM flagged, and `holder_balance`, its balance of the token in raw base units, read before the action runs.
+
+The rule is active immediately. The response contains the rule, with an `id` for each rule, condition, and action:
+
+```json
+{
+  "id": "7c8d9e0f-1a2b-3c4d-5e6f-708192a3b4c5",
+  "title": "Example Treasury Fund - monitoring rule",
+  "trigger_event_type": "trm_event",
+  "contract_group_id": "5b0f0c3e-6d1a-4f43-8e0a-1d6f3f3a9a10",
+  "status": "active",
+  "created_at": 1790000100,
+  "updated_at": 1790000100,
+  "rules": [
+    // ... the rules you sent, each with its id, conditions, and actions
+  ]
+}
+```
+
+The Platform UI requires all five risk levels. The API requires only one rule. A risk level that no rule covers creates no decision.
+
+The request returns `409` when the token already has an active rule, and `400` when a function is not a write function, an argument is missing or has the wrong type, or the primary contract has no `balanceOf(address)`.
+
 ## View a monitoring rule
+
+**Platform UI**
+
+Open the token page. The **Monitoring rule** section shows the **Decision logic** table: one row per action, with the function or response, the risk level, the contract, and a tag (**Enforce**, **Flag**, or **Silently log**).
+
+**API**
+
+Get one rule with `GET /active-monitoring/rule-groups/{rule_group_id}`. The response expands the contracts and the enforcement functions.
+
+List rules with `GET /active-monitoring/rule-groups`. Filter with `status` (`active` or `archived`) and `contract_group_id`:
+
+```bash
+curl "https://ace.api.chain.link/v1/active-monitoring/rule-groups?status=active&contract_group_id=<GROUP_ID>" \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+A monitored token also returns its active rule in `active_rule_group`.
 
 ## Delete a monitoring rule
 
 Deleting a rule archives it. Active Monitoring stops creating decisions for the token until you create a new rule. Existing decisions stay in the log.
+
+**Platform UI**
+
+1. On the token page, click **Delete rule** in the **Decision logic** card.
+2. Confirm with **Remove rule**.
+
+To change a rule, delete it and run **Configure rule** again.
+
+**API**
+
+```bash
+curl -X PATCH https://ace.api.chain.link/v1/active-monitoring/rule-groups/<RULE_GROUP_ID> \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{ "status": "archived" }'
+```
+
+An archived rule cannot be reactivated. Archiving it again returns `409`.
 
 ## Next steps
 
@@ -7913,6 +9711,58 @@ The watchlist has no fixed size limit. The Platform UI accepts up to 100 rows pe
 
 ## Add addresses from a CSV file
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring** and open **Monitoring configuration > Watchlist**.
+2. Click **Add address**, then **Upload a CSV**.
+3. Drop your file in the **Upload address list** panel. The panel lists every row with its address and network. Rows with an error show the reason.
+4. Fix any error in the file and upload it again. **Save** is available only when every row is valid.
+5. Click **Save**. The addresses appear in the watchlist.
+
+**API**
+
+Add addresses with a `POST` request to `/active-monitoring/monitored-addresses`. Set `source` to `list` to send the addresses yourself, in `addresses`. Each entry has the `address`, and the `chain_selectors` of its networks. `title` is optional and defaults to the address.
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/monitored-addresses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "source": "list",
+    "addresses": [
+      {
+        "title": "Holder 1",
+        "address": "0x5555555555555555555555555555555555555555",
+        "chain_selectors": ["16015286601757825753"]
+      },
+      {
+        "address": "0x6666666666666666666666666666666666666666",
+        "chain_selectors": ["16015286601757825753", "3478487238524512106"]
+      }
+    ]
+  }'
+```
+
+The response lists the created addresses. `monitored_address_trm_score` is `null` until the address is screened for the first time.
+
+```json
+{
+  "results": [
+    {
+      "id": "0d4f6c1e-7b2a-4c55-9e0b-3f1a8d2c4b10",
+      "title": "Holder 1",
+      "address": "0x5555555555555555555555555555555555555555",
+      "chain_selectors": ["16015286601757825753"],
+      "source_reference_id": null,
+      "monitored_address_trm_score": null
+    }
+    // ... one entry per address
+  ]
+}
+```
+
+The request fails with `409` when an address is already on the watchlist.
+
 ### CSV format
 
 The file needs two columns, with these exact header names (case-insensitive): `address` and `chain_selector`.
@@ -7937,9 +9787,46 @@ The networks you list for an address do not change what is screened or where dec
 
 An identity registry holds the wallet addresses of your registered identities. Importing a registry adds every active onchain address of its identities to the watchlist, so you do not maintain a separate list.
 
+**Platform UI**
+
+1. In **Monitoring configuration > Watchlist**, click **Add address**, then **Reference an identity registry**. The option is disabled when your organization has no active identity registry.
+2. Select the registry in the **Identity registry** list.
+3. Click **Save**.
+
+**API**
+
+Send a `POST` request with `source` set to `registry`, to import from a registry instead of sending addresses. Put the ID of the registry in `registry_id` and do not send `addresses`:
+
+```bash
+curl -X POST https://ace.api.chain.link/v1/active-monitoring/monitored-addresses \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <API_KEY>" \
+  -d '{
+    "source": "registry",
+    "registry_id": "<REGISTRY_ID>"
+  }'
+```
+
+Each imported address has `source_reference_id` set to the registry ID. To get registry IDs, see [Managing Registries](/ace/guides/identity-manager/manage-registries).
+
 The import is a snapshot of the registry at the time you import it. Addresses you add to the registry later are not added to the watchlist.
 
 ## View the watchlist
+
+**Platform UI**
+
+In **Monitoring configuration > Watchlist**, the table shows each address and its networks. Use the **Networks** filter or search by address to narrow the list.
+
+**API**
+
+List the watchlist with `GET /active-monitoring/monitored-addresses`. Use `page` and `page_size` (up to 100). To read the whole watchlist, page through the results:
+
+```bash
+curl "https://ace.api.chain.link/v1/active-monitoring/monitored-addresses?page=1&page_size=100" \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+After the first screening, each address includes `monitored_address_trm_score` with the latest `risk_score_level` and `last_screened_at`.
 
 ## Remove addresses
 
@@ -7968,15 +9855,108 @@ Most decisions need nothing from you: a **silently logged** decision is a record
 
 ## List decisions
 
+**Platform UI**
+
+1. In the [Chainlink Platform](https://app.chain.link), go to **Compliance > Active Monitoring**. The **Decisions log** tab opens first. Under the title, **Last screened … | Updates every … hrs** shows when the watchlist was last screened and the screening interval.
+
+2. Read the table. Each row is one decision:
+
+   | Column           | Content                                                              |
+   | ---------------- | -------------------------------------------------------------------- |
+   | Screened address | The address that TRM screened.                                       |
+   | Primary token    | The monitored token whose rule matched.                              |
+   | Network          | The network of the decision.                                         |
+   | TRM score        | The risk level and score.                                            |
+   | Decision         | The outcome. For an enforced decision, the function that was called. |
+   | Operation status | The latest status of the operation, or a dash when there is none.    |
+
+3. Narrow the list with the filters **Token**, **Network**, **TRM score**, and **Decision**. The search box filters the addresses on the current page.
+
+A decision appears when its rule matches. A rule that does not match creates no row.
+
+**API**
+
+List decisions with `GET /active-monitoring/decision-logs`. All filters are optional and combine:
+
+```bash
+curl "https://ace.api.chain.link/v1/active-monitoring/decision-logs?trm_risk_level=severe&chain_selector=16015286601757825753&page=1&page_size=25" \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+| Parameter               | Filters by                                                                                                                                 |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `chain_selector`        | The network of the decision.                                                                                                               |
+| `rule_group_id`         | The monitoring rule.                                                                                                                       |
+| `primary_token`         | The `id` of the primary contract of the monitored token.                                                                                   |
+| `decision_output`       | The outcome: `flagged_for_review`, `auto_enforced_onchain_action`, `silently_logged`, `manual_enforced_onchain_action`, or `user_ignored`. |
+| `onchain_action_status` | The latest status of the operation, for example `failed`.                                                                                  |
+| `trm_risk_level`        | `severe`, `high`, `medium`, `low`, or `unknown`.                                                                                           |
+
+The response contains `decision_logs`, pagination fields, and `screening`, which holds `last_screened_at` and `interval_hours`. In the list, each `trm_event` payload contains only `address` and `risk_level`.
+
 ## Open a decision
+
+**Platform UI**
+
+Click a row. The page title shows the outcome, and the **Decision summary** panel repeats the screened address, the primary token, the network, the outcome, the time, and the operation status. The **Decision details** tab has four cards:
+
+- **Trigger · TRM**: the screened address, the TRM risk score, when it was screened, and the top risk category with the number of others.
+- **Rule · Matched**: the response that matched, and each condition marked **Condition met** or **Condition not met**. A balance condition shows the balance read and the block it was read at.
+- **Action**: for an enforced decision, the contract, the function, the value of each argument, and the operation ID. For a resolved decision, the reason and who resolved it.
+- **Operations activity**: each status of the operation with its time.
+
+The **TRM raw data** tab shows the complete TRM response for the address.
+
+**API**
+
+Get a decision with `GET /active-monitoring/decision-logs/{decision_log_id}`, where `decision_log_id` is the `id` from the list:
+
+```bash
+curl https://ace.api.chain.link/v1/active-monitoring/decision-logs/<DECISION_LOG_ID> \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+The response contains the outcome in `output`, the `input_events` (the TRM result with `raw_response`, and the balance reading when there is one), the `condition_runs`, the `enforced_actions`, and the `activity_history`. An enforced action holds the `activity_history` of its operation, its `crec_operation_id`, and its `transaction_hash` once the hash is known.
 
 ## Resolve a flagged decision
 
 Resolve a flagged decision when you review it and decide that no onchain action is needed. The decision closes, and your reason is recorded with your name.
 
+**Platform UI**
+
+1. Open a decision with the outcome **Flag for review** or **No balance - flag for review**.
+2. Click **Resolve**.
+3. Enter a **Reason**. It is required, and your team can read it later.
+4. Click **Resolve alert**.
+
+The outcome becomes **Resolved**.
+
+**API**
+
+> **NOTE: Platform UI only**
+>
+> Resolving a flagged decision is available in the Platform UI only. The record names the person who resolves the decision, so the action requires a signed-in user. A request authenticated with an API key returns `400`.
+
 ## Enforce an action on a flagged decision
 
 Enforce an action when you decide that the address needs an onchain action. You choose the function and the values, and Active Monitoring creates the operation on the network of the decision.
+
+**Platform UI**
+
+1. Open a decision with the outcome **Flag for review** or **No balance - flag for review**.
+2. Click **Enforce action**. The **Create operation** panel opens for the screened address and the network.
+3. In **Enforce on**, select a contract that is deployed on this network.
+4. In **Enforcement function**, select the function.
+5. In **Parameter mapping**, select a value for each argument: **Screened address**, **Balance** when this decision has a balance reading, or **Other** to type a value. The panel sends the current value of the source you select.
+6. Click **Enforce action**.
+
+The outcome becomes the function signature, and the decision shows the operation. The Platform UI creates one operation for each **Enforce action**.
+
+**API**
+
+> **NOTE: Platform UI only**
+>
+> Enforcing an action on a flagged decision is available in the Platform UI only. The record names the person who enforces the action, so the action requires a signed-in user. A request authenticated with an API key returns `400`.
 
 ## Track an operation
 
