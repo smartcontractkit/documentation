@@ -25,6 +25,7 @@ import {
   handlePageTabs,
   handleTabs,
   handlePackageManagerTabs,
+  handleMethodTabs,
   handleFragment,
   handleAccordion,
   handleGitHubCard,
@@ -209,6 +210,10 @@ export async function transformMarkdown(
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "PackageManagerTabs") {
           return handlePackageManagerTabs(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "MethodTabs") {
+          return handleMethodTabs(node as MdxJsxNode, parent, index)
         }
 
         if (

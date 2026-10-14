@@ -978,6 +978,27 @@ export function handlePackageManagerTabs(node: MdxJsxNode, parent: Parent, index
   return replaceNode(node, parent, index, replacement)
 }
 
+export function handleMethodTabs(node: MdxJsxNode, parent: Parent, index: number): number | void {
+  const slots = slottedElements(node as Parent)
+  const replacement: Node[] = []
+  const methods = [
+    { slot: "ui", label: "Platform UI" },
+    { slot: "api", label: "API" },
+  ]
+  // Keep both methods in tab bar order. Bold labels avoid nesting errors under ### sections.
+  for (const { slot, label } of methods) {
+    const content = slots.find((element) => element.slot === slot)?.node as Parent | undefined
+    if (content) {
+      replacement.push(paragraphNode([{ type: "strong", children: [textNode(label)] } as Parent]))
+      replacement.push(...(content.children || []))
+    }
+  }
+  if (replacement.length === 0) {
+    return replaceNode(node, parent, index, (node as Parent).children || [])
+  }
+  return replaceNode(node, parent, index, replacement)
+}
+
 export function handleFragment(node: MdxJsxNode, parent: Parent, index: number): number | void {
   return replaceNode(node, parent, index, (node as Parent).children || [])
 }
