@@ -75,6 +75,13 @@ export type ComponentHandler = (
   context: ComponentContext
 ) => number | void
 
+/** Counts captured before an unhandled JSX subtree is removed; no source content is retained. */
+export interface DroppedComponent {
+  name: string
+  /** UTF-16 length of descendant text, inline code, and fenced code values. */
+  approxChars: number
+}
+
 /**
  * Configuration for markdown transformation
  */
@@ -87,6 +94,8 @@ export interface TransformConfig {
   includeFrontmatter?: boolean
   /** Custom component handlers */
   componentHandlers?: Record<string, ComponentHandler>
+  /** Synchronous, best-effort observer. Events are delivered only after a successful transform. */
+  onDropComponent?: (drop: DroppedComponent) => void
 }
 
 /**
@@ -117,4 +126,8 @@ export type MarkdownArtifact = {
   transformMode: "normal" | "sanitized" | "fallback" | "replacement"
   sourcePath?: string
   markdown: string
+}
+
+export interface LlmsRenderObservers {
+  onPageRendered?: (sourcePath: string, mode: MarkdownArtifact["transformMode"], drops: DroppedComponent[]) => void
 }

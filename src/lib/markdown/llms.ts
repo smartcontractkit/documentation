@@ -1,6 +1,6 @@
 import { transformPageBodyToMarkdown } from "./buildMarkdownArtifact.js"
 import { unescapeMarkdown } from "./formatters.js"
-import type { MarkdownArtifact } from "./types.js"
+import type { DroppedComponent, LlmsRenderObservers, MarkdownArtifact } from "./types.js"
 import {
   extractFrontmatter,
   getIsoStringOrUndefined,
@@ -17,16 +17,19 @@ export async function renderLlmsPageMarkdown(
   raw: string,
   absFile: string,
   section: string,
-  targetLanguage?: string
+  targetLanguage?: string,
+  observers: LlmsRenderObservers = {}
 ): Promise<{ markdown: string; transformMode: MarkdownArtifact["transformMode"] }> {
   const { body, fmTitle, fmLastModified } = extractFrontmatter(raw)
   const relFromContent = toContentRelative(absFile)
   const sourceUrl = toCanonicalUrl(section, relFromContent, SITE_BASE)
   const title = fmTitle || inferTitleFromPath(relFromContent)
   const lastModified = getIsoStringOrUndefined(fmLastModified)
+  const drops: DroppedComponent[] = []
   const transformed = await transformPageBodyToMarkdown(body, absFile, {
     siteBase: SITE_BASE,
     targetLanguage,
+    onDropComponent: observers.onPageRendered ? (drop) => drops.push(drop) : undefined,
   })
   const cleanedPlain = unescapeMarkdown(transformed.markdown)
   const headerLines = [
@@ -36,10 +39,17 @@ export async function renderLlmsPageMarkdown(
     "",
   ]
 
-  return {
+  const result = {
     markdown: [...headerLines, cleanedPlain.trim()].join("\n"),
     transformMode: transformed.transformMode,
   }
+  try {
+    observers.onPageRendered?.(absFile, transformed.transformMode, drops)
+  } catch {
+    // Diagnostics must not change the generated document.
+  }
+
+  return result
 }
 
 const CODE_EXAMPLE_DISCLAIMER_MARKERS = [
