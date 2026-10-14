@@ -734,6 +734,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "cre/guides/operations/deploying-workflows",
           children: [
             {
+              title: "Linking Wallet Keys",
+              url: "cre/guides/operations/linking-wallet-keys",
+            },
+            {
+              title: "Requesting Deploy Access",
+              url: "cre/guides/operations/deploy-access",
+            },
+            {
               title: "Deploying to the Private Registry",
               url: "cre/guides/operations/deploying-to-private-registry",
               highlightAsCurrent: [
@@ -750,6 +758,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               ],
             },
           ],
+        },
+        {
+          title: "Requesting Confidential Workflows Access",
+          url: "cre/guides/operations/confidential-workflows-access",
         },
         {
           title: "Activating & Pausing Workflows",
@@ -790,51 +802,15 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
       ],
     },
     {
-      section: "Account & Organization",
+      section: "CLI Guide",
       contents: [
         {
-          title: "Account",
-          url: "cre/account",
-          children: [
-            {
-              title: "Creating Your Account",
-              url: "cre/account/creating-account",
-            },
-            {
-              title: "Logging in with the CLI",
-              url: "cre/account/cli-login",
-            },
-            {
-              title: "Managing Authentication",
-              url: "cre/account/managing-auth",
-            },
-            {
-              title: "Requesting Deploy Access",
-              url: "cre/account/deploy-access",
-            },
-            {
-              title: "Requesting Confidential Workflows Access",
-              url: "cre/account/confidential-workflows-access",
-            },
-          ],
+          title: "Logging in with the CLI",
+          url: "cre/guides/cli/cli-login",
         },
         {
-          title: "Organization",
-          url: "cre/organization",
-          children: [
-            {
-              title: "Understanding Organizations",
-              url: "cre/organization/understanding-organizations",
-            },
-            {
-              title: "Linking Wallet Keys",
-              url: "cre/organization/linking-keys",
-            },
-            {
-              title: "Inviting Team Members",
-              url: "cre/organization/inviting-members",
-            },
-          ],
+          title: "Managing Authentication",
+          url: "cre/guides/cli/managing-auth",
         },
       ],
     },
@@ -2807,7 +2783,6 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
   ],
   [SIDEBAR_SECTIONS.GLOBAL]: [
     AI_AGENT_RESOURCES_SECTION,
-    CHAINLINK_PLATFORM_SECTION,
     {
       section: "General Documentation",
       contents: [
@@ -2874,6 +2849,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
       ],
     },
   ],
+  [SIDEBAR_SECTIONS.CHAINLINK_PLATFORM]: [CHAINLINK_PLATFORM_SECTION],
   [SIDEBAR_SECTIONS.LEGACY]: [
     {
       section: "VRF V2 Subscription Method [DEPRECATED]",

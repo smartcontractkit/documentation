@@ -9,6 +9,7 @@ import dtaLogo from "../../assets/product-logos/dta-logo.svg"
 import dataLinkLogo from "../../assets/product-logos/datalink-logo.svg"
 import chainlinkLocal from "../../assets/product-logos/chainlink-local.svg"
 import generalLogo from "../../assets/product-logos/general-logo.svg"
+import platformLogo from "../../assets/product-logos/automation-logo.svg"
 import nodesLogo from "../../assets/product-logos/node-logo.svg"
 import quickstartLogo from "../../assets/product-logos/quickstart-logo.svg"
 import { SIDEBAR as sidebar } from "../../config/sidebar.ts"
@@ -169,6 +170,12 @@ const desktopSubProductsNav = [
     col: 2,
     hideFromDropdown: true,
   },
+  {
+    label: "Platform",
+    href: "/chainlink-platform",
+    icon: platformLogo.src,
+    col: 2,
+  },
 ]
 
 const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
@@ -241,6 +248,12 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         href: "/resources",
         icon: generalLogo.src,
         subProducts: getSubProducts(sidebar.global, new Map(), "global"),
+      },
+      {
+        label: "Platform",
+        href: "/chainlink-platform",
+        icon: platformLogo.src,
+        subProducts: getSubProducts(sidebar.chainlinkPlatform, new Map()),
       },
     ],
   },

@@ -4,10 +4,8 @@ import { SIDEBAR_WITH_SUNSET_PRODUCTS, CCIP_SIDEBARS } from "../../config"
 import type { SectionEntry, SectionContent } from "../../config"
 import { SIDEBAR_SECTIONS } from "../../config/sidebarSections.ts"
 import { AI_AGENT_RESOURCES_SECTION, withParentQuery } from "../../config/sidebar/ai-agent-resources.ts"
-import {
-  CHAINLINK_PLATFORM_SECTION,
-  withParentQuery as withPlatformParentQuery,
-} from "../../config/sidebar/chainlink-platform.ts"
+import { CHAINLINK_PLATFORM_SECTION } from "../../config/sidebar/chainlink-platform.ts"
+import { withParentQuery as withPlatformParentQuery } from "../../config/sidebar/parent-query.ts"
 import { getSolutionsSection } from "../../config/sidebar/solutions.ts"
 import RecursiveSidebar from "./RecursiveSidebar.astro"
 import { LanguageSwitcherDropdown } from "~/components/LanguageSwitcherDropdown"
@@ -36,6 +34,13 @@ const SECTIONS_WITH_CHAINLINK_PLATFORM = new Set<Sections>([
   SIDEBAR_SECTIONS.DATA_STREAMS,
 ])
 
+/**
+ * Sections whose pages render every product sidebar (hidden) and reveal the
+ * matching one client-side via the `?parent=` query parameter. Their own
+ * sidebar is shown by default when no `?parent=` is present.
+ */
+const SHARED_PAGE_SECTIONS = new Set<Sections>([SIDEBAR_SECTIONS.GLOBAL, SIDEBAR_SECTIONS.CHAINLINK_PLATFORM])
+
 export type Props = {
   currentPage: string
   section?: Sections
@@ -63,8 +68,10 @@ function detectCcipVersionFromPage(page: string): CcipVersion {
 function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
   if (!section) {
     return []
-  } else if (section === "global") {
-    // Flatten all sidebar entries into one array (include AI resources per product)
+  } else if (SHARED_PAGE_SECTIONS.has(section)) {
+    // Shared-page sections render every product sidebar (hidden) and reveal the
+    // matching one client-side via `?parent=`. The section's own sidebar is
+    // shown by default when no `?parent=` is present.
     return Object.entries(SIDEBAR_WITH_SUNSET_PRODUCTS).flatMap(([parentSection, entries]) => {
       const sections = entries?.map((entry) => ({ ...entry, parentSection: parentSection as Sections })) ?? []
 
@@ -180,7 +187,7 @@ function removeSlashes(url: string): string {
 const sidebarSections = getSidebarSections(section)
 ---
 
-<nav aria-labelledby="grid-left" class={styles.nav}>
+<nav aria-labelledby="grid-left" class={styles.nav} data-section={section ?? ""}>
   {
     (showChainSelector || section === "cre") && (
       <div class={styles.sidebarDropdowns}>
@@ -199,7 +206,7 @@ const sidebarSections = getSidebarSections(section)
     {
       sidebarSections.map((group) => (
         <li
-          style={section === "global" ? { display: "none" } : {}}
+          style={SHARED_PAGE_SECTIONS.has(section) ? { display: "none" } : {}}
           class={group.parentSection ? `parent-${group.parentSection}` : ""}
         >
           <details open={shouldExpandTopSection(group.contents, currentPage)}>
@@ -253,9 +260,15 @@ const sidebarSections = getSidebarSections(section)
    * - Runs on initial load and after navigation
    */
   const attachContentScripts = () => {
-    const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
-    if (parentSection) {
-      for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
+    const nav = document.querySelector<HTMLElement>("nav[aria-labelledby='grid-left']")
+    const ownSection = nav?.dataset.section
+    const parentSection = new URLSearchParams(window.location.search).get("parent")
+    // Arrived from a product sidebar: reveal that product's groups. Otherwise
+    // reveal the current section's own sidebar groups (e.g. the Chainlink
+    // Platform sidebar on /chainlink-platform pages, or General's groups).
+    const sectionToReveal = parentSection || ownSection
+    if (sectionToReveal) {
+      for (let elem of document.querySelectorAll(`.parent-${sectionToReveal}`)) {
         ;(elem as HTMLElement).style.display = "block"
       }
     }

@@ -6,6 +6,7 @@ import dataLinkLogo from "../../../../../assets/product-logos/datalink-logo.svg"
 import vrfLogo from "../../../../../assets/product-logos/vrf-logo.svg"
 import dtaLogo from "../../../../../assets/product-logos/dta-logo.svg"
 import generalGlobeLogo from "../../../../../assets/product-logos/general-globe-logo.svg"
+import platformLogo from "../../../../../assets/product-logos/automation-logo.svg"
 import nodesLogo from "../../../../../assets/product-logos/nodes-logo.svg"
 import chainlinkLocalLogo from "../../../../../assets/product-logos/chainlink-local-2-logo.svg"
 import creLogo from "../../../../../assets/product-logos/cre-logo.svg"
@@ -155,6 +156,12 @@ export const megaMenuSections = {
         title: "General",
         description: "Foundational Chainlink knowledge",
         link: "/getting-started/conceptual-overview",
+      },
+      {
+        icon: platformLogo,
+        title: "Chainlink Platform",
+        description: "Accounts, organizations, access control, and API keys",
+        link: "/chainlink-platform",
       },
       {
         icon: chainlinkLocalLogo,
