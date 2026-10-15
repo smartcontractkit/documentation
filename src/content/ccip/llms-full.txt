@@ -78974,17 +78974,75 @@ Example config: [`eds/testdata/config.toml`](https://github.com/smartcontractkit
 
 ### Configuration reference
 
-| Field                        | Meaning                                                                                                                                                                                                                                                                                                           |
-| :--------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `chain_selector`             | Local Canton chain selector (distinct from remote selectors in `ApplyChainUpdates`).                                                                                                                                                                                                                              |
-| `[node].url`                 | Participant gRPC Ledger API endpoint. EDS reads the Active Contract Set over this connection.                                                                                                                                                                                                                     |
-| `[node.auth].type`           | `static`, `insecureStatic`, `clientCredentials`, or `authorizationCode`.                                                                                                                                                                                                                                          |
-| `map key / instance_address` | Each pool keyed by instance address hex; map key **must** equal `instance_address`.                                                                                                                                                                                                                               |
-| `type`                       | `burnMint` or `lockRelease`.                                                                                                                                                                                                                                                                                      |
-| `pool_owner`                 | Pool owner party (should equal `instrumentId.admin`).                                                                                                                                                                                                                                                             |
-| `[factory].type`             | BurnMint pools only: `address` (EDS reads the factory from the ACS — needs `template_id`, `party`, `instance_address`) or `url` (DA registry resolves it — needs `token_standard_url`). See the [BurnMint guide](/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool#serve-the-factory-from-your-eds). |
+| Field                        | Meaning                                                                                                                                                                                                                                                                                                                                                                            |
+| :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `chain_selector`             | Local Canton chain selector (distinct from remote selectors in `ApplyChainUpdates`).                                                                                                                                                                                                                                                                                               |
+| `[node].url`                 | Participant gRPC Ledger API endpoint. EDS reads the Active Contract Set over this connection.                                                                                                                                                                                                                                                                                      |
+| `[node.auth].type`           | `static`, `insecureStatic`, `clientCredentials`, or `authorizationCode`.                                                                                                                                                                                                                                                                                                           |
+| `map key / instance_address` | Each pool keyed by instance address hex; map key **must** equal `instance_address`.                                                                                                                                                                                                                                                                                                |
+| `type`                       | `burnMint` or `lockRelease`.                                                                                                                                                                                                                                                                                                                                                       |
+| `pool_owner`                 | Pool owner party (should equal `instrumentId.admin`).                                                                                                                                                                                                                                                                                                                              |
+| `[factory].type`             | BurnMint pools only: `address` (EDS reads the factory directly from the ACS — needs `template_id`, `party`, `instance_address`) or `url` (EDS calls the DA registry backend's `getBurnMintFactory` endpoint at serve time — needs `token_standard_url`). See the [BurnMint guide](/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool#serve-the-factory-from-your-eds). |
 
 Operators using the provided token pool contracts can run the reference implementation without custom code. **Custom pool implementations** must implement the standardized API endpoints or adapt the reference.
+
+### Example config (BurnMint pool, URL-mode factory)
+
+A minimal EDS config for a single BurnMint pool whose factory is resolved via the DA registry backend. Secrets (`client_secret`, JWTs) do **not** go in this file — pass a second, secrets-only TOML via `CONFIG_FILE=config.toml,config_secrets.toml` (later files override earlier ones):
+
+```toml filename="config.toml"
+chain_selector = "9268731218649498074" # local Canton chain selector
+
+[server]
+  host = "0.0.0.0"
+  port = 8088
+
+[node]
+  url = "participant.grpc-ledger-api.example.com:443"
+  max_retries = 10
+
+[node.auth]
+  type = "clientCredentials"
+  user_id = "user-eds"
+  auth_url = "https://auth.example.com" # OIDC issuer; EDS discovers the token endpoint via RFC 8414
+  client_id = "eds-client"
+  # client_secret is set in the layered secrets file (config_secrets.toml), not here
+
+# ccip_api, ccv_api, and executor_api are not needed when serving only your own pool.
+[ccip_api]
+  enabled = false
+
+[ccv_api]
+  enabled = false
+
+[executor_api]
+  enabled = false
+
+[token_pool_api]
+  enabled = true
+
+  # Map key must equal instance_address: the Keccak256 hash of "<pool_instance_id>@<pool_owner_party>"
+  [token_pool_api.token_pools."0x…"]
+    party_id = "<party with ACS visibility of the pool>" # stakeholder used for ACS reads; not necessarily the pool owner
+    instance_address = "0x…"
+    type = "burnMint"
+    pool_owner = "<pool owner party>"
+
+    # Factory resolution via the DA registry backend (registry instruments only).
+    [token_pool_api.token_pools."0x…".factory]
+      type = "url"
+      token_standard_url = "https://api.utilities.digitalasset.com" # mainnet; testnet: https://api.utilities.digitalasset-staging.com
+      # token_standard_auth is omitted — the DA endpoint is public
+```
+
+```toml filename="config_secrets.toml"
+[node.auth]
+  client_secret = "<injected from your secret manager>"
+```
+
+> **NOTE: Auth discovery**
+>
+> `clientCredentials` auth requires `auth_url` and discovers the token endpoint via RFC 8414 (`.well-known/oauth-authorization-server`). If your authorization server only serves the OIDC `openid-configuration` document, ask Chainlink ops — an explicit token-endpoint override is not yet exposed in the config.
 
 ## Operator responsibilities
 
@@ -79165,12 +79223,12 @@ Using the [CCIP CLI](https://github.com/smartcontractkit/ccip-tools-ts/blob/main
 
 The SDK **finds or creates** a compatible `CCIPReceiver` on the default path — see [Canton as Destination](/ccip/canton/tutorials/destination) tutorials.
 
-### 4. Token transfers — accept holdings
+### 4. Token transfers — holdings arrive with execution
 
-If the message included a token transfer:
+If the message included a token transfer, the token release runs **inside the same Execute transaction** as the manual-exec command — you do not submit a separate accept step on the CCIP path:
 
-1. The token pool creates a **`TransferInstruction`** to the receiver party.
-2. The receiver party must **accept** the `TransferInstruction` to take custody — this is separate from the CCIP execute step.
+- **BurnMint pools** (the default testnet TEST ↔ LINK lane): the pool's `BurnMintFactory` mints holdings directly to the receiver party within the execution transaction. Tokens are in the receiver's holdings as soon as it commits — there is no `TransferInstruction` to accept.
+- **LockRelease pools**: the pool transfers from the pool owner's holdings within the same transaction. When the receiver's transfer preapproval is included in the EDS-supplied execute context, the transfer completes immediately. Without a preapproval, the transaction instead leaves a **pending `TransferInstruction`** that the receiver must accept separately via their token's transfer-instruction API or wallet — the manual-exec command does not accept pending instructions.
 
 For programmable token transfers, your receiver logic runs after tokens are available.
 
@@ -79267,10 +79325,10 @@ To execute, the user interacts with the [`CCIPReceiver` contract](https://github
    - On success, the OffRamp/TokenPool consumes tickets and, for token transfers, issues a `TokenReceiveTicket`.
    - `PerPartyRouter` marks the message executed to prevent double execution.
 
-If the message contained a token transfer, the receiver uses the `TokenReceiveTicket` to call the token pool:
+If the message contained a token transfer, the receiver uses the `TokenReceiveTicket` to call the token pool — the release runs inside the same execution transaction:
 
-1. The token pool verifies the ticket was issued by the CCIP owner and creates an outgoing `TransferInstruction` to the token receiver party.
-2. The receiver party accepts the `TransferInstruction` to gain access to the transferred tokens.
+1. **BurnMint pools** mint holdings directly to the token receiver party — no `TransferInstruction` is created.
+2. **LockRelease pools** transfer from the pool owner's holdings via the token's `TransferFactory` — the transfer completes immediately when the receiver's preapproval is included in the EDS-supplied context; otherwise a pending `TransferInstruction` is left for the receiver party to accept separately.
 
 ## Canton → Public chain
 
@@ -79558,8 +79616,7 @@ This guide assumes you already have a token instrument live on Canton — for ex
 
 - **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }`. The admin party must be the same party that will own the token pool.
 - **Burn/mint authority** — `instrumentId.admin == poolOwner` (enforced by the BurnMint template and by the starter kit).
-- **BurnMint token pool DAR** uploaded **and vetted** on your participant — [`ccip-burn-mint-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-burn-mint-token-pool-v2-2.1.0.dar) from the [`contracts/dars/released`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/released) folder (bundles its CCIP dependencies — the only DAR you upload). Vet every released version you depend on — see [Upgradability](/ccip/canton/concepts/upgradability).
-- To **execute** incoming transfers, the CommitteeVerifier DAR — [`ccip-committee-verifier-v2-2.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-committee-verifier-v2-2.0.0.dar) — uploaded and vetted on your participant as well.
+- **DARs uploaded and vetted on your participant** — the pool DAR and the CommitteeVerifier DAR for execute. See [Prerequisites (all CCT guides)](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides).
 - **CCIP contract references** from Chainlink ops: CCIP owner party, Token Admin Registry, RMNRemote, FeeQuoter.
 - **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/canton/tutorials/source/prerequisites) and the [CCT overview](/ccip/canton/tutorials/cross-chain-tokens#starter-kit-cct-scripts).
 
@@ -79740,7 +79797,7 @@ Admin role can be transferred with `TransferAdminRole` → `AcceptAdminRole`.
 BurnMint pools do not burn or mint instrument supply themselves — they call a **`BurnMintFactory`** (`Splice.Api.Token.BurnMintV1.BurnMintFactory`) recorded on the instrument's `TokenConfig`. The factory contract implements the actual burn (send) and mint (execute) operations against your token.
 
 - **Registry instruments** (created via Digital Asset's [Registry utility](https://docs.digitalasset.com/registry/overview)) already have a factory — the registry resolves it automatically. No action needed.
-- **Custom tokens** must deploy their own `BurnMintFactory` contract and pin it on the TAR via the `SetBurnMintFactory` choice. The reference implementation is [`LinkRegistry`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/link/daml/Link/Token.daml) (`#link:Link.Token:LinkRegistry`) — the factory backing LINK on Canton, which implements both `TransferFactory` and `BurnMintFactory`.
+- **Custom tokens** (any instrument not created via the Registry utility) must deploy their own `BurnMintFactory` contract and pin it on the TAR via the `SetBurnMintFactory` choice. The reference implementation is [`LinkRegistry`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/link/daml/Link/Token.daml) (`#link:Link.Token:LinkRegistry`) — a custom-token factory that implements both `TransferFactory` and `BurnMintFactory` for the LINK instrument on Canton.
 
 `SetBurnMintFactory` is exercised by the token admin on the TAR (same disclosure flow as the other TAR choices):
 
@@ -79760,10 +79817,10 @@ BurnMint pools do not burn or mint instrument supply themselves — they call a 
 
 Senders and executors cannot see your factory contract — your pool operator's EDS must supply it in the token pool API response. The reference EDS supports two factory modes per pool (`[token_pool_api.token_pools.<address>.factory]`):
 
-| Mode      | Config                                                                                                                                                                  | When to use                                                                                               |
-| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| `address` | `type = "address"`, `template_id` (`#package-name:Module:Entity`), `party`, `instance_address` (`0x…` hashed form)                                                      | Your factory is visible to the EDS's participant — EDS reads it directly from the Active Contract Set.    |
-| `url`     | `type = "url"`, `token_standard_url` — on testnet, the DA token-standard backend: `https://api.utilities.digitalasset-staging.com` (**not** a validator scan-proxy URL) | The DA registry resolves the factory for you over HTTP — EDS needs no ledger visibility into the factory. |
+| Mode      | Config                                                                                                                                                                  | When to use                                                                                                                                              |
+| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `address` | `type = "address"`, `template_id` (`#package-name:Module:Entity`), `party`, `instance_address` (`0x…` hashed form)                                                      | Your factory is visible to the EDS's participant — EDS reads it directly from the Active Contract Set.                                                   |
+| `url`     | `type = "url"`, `token_standard_url` — on testnet, the DA token-standard backend: `https://api.utilities.digitalasset-staging.com` (**not** a validator scan-proxy URL) | EDS calls the DA registry backend's `getBurnMintFactory` endpoint at serve time — no ledger visibility into the factory needed on the EDS's participant. |
 
 > **CAUTION: URL mode resolves registry instruments only**
 >
@@ -79945,8 +80002,8 @@ Cross-chain send and receive are validated by Chainlink operations once your tok
 ## Prerequisites (all CCT guides)
 
 - [Starter kit setup](/ccip/canton/tutorials/source/prerequisites) for `cct:*` scripts (`.env`, `canton-config.json`, ledger auth)
-- The token pool DAR for your pool type, uploaded **and vetted** on your participant — [`ccip-burn-mint-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-burn-mint-token-pool-v2-2.1.0.dar) or [`ccip-lock-release-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-lock-release-token-pool-v2-2.1.0.dar) from the [`contracts/dars/released`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/released) folder (each bundles its CCIP dependencies — the only DAR you upload). Vet **every released version** of the packages you depend on — see [Upgradability](/ccip/canton/concepts/upgradability).
-- To **execute** incoming transfers, the CommitteeVerifier DAR — [`ccip-committee-verifier-v2-2.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-committee-verifier-v2-2.0.0.dar) — uploaded and vetted on your participant as well.
+- The token pool DAR for your pool type (`ccip-burn-mint-token-pool-v2` or `ccip-lock-release-token-pool-v2`) — the latest release from the [`contracts/dars/released`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/released) folder, uploaded **and vetted** on your participant (each bundles its CCIP dependencies — the only DAR you upload). Vet every released version you depend on — see [Upgradability](/ccip/canton/concepts/upgradability).
+- To **execute** incoming transfers, the CommitteeVerifier DAR (`ccip-committee-verifier-v2` — a separate release, not bundled in the pool DAR) uploaded and vetted on your participant as well.
 - CCIP contract references from Chainlink ops (owner party, TAR, RMNRemote, FeeQuoter) — EDS and indexer URLs are pre-filled in the starter kit
 - A validator user with `can_act_as` rights for your ledger parties
 - Understanding of [token pools](/ccip/canton/concepts/token-pools) and [explicit disclosure](/ccip/canton/concepts/explicit-disclosure)
@@ -79977,8 +80034,7 @@ This guide assumes you have a token instrument live on Canton with supply minted
 
 - **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }` supporting `TransferFactory` and preapprovals.
 - Token liquidity held by the pool owner party for expected release volume.
-- **LockRelease token pool DAR** uploaded **and vetted** on your participant — [`ccip-lock-release-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-lock-release-token-pool-v2-2.1.0.dar) from the [`contracts/dars/released`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/released) folder (bundles its CCIP dependencies — the only DAR you upload). Vet every released version you depend on — see [Upgradability](/ccip/canton/concepts/upgradability).
-- To **execute** incoming transfers, the CommitteeVerifier DAR — [`ccip-committee-verifier-v2-2.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-committee-verifier-v2-2.0.0.dar) — uploaded and vetted on your participant as well.
+- **DARs uploaded and vetted on your participant** — the pool DAR and the CommitteeVerifier DAR for execute. See [Prerequisites (all CCT guides)](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides).
 - CCIP contract references from Chainlink ops.
 - **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/canton/tutorials/source/prerequisites) and the [CCT overview](/ccip/canton/tutorials/cross-chain-tokens#starter-kit-cct-scripts).
 
@@ -80459,7 +80515,7 @@ Tutorials use the [`ccip-starter-kit-canton`](https://github.com/smartcontractki
 2. Poll message status via the CCIP API or [CCIP Explorer](/ccip/tools-resources/ccip-explorer)
 3. Run `any2canton:manual-exec` — the SDK **finds or creates** a compatible `CCIPReceiver` for message finality
 4. Fetch proofs from the indexer and disclosures from Global CCIP EDS (+ token pool operator EDS for token messages)
-5. For token messages: accept the `TransferInstruction` to receive LINK on-ledger
+5. For token messages: holdings arrive with execution — the default testnet TEST ↔ LINK pool is a BurnMint pool, so LINK is minted to your party in the same transaction (a LockRelease pool without a preapproval instead leaves a pending `TransferInstruction` to accept separately)
 
 > **TIP**
 >
@@ -80679,11 +80735,11 @@ In this tutorial, you will:
 
 ## Understanding Programmable Token Transfers (any2canton)
 
-| Aspect               | Token-only                               | Programmable token transfer            |
-| :------------------- | :--------------------------------------- | :------------------------------------- |
-| **Send script**      | `any2canton:token`                       | `any2canton:data-and-token`            |
-| **Data**             | Empty                                    | `--dataString` payload                 |
-| **Canton execution** | LINK mint + accept `TransferInstruction` | LINK mint + data delivered to receiver |
+| Aspect               | Token-only                                        | Programmable token transfer            |
+| :------------------- | :------------------------------------------------ | :------------------------------------- |
+| **Send script**      | `any2canton:token`                                | `any2canton:data-and-token`            |
+| **Data**             | Empty                                             | `--dataString` payload                 |
+| **Canton execution** | LINK minted to your party in the same transaction | LINK mint + data delivered to receiver |
 
 The execution path fetches proofs, Global CCIP EDS disclosures, and token pool operator EDS inputs — see the [Canton as Destination flow](/ccip/canton/concepts/overview#public-chain--canton).
 
@@ -80779,7 +80835,7 @@ The prod testnet lane maps Sepolia **TEST** to Canton **LINK**. Token delivery o
 
 1. Send the token transfer from Sepolia (`any2canton:token`).
 2. Wait for source finality and Committee Verifier proofs on the indexer.
-3. Execute on Canton (`any2canton:manual-exec`) — the SDK processes `TokenReceiveTicket` and issues a `TransferInstruction` for your party to accept.
+3. Execute on Canton (`any2canton:manual-exec`) — the SDK processes the `TokenReceiveTicket` and the pool mints LINK directly to your party within the same transaction (the TEST ↔ LINK pool is a BurnMint pool — no separate accept step).
 
 ## What You Will Build
 
