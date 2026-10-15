@@ -2,6 +2,7 @@
 // Rendered by SolutionLayout at the end of the main column on EVERY solution page.
 // Never import this from an MDX file: legal compliance must not depend on an author
 // remembering to paste it.
+import { SOLUTION_DISCLAIMER } from "~/config/solutions/disclaimer.ts"
 import alertIcon from "~/components/Alert/Assets/alert-icon.svg"
 ---
 
@@ -11,13 +12,9 @@ import alertIcon from "~/components/Alert/Assets/alert-icon.svg"
     <h2 class="solution-disclaimer__title">Disclaimer</h2>
   </div>
   <p class="solution-disclaimer__text">
-    This solution represents an educational example to use a Chainlink system, product, or service and is provided to
-    demonstrate how to interact with Chainlink's systems, products, and services to integrate them into your own. This
-    solution is provided "AS IS" and "AS AVAILABLE" without warranties of any kind, it has not been audited, and it may
-    be missing key checks or error handling to make the usage of the system, product or service more clear. Do not use
-    the code in this example in a production environment without completing your own audits and application of best
-    practices. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node operators are responsible for
-    unintended outputs that are generated due to errors in code.
+    {SOLUTION_DISCLAIMER.beforeTerms}{" "}<a href={SOLUTION_DISCLAIMER.termsUrl}>{SOLUTION_DISCLAIMER.termsLabel}</a>{
+      SOLUTION_DISCLAIMER.afterTerms
+    }
   </p>
 </aside>
 
@@ -52,9 +49,26 @@ import alertIcon from "~/components/Alert/Assets/alert-icon.svg"
   }
 
   .solution-disclaimer__text {
+    max-width: none;
     margin: 0;
     font-size: 12px;
     line-height: 1.7;
     color: #5a5a5a;
+    text-align: justify;
+  }
+
+  .solution-disclaimer__text a {
+    color: var(--color-text-link, #0847f7);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .solution-disclaimer__text a:hover {
+    color: var(--color-text-link-hover, #0639c7);
+  }
+
+  .solution-disclaimer__text a:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
   }
 </style>

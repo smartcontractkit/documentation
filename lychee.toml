@@ -66,3 +66,18 @@ exclude_path = [
     'ccip/api-reference/evm/v162/.*',
     'ccip/api-reference/evm/v163/.*',
 ]
+
+# Rewrite the two CCIP v2 redirects declared in vercel.json so the checker sees
+# the same pages a browser would after the 301:
+#   /ccip/v2/:path* -> /ccip/:path*
+#   /ccip/v2        -> /ccip
+# Both rules are anchored on purpose. A bare "/ccip/v2 /ccip" prefix remap would
+# also rewrite unrelated paths such as /ccip/v20 into /ccip0. Lychee 0.24.2 uses
+# the Rust regex crate: no look-around, and the replacement must be a URL. A bare
+# "?" is a regex quantifier, so a literal question mark must be written as \?.
+remap = [
+    "/ccip/v2/ /ccip/",
+    "/ccip/v2$ /ccip",
+    "/ccip/v2# /ccip#",
+    "/ccip/v2\\? /ccip?",
+]

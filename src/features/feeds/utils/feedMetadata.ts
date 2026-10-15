@@ -20,12 +20,18 @@ export function normalizeSearchText(value?: string | null): string {
   return (value ?? "").toLowerCase().replaceAll(" ", "")
 }
 
+/** Product-tier tokens in docs.schema that map to a report schema version. */
+const SCHEMA_ALIASES: Record<string, string> = {
+  Premium: "v3",
+}
+
 /**
  * Resolve RWA stream schema version from docs.schema or clicProductName suffix.
  * Shared by feed visibility, stream filters, and table rendering.
  */
 export function getSchemaVersion(feed: FeedMetadata): string | undefined {
-  if (feed.docs?.schema) return feed.docs.schema
+  const schema = feed.docs?.schema
+  if (schema) return SCHEMA_ALIASES[schema] ?? schema
 
   const clicProductName = feed.docs?.clicProductName
   if (!clicProductName) return undefined
@@ -73,7 +79,14 @@ export function enrichFeedWithCategory(
       ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier).final
       : null
 
-  const finalCategory = resolveFeedCategory(batchFinal, metadata.docs?.shutdownDate, metadata.feedCategory)
+  // Feed-ID-addressed networks (Aptos/Stellar) are not in Supabase yet, so fall
+  // back to the RDD feedCategory for any category, not just "new"/"custom".
+  const finalCategory = resolveFeedCategory(
+    batchFinal,
+    metadata.docs?.shutdownDate,
+    metadata.feedCategory,
+    isFeedIdAddressedNetwork(network.name)
+  )
 
   return { ...metadata, finalCategory }
 }

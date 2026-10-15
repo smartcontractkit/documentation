@@ -5,14 +5,28 @@ date: Last Modified
 metadata:
   description: "Chainlink ACE release notes: Beta scope, known constraints, changelog, and what is supported in each release."
   datePublished: "2026-03-31"
-  lastModified: "2026-09-23"
+  lastModified: "2026-10-07"
 ---
 
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
 
-## September 14, 2026 — Custom contracts
+## October 7, 2026: Active Monitoring
+
+ACE adds a continuous mode of compliance: **Active Monitoring**. It screens the addresses you choose with TRM on a schedule, applies a rule you define when an address's risk changes, and acts onchain on tokens you already run, without changing their contracts. Policy Manager and Identity Manager stay preventive: they block a transaction while it executes. See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous).
+
+### What's new
+
+- **Monitored tokens**: Register a token and its associated contracts from their ABI, with the enforcement functions Active Monitoring may call. One configuration covers every network of the token. See [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens).
+- **Monitoring rules**: Map each TRM risk level to a response: Silently log, Flag for review, or Enforce one or more onchain actions, with an optional token balance condition. See [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules).
+- **Watchlist and screening**: Add addresses from a CSV file or an identity registry, store your TRM API key, and choose the screening interval. See [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist) and [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
+- **Decisions log**: Review every decision with the TRM result, the matched rule, and the operation status, and resolve or enforce flagged decisions. See [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions).
+- **Coordinator API**: The new Active Monitoring endpoints cover these operations, except resolving and enforcing flagged decisions, which are available in the Platform UI only. See [Active Monitoring API](/ace/active-monitoring/reference/api).
+
+For the current limits, see [Beta Scope](/ace/beta-scope#active-monitoring-is-limited-during-beta).
+
+## September 14, 2026: Custom contracts
 
 This release makes any ACE-compatible contract a first-class citizen in the platform, not just ERC-20 and ERC-3643 tokens.
 
@@ -23,7 +37,7 @@ This release makes any ACE-compatible contract a first-class citizen in the plat
 - **Contract types on engines and targets**: `POST/PUT /policy-engines` and `POST/PUT /targets` accept `contract_type_ids`, and engine, target, and extractor responses now include their associated contract types (`contract_types`, `assigned_contract_types`).
 - **ERC-3643 extractor coverage fix**: `ERC3643MintBurnExtractor` now covers `burn(address,uint256)` only; `mint(address,uint256)` is covered by `ComplianceTokenMintBurnExtractor`. If you protect `mint` on an ERC-3643 token, attach `ComplianceTokenMintBurnExtractor`.
 
-## July 17, 2026 — ACE Beta+
+## July 17, 2026: ACE Beta+
 
 ACE Beta+ builds on ACE Beta with new compliance capabilities. This release is still a Beta — see [Beta Scope](/ace/beta-scope) for the current scope and limitations.
 
@@ -36,7 +50,7 @@ ACE Beta+ builds on ACE Beta with new compliance capabilities. This release is s
 - **Self-signing model** — Organizations can now choose between **delegated signing** (Chainlink signs on your behalf) and **self-signing** (you sign operations yourself) at onboarding. With self-signing, ACE creates unsigned draft operations that you poll, sign (EIP-712), and submit using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). Both models use the same CRE Connect Wallet and all platform capabilities work identically. See [Signing & Ownership Model](/ace/concepts/signing-ownership).
 - **Managed offchain risk policies (MVP)** — Screen transaction participants with [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) before allowing a protected onchain action. Configure global and category-specific risk thresholds, request evaluations through the new Evaluation API, and receive single-use permits delivered onchain by a managed CRE workflow. Grant evaluation access to other organizations so they can request permits against your target contracts. This feature is an MVP; contact your Chainlink representative for help with setup. See [Offchain Policies](/ace/guides/policy-manager/offchain-policies), [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies), [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits), and [Granting Evaluation Access](/ace/guides/policy-manager/offchain-policies/grant-evaluation-access).
 
-## May 26, 2026 — Mainnet support
+## May 26, 2026: Mainnet support
 
 ### What's new
 
@@ -46,7 +60,7 @@ ACE Beta+ builds on ACE Beta with new compliance capabilities. This release is s
 
 - Policy Engine creation is now available in the Platform UI under **Compliance > Policy Manager** (previously API-only). See [Managing Policy Engines](/ace/guides/policy-manager/manage-engines#create-a-policy-engine).
 
-## April 15, 2026 — ACE Beta (Private Release)
+## April 15, 2026: ACE Beta (Private Release)
 
 Chainlink ACE Beta is now available to a first set of selected participants as a **private release**. This initial release provides early access to the ACE platform.
 

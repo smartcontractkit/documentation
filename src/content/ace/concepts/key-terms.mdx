@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Glossary of Chainlink ACE terminology: CCID, credentials, registries, policies, PolicyEngine, extractors, policy chains, default results, delegated signing, Proof of Reserve, CRE Connect, and all other key concepts."
   datePublished: "2026-03-31"
-  lastModified: "2026-07-17"
+  lastModified: "2026-10-07"
 ---
 
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
@@ -14,6 +14,10 @@ import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 This glossary defines the key terms used throughout the ACE documentation. Use it as a quick reference when reading other pages.
 
+### Access grant
+
+A cross-organization link that gives another organization read access to one of your resources. For registries, an access grant lets a **grantee** organization read a **grantor**'s registry and use it as a credential source. Grants are `active` or `revoked`, and only the resource owner can create or revoke them. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
+
 ### ACE Platform
 
 The complete user-facing layer of ACE, consisting of the Platform UI ([app.chain.link](https://app.chain.link)), the Coordinator API (create, configure, and deploy ACE resources), the Evaluation API (request managed offchain permits), and the Reporting API (query onchain state and transaction history). Everything you can do in the UI is also available through the Coordinator API.
@@ -21,10 +25,6 @@ The complete user-facing layer of ACE, consisting of the Platform UI ([app.chain
 ### AML (Anti-Money Laundering)
 
 A set of laws, regulations, and procedures designed to prevent criminals from disguising illegally obtained funds as legitimate income.
-
-### Access grant
-
-A cross-organization link that gives another organization read access to one of your resources. For registries, an access grant lets a **grantee** organization read a **grantor**'s registry and use it as a credential source. Grants are `active` or `revoked`, and only the resource owner can create or revoke them. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
 
 ### CCID (Cross-Chain Identifier)
 
@@ -46,6 +46,10 @@ The management API for creating, configuring, and deploying ACE resources (polic
 
 Chainlink infrastructure that routes [ACE Platform](#ace-platform) actions to the blockchain. When you trigger an action (deploy a policy, register an identity), CRE Connect prepares and executes the blockchain transaction through your [CRE Connect Wallet](#cre-connect-wallet).
 
+### CRE Connect Wallet
+
+A dedicated onchain smart contract wallet deployed for your organization on each network where you use ACE. Your wallet owns the CRE Connect Wallet, and the CRE Connect Wallet owns all your ACE contracts (policy engines, registries, policies). Chainlink is registered as an authorized operator, allowed to execute operations on your behalf but unable to change ownership or authorization settings. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
+
 ### Credential
 
 A verifiable attribute linked to a [CCID](#ccid-cross-chain-identifier), such as KYC verification, AML clearance, or accredited investor status. Credentials are stored in a [Credential Registry](#credential-registry) and can be validated onchain without revealing sensitive information. Only hashes or minimal references are stored on the blockchain — the actual PII stays offchain.
@@ -53,10 +57,6 @@ A verifiable attribute linked to a [CCID](#ccid-cross-chain-identifier), such as
 ### Credential Data Validator
 
 An optional onchain contract (also called a **Data Validator**) configured on a [Credential Source](#credential-source) that inspects the contents of a credential's `credentialData` field. This enables decisions based on what's inside a credential (for example, a jurisdiction code), not just whether the credential exists. ACE provides a pre-built AllowDenyList Data Validator for jurisdiction control; when no validator is configured, a source is attestation-only. Learn more in [Managing Data Validators](/ace/guides/policy-manager/manage-data-validators) and [Cross-Chain Identity — Credential data and privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
-
-### Data Schema
-
-A reusable definition of the shape and format of a credential's data, linked to a [Credential Type](#credential-type-identifier) so that credentials issued against it carry validated structured data (for example, [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes). Data schemas make a credential type _typed_ rather than attestation-only. Learn more in [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas).
 
 ### Credential Issuer
 
@@ -78,6 +78,10 @@ A `bytes32` value that denotes the type of credential (for example, KYC, AML, or
 
 A policy implemented by your own contract (rather than the [pre-built library](/ace/reference/policy-library)) and registered with the ACE Platform. Custom policy implementations are scoped to your organization and, once registered, are used exactly like library policies. Learn more in [Custom Policies](/ace/guides/policy-manager/custom-policies).
 
+### Data Schema
+
+A reusable definition of the shape and format of a credential's data, linked to a [Credential Type](#credential-type-identifier) so that credentials issued against it carry validated structured data (for example, [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country codes). Data schemas make a credential type _typed_ rather than attestation-only. Learn more in [Managing Credential Types](/ace/guides/identity-manager/manage-credential-types#typed-credentials-with-data-schemas).
+
 ### Default result
 
 The [PolicyEngine](#policy-engine)'s fallback decision when every policy in a [policy chain](#policy-chain) returns Continue and none makes a final Allow or Reject decision. The default result can be set to either allow or reject, and it is configured per target contract via the `desired_default_allow` field. Learn more in [Policy Ordering & Composition](/ace/concepts/policy-ordering#the-default-result).
@@ -85,10 +89,6 @@ The [PolicyEngine](#policy-engine)'s fallback decision when every policy in a [p
 ### Delegated signing
 
 One of two signing models available in ACE. Chainlink signs and executes blockchain transactions on your behalf via the [CRE Connect Wallet](#cre-connect-wallet). You retain full ownership of all contracts. The signing model is chosen during onboarding. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
-
-### Self-signing
-
-One of two signing models available in ACE. ACE prepares unsigned draft operations; you poll, sign (EIP-712), and submit them using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). You retain full ownership of all contracts. The signing model is chosen during onboarding. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
 
 ### DON (Decentralized Oracle Network)
 
@@ -106,13 +106,13 @@ An Ethereum standard that enables contracts to declare the interfaces they imple
 
 A regulated token standard (also known as T-REX) designed for securities and permissioned tokens. ACE provides a reference implementation (`ComplianceTokenERC3643`) that replaces the canonical T-REX identity (ONCHAINID) and compliance (ModularCompliance) systems with ACE equivalents. Learn more in [Building an ERC-3643 Compliance Token](/ace/guides/policy-manager/contracts/erc3643-token).
 
-### External registry
-
-A registry owned by another organization that has been shared with yours through an [access grant](#access-grant). From the grantee's perspective it appears with `access_type: "granted"` and is read-only — you can reference its identities and credentials as a credential source but cannot write to it. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
-
 ### Evaluation API
 
 The MVP runtime API for requesting and monitoring managed offchain policy evaluations. An application submits a transaction intent, receives a deterministic permit ID, and polls until the permit is ready onchain or the evaluation is rejected or fails. Contact your Chainlink representative for help with setup, and see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits) and the [interactive API reference](/api/ace/evaluation/docs).
+
+### External registry
+
+A registry owned by another organization that has been shared with yours through an [access grant](#access-grant). From the grantee's perspective it appears with `access_type: "granted"` and is read-only — you can reference its identities and credentials as a credential source but cannot write to it. Learn more in [External Registries](/ace/guides/identity-manager/external-registries).
 
 ### Extractor
 
@@ -134,13 +134,13 @@ An onchain contract (typically the `CredentialRegistryIdentityValidatorPolicy`) 
 
 A compliance process requiring financial institutions to verify the identity of their clients. In ACE, KYC is represented as a credential type (`common.kyc`) attached to a user's [CCID](#ccid-cross-chain-identifier) after offchain verification by a [Credential Issuer](#credential-issuer).
 
-### Mapper
-
-An optional helper contract used to transform or combine parameters extracted from transaction data before passing them to a policy. Mappers are needed only for advanced scenarios — for example, calculating a USD value from a token amount and price before passing it to a volume policy. In most cases, the PolicyEngine's built-in name-based parameter mapping is sufficient.
-
 ### Managed offchain policy
 
 An MVP offchain compliance rule delivered as a managed service. You configure the rule and attach it to a target function; Chainlink manages the CRE workflow, external provider call, [CADV](/ace/reference/policy-library/certified-action-don-validator-policy) deployment, and onchain permit delivery. ACE Beta provides the `wallet_risk_scoring` policy for TRM Wallet Screening. Contact your Chainlink representative for help with setup, and see [Managing Offchain Policies (MVP)](/ace/guides/policy-manager/offchain-policies/manage-offchain-policies).
+
+### Mapper
+
+An optional helper contract used to transform or combine parameters extracted from transaction data before passing them to a policy. Mappers are needed only for advanced scenarios — for example, calculating a USD value from a token amount and price before passing it to a volume policy. In most cases, the PolicyEngine's built-in name-based parameter mapping is sufficient.
 
 ### Permit
 
@@ -158,14 +158,6 @@ The web interface at [app.chain.link](https://app.chain.link) for managing ACE r
 
 A self-contained onchain contract that holds a single compliance rule. Each policy implements a `run()` function that receives parameters and returns a verdict: `Allowed` (final approval), `Continue` (defer to the next policy), or reverts with `PolicyRejected` (final rejection). Policies can optionally implement a `postRun()` function for state changes after a check passes (for example, incrementing a volume counter). See the [Policy Library](/ace/reference/policy-library) for all pre-built policies.
 
-### Policy implementation
-
-The reusable template (contract code + configuration schema) that a [policy](#policy) instance is created from. Implementations are either pre-built [library](/ace/reference/policy-library) types (global) or [custom](#custom-policy) types registered by an organization (org-scoped). See [Managing Policies](/ace/guides/policy-manager/manage-policies#policy-implementations-vs-policy-instances).
-
-### PolicyFactory
-
-An onchain factory contract that deploys [policy](#policy) instances by cloning a policy implementation. When you create a policy instance, the PolicyFactory clones the implementation, initializes it, and verifies the implementation supports the `IPolicy` interface via ERC-165.
-
 ### Policy chain
 
 The ordered sequence of policies attached to a specific function selector on a target contract. The [PolicyEngine](#policy-engine) executes policies in chain order; each policy's result (Reject, Allow, or Continue) determines whether subsequent policies run. Learn more in [Policy Ordering & Composition](/ace/concepts/policy-ordering).
@@ -174,6 +166,10 @@ The ordered sequence of policies attached to a specific function selector on a t
 
 The central onchain orchestrator. The PolicyEngine holds the registry of all policies attached to a protected contract's function selectors. When a protected function is called, the PolicyEngine calls the relevant [Extractor](#extractor) to parse the transaction data, then executes each attached policy in order. A single PolicyEngine can manage policies for multiple contracts and functions.
 
+### Policy implementation
+
+The reusable template (contract code + configuration schema) that a [policy](#policy) instance is created from. Implementations are either pre-built [library](/ace/reference/policy-library) types (global) or [custom](#custom-policy) types registered by an organization (org-scoped). See [Managing Policies](/ace/guides/policy-manager/manage-policies#policy-implementations-vs-policy-instances).
+
 ### Policy Management
 
 The onchain framework for defining, executing, and managing dynamic compliance rules. It consists of [PolicyProtected](#policyprotected) contracts (the hook), the [PolicyEngine](#policy-engine) (the orchestrator), [Policies](#policy) (the rules), and [Extractors](#extractor) (the data parsers). Learn more in [Policy Management Concepts](/ace/concepts/policy-management).
@@ -181,6 +177,10 @@ The onchain framework for defining, executing, and managing dynamic compliance r
 ### Policy Manager
 
 The ACE Beta product for managing policy engines, policy instances, extractors, and protected contracts via the platform UI or API. Policy Manager operates on the [Policy Management](/ace/concepts/policy-management) onchain contracts.
+
+### PolicyFactory
+
+An onchain factory contract that deploys [policy](#policy) instances by cloning a policy implementation. When you create a policy instance, the PolicyFactory clones the implementation, initializes it, and verifies the implementation supports the `IPolicy` interface via ERC-165.
 
 ### PolicyProtected
 
@@ -202,10 +202,78 @@ The API for querying onchain state, transaction history, and policy run results.
 
 The ACE Beta product for querying onchain state, transaction history, and policy run results. Currently available via API only. Reporting Manager exposes data from the Reporting API, which indexes onchain events and state.
 
-### CRE Connect Wallet
+### Self-signing
 
-A dedicated onchain smart contract wallet deployed for your organization on each network where you use ACE. Your wallet owns the CRE Connect Wallet, and the CRE Connect Wallet owns all your ACE contracts (policy engines, registries, policies). Chainlink is registered as an authorized operator, allowed to execute operations on your behalf but unable to change ownership or authorization settings. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
+One of two signing models available in ACE. ACE prepares unsigned draft operations; you poll, sign (EIP-712), and submit them using the [CRE Connect SDK](https://github.com/smartcontractkit/crec-sdk). You retain full ownership of all contracts. The signing model is chosen during onboarding. Learn more in [Signing & Ownership Model](/ace/concepts/signing-ownership).
 
 ### Trusted Verifier
 
 See [Credential Issuer](#credential-issuer). A trusted verifier is an offchain entity authorized to conduct external checks (KYC, AML, document verification) and register the resulting credentials onchain.
+
+## Active Monitoring terms
+
+The following terms are specific to [Active Monitoring](/ace/active-monitoring/overview). Some reuse words from Policy Management, such as decision and operation, with a different meaning.
+
+### Active Monitoring
+
+The ACE capability that screens the addresses on a [watchlist](#watchlist) with TRM on a schedule, applies a [monitoring rule](#monitoring-rule) to each change of risk level, and acts on tokens that are already deployed, without changing their contracts. It is the continuous counterpart of the preventive Policy Manager and Identity Manager. Learn more in [What is Active Monitoring?](/ace/active-monitoring/overview) and [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous).
+
+### Associated contract
+
+A contract registered with a [monitored token](#monitored-token), other than the token itself, on which an enforced action can run. A separate blocklist contract is a common example. Learn more in [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens).
+
+### Balance condition
+
+The option **Only execute if the address holds a balance on this token** on an [enforced action](#enforced-action). Active Monitoring reads the balance of the screened address with `balanceOf(address)` and runs the action only if the balance is greater than zero. Learn more in [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#the-balance-condition).
+
+### Decision
+
+The record that Active Monitoring keeps each time a [monitoring rule](#monitoring-rule) matches a [risk event](#risk-event) for an address on one network. The **Decisions log** lists decisions. A decision holds the TRM result, the rule that matched, the outcome, and the operation. It is unrelated to a policy run in Policy Management. Learn more in [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit).
+
+### Enforced action
+
+One call to an [enforcement function](#enforcement-function), defined in the Enforce [response](#response) of a monitoring rule. It names the contract, the function, and a [parameter mapping](#parameter-mapping-active-monitoring) for each argument. Learn more in [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#enforced-actions).
+
+### Enforcement function
+
+A write function on your token, or on an [associated contract](#associated-contract), that Active Monitoring calls when a rule enforces an action, such as a freeze or a blocklist function. You select it when you register the contract. It must have named inputs, no array or tuple inputs, and at least one input. Learn more in [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens#contract-abi-and-functions).
+
+### Monitored token
+
+A token contract registered with Active Monitoring, optionally with associated contracts. A monitored token has one monitoring rule. It is not a target: a target is a contract protected by a PolicyEngine. Learn more in [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens).
+
+### Monitoring rule
+
+The rule of a monitored token that maps each TRM risk level to a [response](#response). A monitoring rule cannot be edited: you delete it and create a new one. It is not a policy. Learn more in [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules).
+
+### Operation
+
+An onchain call that CRE Connect executes through your CRE Connect Wallet. Active Monitoring creates one operation for each enforced action. Its status moves from **Submitted** to **Success** or **Failed**, with **Pending signature** under self-signing. See [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values#operation-statuses).
+
+### Parameter mapping (Active Monitoring)
+
+In Active Monitoring, the choice of a value for each argument of an enforcement function: **Screened address**, **Balance**, or a constant. It is unrelated to the extractor and mapper pattern of Policy Management. See [Mapper](#mapper) and [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#parameter-mapping).
+
+### Response
+
+What a monitoring rule does for a risk level: **Silently log** records the decision, **Flag** waits for a person to review it, and **Enforce** creates an operation for each enforced action. Learn more in [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules#risk-levels-and-responses).
+
+### Risk event
+
+A change in the TRM [risk level](#risk-level-trm-risk-score) of a watchlist address, or its first screening. A risk event is what a monitoring rule reacts to: each rule that matches creates a [decision](#decision). An address that stays at the same level raises no new event. Learn more in [Watchlist and Screening](/ace/active-monitoring/concepts/screening#when-a-result-becomes-a-risk-event).
+
+### Risk level (TRM risk score)
+
+The highest risk level that TRM reports for an address: **Severe** (score 15), **High** (10), **Medium** (5), **Low** (1), or **Unknown** (0). A monitoring rule maps each level to a response. See [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values#trm-risk-levels).
+
+### Screening interval
+
+The number of hours between two Active Monitoring screening runs. The Platform UI offers 6, 12, and 24 hours. Learn more in [Watchlist and Screening](/ace/active-monitoring/concepts/screening#schedule).
+
+### TRM API key
+
+Your TRM Labs API key, which Active Monitoring uses to screen the watchlist. You store it in **General settings > API access**. It is different from your ACE organization API key, and from the credential used by managed offchain policies. See [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
+
+### Watchlist
+
+The list of wallet addresses that Active Monitoring screens with TRM. Learn more in [Watchlist and Screening](/ace/active-monitoring/concepts/screening).

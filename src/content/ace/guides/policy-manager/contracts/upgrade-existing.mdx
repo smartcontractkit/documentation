@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Add Chainlink ACE compliance to an already-deployed smart contract: storage safety with ERC-7201, two integration approaches, step-by-step instructions, alternatives for non-upgradeable contracts, and FAQ."
   datePublished: "2026-03-31"
-  lastModified: "2026-05-26"
+  lastModified: "2026-10-07"
 ---
 
 import { Aside } from "@components"
@@ -449,7 +449,7 @@ MyToken(proxyAddress).migrateToACE(policyEngineAddress);
 
 ## Alternatives for non-upgradeable contracts
 
-If your contract is not deployed behind a proxy, a standard upgrade is not possible. Depending on your situation, there are three alternative approaches to bring ACE compliance to your application.
+If your contract is not deployed behind a proxy, a standard upgrade is not possible. Depending on your situation, there are four alternative approaches to bring ACE compliance to your application. The first three place ACE policies in front of your contract. The fourth, Active Monitoring, reacts after the fact and needs no policy integration.
 
 ### Wrapped contract
 
@@ -493,6 +493,22 @@ Instead of modifying your contract, apply ACE policies at the integration points
 - **Does not protect direct contract interactions** — any user who calls your contract directly (bypassing the protected integration point) is not subject to policy checks.
 - Only covers the specific integration points where ACE is applied. Comprehensive coverage requires wrapping all relevant entry points.
 - The original contract's functionality is unchanged, which may be a regulatory concern if direct access remains open.
+
+### Active Monitoring
+
+Screen the addresses you choose with TRM and react when their risk changes, using functions your contract already has, such as a freeze or a blocklist entry.
+
+**How it works:** You register the token and select its existing admin functions. ACE screens a watchlist on a schedule. When an address's risk level changes, a rule you define records it, flags it for review, or calls the function through your CRE Connect Wallet. The contract is not modified, and you grant the wallet an onchain role.
+
+**When to use:** You cannot change the contract, it has admin functions that restrict an address, and you want to react to holders whose risk changes after they receive tokens.
+
+**Tradeoffs:**
+
+- It is reactive, not preventive. It does not block a transaction: between a risk change and the next screening run, the address can still transact.
+- It needs an existing admin function and an onchain role for your CRE Connect Wallet.
+- It acts on the watchlist of addresses you maintain, and it does not apply ACE policies such as volume limits or credential checks to each transfer.
+
+See [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous) and the [Active Monitoring Quick Start](/ace/active-monitoring/quick-start).
 
 <Aside type="note" title="Need guidance?">
   Each of these approaches involves architectural decisions specific to your contract, user base, and regulatory

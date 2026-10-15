@@ -926,8 +926,7 @@ For more information about evaluating data quality, assessing liquidity and dist
 
 > **NOTE: Need more details?**
 >
-> For additional information about data sourcing, please&#x20;
-> [contact us](https://chain.link/contact?ref_id=pricefeeds).
+> For additional information about data sourcing, please [contact us](https://chain.link/contact?ref_id=pricefeeds).
 
 ---
 
@@ -4081,7 +4080,7 @@ Reserves are available for both offchain assets and cross-chain assets. This cat
 
 ##### Offchain reserves
 
-Offchain reserves are sourced from APIs through an [external adapter](/chainlink-nodes/external-adapters/external-adapters).
+Offchain reserves are sourced from APIs through an [external adapter](https://github.com/smartcontractkit/external-adapters-js).
 
 ![Image](/images/data-feed/off-chain-reserves.webp)
 
@@ -4093,7 +4092,7 @@ Offchain reserves provide their data using the following methods:
 
 ##### Cross-chain reserves
 
-Cross-chain reserves are sourced from the network where the reserves are held. Chainlink node operators can report cross-chain reserves by running an [external adapter](/chainlink-nodes/external-adapters/external-adapters) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
+Cross-chain reserves are sourced from the network where the reserves are held. Chainlink node operators can report cross-chain reserves by running an [external adapter](https://github.com/smartcontractkit/external-adapters-js) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
 
 ![Image](/images/data-feed/cross-chain-reserves.webp)
 
@@ -6022,9 +6021,11 @@ Before you begin, you should have:
 
 To complete this guide, you'll need:
 
-- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation.
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation. This guide uses Stellar CLI v25 or later.
 
 - **Rust toolchain**: Install [Rust](https://www.rust-lang.org/tools/install) using [rustup](https://rustup.rs/). Run cargo --version to verify your installation.
+
+- **soroban-sdk**: The `stellar contract init` command scaffolds a project that depends on the latest `soroban-sdk` (v25 or later). The contract in this guide compiles against `soroban-sdk` v21 and later. If you pin an older version, use v21 or later.
 
 - **Testnet XLM**: You'll need testnet XLM to deploy your contract. Fund a Stellar Testnet account using the friendbot faucet. Testnet XLM has no real value.
 
@@ -6106,7 +6107,7 @@ To complete this guide, you'll need:
        /// Read the latest round for a feed and return its answer.
        pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
            let client = DataFeedsProxyClient::new(&env, &proxy);
-           let round = client.latest_round(&data_id, &18).unwrap();
+           let round = client.latest_round(&data_id, &18);
            round.answer
        }
    }
@@ -6189,8 +6190,7 @@ Source: https://docs.chain.link/data-feeds/svr-feeds
 > **TIP: SVR Now Available on Base, Arbitrum, and BNB Chain**
 >
 > Chainlink SVR has expanded beyond Ethereum Mainnet and is now available on Base, Arbitrum, and BNB Chain via the
-> Atlas auction system. See the&#x20;
-> [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas) for integration
+> Atlas auction system. See the [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas) for integration
 > details.
 
 [Chainlink Smart Value Recapture](https://blog.chain.link/chainlink-smart-value-recapture-svr/) (SVR) Feeds introduce a novel and secure way to recapture Oracle Extractable Value (OEV)—a subset of non-toxic Maximal Extractable Value (MEV) associated with oracle updates that is most commonly observed during the liquidation process of lending protocols. The value recaptured by SVR provides DeFi protocols with an additional revenue stream while also supporting the economic sustainability of Chainlink oracle. SVR Feeds are read in the same manner as standard Chainlink Data Feeds (see [Using Data Feeds](/data-feeds/using-data-feeds)), and simply require that users specify an SVR-enabled feed address.
@@ -6453,28 +6453,20 @@ Instead of relying on block builders to bundle together the oracle update and th
 
 > **CAUTION: Important**
 >
-> The final bundled transaction is **not submitted by the searcher**. It is submitted by the Chainlink oracle
-> network.
->
-> Searchers must have **bonded native tokens** with the Atlas smart contracts in order to reimburse the Chainlink
-> oracle for the gas costs of both the **searcher operation** and the **oracle update**.
->
-> Gas prices for these transactions are chosen by the Chainlink oracle. The selected gas price is provided to the
-> searcher at the start of the auction.
->
-> Searchers must sign for a `gasPrice` that is **exactly equal** to the gas price specified by the
-> Chainlink oracle.
->
-> Searchers must not attempt to use a gas limit for their operation that is greater than the allowed&#x20;
-> `SolverGasLimit`. Query this value by calling `getSolverGasLimit` on the&#x20;
-> `DappControl`
-> contract. Sending `SolverOps` with a higher gas limit will not work.
->
-> Since auction and `auctionSolution` payloads can exceed default read/write buffer sizes in popular
-> WebSocket libraries, explicitly configure read and write buffers to greater than **10 KB**.
->
-> Solvers should expect that their long-lived connections to the SVR endpoint will be disconnected, and should
-> implement **auto-reconnect** functionality.
+> - The final bundled transaction is **not submitted by the searcher**. It is submitted by the Chainlink oracle
+>   network.
+> - Searchers must have **bonded native tokens** with the Atlas smart contracts in order to reimburse the Chainlink
+>   oracle for the gas costs of both the **searcher operation** and the **oracle update**.
+> - Gas prices for these transactions are chosen by the Chainlink oracle. The selected gas price is provided to the
+>   searcher at the start of the auction.
+> - Searchers must sign for a `gasPrice` that is **exactly equal** to the gas price specified by the
+>   Chainlink oracle.
+> - Searchers must not attempt to use a gas limit for their operation that is greater than the allowed `SolverGasLimit`. Query this value by calling `getSolverGasLimit` on the `DappControl`
+>   contract. Sending `SolverOps` with a higher gas limit will not work.
+> - Since auction and `auctionSolution` payloads can exceed default read/write buffer sizes in popular
+>   WebSocket libraries, explicitly configure read and write buffers to greater than **10 KB**.
+> - Solvers should expect that their long-lived connections to the SVR endpoint will be disconnected, and should
+>   implement **auto-reconnect** functionality.
 
 ### Endpoints
 
@@ -6779,10 +6771,9 @@ If you only bid on one auction, you have roughly a 50% chance of winning even if
 
 > **CAUTION: Required: Bid on Both Parallel Auctions**
 >
-> Always submit bids to **both** auctions when two are created for the same liquidation opportunity.
->
-> Avoid logic that limits bidding to a single auction per price update.
-> Latency and timing differences between parallel auctions are expected and unavoidable.
+> - Always submit bids to **both** auctions when two are created for the same liquidation opportunity.
+> - Avoid logic that limits bidding to a single auction per price update.
+> - Latency and timing differences between parallel auctions are expected and unavoidable.
 
 Duplicate auctions were introduced to improve landing guarantees by increasing the probability that at least one auction succeeds onchain.
 
@@ -7820,7 +7811,7 @@ Chainlink Tokenized Equity Feeds help bridge this gap between TradFi and DeFi ma
 
 - **Providing continuous 24/5 pricing**: A single feed that spans regular, pre-market, post-market, and overnight sessions
 - **Simplifying integration**: Consume one feed across trading sessions instead of managing multiple session-specific data sources
-- **Applying session-aware smoothing**: Intelligent pricing algorithms that aim to reduce certain price anomalies during session transitions
+- **Applying session-aware smoothing**: Intelligent pricing algorithms that aim to reduce certain price anomalies during session transitions and lower-liquidity sessions
 - **Maintaining benchmark accuracy**: Optimized algorithms that are designed to track consolidated tape benchmarks with high fidelity
 - **Performing tokenized price calculations**: Returning real-time calculated primary market valuations of tokenized equities based on the issuer's multiplier values.
 
@@ -7846,13 +7837,15 @@ US equity markets exhibit distinct liquidity regimes throughout the 24-hour cycl
 
 ### Session-aware smoothing
 
-To enable reliable, 24/5 continuous pricing, tokenized equity feeds apply intelligent smoothing during session transitions to target pricing integrity under different liquidity conditions. The smoothing methodology:
+To enable reliable, 24/5 continuous pricing, tokenized equity feeds apply intelligent smoothing during session transitions and throughout the overnight session to target pricing integrity under different liquidity conditions. The smoothing methodology:
 
 1. **Tracks benchmark prices accurately** during liquid regular sessions
-2. **Filters microstructure noise** during illiquid session transitions
+2. **Filters microstructure noise** during illiquid session transitions and overnight sessions
 3. **Reduces the risk of phantom liquidations** from transient price spikes in thin markets
 4. **Converges quickly** after legitimate large price movements
 5. **Minimizes tracking lag** to reduce mispricing during active trading
+
+During the overnight session, where liquidity is thinnest, the published price is an exponential moving average (EMA) of the underlying session price rather than the latest observation.
 
 Please note that while intelligent smoothing is designed to mitigate these issues, tokenized equities' structural connections with underlying traditional equity markets, liquidity, and pricing considerations require protocols to ensure performance of Chainlink Tokenized Equity Feeds matches expectations and is appropriate for the intended use case.
 
@@ -7872,15 +7865,15 @@ While tokenized equity feeds use the same Chainlink infrastructure as standard c
 
 ### Continuous vs. point-in-time pricing
 
-Standard crypto price feeds reflect a single aggregated market price at a point in time from 24/7 markets. Tokenized equity feeds combine data from multiple trading sessions that have different operating hours, update frequencies, liquidity profiles, and data sources. The feed value represents a calculated return using the best mid-price for continuous 24/5 coverage of underlying equity markets.
+Standard crypto price feeds reflect a single aggregated market price at a point in time from 24/7 markets. Tokenized equity feeds combine data from multiple trading sessions that have different operating hours, update frequencies, liquidity profiles, and data sources. The feed value represents a calculated return using the best mid-price for continuous 24/5 coverage of underlying equity markets, smoothed during the overnight session.
 
-### Smoothing during transitions
+### Smoothing
 
-Standard feeds report raw aggregated prices. Tokenized equity feeds apply smoothing algorithms during session transitions in an effort to filter out microstructure noise and mitigate artificial volatility. This means:
+Standard feeds report raw aggregated prices. Tokenized equity feeds apply smoothing algorithms during session transitions and across the overnight session in an effort to filter out microstructure noise and mitigate artificial volatility. This means:
 
 - Brief price spikes in illiquid sessions are dampened
 - Convergence to new price levels after gaps is gradual rather than instantaneous
-- The reported price may temporarily lag during rapid price movements
+- The reported price may temporarily lag during rapid price movements, and that lag is largest overnight
 
 For more information about this risk, see [Smoothing-induced Tracking Lag](#smoothing-induced-tracking-lag) below.
 
@@ -7955,20 +7948,20 @@ These are expected market microstructure effects, not data quality issues. Typic
 - Implement transition-aware logic that expects and handles price gaps
 - Consider pausing or restricting operations during transition windows
 - Apply additional smoothing or price change limits during transitions
-- Use time-weighted averages (TWAP) or exponential moving averages (EMA) for risk-sensitive calculations
+- Use time-weighted averages (TWAP) or exponential moving averages (EMA) for risk-sensitive calculations. Note that the feed already smooths the overnight session, and layering additional smoothing increases tracking lag.
 
 ### Smoothing-induced tracking lag
 
 The session-aware smoothing that mitigates phantom liquidations also introduces tracking lag: a delay between market price movements and the reported feed price. During rapid legitimate price moves:
 
 - The smoothed price will temporarily trail the true market price
-- Convergence typically occurs within seconds to tens of seconds
+- Convergence typically occurs within seconds to tens of seconds during regular and extended sessions, and over a longer window during the overnight session
 - In extreme cases, this may result in delayed liquidations or arbitrage opportunities
 
 #### Mitigation
 
 - Understand the trade-off: smoothing protects against false liquidations but delays real ones
-- Configure your protocol's risk parameters to account for potential tracking lag
+- Configure your protocol's risk parameters to account for potential tracking lag, including the larger overnight tracking lag
 - Consider the tracking lag characteristics when setting liquidation thresholds
 - Monitor for persistent deviation between tokenized equity feeds and other market data sources
 
