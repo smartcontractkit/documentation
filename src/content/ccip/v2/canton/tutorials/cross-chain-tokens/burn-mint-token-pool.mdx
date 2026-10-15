@@ -37,8 +37,7 @@ Starter kit `cct:*` scripts target **Canton testnet** only.
 
 - **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }`. The admin party must be the same party that will own the token pool.
 - **Burn/mint authority** — `instrumentId.admin == poolOwner` (enforced by the BurnMint template and by the starter kit).
-- **BurnMint token pool DAR** uploaded **and vetted** on your participant — [`ccip-burn-mint-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-burn-mint-token-pool-v2-2.1.0.dar) from the [`contracts/dars/released`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/released) folder (bundles its CCIP dependencies — the only DAR you upload). Vet every released version you depend on — see [Upgradability](/ccip/canton/concepts/upgradability).
-- To **execute** incoming transfers, the CommitteeVerifier DAR — [`ccip-committee-verifier-v2-2.0.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-committee-verifier-v2-2.0.0.dar) — uploaded and vetted on your participant as well.
+- **DARs uploaded and vetted on your participant** — the pool DAR and the CommitteeVerifier DAR for execute. See [Prerequisites (all CCT guides)](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides).
 - **CCIP contract references** from Chainlink ops: CCIP owner party, Token Admin Registry, RMNRemote, FeeQuoter.
 - **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/canton/tutorials/source/prerequisites) and the [CCT overview](/ccip/canton/tutorials/cross-chain-tokens#starter-kit-cct-scripts).
 
@@ -235,7 +234,7 @@ Admin role can be transferred with `TransferAdminRole` → `AcceptAdminRole`.
 BurnMint pools do not burn or mint instrument supply themselves — they call a **`BurnMintFactory`** (`Splice.Api.Token.BurnMintV1.BurnMintFactory`) recorded on the instrument's `TokenConfig`. The factory contract implements the actual burn (send) and mint (execute) operations against your token.
 
 - **Registry instruments** (created via Digital Asset's [Registry utility](https://docs.digitalasset.com/registry/overview)) already have a factory — the registry resolves it automatically. No action needed.
-- **Custom tokens** must deploy their own `BurnMintFactory` contract and pin it on the TAR via the `SetBurnMintFactory` choice. The reference implementation is [`LinkRegistry`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/link/daml/Link/Token.daml) (`#link:Link.Token:LinkRegistry`) — the factory backing LINK on Canton, which implements both `TransferFactory` and `BurnMintFactory`.
+- **Custom tokens** (any instrument not created via the Registry utility) must deploy their own `BurnMintFactory` contract and pin it on the TAR via the `SetBurnMintFactory` choice. The reference implementation is [`LinkRegistry`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/link/daml/Link/Token.daml) (`#link:Link.Token:LinkRegistry`) — a custom-token factory that implements both `TransferFactory` and `BurnMintFactory` for the LINK instrument on Canton.
 
 `SetBurnMintFactory` is exercised by the token admin on the TAR (same disclosure flow as the other TAR choices):
 
@@ -257,10 +256,10 @@ Your factory template must expose a top-level `instanceId : Text` create argumen
 
 Senders and executors cannot see your factory contract — your pool operator's EDS must supply it in the token pool API response. The reference EDS supports two factory modes per pool (`[token_pool_api.token_pools.<address>.factory]`):
 
-| Mode      | Config                                                                                                                                                                  | When to use                                                                                               |
-| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------- |
-| `address` | `type = "address"`, `template_id` (`#package-name:Module:Entity`), `party`, `instance_address` (`0x…` hashed form)                                                      | Your factory is visible to the EDS's participant — EDS reads it directly from the Active Contract Set.    |
-| `url`     | `type = "url"`, `token_standard_url` — on testnet, the DA token-standard backend: `https://api.utilities.digitalasset-staging.com` (**not** a validator scan-proxy URL) | The DA registry resolves the factory for you over HTTP — EDS needs no ledger visibility into the factory. |
+| Mode      | Config                                                                                                                                                                  | When to use                                                                                                                                              |
+| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `address` | `type = "address"`, `template_id` (`#package-name:Module:Entity`), `party`, `instance_address` (`0x…` hashed form)                                                      | Your factory is visible to the EDS's participant — EDS reads it directly from the Active Contract Set.                                                   |
+| `url`     | `type = "url"`, `token_standard_url` — on testnet, the DA token-standard backend: `https://api.utilities.digitalasset-staging.com` (**not** a validator scan-proxy URL) | EDS calls the DA registry backend's `getBurnMintFactory` endpoint at serve time — no ledger visibility into the factory needed on the EDS's participant. |
 
 <Aside type="caution" title="URL mode resolves registry instruments only">
 
