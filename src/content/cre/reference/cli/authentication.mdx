@@ -19,7 +19,7 @@ The CRE CLI supports two authentication methods:
 
 ### `cre login`
 
-Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the CRE platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
+Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the Chainlink Platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
 
 `cre login` requires a browser and is not available in `--non-interactive` mode. For CI/CD pipelines and other headless environments, use `CRE_API_KEY` instead.
 
@@ -75,11 +75,13 @@ For CI/CD pipelines, automated scripts, or any environment where a browser is no
 
 ### Creating an API key
 
-1. Log in to the <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">CRE platform</a>
-1. Navigate to the **Organization** page
-1. Select the **APIs** tab
-1. Click **+ Organization API**
-1. Give your key a name and confirm
+You must be the organization Owner, or have both a Chainlink Platform role (**Admin** or **User**) and the CRE **Admin** role, to create an API key with these permissions. See [RBAC](/chainlink-platform/rbac?parent=cre) for how roles work.
+
+1. Sign in to the <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">Chainlink Platform</a>, click your account's icon in the top-right corner of the navbar and click **Org settings** to open its **Organization** page, then open the **API Keys** tab.
+1. Click **Create API Key** and enter a name for the key.
+1. In the **API Scope** section, expand the **CRE** accordion and set your desired permissions. See [API Keys](/chainlink-platform/api-keys?parent=cre) for the full list of permissions available for CRE.
+
+1. Click **Create API Key**, then copy the key and click **Done**. The API key is displayed only once.
 
 {/* prettier-ignore */}
 <Aside type="caution" title="Keep your API key secure">

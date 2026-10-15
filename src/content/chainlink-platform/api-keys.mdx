@@ -4,19 +4,233 @@ date: Last Modified
 title: "API Keys"
 metadata:
   title: "API Keys"
-  description: "Learn how to create and manage API keys for the Chainlink Platform."
+  description: "Learn how to create and manage API keys on the Chainlink Platform, including the permissions available for each product."
+  datePublished: "2026-10-15"
+  lastModified: "2026-10-15"
 ---
 
 import { Aside } from "@components"
 
-<Aside type="note" title="Work in progress">
-  This page is a placeholder. Content is coming soon.
+API keys authenticate programmatic access to Chainlink Platform products, such as the CRE CLI, the ACE APIs, and the CRE Connect API. This page describes how API key permissions work, which permissions are available for each product, and how to create and manage API keys.
+
+## How API keys work
+
+An API key is an organization-level credential. When you create an API key, you select the permissions the key has, and the key can act only within those permissions.
+
+- A single API key can include permissions for multiple products. For example, one key can deploy CRE workflows and read ACE reports.
+- API key permissions are a subset of all permissions. Some permissions, such as managing members or billing, are available only to organization members through their roles.
+- An API key's access is determined by the permissions you select for it, not by your own role.
+
+To create and manage API keys, you need a role that includes API key permissions, such as Platform User, Platform Admin, or Owner. See [RBAC](/chainlink-platform/rbac) for the full list of roles.
+
+## Available permissions
+
+The following tables list the permissions you can assign to an API key for each product. A check mark indicates that the permission is included in that product role. The Owner role includes every permission for every product.
+
+### Chainlink Platform
+
+| Permission                                  | Admin | User | Viewer |
+| ------------------------------------------- | ----- | ---- | ------ |
+| Read Organization information               | ✓     | ✓    | ✓      |
+| View Organization Addresses in Address Book | ✓     | ✓    | ✓      |
+
+### CRE
+
+| Permission                              | Admin | Developer | Viewer |
+| --------------------------------------- | ----- | --------- | ------ |
+| View CRE workflows                      | ✓     | ✓         | ✓      |
+| Download CRE workflow artifacts         | ✓     | ✓         | ✓      |
+| Deploy CRE workflow artifacts           | ✓     | ✓         |        |
+| Manage CRE workflows (Private Registry) | ✓     | ✓         |        |
+| Link / unlink Workflow Owner Addresses  | ✓     |           |        |
+
+### ACE
+
+#### Administration
+
+| Permission       | Admin | Operator | Viewer |
+| ---------------- | ----- | -------- | ------ |
+| Full ACE access  | ✓     |          |        |
+| Manage ACE Roles | ✓     |          |        |
+
+#### Policy Manager
+
+| Permission                                                                             | Admin | Operator | Viewer |
+| -------------------------------------------------------------------------------------- | ----- | -------- | ------ |
+| Read policy engines                                                                    | ✓     | ✓        | ✓      |
+| Create and update policy engine                                                        | ✓     | ✓        |        |
+| Archive policy engine (affects everything deployed under it)                           | ✓     |          |        |
+| Read policies and data validator instances                                             | ✓     | ✓        | ✓      |
+| Create and update policy and data validator instances                                  | ✓     | ✓        |        |
+| Archive policy and data validator instances                                            | ✓     | ✓        |        |
+| Read targets and their protections                                                     | ✓     | ✓        | ✓      |
+| Create and update target and its protections                                           | ✓     | ✓        |        |
+| Archive target and its protections                                                     | ✓     | ✓        |        |
+| Read a target's cross-org evaluation access grants                                     | ✓     |          |        |
+| Grant and revoke cross-org evaluation access to a target                               | ✓     |          |        |
+| Read extractors and policy types                                                       | ✓     | ✓        | ✓      |
+| Create and update extractor or policy type (updates affect every instance built on it) | ✓     | ✓        |        |
+| Archive extractor or policy type (affects every instance built on it)                  | ✓     |          |        |
+
+#### Identity Manager
+
+| Permission                                                                     | Admin | Operator | Viewer |
+| ------------------------------------------------------------------------------ | ----- | -------- | ------ |
+| Read identity/credential registries and credential types                       | ✓     | ✓        | ✓      |
+| Create and update identity or credential registry, and credential types        | ✓     | ✓        |        |
+| Archive identity or credential registry (affects everything deployed under it) | ✓     |          |        |
+| Read a registry's cross-org access grants                                      | ✓     |          |        |
+| Grant and revoke cross-org read access to a registry                           | ✓     |          |        |
+| Read identities and credentials                                                | ✓     | ✓        | ✓      |
+| Create and update identity, and assign credentials                             | ✓     | ✓        |        |
+| Archive identity and credentials                                               | ✓     | ✓        |        |
+
+#### Reporting
+
+| Permission                                       | Admin | Operator | Viewer |
+| ------------------------------------------------ | ----- | -------- | ------ |
+| Read the reporting service's policy view         | ✓     | ✓        | ✓      |
+| Read the reporting service's identity view       | ✓     | ✓        | ✓      |
+| Read the reporting service's target view         | ✓     | ✓        | ✓      |
+| Read the reporting service's transaction view    | ✓     | ✓        | ✓      |
+| Read the reporting service's permit view         | ✓     | ✓        | ✓      |
+| Read the reporting service's registry usage view | ✓     | ✓        | ✓      |
+
+#### Evaluation
+
+| Permission               | Admin | Operator | Viewer |
+| ------------------------ | ----- | -------- | ------ |
+| Read evaluation permits  | ✓     | ✓        | ✓      |
+| Create evaluation permit | ✓     | ✓        |        |
+
+#### Core
+
+| Permission                | Admin | Operator | Viewer |
+| ------------------------- | ----- | -------- | ------ |
+| Read organization details | ✓     | ✓        | ✓      |
+| Read supported networks   | ✓     | ✓        | ✓      |
+| Read wallets              | ✓     | ✓        | ✓      |
+| Create wallet             | ✓     |          |        |
+
+#### Active Monitoring
+
+| Permission                                         | Admin | Operator | Viewer |
+| -------------------------------------------------- | ----- | -------- | ------ |
+| Read action variables                              | ✓     | ✓        | ✓      |
+| Read contract groups                               | ✓     | ✓        | ✓      |
+| Create contract groups                             | ✓     | ✓        |        |
+| Read rule groups                                   | ✓     | ✓        | ✓      |
+| Create and update rule groups                      | ✓     | ✓        |        |
+| Read monitored addresses                           | ✓     | ✓        | ✓      |
+| Add addresses to the screening watch list          | ✓     | ✓        |        |
+| Read the screening interval                        | ✓     | ✓        | ✓      |
+| Set, remove, start and stop the screening interval | ✓     | ✓        |        |
+| Read decision logs                                 | ✓     | ✓        | ✓      |
+| Dismiss and enforce decision logs                  | ✓     | ✓        |        |
+| Read screening-provider API key metadata           | ✓     | ✓        | ✓      |
+| Set and remove screening-provider API keys         | ✓     |          |        |
+
+### CRE Connect
+
+#### Core
+
+| Permission                         | Admin | Operator | Viewer |
+| ---------------------------------- | ----- | -------- | ------ |
+| Read available blockchain networks | ✓     | ✓        | ✓      |
+| Read wallets                       | ✓     | ✓        | ✓      |
+| Create or update wallet            | ✓     | ✓        |        |
+| Archive wallet                     | ✓     |          |        |
+
+#### Operations
+
+| Permission                                               | Admin | Operator | Viewer |
+| -------------------------------------------------------- | ----- | -------- | ------ |
+| Read operations and search by initiator/signer/canceller | ✓     | ✓        | ✓      |
+| Create operation (draft or pre-signed)                   | ✓     | ✓        |        |
+| Sign (finalize) or cancel operation                      | ✓     | ✓        |        |
+
+#### Channels
+
+| Permission               | Admin | Operator | Viewer |
+| ------------------------ | ----- | -------- | ------ |
+| Read channels            | ✓     | ✓        | ✓      |
+| Create or update channel | ✓     | ✓        |        |
+| Archive channel          | ✓     |          |        |
+
+#### Watchers
+
+| Permission               | Admin | Operator | Viewer |
+| ------------------------ | ----- | -------- | ------ |
+| Read watchers            | ✓     | ✓        | ✓      |
+| Create or update watcher | ✓     | ✓        |        |
+| Archive watcher          | ✓     |          |        |
+
+#### Queries
+
+| Permission   | Admin | Operator | Viewer |
+| ------------ | ----- | -------- | ------ |
+| Read queries | ✓     | ✓        | ✓      |
+| Create query | ✓     | ✓        |        |
+
+#### Events
+
+| Permission                                  | Admin | Operator | Viewer |
+| ------------------------------------------- | ----- | -------- | ------ |
+| Read events, run history, and search events | ✓     | ✓        | ✓      |
+
+#### Administration
+
+| Permission               | Admin | Operator | Viewer |
+| ------------------------ | ----- | -------- | ------ |
+| Manage CRE Connect Roles | ✓     |          |        |
+| Full CRE Connect access  | ✓     |          |        |
+
+### Data Streams and Agent Gateway
+
+API keys cannot be scoped to Data Streams or Agent Gateway. Data Streams uses its own authentication with credentials managed in the Data Streams portal. See [Data Streams API Authentication](/data-streams/reference/data-streams-api/authentication).
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Full access permissions">
+  Some permissions, such as _Full ACE access_ and _Full CRE Connect access_, grant an API key complete access to a product, including role management. Assign these permissions to an API key only when the key needs them.
 </Aside>
 
-## Overview
+## Creating an API key
 
-TODO: Describe API keys on the Chainlink Platform and what they are used for.
+To create an API key:
+
+1. Sign in to <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a>.
+1. Click on your account's icon in the top-right corner, then click on _Org settings_ in the dropdown to open the **Organization** page.
+1. Click to open the **API Keys** tab and click **Create API Key**.
+1. Enter a name for the key.
+1. In the **API Scope** section, select the permissions for the key:
+   - Each product (Platform, ACE, CRE, and CRE Connect) has its own accordion. Expand the products the key needs access to.
+   - Each product has a preset: **None**, **Read**, **All**, or **Custom**. **Read** grants the product's read permissions, **All** grants every permission available for that product, and **Custom** is applied automatically when you change any individual permission.
+   - To grant individual permissions instead of a preset, set each permission group to **None**, **Read**, or **All**. Some groups offer only a subset of these options.
+1. Click **Create API Key**, then copy the key and click **Done**.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Copy your API key immediately">
+  The API key is displayed only once after you create it. Copy and store it in a secure location before closing the dialog. If you lose the key, rotate it to generate a new value. See [Managing API keys](#managing-api-keys).
+</Aside>
 
 ## Managing API keys
 
-TODO: Walk through creating, rotating, and revoking API keys.
+The **API Keys** tab on the Organization page lists your organization's API keys with their name, key ID, author, product access, creation date, and status. Use the **Status** and **Product access** filters or the search field to find specific keys.
+
+Click a key's name to open its edit panel. The **Scopes** tab shows the same permission selection as the creation form: change the presets or individual permissions, then click **Save changes**. The **Actions** tab lists the operations you can perform on the key:
+
+- **Rename API Key**: changes the key's name. The new name is visible to all organization members.
+- **Rotate Key**: generates a new value for the same key. Use this when a key's value may have been exposed.
+- **Delete API**: permanently deletes the API key and its value.
+
+## API key security
+
+- Never share your API keys. Each member should use keys with only the permissions they need.
+- If a key's value may have been exposed, rotate the key from its **Actions** tab.
+- Review your organization's API keys regularly and delete keys that are no longer needed.
+
+## What's next?
+
+- [RBAC](/chainlink-platform/rbac) - Learn about member roles and what each role can do.
+- [Understanding Organizations](/chainlink-platform/understanding-organizations) - Learn how organizations work on the Chainlink Platform.
+- [Inviting Team Members](/chainlink-platform/inviting-team-members) - Add members to your organization.

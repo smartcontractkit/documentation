@@ -161,7 +161,7 @@ export const megaMenuSections = {
         icon: platformLogo,
         title: "Chainlink Platform",
         description: "Accounts, organizations, access control, and API keys",
-        link: "/chainlink-platform",
+        link: "/chainlink-platform/getting-started",
       },
       {
         icon: chainlinkLocalLogo,

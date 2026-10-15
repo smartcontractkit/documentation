@@ -1,22 +1,128 @@
 ---
 section: chainlinkPlatform
 date: Last Modified
-title: "RBAC"
+title: "RBAC (Role-Based Access Control)"
 metadata:
-  title: "RBAC"
-  description: "Learn how role-based access control (RBAC) works on the Chainlink Platform."
+  title: "RBAC (Role-Based Access Control)"
+  description: "Learn how role-based access control (RBAC) works on the Chainlink Platform, including the roles available for each product and how to manage them."
+  datePublished: "2026-10-15"
+  lastModified: "2026-10-15"
 ---
 
 import { Aside } from "@components"
 
-<Aside type="note" title="Work in progress">
-  This page is a placeholder. Content is coming soon.
+Role-based access control (RBAC) determines what each member of your organization can do on the Chainlink Platform. This page describes the roles available for each product, what each role can do, and how to manage roles for your organization members.
+
+## How RBAC works
+
+Each organization member is assigned a role for each product. The role determines the permissions the member has for that product. For example, a member can be a CRE Admin and an ACE Viewer at the same time.
+
+- A member can hold a different role for each product.
+- A member can have no role for a product. A member without a role for a product has no access to that product.
+- Roles are managed per product. A member's role for one product does not affect their access to other products.
+
+## The Owner role
+
+The first user to create an organization is automatically assigned the **Owner** role. The Owner role includes every permission for every product, including all future products. This covers:
+
+- Managing members and their roles for every product
+- Creating and managing API keys
+- Managing organization settings, billing, and addresses
+
+There is exactly one Owner per organization, and the Owner role cannot be transferred.
+
+## Roles by product
+
+Each product defines its own set of roles. The following tables show what each role can do: a check mark indicates that the role includes the capability.
+
+### Chainlink Platform
+
+Chainlink Platform roles control access to organization-level features such as members, API keys, addresses, billing, and limits.
+
+| Capability                                                             | Admin | User | Viewer |
+| ---------------------------------------------------------------------- | ----- | ---- | ------ |
+| View organization information, members, billing, addresses, and limits | ✓     | ✓    | ✓      |
+| View payments                                                          | ✓     | ✓    |        |
+| Create and manage API keys                                             | ✓     | ✓    |        |
+| Manage members and roles                                               | ✓     |      |        |
+| Manage organization settings, billing, addresses, and limits           | ✓     |      |        |
+
+### CRE
+
+CRE roles control access to workflows, secrets, and workflow owner addresses. CRE roles can only be assigned to organizations with full access status.
+
+| Capability                                              | Admin | Developer | Viewer |
+| ------------------------------------------------------- | ----- | --------- | ------ |
+| View workflows, artifacts, secrets, and limits          | ✓     | ✓         | ✓      |
+| Deploy and manage workflows, including Private Registry | ✓     | ✓         |        |
+| Manage secrets                                          | ✓     | ✓         |        |
+| Manage CRE roles and link workflow owner addresses      | ✓     |           |        |
+
+### ACE
+
+ACE roles control access to policy engines, policies, targets, identities, evaluations, and active monitoring.
+
+| Capability                                                               | Admin | Operator | Viewer |
+| ------------------------------------------------------------------------ | ----- | -------- | ------ |
+| View all ACE resources, including reporting and active monitoring        | ✓     | ✓        | ✓      |
+| Create and update policy engines, policies, targets, and implementations | ✓     | ✓        |        |
+| Create and update identity registries and identities                     | ✓     | ✓        |        |
+| Create evaluation permits                                                | ✓     | ✓        |        |
+| Create contract groups and rule groups                                   | ✓     | ✓        |        |
+| Manage ACE roles                                                         | ✓     |          |        |
+
+### CRE Connect
+
+CRE Connect roles control access to operations, wallets, channels, watchers, queries, and events.
+
+| Capability                                                 | Admin | Operator | Viewer |
+| ---------------------------------------------------------- | ----- | -------- | ------ |
+| View all CRE Connect resources, operations, and events     | ✓     | ✓        | ✓      |
+| Create and sign operations                                 | ✓     | ✓        |        |
+| Create and update wallets, channels, watchers, and queries | ✓     | ✓        |        |
+| Archive wallets, channels, and watchers                    | ✓     |          |        |
+| Manage CRE Connect roles                                   | ✓     |          |        |
+
+### Data Streams
+
+Data Streams has a single role.
+
+| Role      | Description                         | Permissions                                    |
+| --------- | ----------------------------------- | ---------------------------------------------- |
+| **Admin** | Full Data Streams self-serve access | <ul><li>All Data Streams permissions</li></ul> |
+
+### Agent Gateway
+
+Agent Gateway has a single role.
+
+| Role      | Description               | Permissions                                     |
+| --------- | ------------------------- | ----------------------------------------------- |
+| **Admin** | Full Agent Gateway access | <ul><li>All Agent Gateway permissions</li></ul> |
+
+{/* prettier-ignore */}
+<Aside type="note" title="Product availability">
+  Roles are available only for products your organization has access to. If a product is not enabled for your organization, members cannot be assigned a role for that product.
 </Aside>
 
-## Overview
+## Managing member roles
 
-TODO: Describe role-based access control on the Chainlink Platform.
+Members with the appropriate permissions can assign and change roles for other members:
 
-## Available roles
+- **Platform Admins** can manage member roles for all products.
+- **Product Admins** (for example, CRE Admins) can manage member roles for their product.
+- The **Owner** can manage member roles for all products.
 
-TODO: List the available roles and what each role can do.
+To assign or change a member's roles:
+
+1. Sign in to <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a>.
+1. Click on your account's icon in the top-right corner, then click on _Org settings_ in the dropdown to open the **Organization** page.
+1. Click to open the **Members** tab, if not already on it.
+1. Click the member's name in the members table to open the **Edit member form**.
+1. On the **Roles** tab, select a role for each product. Every product lists a role selector, including **No Access**. The Platform role is required.
+1. Click **Save changes**.
+
+## What's next?
+
+- [API Keys](/chainlink-platform/api-keys) - Create API keys with scoped permissions for each product.
+- [Inviting Team Members](/chainlink-platform/inviting-team-members) - Add members to your organization.
+- [Understanding Organizations](/chainlink-platform/understanding-organizations) - Learn how organizations work on the Chainlink Platform.

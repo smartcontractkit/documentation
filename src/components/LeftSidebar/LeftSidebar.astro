@@ -23,8 +23,12 @@ import styles from "./leftSidebar.module.css"
 
 type SectionEntryWithParent = SectionEntry & { parentSection?: string }
 
-/** Product sidebars that should not duplicate the shared AI resources footer. */
-const SECTIONS_WITHOUT_AI_RESOURCES = new Set<Sections>([SIDEBAR_SECTIONS.GLOBAL, SIDEBAR_SECTIONS.LEGACY])
+/** Sidebars that should not include the shared AI resources footer. */
+const SECTIONS_WITHOUT_AI_RESOURCES = new Set<Sections>([
+  SIDEBAR_SECTIONS.GLOBAL,
+  SIDEBAR_SECTIONS.LEGACY,
+  SIDEBAR_SECTIONS.CHAINLINK_PLATFORM,
+])
 
 /** Product sidebars that include the shared Chainlink Platform section. */
 const SECTIONS_WITH_CHAINLINK_PLATFORM = new Set<Sections>([
@@ -204,19 +208,29 @@ const sidebarSections = getSidebarSections(section)
   }
   <ul class={styles.navGroups} data-sticky>
     {
-      sidebarSections.map((group) => (
-        <li
-          style={SHARED_PAGE_SECTIONS.has(section) ? { display: "none" } : {}}
-          class={group.parentSection ? `parent-${group.parentSection}` : ""}
-        >
-          <details open={shouldExpandTopSection(group.contents, currentPage)}>
-            <summary class={styles.navGroupTitle}>{group.section}</summary>
-            <ul class={styles.navGroupEntries}>
+      sidebarSections.map((group) => {
+        // On Chainlink Platform pages, the section's own group renders flat
+        // (no collapsible dropdown); every other group keeps the dropdown.
+        const isOwnPlatformGroup =
+          section === SIDEBAR_SECTIONS.CHAINLINK_PLATFORM && group.parentSection === SIDEBAR_SECTIONS.CHAINLINK_PLATFORM
+        return (
+          <li
+            style={SHARED_PAGE_SECTIONS.has(section) ? { display: "none" } : {}}
+            class={group.parentSection ? `parent-${group.parentSection}` : ""}
+          >
+            {isOwnPlatformGroup ? (
               <RecursiveSidebar items={group.contents} currentPage={currentPage} />
-            </ul>
-          </details>
-        </li>
-      ))
+            ) : (
+              <details open={shouldExpandTopSection(group.contents, currentPage)}>
+                <summary class={styles.navGroupTitle}>{group.section}</summary>
+                <ul class={styles.navGroupEntries}>
+                  <RecursiveSidebar items={group.contents} currentPage={currentPage} />
+                </ul>
+              </details>
+            )}
+          </li>
+        )
+      })
     }
   </ul>
 </nav>

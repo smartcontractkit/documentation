@@ -172,7 +172,7 @@ const desktopSubProductsNav = [
   },
   {
     label: "Platform",
-    href: "/chainlink-platform",
+    href: "/chainlink-platform/getting-started",
     icon: platformLogo.src,
     col: 2,
   },
@@ -251,7 +251,7 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
       },
       {
         label: "Platform",
-        href: "/chainlink-platform",
+        href: "/chainlink-platform/getting-started",
         icon: platformLogo.src,
         subProducts: getSubProducts(sidebar.chainlinkPlatform, new Map()),
       },

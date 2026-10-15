@@ -5669,6 +5669,86 @@ For step-by-step instructions, choose the guide for your target registry:
 
 ---
 
+# Requesting Deploy Access
+Source: https://docs.chain.link/cre/guides/operations/deploy-access
+Last Updated: 2026-02-26
+
+Deploying workflows to a Chainlink DON requires approval. Run `cre account access` to check your status or submit a request directly from your terminal.
+
+Deploy access is granted to your organization. For how organizations, accounts, and roles work on the Chainlink Platform, see [Understanding Organizations](/chainlink-platform/understanding-organizations), [Creating an Account](/chainlink-platform/creating-an-account), and [RBAC](/chainlink-platform/rbac).
+
+## Check your access status
+
+Run the following command to see your current deployment access status:
+
+```bash
+cre account access
+```
+
+Your access status is also shown when you run `cre whoami`:
+
+```bash
+cre whoami
+```
+
+```
+Account details retrieved:
+
+Email:           email@domain.com
+Organization ID: org_mEMRknbVURM9DWsB
+Deploy Access:   Not enabled (run 'cre account access' to request)
+```
+
+## Request deploy access
+
+If your organization does not have deploy access, `cre account access` will prompt you to submit a request:
+
+```
+! Deployment access is not yet enabled for your organization.
+
+  Request deployment access? Yes
+```
+
+After confirming, you'll be asked to briefly describe what you're building:
+
+```
+  Briefly describe your use case
+  What are you building with CRE?
+```
+
+Once submitted, you'll see:
+
+```
+✓ Access request submitted successfully!
+
+Our team will review your request and get back to you via email shortly.
+```
+
+You'll receive a confirmation email, and the Chainlink team will follow up once your request has been reviewed.
+
+> **NOTE: You can keep building while you wait**
+>
+> Deploy access is only required for `cre workflow deploy`. You can continue developing and simulating workflows locally with `cre workflow simulate` while your request is under review.
+
+## What happens after approval
+
+Once your organization is granted deploy access, `cre whoami` will show:
+
+```
+Deploy Access:   Enabled
+```
+
+You can then use `cre workflow deploy` to deploy workflows to the Workflow Registry. See [Deploying Workflows](/cre/guides/operations/deploying-workflows) for next steps.
+
+## Prompted automatically
+
+You don't need to run `cre account access` proactively. The CLI will prompt you to request access automatically in two situations:
+
+- When you run `cre workflow deploy` without access
+- After a successful `cre workflow simulate`, as a reminder that deployment is available once access is granted
+
+---
+
 # Linking Wallet Keys
 Source: https://docs.chain.link/cre/guides/operations/linking-wallet-keys
 Last Updated: 2026-06-24
@@ -5703,6 +5783,7 @@ However, an organization can have multiple wallet addresses linked to it, allowi
 
 Before linking a key, ensure you have:
 
+- **CRE Admin role**: You must have the CRE Admin role (or be the organization Owner) to link keys. See [RBAC](/chainlink-platform/rbac) for how roles work.
 - **CRE CLI installed and authenticated**: See [CLI Installation](/cre/getting-started/cli-installation) and [Logging in with the CLI](/cre/guides/cli/cli-login)
 - **A CRE project directory**: You must run the command from a project directory that contains a `project.yaml` file
 - **Private key in `.env`**: Set `CRE_ETH_PRIVATE_KEY=<your_64_character_hex_key>` (without `0x` prefix) in your `.env` file
@@ -6089,84 +6170,6 @@ Once the transaction is confirmed onchain, the status will change to `VERIFICATI
 - **[Using Multi-sig Wallets](/cre/guides/operations/using-multisig-wallets)** - Advanced guide for multi-sig wallet workflows
 - **[Account Management CLI Reference](/cre/reference/cli/account)** - Complete reference for `cre account` commands
 - **[Deploying Workflows](/cre/guides/operations/deploying-workflows)** - Deploy your first workflow after linking a key
-
----
-
-# Requesting Deploy Access
-Source: https://docs.chain.link/cre/guides/operations/deploy-access
-Last Updated: 2026-02-26
-
-Deploying workflows to a Chainlink DON requires approval. Run `cre account access` to check your status or submit a request directly from your terminal.
-
-## Check your access status
-
-Run the following command to see your current deployment access status:
-
-```bash
-cre account access
-```
-
-Your access status is also shown when you run `cre whoami`:
-
-```bash
-cre whoami
-```
-
-```
-Account details retrieved:
-
-Email:           email@domain.com
-Organization ID: org_mEMRknbVURM9DWsB
-Deploy Access:   Not enabled (run 'cre account access' to request)
-```
-
-## Request deploy access
-
-If your organization does not have deploy access, `cre account access` will prompt you to submit a request:
-
-```
-! Deployment access is not yet enabled for your organization.
-
-  Request deployment access? Yes
-```
-
-After confirming, you'll be asked to briefly describe what you're building:
-
-```
-  Briefly describe your use case
-  What are you building with CRE?
-```
-
-Once submitted, you'll see:
-
-```
-✓ Access request submitted successfully!
-
-Our team will review your request and get back to you via email shortly.
-```
-
-You'll receive a confirmation email, and the Chainlink team will follow up once your request has been reviewed.
-
-> **NOTE: You can keep building while you wait**
->
-> Deploy access is only required for `cre workflow deploy`. You can continue developing and simulating workflows locally with `cre workflow simulate` while your request is under review.
-
-## What happens after approval
-
-Once your organization is granted deploy access, `cre whoami` will show:
-
-```
-Deploy Access:   Enabled
-```
-
-You can then use `cre workflow deploy` to deploy workflows to the Workflow Registry. See [Deploying Workflows](/cre/guides/operations/deploying-workflows) for next steps.
-
-## Prompted automatically
-
-You don't need to run `cre account access` proactively. The CLI will prompt you to request access automatically in two situations:
-
-- When you run `cre workflow deploy` without access
-- After a successful `cre workflow simulate`, as a reminder that deployment is available once access is granted
 
 ---
 
@@ -7563,7 +7566,7 @@ You should see output like the following, confirming your Rust function was call
 Source: https://docs.chain.link/cre/guides/cli/cli-login
 Last Updated: 2026-05-22
 
-To deploy and manage workflows with the CRE CLI, you need to authenticate your CLI session with your CRE account. This guide walks you through the browser-based login process.
+To deploy and manage workflows with the CRE CLI, you need to authenticate your CLI session with your Chainlink Platform account. This guide walks you through the browser-based login process.
 
 > **TIP: CI/CD or headless environment?**
 >
@@ -7594,7 +7597,7 @@ This command will automatically open your default web browser to begin the authe
 
 ### Step 2: Enter your email address
 
-In the browser window that opens, enter the email address associated with your CRE account and click **"Continue"**.
+In the browser window that opens, enter the email address associated with your Chainlink Platform account and click **"Continue"**.
 
 ![Enter email address](/images/cre/UI/login/1-email.webp)
 
@@ -7608,7 +7611,7 @@ Enter your account password and click **"Continue"**.
 
 You'll be prompted to complete two-factor authentication based on the method you configured during account creation:
 
-- **If you set up an authenticator app**: Open your authenticator app and enter the 6-digit one-time code it generates for your CRE account.
+- **If you set up an authenticator app**: Open your authenticator app and enter the 6-digit one-time code it generates for your Chainlink Platform account.
 - **If you set up biometric authentication**: Use your fingerprint or face recognition as prompted by your device.
 
 Example of entering a one-time code from an authenticator app:
@@ -7645,7 +7648,7 @@ This guide covers how to manage your CLI authentication, including browser-based
 
 ## Logging in
 
-To authenticate your CLI with your CRE account, use the `cre login` command. This opens a browser window where you'll enter your credentials and complete two-factor authentication.
+To authenticate your CLI with your Chainlink Platform account, use the `cre login` command. This opens a browser window where you'll enter your credentials and complete two-factor authentication.
 
 For detailed login instructions, see the [Logging in with the CLI](/cre/guides/cli/cli-login) guide.
 
@@ -7664,7 +7667,7 @@ export CRE_API_KEY="your-api-key"
 cre whoami
 ```
 
-API keys are created in the **APIs** tab of the **Organization** page in the [CRE platform](https://app.chain.link/cre/discover). For full details, see [API Key Authentication](/cre/reference/cli/authentication#api-key-authentication).
+API keys are created in the **API Keys** tab of the **Organization** page in the [Chainlink Platform](https://app.chain.link). When creating the key, select the CRE permissions the key needs, such as deploying workflow artifacts. For the exact permissions required for CLI deployments, see [API Key Authentication](/cre/reference/cli/authentication#api-key-authentication) and [API Keys](/chainlink-platform/api-keys).
 
 ## Session expiration
 
@@ -7676,7 +7679,7 @@ If you attempt to run a command with an expired session, you'll see an error:
 Error: failed to attach credentials: failed to load credentials: you are not logged in, try running cre login
 ```
 
-To resolve this, simply run `cre login` again to re-authenticate.
+To resolve this, run `cre login` again to re-authenticate.
 
 ## Checking authentication status
 
@@ -8525,7 +8528,7 @@ The CRE CLI supports two authentication methods:
 
 ### `cre login`
 
-Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the CRE platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
+Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the Chainlink Platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
 
 `cre login` requires a browser and is not available in `--non-interactive` mode. For CI/CD pipelines and other headless environments, use `CRE_API_KEY` instead.
 
@@ -8579,11 +8582,15 @@ For CI/CD pipelines, automated scripts, or any environment where a browser is no
 
 ### Creating an API key
 
-1. Log in to the [CRE platform](https://app.chain.link/cre/discover)
-2. Navigate to the **Organization** page
-3. Select the **APIs** tab
-4. Click **+ Organization API**
-5. Give your key a name and confirm
+You must be the organization Owner, or have both a Chainlink Platform role (**Admin** or **User**) and the CRE **Admin** role, to create an API key with these permissions. See [RBAC](/chainlink-platform/rbac?parent=cre) for how roles work.
+
+1. Sign in to the [Chainlink Platform](https://app.chain.link), click your account's icon in the top-right corner of the navbar and click **Org settings** to open its **Organization** page, then open the **API Keys** tab.
+
+2. Click **Create API Key** and enter a name for the key.
+
+3. In the **API Scope** section, expand the **CRE** accordion and set your desired permissions. See [API Keys](/chainlink-platform/api-keys?parent=cre) for the full list of permissions available for CRE.
+
+4. Click **Create API Key**, then copy the key and click **Done**. The API key is displayed only once.
 
 > **CAUTION: Keep your API key secure**
 >
@@ -10433,7 +10440,7 @@ The [Common Queries](/cre/reference/graphql-api/common-queries) guide organizes 
 
 # Authentication
 Source: https://docs.chain.link/cre/reference/graphql-api/authentication
-Last Updated: 2026-08-31
+Last Updated: 2026-10-02
 
 Every request to the CRE GraphQL API must include an `Authorization` header carrying a CRE API key.
 
@@ -10444,13 +10451,23 @@ Every request to the CRE GraphQL API must include an `Authorization` header carr
 
 ## Creating an API key
 
-CRE API keys are created from the CRE platform UI, not from the GraphQL API itself.
+CRE API keys are created from the Chainlink Platform UI, not from the GraphQL API itself.
 
-1. Log in to the [CRE platform](https://app.chain.link/cre/discover)
-2. Navigate to the **Organization** page
-3. Select the **APIs** tab
-4. Click **+ Organization API**
-5. Give your key a name and confirm
+You must be the organization Owner, or have both a Chainlink Platform role (**Admin** or **User**) and the CRE **Admin** role, to create an API key with these permissions. See [RBAC](/chainlink-platform/rbac) for how roles work.
+
+1. Sign in to the [Chainlink Platform](https://app.chain.link), click your account icon in the top-right corner of the navbar, and click **"Org settings"** in the dropdown to open the **Organization** page, then open the **API Keys** tab.
+
+2. Click **Create API Key** and enter a name for the key.
+
+3. In the **API Scope** section, expand the **CRE** accordion and set its preset to **All**. This grants the following permissions. See [API Keys](/chainlink-platform/api-keys) for the full list of permissions available for CRE.
+
+   - `cre:workflow:read`
+   - `cre:workflow:artifact:read`
+   - `cre:workflow:artifact:write`
+   - `cre:workflow:write/private_registry`
+   - `platform:owner_address:linking:write/cre`
+
+4. Click **Create API Key**, then copy the key and click **Done**. The API key is displayed only once.
 
 This is the same key used for `CRE_API_KEY` with the CRE CLI. For the full walkthrough, see [API key authentication](/cre/reference/cli/authentication#api-key-authentication) in the CLI reference.
 

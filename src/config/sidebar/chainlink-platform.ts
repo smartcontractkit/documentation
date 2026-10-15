@@ -6,8 +6,8 @@ export { withParentQuery }
 /** Sidebar links for Chainlink Platform account and access management docs. */
 export const CHAINLINK_PLATFORM_CONTENTS: SectionContent[] = [
   {
-    title: "Overview",
-    url: "chainlink-platform/overview",
+    title: "Getting Started",
+    url: "chainlink-platform/getting-started",
   },
   {
     title: "Creating an Account",
@@ -22,7 +22,7 @@ export const CHAINLINK_PLATFORM_CONTENTS: SectionContent[] = [
     url: "chainlink-platform/understanding-organizations",
   },
   {
-    title: "RBAC",
+    title: "RBAC (Role-Based Access Control)",
     url: "chainlink-platform/rbac",
   },
   {

@@ -734,12 +734,12 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "cre/guides/operations/deploying-workflows",
           children: [
             {
-              title: "Linking Wallet Keys",
-              url: "cre/guides/operations/linking-wallet-keys",
-            },
-            {
               title: "Requesting Deploy Access",
               url: "cre/guides/operations/deploy-access",
+            },
+            {
+              title: "Linking Wallet Keys",
+              url: "cre/guides/operations/linking-wallet-keys",
             },
             {
               title: "Deploying to the Private Registry",

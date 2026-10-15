@@ -8,7 +8,7 @@ metadata:
   lastModified: "2026-08-31"
 ---
 
-import { Aside } from "@components"
+import { Aside, ClickToZoom } from "@components"
 import CrecCommon from "@features/crec/common/CrecCommon.astro"
 
 <CrecCommon callout="beta" />
@@ -17,9 +17,21 @@ CRE Connect is a permissioned service. Before you can use the SDK or call the AP
 
 ## 1. Create your organization
 
-Go to <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a> and create an account or sign in.
+Go to [app.chain.link](https://app.chain.link) and [create an account](/chainlink-platform/creating-an-account?parent=crec) or sign in.
 
-Once signed in, click on **your organization's name** in the bottom-left corner of the sidebar to open its **Organization** page. Your **Organization ID** is displayed in the page header: copy it. It is a short prefixed string, for example `org_example00000000000` (not a UUID).
+Once signed in, navigate to your account icon on the top-right corner, then click **"Org settings"** in the dropdown to open the Organization page.
+
+<ClickToZoom
+  src="/images/ace/account-setup/navbar-organization.png"
+  caption="The account dropdown with the Org settings option."
+/>
+
+Your **Organization ID** is displayed in the page header — copy it.
+
+<ClickToZoom
+  src="/images/ace/account-setup/organization-id.png"
+  caption="The Organization page showing your Organization ID in the header."
+/>
 
 ## 2. Share your Organization ID
 
@@ -32,12 +44,12 @@ Share your Organization ID with your Chainlink Labs contact so they can enable C
   organization. API keys created before enablement will not have access to CRE Connect endpoints.
 </Aside>
 
-Once your account has been provisioned, create an API key for authentication:
+Once your account has been provisioned, create an API key for authentication. You must be the organization Owner, or have both a Chainlink Platform role (**Admin** or **User**) and a CRE Connect role (**Admin** or **Operator**), to complete Getting Started. See [RBAC](/chainlink-platform/rbac) for how roles work.
 
-1. Sign in to the <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">Chainlink Platform</a>, click on **your organization's name** in the bottom-left corner of the sidebar to open its **Organization** page, then select the **"APIs"** tab.
-2. Click **"+ Organization API"**.
-3. Enter a name for the key and select an expiration period (1 day, 1 month, or 1 year).
-4. Click **"Generate"**. The API key is displayed once: copy it immediately.
+1. Log in to the [Chainlink Platform](https://app.chain.link), click on "Org settings" in the top-right corner of the navbar to open your **Organization Settings** page, then open the **API Keys** tab.
+1. Click **Create API Key** and enter a name for the key.
+1. In the **API Scope** section, expand the **CRE Connect** accordion and set the permissions for the API Key. See [API Keys](/chainlink-platform/api-keys?parent=crec#crec) for the full list of permissions available for CRE Connect.
+1. Click **Create API Key**, then copy the key and click **Done**. The API key is displayed only once.
 
 <Aside type="caution" title="Save your API key">
   The API key is only shown once at creation time. Copy it immediately: if you lose it, you will need to generate a new
@@ -129,7 +141,7 @@ You can also implement your own by satisfying the `signer.Signer` interface; see
 
 - Organization created on <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a>; Organization ID copied.
 - Organization ID shared with Chainlink Labs and CRE Connect enablement confirmed.
-- API key generated in your org's **Organization &rarr; APIs** tab, stored securely, and exposed via env var.
+- API key generated in your org's **Organization &rarr; API Keys** tab, stored securely, and exposed via env var.
 - `CREC_BASE_URL`, `CREC_API_KEY`, and `CREC_ORG_ID` exported in your shell.
 - `go version` reports **1.25.5** or higher (or your `go.mod` has `go 1.25.5` + a `toolchain` directive).
 - You have picked a supported network and know its chain selector.
