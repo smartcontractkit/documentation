@@ -100,10 +100,10 @@ Please note that while intelligent smoothing is designed to mitigate these issue
 Tokenized equity feeds combine multiple input sources:
 
 - **Regular hours data**: Multi-sourced from consolidated tape data with deep liquidity
-- **Extended hours data**: Pre-market and post-market venue data
+- **Extended hours data**: Multi-sourced from pre-market and post-market venue data
 - **Overnight data**: Data from overnight trading venues
 
-_Extended and overnight session data may be sourced from fewer providers than regular hours data, reflecting the reduced number of venues operating during these periods. See the [Limited Provider Coverage](#limited-provider-coverage-during-extended-and-overnight-sessions) risk section for details._
+_Overnight session data may be sourced from fewer providers than regular and extended hours data, reflecting the reduced number of venues operating during this period. See the [Limited Provider Coverage](#limited-provider-coverage-during-overnight-sessions) risk section for details._
 
 ## Key differences from standard feeds
 
@@ -130,7 +130,7 @@ The reliability and accuracy of tokenized equity feeds varies by trading session
 | Session   | Data Quality | Provider Coverage      | Update Frequency |
 | :-------- | :----------- | :--------------------- | :--------------- |
 | Regular   | Highest      | Multiple providers     | Highest          |
-| Extended  | Moderate     | Limited providers      | Moderate         |
+| Extended  | Moderate     | Multiple providers     | Moderate         |
 | Overnight | Lower        | Very limited           | Lower            |
 | Weekend   | N/A          | No traditional trading | Stale            |
 
@@ -144,13 +144,13 @@ Tokenized equity feeds for assets from different issuers may differ in terms of 
 
 Tokenized equity feeds introduce specific risks related to the nature of traditional equity markets, multi-session data aggregation, smoothing algorithms, and data sourcing. Users must understand these factors and implement appropriate safeguards.
 
-### Limited provider coverage during extended and overnight sessions
+### Limited provider coverage during overnight sessions
 
-Extended and overnight session price data is sourced from a more limited number of data providers compared to regular hours, making these sessions less reliable than regular hours feeds, which are aggregated from a broader set of providers.
+Overnight session price data is sourced from a more limited number of data providers compared to regular and extended hours, making this session less reliable than regular and extended hours feeds, which are aggregated from a broader set of providers.
 
 If providers experience downtime, technical failures, or connectivity disruption, the feed may flatline or report stale values. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
 
-**Overnight and extended sessions** carry additional nuance: liquidity is thinner and fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
+**Overnight and extended sessions** carry additional nuance: liquidity is thinner than during regular hours, and overnight fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
 
 #### Mitigation
 
