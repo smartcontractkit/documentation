@@ -71,7 +71,7 @@ Each stream category uses one or more report schemas to deliver data. Several ca
       </td>
     </tr>
     <tr>
-      <td rowspan="2">
+      <td rowspan="3">
         <a href="/data-streams/rwa-streams">RWA</a>
       </td>
       <td>
@@ -90,6 +90,16 @@ Each stream category uses one or more report schemas to deliver data. Several ca
       <td>
         <code>mid</code>, <code>bid</code>, <code>ask</code>, <code>bidVolume</code>, <code>askVolume</code>,{" "}
         <code>lastTradedPrice</code>, <code>marketStatus</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="/data-streams/reference/report-schema-v14">Futures (v14)</a>
+      </td>
+      <td>Futures price data with continuous roll price series</td>
+      <td>
+        <code>midPrice</code>, <code>bidPrice</code>, <code>askPrice</code>, <code>expiryTime</code>,{" "}
+        <code>contractMonth</code>, <code>goldmanRollPrice</code>, <code>marketStatus</code>
       </td>
     </tr>
     <tr>
@@ -154,10 +164,11 @@ While the Data Streams architecture is designed to deliver updates at least once
 
 ## Real-World Assets (RWA)
 
-[Chainlink RWA streams](/data-streams/rwa-streams) deliver real-world asset pricing through two report schemas:
+[Chainlink RWA streams](/data-streams/rwa-streams) deliver real-world asset pricing through three report schemas:
 
 - **[RWA Standard (v8)](/data-streams/reference/report-schema-v8)** — standard RWA format with consolidated mid price, market status, and freshness indicators. Used by the majority of RWA streams.
 - **[RWA Advanced (v11)](/data-streams/reference/report-schema-v11)** — adds bid/ask prices, volume depth, last traded price where supported, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
+- **[Futures (v14)](/data-streams/reference/report-schema-v14)** — futures price data with contract expiration, market status, and continuous roll price series. Used by [Futures streams](/data-streams/rwa-streams/futures).
 
 ### RWA Standard (v8)
 
@@ -172,6 +183,12 @@ For US Equities specifically, [RWA Advanced (v11)](/data-streams/reference/repor
 The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schema offers enhanced market data capabilities with additional fields: liquidity-weighted mid (`mid`), consensus bid and ask prices (`bid`, `ask`), resting book depth (`bidVolume`, `askVolume`), `lastTradedPrice` where supported, nanosecond precision freshness (`lastSeenTimestampNs`), and expanded market status (`marketStatus`) that distinguishes between pre-market, regular hours, post-market, overnight, and weekend periods. Field availability and production support vary by stream.
 
 These advanced fields enable protocols to implement more sophisticated risk management and settlement logic. Where applicable, streams using this schema can provide coverage across extended trading sessions including pre-market, post-market, and overnight hours — though extended hours availability varies by stream. See individual [RWA stream details](/data-streams/rwa-streams?schema=v11) for specific coverage and the [RWA Advanced (v11) reference](/data-streams/reference/report-schema-v11) for complete field specifications.
+
+### Futures (v14)
+
+The [Futures (v14)](/data-streams/reference/report-schema-v14) report schema provides price data for exchange-traded futures contracts. Each report includes consensus mid, bid, and ask prices (`midPrice`, `bidPrice`, `askPrice`), contract expiration (`expiryTime`), the first day of notice (`firstDayOfNotice`), the tracked contract month (`contractMonth`), market status (`marketStatus`), and a staleness measure (`lastSeenTimestampNs`).
+
+Because futures contracts expire, streams using this schema expose three **generic** feeds per instrument that always track the current front, second, and third contract. The schema also includes continuous roll price series — `goldmanRollPrice`, `interpolatedGoldmanRollPrice`, and `currentBusinessDay` — for integrators who want a smoothed price instead of a hard cutover at contract expiration. See the [Futures](/data-streams/rwa-streams/futures) reference for rotation methodology and the [Futures (v14) reference](/data-streams/reference/report-schema-v14) for complete field specifications.
 
 ## SmartData
 
