@@ -32,6 +32,6 @@ export const CHAINLINK_PLATFORM_CONTENTS: SectionContent[] = [
 ]
 
 export const CHAINLINK_PLATFORM_SECTION: SectionEntry = {
-  section: "Platform",
+  section: "Chainlink Platform",
   contents: CHAINLINK_PLATFORM_CONTENTS,
 }

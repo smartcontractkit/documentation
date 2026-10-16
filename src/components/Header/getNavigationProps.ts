@@ -171,8 +171,8 @@ const desktopSubProductsNav = [
     hideFromDropdown: true,
   },
   {
-    label: "Platform",
-    href: "/chainlink-platform/getting-started",
+    label: "Chainlink Platform",
+    href: "/chainlink-platform",
     icon: platformLogo.src,
     col: 2,
   },
@@ -250,8 +250,8 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         subProducts: getSubProducts(sidebar.global, new Map(), "global"),
       },
       {
-        label: "Platform",
-        href: "/chainlink-platform/getting-started",
+        label: "Chainlink Platform",
+        href: "/chainlink-platform",
         icon: platformLogo.src,
         subProducts: getSubProducts(sidebar.chainlinkPlatform, new Map()),
       },
