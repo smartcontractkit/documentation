@@ -54,7 +54,7 @@ const checkFile = async (filePath: string) => {
 const processDirectories = async () => {
   try {
     for (const directoryPath of directoryPaths) {
-      const paths = await glob(directoryPath + "/**/*")
+      const paths = await glob(path.join(directoryPath, "**/*"))
 
       // Process each file
       for (const filepath of paths) {
