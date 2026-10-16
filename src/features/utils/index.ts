@@ -547,9 +547,10 @@ export const directoryToSupportedChain = (chainInRdd: string): SupportedChain =>
     case "bitcoin-testnet-rootstock":
       return "ROOTSTOCK_TESTNET"
     case "gravity-mainnet":
-      return "GRAVITY_MAINNET"
-    case "gravity-testnet":
-      return "GRAVITY_TESTNET"
+    case "gravity-mainnet-2":
+      return "GRAVITY_MAINNET_2"
+    case "gravity-testnet-longevity":
+      return "GRAVITY_TESTNET_LONGEVITY"
     case "etherlink-mainnet":
       return "ETHERLINK_MAINNET"
     case "etherlink-testnet":
@@ -930,10 +931,10 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
       return "rootstock-mainnet"
     case "ROOTSTOCK_TESTNET":
       return "bitcoin-testnet-rootstock"
-    case "GRAVITY_MAINNET":
+    case "GRAVITY_MAINNET_2":
       return "gravity-mainnet"
-    case "GRAVITY_TESTNET":
-      return "gravity-testnet"
+    case "GRAVITY_TESTNET_LONGEVITY":
+      return "gravity-testnet-longevity"
     case "ETHERLINK_MAINNET":
       return "etherlink-mainnet"
     case "ETHERLINK_TESTNET":
