@@ -17,11 +17,11 @@ This library ensures that `extraArgs` are encoded in a format compatible with CC
 
 ## Usage Boundary
 
-**You do not call this library directly in most cases.**
+**Applications building `ExtraArgsV3` messages call this library directly.**
 
-- CCIP contracts use this library to encode and decode execution parameters.
-- Applications typically use `Client` helpers, which rely on this library internally.
-- You may use this library directly when working with low-level or custom `extraArgs` encoding.
+- Use `_getBasicEncodedExtraArgsV3` (or its block-depth and fast-confirmation variants) for messages that only set a gas limit and finality, or `_encodeGenericExtraArgsV3` for full control over the struct fields.
+- `Client` helpers (`_argsToBytes`) cover only the legacy `EVMExtraArgsV1` and `GenericExtraArgsV2` formats.
+- CCIP contracts use this library internally to decode `extraArgs` and validate their encoding.
 
 ## Contract
 
@@ -244,6 +244,23 @@ uint256 public constant GENERIC_EXTRA_ARGS_V3_STATIC_LENGTH_SIZE = 4 + 4 + 4 + 1
 ```
 
 ## Structs
+
+### GenericExtraArgsV3
+
+`GenericExtraArgsV3` is the `ExtraArgsV3` format for EVM-compatible chains. Empty `ccvs` select the default verifiers; pure token transfers (no data, zero gas limit) resolve to an empty verifier list instead. A zero `executor` selects the default executor. An empty `tokenReceiver` falls back to the message receiver when the message includes a token transfer.
+
+| Field                     | Type        |
+| ------------------------- | ----------- |
+| `gasLimit`                | `uint32`    |
+| `requestedFinalityConfig` | `bytes4`    |
+| `ccvs`                    | `address[]` |
+| `ccvArgs`                 | `bytes[]`   |
+| `executor`                | `address`   |
+| `executorArgs`            | `bytes`     |
+| `tokenReceiver`           | `bytes`     |
+| `tokenArgs`               | `bytes`     |
+
+---
 
 ### SVMExecutorArgsV1
 

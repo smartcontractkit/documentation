@@ -7,6 +7,8 @@ metadata:
   version: "2.0.0"
 ---
 
+import { Aside } from "@components"
+
 `Client` defines the canonical CCIP message format and encoding helpers used by applications.
 
 It provides:
@@ -91,6 +93,14 @@ Version tag for `GenericExtraArgsV2` encoding.
 
 Version tag for `SVMExtraArgsV1` encoding.
 
+### SUI_EXTRA_ARGS_V1_TAG
+
+Version tag for `SuiExtraArgsV1` encoding.
+
+### NO_EXECUTION_TAG
+
+Tag to indicate no execution on the destination chain; used to derive `NO_EXECUTION_ADDRESS`.
+
 ### NO_EXECUTION_ADDRESS
 
 ```solidity
@@ -136,6 +146,11 @@ address public constant NO_EXECUTION_ADDRESS = address(bytes20(NO_EXECUTION_TAG)
 
 ### GenericExtraArgsV2
 
+<Aside type="caution" title="Legacy format">
+  In CCIP 2.0, only the `gasLimit` field is honored; `allowOutOfOrderExecution` is deprecated. New integrations should
+  use [`ExtraArgsV3`](/ccip/evm/api-reference/v2.0.0/extra-args-codec#genericextraargsv3).
+</Aside>
+
 | Field                      | Type      |
 | -------------------------- | --------- |
 | `gasLimit`                 | `uint256` |
@@ -173,20 +188,21 @@ Used by:
 - [`IRouterClient`](/ccip/evm/api-reference/v2.0.0/i-router-client)
 - [`CCIPReceiver`](/ccip/evm/api-reference/v2.0.0/ccip-receiver)
 
-Example:
+Example: construct an outbound CCIP message with a gas limit of 300,000 and the default finality (wait for full finalization):
 
 ```solidity
+import {Client} from "chainlink-ccip/libraries/Client.sol";
+import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+
 // Construct outbound CCIP message
 Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
   receiver: abi.encode(receiverAddress),
   data: abi.encode(payload),
   tokenAmounts: tokenAmounts,
   feeToken: address(0),
-  extraArgs: Client._argsToBytes(
-    Client.GenericExtraArgsV2({
-      gasLimit: 300_000,
-      allowOutOfOrderExecution: false
-    })
+  extraArgs: ExtraArgsCodec._getBasicEncodedExtraArgsV3(
+    300_000, // gasLimit
+    bytes4(0) // finalityConfig: default, wait for full finalization
   )
 });
 ```

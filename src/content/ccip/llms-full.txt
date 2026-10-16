@@ -88859,6 +88859,14 @@ Version tag for `GenericExtraArgsV2` encoding.
 
 Version tag for `SVMExtraArgsV1` encoding.
 
+### SUI_EXTRA_ARGS_V1_TAG
+
+Version tag for `SuiExtraArgsV1` encoding.
+
+### NO_EXECUTION_TAG
+
+Tag to indicate no execution on the destination chain; used to derive `NO_EXECUTION_ADDRESS`.
+
 ### NO_EXECUTION_ADDRESS
 
 ```solidity
@@ -88904,6 +88912,11 @@ address public constant NO_EXECUTION_ADDRESS = address(bytes20(NO_EXECUTION_TAG)
 
 ### GenericExtraArgsV2
 
+> **CAUTION: Legacy format**
+>
+> In CCIP 2.0, only the `gasLimit` field is honored; `allowOutOfOrderExecution` is deprecated. New integrations should
+> use [`ExtraArgsV3`](/ccip/evm/api-reference/v2.0.0/extra-args-codec#genericextraargsv3).
+
 | Field                      | Type      |
 | -------------------------- | --------- |
 | `gasLimit`                 | `uint256` |
@@ -88941,20 +88954,21 @@ Used by:
 - [`IRouterClient`](/ccip/evm/api-reference/v2.0.0/i-router-client)
 - [`CCIPReceiver`](/ccip/evm/api-reference/v2.0.0/ccip-receiver)
 
-Example:
+Example: construct an outbound CCIP message with a gas limit of 300,000 and the default finality (wait for full finalization):
 
 ```solidity
+import {Client} from "chainlink-ccip/libraries/Client.sol";
+import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+
 // Construct outbound CCIP message
 Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
   receiver: abi.encode(receiverAddress),
   data: abi.encode(payload),
   tokenAmounts: tokenAmounts,
   feeToken: address(0),
-  extraArgs: Client._argsToBytes(
-    Client.GenericExtraArgsV2({
-      gasLimit: 300_000,
-      allowOutOfOrderExecution: false
-    })
+  extraArgs: ExtraArgsCodec._getBasicEncodedExtraArgsV3(
+    300_000, // gasLimit
+    bytes4(0) // finalityConfig: default, wait for full finalization
   )
 });
 ```
@@ -90717,11 +90731,11 @@ This library ensures that `extraArgs` are encoded in a format compatible with CC
 
 ## Usage Boundary
 
-**You do not call this library directly in most cases.**
+**Applications building `ExtraArgsV3` messages call this library directly.**
 
-- CCIP contracts use this library to encode and decode execution parameters.
-- Applications typically use `Client` helpers, which rely on this library internally.
-- You may use this library directly when working with low-level or custom `extraArgs` encoding.
+- Use `_getBasicEncodedExtraArgsV3` (or its block-depth and fast-confirmation variants) for messages that only set a gas limit and finality, or `_encodeGenericExtraArgsV3` for full control over the struct fields.
+- `Client` helpers (`_argsToBytes`) cover only the legacy `EVMExtraArgsV1` and `GenericExtraArgsV2` formats.
+- CCIP contracts use this library internally to decode `extraArgs` and validate their encoding.
 
 ## Contract
 
@@ -90944,6 +90958,23 @@ uint256 public constant GENERIC_EXTRA_ARGS_V3_STATIC_LENGTH_SIZE = 4 + 4 + 4 + 1
 ```
 
 ## Structs
+
+### GenericExtraArgsV3
+
+`GenericExtraArgsV3` is the `ExtraArgsV3` format for EVM-compatible chains. Empty `ccvs` select the default verifiers; pure token transfers (no data, zero gas limit) resolve to an empty verifier list instead. A zero `executor` selects the default executor. An empty `tokenReceiver` falls back to the message receiver when the message includes a token transfer.
+
+| Field                     | Type        |
+| ------------------------- | ----------- |
+| `gasLimit`                | `uint32`    |
+| `requestedFinalityConfig` | `bytes4`    |
+| `ccvs`                    | `address[]` |
+| `ccvArgs`                 | `bytes[]`   |
+| `executor`                | `address`   |
+| `executorArgs`            | `bytes`     |
+| `tokenReceiver`           | `bytes`     |
+| `tokenArgs`               | `bytes`     |
+
+***
 
 ### SVMExecutorArgsV1
 
@@ -104792,7 +104823,7 @@ Limits are enforced during message processing and execution. Values vary by chai
 | Maximum message `data` length  | `data` payload sent within the [CCIP message](/ccip/evm/api-reference/v2.0.0/client#evm2anymessage).                                                                                                                                                                                                                                                                                                                                | 32 kilobytes                                  |
 | Maximum number of tokens       | Maximum number of token transfers (entries in the message's `tokenAmounts` array) a user can include in a single message.                                                                                                                                                                                                                                                                                                           | 1                                             |
 | Token Pool Execution Gas Limit | Maximum gas for executing the combined steps in token pools during cross-chain transfers, including (1) `balanceOf` check before minting/releasing, (2) `releaseOrMint` function, and (3) `balanceOf` check after minting/releasing. For more details on building custom token pools and handling gas constraints, refer to the [Token Pools documentation](/ccip/concepts/cross-chain-token/overview#token-pool-gas-requirements). | 90,000                                        |
-| Message Execution Gas Limit    | User-specified [gas limit](/ccip/evm/api-reference/v2.0.0/client#genericextraargsv2).                                                                                                                                                                                                                                                                                                                                               | Varies by destination chain (see table below) |
+| Message Execution Gas Limit    | User-specified [gas limit](/ccip/evm/api-reference/v2.0.0/extra-args-codec#genericextraargsv3).                                                                                                                                                                                                                                                                                                                                     | Varies by destination chain (see table below) |
 
 ### Message Execution Gas Limit by destination chain
 
@@ -105307,7 +105338,7 @@ to the Router. The important part for this tutorial is `extraArgs`:
 
 - `extraArgs` is a `bytes` field that carries message execution parameters.
 - On EVM chains, this includes a `gasLimit` field (for example, see
-  [`GenericExtraArgsV2.gasLimit`](/ccip/evm/api-reference/v2.0.0/client#genericextraargsv2)).
+  [`GenericExtraArgsV3.gasLimit`](/ccip/evm/api-reference/v2.0.0/extra-args-codec#genericextraargsv3)).
 - In CCIP 2.0 tutorials, the scripts encode `extraArgs` off-chain (V2 or V3 depending on lane support) and pass the
   encoded bytes to the contract. The contract treats it as opaque bytes and forwards it into the message payload.
 
