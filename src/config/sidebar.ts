@@ -1296,6 +1296,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "data-feeds/overview",
         },
         {
+          title: "Key Terms and Concepts",
+          url: "data-feeds/key-terms",
+        },
+        {
           title: "Getting Started",
           url: "data-feeds/getting-started",
         },
