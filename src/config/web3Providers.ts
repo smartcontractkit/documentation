@@ -143,6 +143,8 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   ROOTSTOCK_TESTNET: () => new JsonRpcProvider("https://public-node.testnet.rsk.co"),
   GRAVITY_MAINNET: () => new JsonRpcProvider("https://rpc.gravity.xyz"),
   GRAVITY_TESTNET: () => new JsonRpcProvider("https://rpc-sepolia.gravity.xyz"),
+  GRAVITY_MAINNET_2: () => new JsonRpcProvider("https://mainnet-rpc.gravity.xyz"),
+  GRAVITY_TESTNET_LONGEVITY: () => new JsonRpcProvider("https://rpc-testnet.gravity.xyz"),
   ETHERLINK_MAINNET: () => new JsonRpcProvider("https://node.mainnet.etherlink.com"),
   ETHERLINK_TESTNET: () => new JsonRpcProvider("https://node.ghostnet.etherlink.com"),
   OPBNB_MAINNET: () => new JsonRpcProvider("https://opbnb-mainnet-rpc.bnbchain.org"),
