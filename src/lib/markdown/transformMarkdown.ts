@@ -9,7 +9,7 @@ import remarkGfm from "remark-gfm"
 import remarkStringify from "remark-stringify"
 import { SKIP, visit } from "unist-util-visit"
 import type { Node, Parent, Literal } from "unist"
-import type { TransformConfig, MdxJsxNode, ComponentContext } from "./types.js"
+import type { TransformConfig, MdxJsxNode, ComponentContext, DroppedComponent } from "./types.js"
 import {
   handleCcipCommon,
   handleCodeHighlightBlock,
@@ -138,6 +138,7 @@ export async function transformMarkdown(
   config: Partial<TransformConfig> = {}
 ): Promise<string> {
   const { targetLanguage } = config
+  const drops: DroppedComponent[] = []
 
   // Inline CcipCommon content before AST parsing so embedded components reach the normal AST handlers.
   const preprocessedMarkdown = preprocessCcipCommon(markdown)
@@ -413,6 +414,23 @@ export async function transformMarkdown(
           node.type === "export" ||
           node.type === "html"
         ) {
+          if (config.onDropComponent && (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement")) {
+            const drop: DroppedComponent = {
+              name: (node as MdxJsxNode).name ?? "anonymous",
+              approxChars: 0,
+            }
+            try {
+              visit(node, (descendant) => {
+                if (descendant.type === "text" || descendant.type === "inlineCode" || descendant.type === "code") {
+                  drop.approxChars += String((descendant as Literal).value ?? "").length
+                }
+              })
+            } catch {
+              // Diagnostic measurement cannot change transformation behavior.
+              drop.approxChars = 0
+            }
+            drops.push(drop)
+          }
           parent.children.splice(index, 1)
           return index
         }
@@ -454,6 +472,15 @@ export async function transformMarkdown(
     .split("\n")
     .filter((line) => !line.trim().match(/^{\/\*.*?\*\/}$/))
     .join("\n")
+
+  // A failed normal/sanitized attempt must not emit events for output that was abandoned.
+  for (const drop of drops) {
+    try {
+      config.onDropComponent?.(drop)
+    } catch {
+      // Observers cannot change Markdown output or trigger a fallback/retry.
+    }
+  }
 
   return result
 }

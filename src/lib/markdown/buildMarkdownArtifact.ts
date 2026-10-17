@@ -1,7 +1,7 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 import { transformPageToMarkdown } from "./transformMarkdown.js"
-import type { MarkdownArtifact } from "./types.js"
+import type { MarkdownArtifact, TransformConfig } from "./types.js"
 import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentRelative } from "./utils.js"
 import { isSunsetDocsPath } from "../../config/sunset.js"
 import { withSolutionLayoutContent } from "./solutionContent.js"
@@ -110,7 +110,7 @@ export async function buildMarkdownArtifact(
 export async function transformPageBodyToMarkdown(
   body: string,
   mdxAbsPath: string,
-  options: { siteBase?: string; targetLanguage?: string } = {}
+  options: Pick<Partial<TransformConfig>, "siteBase" | "targetLanguage" | "onDropComponent"> = {}
 ): Promise<TransformOutcome> {
   if (mdxAbsPath.includes("data-feeds/deprecating-feeds")) {
     return {
@@ -129,6 +129,7 @@ https://docs.chain.link/data-feeds/deprecating-feeds
   const transformOptions = {
     siteBase: options.siteBase ?? SITE_BASE,
     targetLanguage: options.targetLanguage,
+    onDropComponent: options.onDropComponent,
   }
   const completeBody = withSolutionLayoutContent(body, mdxAbsPath)
 

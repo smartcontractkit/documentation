@@ -25,6 +25,7 @@ jobs:
       solidity: ${{ steps.filter.outputs.solidity }}
       typescript: ${{ steps.filter.outputs.typescript }}
       content: ${{ steps.filter.outputs.content }}
+      llms: ${{ steps.filter.outputs.llms }}
       any_non_solidity: ${{ steps.filter.outputs.any_non_solidity }}
     steps:
       - uses: actions/checkout@v6
@@ -53,6 +54,21 @@ jobs:
               - 'lychee.toml'
               - 'vercel.json'
               - 'src/scripts/link-check/**'
+            llms:
+              - 'src/features/**'
+              - 'src/config/sidebar*'
+              - 'src/config/sidebar/**'
+              - 'src/config/llms.ts'
+              - 'src/config/sunset.ts'
+              - 'src/config/solutions/**'
+              - 'src/utils/solutionPages.ts'
+              - 'src/scripts/generate-llms.ts'
+              - 'src/scripts/validate-llms.ts'
+              - 'src/scripts/component-coverage-baseline.json'
+              - '.husky/pre-commit'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/test.yml'
             any_non_solidity:
               - '**'
               - '!public/samples/**/*.sol'
@@ -318,7 +334,7 @@ jobs:
   # Job 6: Validate LLM files are present and well-formed
   validate-llms:
     needs: [setup, changes]
-    if: needs.changes.outputs.content == 'true'
+    if: needs.changes.outputs.content == 'true' || needs.changes.outputs.llms == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -348,7 +364,17 @@ jobs:
       - name: Regenerate LLM files
         run: npm run generate:llms
 
+      - name: Upload component coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: component-coverage-report
+          path: reports/component-coverage.json
+          retention-days: 30
+          if-no-files-found: warn
+
       - name: Check LLM files are up-to-date
+        if: ${{ !cancelled() }}
         run: |
           if ! git diff --exit-code 'src/content/**/llms-full*.txt'; then
             echo "LLM files are out of date. Run 'npm run generate:llms' and commit the result."
@@ -356,6 +382,7 @@ jobs:
           fi
 
       - name: Validate LLM files
+        if: ${{ !cancelled() }}
         run: npm run check:llms
 
       - name: Check Markdown fidelity
