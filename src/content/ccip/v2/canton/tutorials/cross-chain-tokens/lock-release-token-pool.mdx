@@ -6,7 +6,7 @@ metadata:
   description: "Deploy a CCIP LockRelease token pool on Canton for fixed-supply CIP-56 instruments, register on TAR, and enable a cross-chain lane."
   excerpt: "CCIP Canton LockRelease token pool, preapproval, TAR registration, starter kit, cct scripts"
   datePublished: "2026-06-27"
-  lastModified: "2026-07-06"
+  lastModified: "2026-10-13"
   difficulty: "advanced"
   estimatedTime: "45 minutes"
 whatsnext:
@@ -39,7 +39,7 @@ Starter kit `cct:*` scripts target **Canton testnet** only.
 
 - **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }` supporting `TransferFactory` and preapprovals.
 - Token liquidity held by the pool owner party for expected release volume.
-- **LockRelease token pool DAR** on your participant — [`ccip-lock-release-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-lock-release-token-pool-v2-2.1.0.dar) (bundles its CCIP dependencies — the only DAR you upload).
+- **DARs uploaded and vetted on your participant** — the pool DAR and the CommitteeVerifier DAR for execute. See [Prerequisites (all CCT guides)](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides).
 - CCIP contract references from Chainlink ops.
 - **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/canton/tutorials/source/prerequisites) and the [CCT overview](/ccip/canton/tutorials/cross-chain-tokens#starter-kit-cct-scripts).
 
@@ -248,9 +248,11 @@ Include disclosed contracts in subsequent ledger submissions. OpenAPI: [`eds-glo
 
 ### TAR choices
 
-1. **`ProposeAdministrator`** — CCIP owner or instrument admin. Pass `instrumentId`, `newAdmin`, `caller`. For new instruments, leave `tokenConfigCid` as `None`. Returns `TokenConfig` CID for next steps.
-2. **`AcceptAdminRole`** — Proposed admin exercises with `tokenConfigCid`, `instrumentId`, `caller`.
-3. **`SetPool`** — Admin links instrument to pool via `PoolRegistration` (`poolOwner`, `poolInstanceId` from Step 1).
+All three choices take a `context` argument (`Splice.Api.Token.MetadataV1.ChoiceContext`) — pass an empty context (`{"values": {}}`) unless your token's tooling supplies one.
+
+1. **`ProposeAdministrator`** — CCIP owner or instrument admin. Pass `instrumentId`, `newAdmin`, `context`, `caller`. For new instruments, leave `tokenConfigCid` as `None`. Returns `TokenConfig` CID for next steps.
+2. **`AcceptAdminRole`** — Proposed admin exercises with `tokenConfigCid`, `instrumentId`, `context`, `caller`.
+3. **`SetPool`** — Admin links instrument to pool via `PoolRegistration` (`poolOwner`, `poolInstanceId` from Step 1), plus `context` and `caller`.
 
 Admin role can be transferred with `TransferAdminRole` → `AcceptAdminRole`.
 
@@ -274,6 +276,48 @@ Created by `poolOwner` with matching `poolInstanceId`, `poolOwner`, and `remoteC
 ### 2. Apply the chain update
 
 Call [`ApplyChainUpdates`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/lock-release-token-pool/daml/CCIP/LockReleaseTokenPoolV2.daml) on the pool:
+
+The choice argument is **not** the pool's `remoteChainConfigs` map — it takes `remoteChainSelectorsToRemove` (a list) and `chainsToAdd` (a list of `ChainUpdate` records, each carrying its own `remoteChainSelector`):
+
+```json
+{
+  "commands": [
+    {
+      "ExerciseCommand": {
+        "templateId": "#ccip-lock-release-token-pool-v2:CCIP.LockReleaseTokenPoolV2:LockReleaseTokenPool",
+        "contractId": "<POOL_CONTRACT_ID>",
+        "choice": "ApplyChainUpdates",
+        "choiceArgument": {
+          "remoteChainSelectorsToRemove": [],
+          "chainsToAdd": [
+            {
+              "remoteChainSelector": "9268731218649498074",
+              "remotePools": ["<REMOTE_POOL_ADDRESS_32_BYTES>"],
+              "remoteTokenAddress": "<REMOTE_TOKEN_ADDRESS_32_BYTES>",
+              "inboundCCVs": [
+                {
+                  "unpack": "committeeverifier-pttst@ccvOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+                }
+              ],
+              "outboundCCVs": [
+                {
+                  "unpack": "committeeverifier-pttst@ccvOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+                }
+              ],
+              "finalityConfig": { "tag": "WaitForFinality", "value": {} },
+              "inboundRateLimiter": { "unpack": "<INBOUND_LIMITER>@<POOL_OWNER>" },
+              "inboundCustomBlockConfirmationsRateLimiter": { "unpack": "<INBOUND_CUSTOM_LIMITER>@<POOL_OWNER>" },
+              "outboundRateLimiter": { "unpack": "<OUTBOUND_LIMITER>@<POOL_OWNER>" }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "commandId": "apply-chain-updates",
+  "actAs": ["<POOL_OWNER_PARTY>"]
+}
+```
 
 | ChainUpdate field                            | Guidance                                                                        |
 | :------------------------------------------- | :------------------------------------------------------------------------------ |

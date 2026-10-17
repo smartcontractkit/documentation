@@ -82,12 +82,12 @@ Using the [CCIP CLI](https://github.com/smartcontractkit/ccip-tools-ts/blob/main
 
 The SDK **finds or creates** a compatible `CCIPReceiver` on the default path — see [Canton as Destination](/ccip/canton/tutorials/destination) tutorials.
 
-### 4. Token transfers — accept holdings
+### 4. Token transfers — holdings arrive with execution
 
-If the message included a token transfer:
+If the message included a token transfer, the token release runs **inside the same Execute transaction** as the manual-exec command — you do not submit a separate accept step on the CCIP path:
 
-1. The token pool creates a **`TransferInstruction`** to the receiver party.
-2. The receiver party must **accept** the `TransferInstruction` to take custody — this is separate from the CCIP execute step.
+- **BurnMint pools** (the default testnet TEST ↔ LINK lane): the pool's `BurnMintFactory` mints holdings directly to the receiver party within the execution transaction. Tokens are in the receiver's holdings as soon as it commits — there is no `TransferInstruction` to accept.
+- **LockRelease pools**: the pool transfers from the pool owner's holdings within the same transaction. When the receiver's transfer preapproval is included in the EDS-supplied execute context, the transfer completes immediately. Without a preapproval, the transaction instead leaves a **pending `TransferInstruction`** that the receiver must accept separately via their token's transfer-instruction API or wallet — the manual-exec command does not accept pending instructions.
 
 For programmable token transfers, your receiver logic runs after tokens are available.
 
