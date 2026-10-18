@@ -1,0 +1,855 @@
+---
+/**
+ * Deposit and redemption routes with and without the adapter, both drawn in full, one above
+ * the other, on the same three columns (Source chain, Chainlink CCIP, Hub chain).
+ *
+ * Usage in MDX:
+ *   import VaultAdapterComparison from "@components/Solutions/VaultAdapterComparison/VaultAdapterComparison.astro"
+ *   <VaultAdapterComparison>…literal Markdown fallback…</VaultAdapterComparison>
+ *
+ * Two native radio groups (Deposit | Redeem, where the result is delivered) reshape both rows at
+ * once. Numbered stops are buttons that write an inspector line. "Trace the route" walks one row
+ * on demand; nothing autoplays and the two rows never race. Step 1 of each row is selected on the
+ * server-rendered first paint, so the explanation panel and the selected stop are visible at once.
+ *
+ * Styles are global on purpose: the element re-renders badges at runtime. Every class is `vac-`.
+ * Several rules carry three class names so they outrank the article's global list and
+ * max-width rules (PageContent.astro), which would otherwise leak into the drawing.
+ */
+import { DEFAULT_SCENARIO } from "./vaultAdapterComparisonModel.ts"
+import { renderRouteRows } from "./vaultAdapterComparisonView.ts"
+
+const uid = "vac-" + Math.random().toString(36).slice(2, 9)
+const scenario = DEFAULT_SCENARIO
+const interactive = renderRouteRows(uid, scenario)
+---
+
+<vault-adapter-comparison
+  class="vac"
+  data-flow={scenario.flow}
+  data-delivery={scenario.delivery}
+  role="group"
+  aria-labelledby={uid + "-title"}
+>
+  <Fragment set:html={interactive} />
+  {/* The literal Markdown children: not shown on screen, but kept for print, Copy page and the TXT export. */}
+  <div class="vac-text" hidden><slot /></div>
+</vault-adapter-comparison>
+
+<style is:global>
+  .vac {
+    display: block;
+    container: vac / inline-size;
+    isolation: isolate;
+    color-scheme: light;
+    border: 1px solid var(--border, #e4e8ed);
+    border-radius: 4px;
+    background: var(--background, #ffffff);
+    color: var(--foreground, #141921);
+    font-family: var(--font-family-text, "Inter", Arial, sans-serif);
+    text-align: left;
+  }
+  .vac *,
+  .vac *::before,
+  .vac *::after {
+    box-sizing: border-box;
+  }
+
+  /* Resets apply to the drawing only; the slotted transcript keeps the article's styling. */
+  .vac :where(.vac-interactive) p,
+  .vac :where(.vac-interactive) span,
+  .vac :where(.vac-interactive) label,
+  .vac :where(.vac-interactive) button,
+  .vac :where(.vac-interactive) li,
+  .vac :where(.vac-interactive) strong,
+  .vac :where(.vac-interactive) em {
+    margin: 0;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 20px;
+  }
+  .vac .vac-interactive ol {
+    padding: 0;
+    list-style: none;
+  }
+  .vac :where(.vac-interactive) ol {
+    margin: 0;
+  }
+  .vac .vac-interactive ol > li {
+    list-style: none;
+  }
+  .vac .vac-interactive .vac-micro li,
+  .vac .vac-interactive .vac-micro li > * {
+    margin: 0;
+  }
+  .vac .vac-interactive svg {
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .vac .vac-leg-arrow,
+  .vac .vac-stops {
+    max-width: none;
+  }
+
+  /* Header band */
+  .vac-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    min-height: 40px;
+    padding: 6px 8px 6px 16px;
+    border-bottom: 1px solid var(--border, #e4e8ed);
+    border-radius: 3px 3px 0 0;
+    background: var(--muted, #f5f7fa);
+  }
+  .vac .vac-title {
+    flex: 1 1 auto;
+    color: var(--gray-700, #3c414c);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .vac .vac-interactive .vac-reset {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    margin-left: auto;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-text-link, #0847f7);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .vac .vac-reset:hover {
+    background: var(--muted-more, #e4e8ed);
+  }
+  .vac .vac-reset:disabled {
+    cursor: default;
+  }
+  .vac-seg {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 2px;
+    border: 1px solid var(--border, #e4e8ed);
+    border-radius: 4px;
+    background: var(--background, #ffffff);
+  }
+  .vac-seg-delivery {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .vac .vac-option {
+    position: relative;
+    display: inline-flex;
+    min-width: 0;
+    cursor: pointer;
+  }
+  .vac .vac-option input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .vac .vac-option input:disabled {
+    cursor: default;
+  }
+  .vac .vac-option-text {
+    display: inline-flex;
+    flex: 1 1 auto;
+    align-items: center;
+    min-height: 28px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+  }
+  .vac .vac-option input:checked + .vac-option-text {
+    background: var(--blue-50, #eff6ff);
+    box-shadow: inset 0 0 0 1px var(--brand, #0847f7);
+    color: var(--brand, #0847f7);
+  }
+  .vac .vac-option input:focus-visible + .vac-option-text {
+    outline: 2px solid var(--brand, #0847f7);
+    outline-offset: 2px;
+  }
+
+  /* Column strip and tracks share one grid */
+  .vac-columns,
+  .vac-track {
+    display: grid;
+    grid-template-columns: minmax(100px, 1fr) 62px minmax(0, 1.55fr);
+  }
+  .vac-columns {
+    margin: 12px 16px 0;
+    border: 1px solid var(--border, #e4e8ed);
+    border-bottom: 0;
+    border-radius: 4px 4px 0 0;
+    overflow: hidden;
+  }
+  .vac .vac-col {
+    padding: 6px 10px;
+    background: var(--background-alt, #fafbfc);
+    color: var(--color-text-primary, #4e5560);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .vac .vac-col em {
+    display: none;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 16px;
+    text-transform: none;
+  }
+  .vac .vac-col-ccip {
+    padding-inline: 4px;
+    background: var(--blue-50, #eff6ff);
+    border-inline: 1px solid var(--border, #e4e8ed);
+    color: var(--foreground, #141921);
+    font-size: 11px;
+    letter-spacing: 0;
+    text-align: center;
+  }
+
+  /* Rows */
+  .vac-row {
+    margin: 0 16px;
+    border: 1px solid var(--border, #e4e8ed);
+    border-bottom: 0;
+  }
+  .vac-row[data-row="adapter"] {
+    border-bottom: 1px solid var(--border, #e4e8ed);
+    border-radius: 0 0 4px 4px;
+  }
+  .vac-row-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px 12px;
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--border, #e4e8ed);
+    background: var(--background, #ffffff);
+  }
+  .vac-row-titles {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+  .vac .vac-row-name {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+  }
+  .vac .vac-row-count {
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 36px;
+  }
+  .vac .vac-row-number {
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    font-variant-numeric: tabular-nums;
+  }
+  .vac .vac-row-unit {
+    color: var(--color-text-primary, #4e5560);
+    font-size: 14px;
+    font-weight: 400;
+  }
+  .vac .vac-row-meta {
+    color: var(--color-text-primary, #4e5560);
+    font-size: 12px;
+    line-height: 16px;
+    text-wrap: pretty;
+  }
+  .vac .vac-trace {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 5px 10px;
+    border: 1px solid var(--border, #e4e8ed);
+    border-radius: 4px;
+    background: var(--background, #ffffff);
+    color: var(--foreground, #141921);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    cursor: pointer;
+  }
+  .vac .vac-trace:hover:not(:disabled) {
+    background: var(--muted, #f5f7fa);
+  }
+  .vac .vac-trace:disabled {
+    color: var(--color-text-primary, #4e5560);
+    cursor: default;
+  }
+  .vac .vac-trace[data-running="true"] {
+    border-color: var(--brand, #0847f7);
+    background: var(--blue-50, #eff6ff);
+    color: var(--brand, #0847f7);
+  }
+  .vac .vac-trace-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    stroke: none;
+  }
+  .vac .vac-trace:focus-visible,
+  .vac .vac-reset:focus-visible,
+  .vac .vac-step-btn:focus-visible {
+    outline: 2px solid var(--brand, #0847f7);
+    outline-offset: 2px;
+  }
+
+  .vac-cell {
+    display: grid;
+    align-content: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 18px 6px 10px;
+    background: var(--background-alt, #fafbfc);
+  }
+  .vac-cell-ccip {
+    gap: 10px;
+    padding-inline: 0;
+    border-inline: 1px solid var(--border, #e4e8ed);
+    background: var(--blue-50, #eff6ff);
+  }
+  .vac-cell-hub {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-flow: row;
+    align-items: stretch;
+    justify-items: stretch;
+  }
+  .vac-cell-hub .vac-link {
+    justify-self: center;
+  }
+
+  /* Nodes */
+  .vac-node {
+    position: relative;
+    display: grid;
+    gap: 3px;
+    justify-items: center;
+    align-content: center;
+    min-width: 0;
+    padding: 14px 6px 10px;
+    border: 1.5px solid var(--foreground, #141921);
+    border-radius: 4px;
+    background: var(--background, #ffffff);
+    text-align: center;
+  }
+  .vac .vac-node-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .vac .vac-node-name {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+  .vac .vac-node-sub,
+  .vac .vac-node-note,
+  .vac .vac-node-note span {
+    color: var(--color-text-primary, #4e5560);
+    font-size: 11px;
+    line-height: 14px;
+  }
+  .vac .vac-node-note {
+    display: inline;
+  }
+  .vac .vac-node-note svg {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    color: var(--foreground, #141921);
+    vertical-align: -3px;
+  }
+  .vac-node-adapter {
+    border-color: var(--brand, #0847f7);
+    border-width: 2px;
+  }
+  .vac .vac-micro {
+    display: grid;
+    gap: 2px;
+    width: 100%;
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border, #e4e8ed);
+    text-align: left;
+  }
+  .vac .vac-micro li {
+    display: flex;
+    gap: 6px;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 11px;
+    line-height: 14px;
+  }
+  .vac .vac-micro-letter {
+    flex: none;
+    width: 12px;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 14px;
+  }
+  .vac .vac-node[data-active="true"],
+  .vac .vac-leg[data-active="true"] .vac-leg-line {
+    box-shadow: 0 0 0 3px var(--blue-100, #dcebff);
+  }
+  .vac .vac-node[data-active="true"] {
+    background: var(--blue-50, #eff6ff);
+  }
+  .vac .vac-node[data-active="true"]::after {
+    content: attr(data-token);
+    position: absolute;
+    bottom: -9px;
+    left: 6px;
+    padding: 0 7px;
+    border-radius: 9px;
+    background: var(--green-200, #b9f1cc);
+    box-shadow: inset 0 0 0 1px var(--foreground, #141921);
+    color: var(--foreground, #141921);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+
+  /* Stop badges (buttons) */
+  .vac-stops {
+    position: absolute;
+    top: -11px;
+    right: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 3px;
+    max-width: calc(100% - 12px);
+  }
+  .vac .vac-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .vac button.vac-badge {
+    cursor: pointer;
+  }
+  .vac button.vac-badge:hover:not(:disabled) {
+    box-shadow:
+      inset 0 0 0 2px var(--brand, #0847f7),
+      0 0 0 3px var(--blue-100, #dcebff);
+    transform: translateY(-1px);
+  }
+  .vac button.vac-badge:disabled {
+    cursor: default;
+  }
+  .vac .vac-badge[data-kind="send"] {
+    background: var(--brand, #0847f7);
+    color: var(--primary-foreground, #ffffff);
+  }
+  .vac .vac-badge[data-kind="approval"] {
+    background: var(--background, #ffffff);
+    box-shadow: inset 0 0 0 2px var(--brand, #0847f7);
+    color: var(--brand, #0847f7);
+  }
+  .vac .vac-badge[data-active="true"] {
+    box-shadow:
+      inset 0 0 0 2px var(--brand, #0847f7),
+      0 0 0 3px var(--blue-100, #dcebff);
+  }
+  .vac button.vac-badge:focus-visible {
+    outline: 2px solid var(--brand, #0847f7);
+    outline-offset: 2px;
+  }
+
+  /* CCIP legs, horizontal in both rows */
+  .vac-leg {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 4px;
+    justify-items: center;
+    min-width: 0;
+  }
+  .vac-leg-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 3px;
+    max-width: 100%;
+    min-width: 0;
+    padding: 0 4px;
+  }
+  .vac .vac-chip {
+    max-width: 100%;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .vac .vac-chip-token {
+    background: var(--green-200, #b9f1cc);
+    box-shadow: inset 0 0 0 1px var(--foreground, #141921);
+    color: var(--foreground, #141921);
+  }
+  .vac .vac-chip-payload {
+    background: var(--blue-100, #dcebff);
+    box-shadow: inset 0 0 0 1px var(--brand, #0847f7);
+    color: var(--foreground, #141921);
+  }
+  .vac .vac-chip-full {
+    display: none;
+  }
+  .vac-leg-line {
+    position: relative;
+    width: 100%;
+    height: 2px;
+    background: var(--brand, #0847f7);
+  }
+  .vac-leg-dashed {
+    background: repeating-linear-gradient(90deg, var(--brand, #0847f7) 0 6px, transparent 6px 10px);
+  }
+  .vac .vac-leg-arrow {
+    position: absolute;
+    top: 50%;
+    display: block;
+    width: 18px;
+    height: 18px;
+    color: var(--brand, #0847f7);
+    transform: translateY(-50%);
+  }
+  .vac .vac-leg-arrow svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+  }
+  .vac-leg-out .vac-leg-arrow {
+    right: -2px;
+  }
+  .vac-leg-back .vac-leg-arrow {
+    left: -2px;
+  }
+  .vac .vac-leg-caption {
+    display: none;
+    padding: 0 4px;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 11px;
+    line-height: 14px;
+    text-align: center;
+  }
+  .vac[data-delivery="hub"] .vac-leg-back {
+    display: none;
+  }
+
+  /* Hub cell contents */
+  .vac .vac-link {
+    display: grid;
+    align-content: center;
+    gap: 1px;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 11px;
+    line-height: 14px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .vac .vac-link span {
+    font-size: 11px;
+    line-height: 14px;
+  }
+  .vac[data-delivery="source"] .vac-node-receiver,
+  .vac[data-delivery="source"] .vac-link-receiver {
+    display: none;
+  }
+
+  /* Explanation row: step arrows beside the selected step's text */
+  .vac-inspector-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border, #e4e8ed);
+    background: var(--background, #ffffff);
+  }
+  .vac-steppers {
+    display: flex;
+    flex: none;
+    gap: 4px;
+  }
+  .vac .vac-step-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 1px solid var(--border, #e4e8ed);
+    border-radius: 4px;
+    background: var(--background, #ffffff);
+    color: var(--foreground, #141921);
+    cursor: pointer;
+  }
+  .vac .vac-step-btn svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+  }
+  .vac .vac-step-btn:hover:not(:disabled) {
+    border-color: var(--brand, #0847f7);
+    background: var(--blue-50, #eff6ff);
+    color: var(--brand, #0847f7);
+  }
+  .vac .vac-step-btn:disabled {
+    color: var(--muted-foreground, #6c7585);
+    cursor: default;
+  }
+  .vac .vac-inspector {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-top: 4px;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .vac .vac-inspector strong {
+    color: var(--foreground, #141921);
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .vac .vac-inspector-step {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 0 6px;
+    border-radius: 9px;
+    background: var(--muted, #f5f7fa);
+    color: var(--color-text-primary, #4e5560);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+  .vac .vac-legend-hint {
+    flex: 1 1 100%;
+    color: var(--foreground, #141921);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+  .vac .vac-legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    margin-top: 12px;
+    padding: 12px 16px 0;
+    border-top: 1px solid var(--border, #e4e8ed);
+    color: var(--color-text-primary, #4e5560);
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .vac .vac-legend .vac-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 10px;
+  }
+  .vac .vac-legend-switch {
+    display: inline-flex;
+    width: 16px;
+    height: 16px;
+    color: var(--foreground, #141921);
+  }
+  .vac .vac-legend-switch svg {
+    width: 16px;
+    height: 16px;
+  }
+  .vac .vac-legend-dash {
+    width: 18px;
+    height: 0;
+    border-top: 2px dashed var(--brand, #0847f7);
+  }
+  .vac .vac-footnote {
+    padding: 8px 16px 12px;
+    color: var(--muted-foreground, #6c7585);
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .vac-text[hidden] {
+    display: none;
+  }
+
+  /* Wider containers: three real columns, captions and subtitles, the button pinned top-right */
+  @container vac (min-width: 600px) {
+    .vac-columns,
+    .vac-track {
+      grid-template-columns: minmax(136px, 0.9fr) minmax(136px, 0.85fr) minmax(0, 2.1fr);
+    }
+    .vac .vac-col em {
+      display: block;
+    }
+    .vac .vac-col-ccip {
+      padding-inline: 10px;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .vac-seg-delivery {
+      flex: 0 1 auto;
+      display: inline-flex;
+    }
+    .vac-row-head {
+      flex-wrap: nowrap;
+    }
+    .vac-row-titles {
+      flex: 1 1 auto;
+    }
+    .vac .vac-trace {
+      flex: none;
+      align-self: flex-start;
+    }
+    .vac-cell {
+      padding: 20px 12px 12px;
+    }
+    .vac-cell-source .vac-node {
+      justify-self: center;
+      width: min(100%, 170px);
+    }
+    .vac-node {
+      padding: 14px 10px 10px;
+    }
+    .vac .vac-chip {
+      padding: 1px 8px;
+    }
+    .vac .vac-chip-full {
+      display: inline;
+    }
+    .vac .vac-chip-short {
+      display: none;
+    }
+    .vac .vac-leg-caption {
+      display: block;
+    }
+    .vac-cell-hub {
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    }
+    .vac-cell-hub [data-node="hub-wallet"],
+    .vac-cell-hub .vac-node-adapter {
+      grid-column: 1;
+      grid-row: 1;
+    }
+    .vac-cell-hub .vac-link-vault {
+      grid-column: 2;
+      grid-row: 1;
+    }
+    .vac-cell-hub .vac-node-vault {
+      grid-column: 3;
+      grid-row: 1;
+    }
+    .vac-cell-hub .vac-link-receiver {
+      grid-column: 1;
+      grid-row: 2;
+    }
+    .vac-cell-hub .vac-node-receiver {
+      grid-column: 1;
+      grid-row: 3;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .vac[data-ready="true"] .vac-node,
+    .vac[data-ready="true"] .vac-badge,
+    .vac[data-ready="true"] .vac-step-btn,
+    .vac[data-ready="true"] .vac-leg-line,
+    .vac[data-ready="true"] .vac-trace,
+    .vac[data-ready="true"] .vac-option-text {
+      transition:
+        background-color 210ms ease,
+        border-color 210ms ease,
+        box-shadow 210ms ease,
+        color 210ms ease,
+        transform 210ms ease;
+    }
+    .vac[data-ready="true"] .vac-node[data-active="true"]::after {
+      animation: vac-pop 210ms ease-out;
+    }
+    @keyframes vac-pop {
+      from {
+        opacity: 0;
+        transform: scale(0.7);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+  }
+
+  @media (forced-colors: active) {
+    .vac .vac-option input:checked + .vac-option-text,
+    .vac .vac-node[data-active="true"],
+    .vac .vac-badge[data-active="true"],
+    .vac .vac-trace[data-running="true"] {
+      outline: 2px solid Highlight;
+    }
+    .vac .vac-badge {
+      forced-color-adjust: none;
+    }
+    .vac-leg-line,
+    .vac .vac-legend-dash {
+      background: CanvasText;
+      border-color: CanvasText;
+      forced-color-adjust: none;
+    }
+    .vac-leg-dashed {
+      background: repeating-linear-gradient(90deg, CanvasText 0 6px, transparent 6px 10px);
+    }
+  }
+
+  @media print {
+    .vac-interactive {
+      display: none;
+    }
+    .vac-text[hidden] {
+      display: block;
+    }
+  }
+</style>
+
+<script>
+  import { defineVaultAdapterComparison } from "./vaultAdapterComparisonElement.ts"
+  defineVaultAdapterComparison()
+</script>
