@@ -100,7 +100,6 @@ describe("solution llms-full.txt", () => {
       expect(document).toContain("```solidity")
       expect(document).toContain("Message payload")
       expect(document).not.toContain("/images/solutions/cross-chain-vault-adapter/at-a-glance.svg")
-      expect(document).toContain("/images/solutions/cross-chain-vault-adapter/at-a-glance.svg")
       expect(document).not.toMatch(/^import /m)
       expect(document).not.toContain("<Aside")
       expect(document).not.toContain("<ClickToZoom")
