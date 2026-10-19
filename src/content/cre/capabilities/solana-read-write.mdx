@@ -1,22 +1,35 @@
 ---
 section: cre
-title: "The Solana Write Capability"
+title: "The Solana Read & Write Capabilities"
 date: Last Modified
 metadata:
-  description: "CRE Solana Write capability: write verified workflow results to Solana programs with built-in DON consensus and cryptographic verification."
+  description: "CRE Solana Read & Write capabilities: read Solana account and program state, and write verified workflow results to Solana programs, with built-in DON consensus."
   datePublished: "2026-07-06"
-  lastModified: "2026-07-13"
+  lastModified: "2026-09-04"
 ---
 
 import { Aside } from "@components"
 
-The **Solana Write** capability lets your CRE workflow submit cryptographically signed reports to Solana programs. Your workflow calls a single method while the underlying Decentralized Oracle Network (DON) handles consensus, report signing, and onchain submission through the Keystone Forwarder program.
+The **Solana Read & Write** capabilities provide a secure and reliable service for your workflow to interact with programs on Solana.
+
+- **Solana Read:** Allows your workflow to fetch consensus-verified data from Solana accounts and programs.
+- **Solana Write:** Allows your workflow to submit cryptographically signed reports to Solana programs.
 
 ## How it works
 
+When you use the SDK's [`solana.Client`](/cre/reference/sdk/solana-client) to interact with Solana, you are invoking these underlying capabilities. CRE routes requests to a Solana capability service backed by a `ContractReader` for reads and the Keystone Forwarder for writes, so your workflow gets consensus-verified results without managing RPC connections or oracle signing directly.
+
+### Understanding Solana Read operations
+
+For **Solana Read** operations, your workflow calls a read method on `solana.Client`, such as `GetAccountInfoWithOpts`, then decodes the raw bytes with a generated `Codec.Decode<AccountName>()`. Multiple DON nodes independently query the underlying `ContractReader` and reach consensus on the result before it is returned to your workflow.
+
+Learn more in the [Onchain Read guide](/cre/guides/workflow/using-solana-client/onchain-read).
+
+### Understanding Solana Write operations
+
 The Solana Write capability shares the same conceptual model as [EVM Write](/cre/capabilities/evm-read-write): your workflow generates a signed report, and the DON submits it to a Keystone Forwarder program onchain. The forwarder verifies the oracle signatures, then cross-program invokes (CPI) your receiver program's `on_report` instruction.
 
-### The secure write flow
+#### The secure write flow
 
 1. **Payload encoding**: Your workflow Borsh-encodes the data to deliver and wraps it in a `ForwarderReport` struct containing an account hash.
 2. **Report generation**: `runtime.report()` signs the encoded payload using the `solana` encoder (`ecdsa` + `keccak256`).
@@ -24,7 +37,7 @@ The Solana Write capability shares the same conceptual model as [EVM Write](/cre
 4. **Forwarder submission**: A DON node calls the Keystone Forwarder program with the signed report and the required accounts.
 5. **Delivery to your program**: The forwarder verifies the signatures and CPIs into your receiver program's `on_report` instruction.
 
-### Account layout
+#### Account layout
 
 Every Solana write request includes a `remainingAccounts` list. The Keystone Forwarder expects accounts in the following order:
 
@@ -38,19 +51,21 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 
 ## Key features
 
-- **DON consensus**: Reports are signed by multiple oracle nodes before submission.
+- **Decentralized consensus**: Multiple DON nodes independently verify read results and validate write reports before they are returned to your workflow or submitted onchain.
 - **Borsh encoding**: Payloads use Borsh, the standard serialization format for Solana programs.
-- **Type-safe bindings**: The CLI binding generator creates typed `writeReportFrom<StructName>()` helpers from your Anchor IDL.
-- **Configurable compute budget**: Override the default 290,000 compute unit limit via `ComputeConfig`.
+- **Type-safe bindings**: The CLI binding generator creates typed helpers (such as `writeReportFrom<StructName>()`) from your Anchor IDL.
+- **Configurable compute budget**: Override the default 290,000 compute unit limit via `ComputeConfig` for writes.
 - **Chain selector support**: Target Solana Mainnet or Devnet using Chainlink's chain selector system.
 
 <Aside type="note" title="CLI and simulation">
-  Solana write requires **CRE CLI v1.24.0 or later**. Local `cre workflow simulate` dry-runs the write path against the
-  Devnet forwarder built into the CLI. Deployed workflows use the live Keystone Forwarder on your target network.
+  Solana read and write require **CRE CLI v1.24.0 or later**. Local `cre workflow simulate` dry-runs reads and writes
+  against the Devnet forwarder and a fake `ContractReader` built into the CLI. Deployed workflows use the live Keystone
+  Forwarder and DON-run `ContractReader` on your target network.
 </Aside>
 
 ## Learn more
 
-- **[Solana Chain Interactions Guide](/cre/guides/workflow/using-solana-client/overview)**: Learn how to write data to Solana programs using the `SolanaClient`
+- **[Solana Chain Interactions Guide](/cre/guides/workflow/using-solana-client/overview)**: Learn how to read from and write to Solana programs using the `SolanaClient`
+- **[Solana Log Trigger](/cre/capabilities/triggers)**: Start a workflow when a Solana program emits a matching event
 - **[Solana Client SDK Reference](/cre/reference/sdk/solana-client)**: Detailed API reference for `SolanaClient` and helper functions
 - **[Supported Networks](/cre/supported-networks)**: Chain selector values and minimum SDK versions for Solana networks
