@@ -808,6 +808,27 @@ Read the warning.
     expect(result).toContain("> Read the warning.")
   })
 
+  it.each([
+    ['<Common callout="importPackage022" />', "npm install @chainlink/local@0.2.2"],
+    ['<AceCallout callout="privateBeta" />', "> **NOTE: Private Beta**"],
+    ['<CrecCommon callout="beta" />', "> **NOTE: Beta: permissioned access**"],
+    ['<Vrf2_5Common callout="security" />', "> **TIP: Security Considerations**"],
+    ['<Dta section="dtaNotes" />', "[Talk to an expert](https://chain.link/dta-access)"],
+    ['<TokenizedEquityFeeds section="tokenizedEquityNote" />', "Tokenized equity feeds present unique operational"],
+    ['<ContentCommon section="localTestingBenefits" />', "Testing locally using mock contracts saves you time"],
+  ])("inlines the static MDX selected by %s", async (component, expected) => {
+    const result = await transformMarkdown(`Before.\n\n${component}\n\nAfter.`, "/fake/page.mdx")
+    expect(result).toContain(expected)
+    expect(result.indexOf("Before.")).toBeLessThan(result.indexOf(expected))
+    expect(result.indexOf(expected)).toBeLessThan(result.indexOf("After."))
+    expect(result).not.toMatch(/<(Common|AceCallout|CrecCommon|Vrf2_5Common|Dta|TokenizedEquityFeeds|ContentCommon)\b/)
+  })
+
+  it("drops a selector component whose value has no static MDX target", async () => {
+    const result = await transformMarkdown('Before.\n\n<AceCallout callout="unknown" />\n\nAfter.', "/fake/page.mdx")
+    expect(result).toBe("Before.\n\nAfter.\n")
+  })
+
   it("projects SchemaFieldsTable from report schema definitions", async () => {
     const result = await transformMarkdown(`<SchemaFieldsTable schema="v2" />`, "/fake/page.mdx")
     expect(result).toContain("| Field")

@@ -485,6 +485,8 @@ describe("content-bearing component fidelity", () => {
   test.each([
     ['<AnyApiCallout callout="usefunctions" />', "Use CRE"],
     ['<CcipCommon callout="senderContractCallout" />', "Best Practices"],
+    ['<AceCallout callout="privateBeta" />', "Private Beta"],
+    ['<TokenizedEquityFeeds section="tokenizedEquityNote" />', "Tokenized equity feeds"],
   ])("static selector content is independently inventoried: %s", (component, expectedFragment) => {
     const analysis = analyzeSourceMarkdown(component, "src/content/fixture.mdx")
 

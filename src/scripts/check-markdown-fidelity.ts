@@ -142,6 +142,16 @@ const selectorComponents = {
   DataStreams: { astro: "src/features/data-streams/common/DataStreams.astro", attribute: "section" },
   VrfDeprecation: { astro: "src/features/vrf/VrfDeprecation.astro", attribute: "version" },
   CcipCommon: { astro: "src/features/ccip/CcipCommon.astro", attribute: "callout" },
+  Common: { astro: "src/features/chainlink-local/Common.astro", attribute: "callout" },
+  AceCallout: { astro: "src/features/ace/callouts/AceCallout.astro", attribute: "callout" },
+  CrecCommon: { astro: "src/features/crec/common/CrecCommon.astro", attribute: "callout" },
+  Vrf2_5Common: { astro: "src/features/vrf/v2-5/Vrf2_5Common.astro", attribute: "callout" },
+  Dta: { astro: "src/features/dta/common/Dta.astro", attribute: "section" },
+  TokenizedEquityFeeds: {
+    astro: "src/features/tokenized-equity-feeds/common/TokenizedEquityFeeds.astro",
+    attribute: "section",
+  },
+  ContentCommon: { astro: "src/features/common/ContentCommon.astro", attribute: "section" },
 } as const
 
 function normalizeText(value: string): string {

@@ -1134,7 +1134,32 @@ const SELECTOR_COMPONENTS = {
   ResourcesCallout: { astro: "src/features/resources/callouts/ResourcesCallout.astro", attribute: "callout" },
   DataStreams: { astro: "src/features/data-streams/common/DataStreams.astro", attribute: "section" },
   VrfDeprecation: { astro: "src/features/vrf/VrfDeprecation.astro", attribute: "version" },
+  Common: { astro: "src/features/chainlink-local/Common.astro", attribute: "callout" },
+  AceCallout: { astro: "src/features/ace/callouts/AceCallout.astro", attribute: "callout" },
+  CrecCommon: { astro: "src/features/crec/common/CrecCommon.astro", attribute: "callout" },
+  Vrf2_5Common: { astro: "src/features/vrf/v2-5/Vrf2_5Common.astro", attribute: "callout" },
+  Dta: { astro: "src/features/dta/common/Dta.astro", attribute: "section" },
+  TokenizedEquityFeeds: {
+    astro: "src/features/tokenized-equity-feeds/common/TokenizedEquityFeeds.astro",
+    attribute: "section",
+  },
+  ContentCommon: { astro: "src/features/common/ContentCommon.astro", attribute: "section" },
 } as const
+
+export function isSelectorComponent(name: string | null | undefined): name is keyof typeof SELECTOR_COMPONENTS {
+  return typeof name === "string" && Object.hasOwn(SELECTOR_COMPONENTS, name)
+}
+
+/** Inline the static MDX that a registered Astro selector component renders for its attribute value. */
+export function handleSelectorComponent(
+  node: MdxJsxNode,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  if (!isSelectorComponent(node.name)) return
+  return handleAstroSelector(node, parent, index, context, node.name)
+}
 
 function handleAstroSelector(
   node: MdxJsxNode,

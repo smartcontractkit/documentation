@@ -38,6 +38,8 @@ import {
   handleResourcesCallout,
   handleDataStreams,
   handleVrfDeprecation,
+  handleSelectorComponent,
+  isSelectorComponent,
   handleSchemaFieldsTable,
   handleFeedPage,
   loadCcipCommonMapping,
@@ -255,6 +257,10 @@ export async function transformMarkdown(
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "VrfDeprecation") {
           return handleVrfDeprecation(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && isSelectorComponent((node as MdxJsxNode).name)) {
+          return handleSelectorComponent(node as MdxJsxNode, parent, index, context)
         }
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "SchemaFieldsTable") {
