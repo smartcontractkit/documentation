@@ -4,6 +4,7 @@ import { transformPageToMarkdown } from "./transformMarkdown.js"
 import type { MarkdownArtifact } from "./types.js"
 import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentRelative } from "./utils.js"
 import { isSunsetDocsPath } from "../../config/sunset.js"
+import { withSolutionLayoutContent } from "./solutionContent.js"
 
 const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
@@ -129,14 +130,15 @@ https://docs.chain.link/data-feeds/deprecating-feeds
     siteBase: options.siteBase ?? SITE_BASE,
     targetLanguage: options.targetLanguage,
   }
+  const completeBody = withSolutionLayoutContent(body, mdxAbsPath)
 
   try {
     return {
       transformMode: "normal",
-      markdown: await transformPageToMarkdown(body, mdxAbsPath, transformOptions),
+      markdown: await transformPageToMarkdown(completeBody, mdxAbsPath, transformOptions),
     }
   } catch {
-    const sanitizedBody = stripRuntimeMdxSyntax(body)
+    const sanitizedBody = stripRuntimeMdxSyntax(completeBody)
 
     try {
       return {

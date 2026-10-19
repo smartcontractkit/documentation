@@ -18,6 +18,7 @@ import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
 import { isSunsetDocsPath, SUNSET_PAGES_STAY_IN_SITEMAP } from "./src/config/sunset"
 import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
 import remarkCodeFenceLanguageAlias from "./src/lib/markdown/remarkCodeFenceLanguageAlias"
+import remarkPrismTolk from "./src/lib/markdown/prismTolk"
 import rehypeCodeSampleFences from "./src/lib/markdown/rehypeCodeSampleFences"
 
 config() // Load .env file
@@ -128,11 +129,11 @@ export default defineConfig({
     }),
     // Ensure our fence-meta parser runs for `.mdx` pages (in addition to `markdown.remarkPlugins`).
     mdx({
-      remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias],
+      remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
     }),
   ],
   markdown: {
-    remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias],
+    remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
     rehypePlugins: [
       rehypeSlug, // Required for autolink to work properly
       [
