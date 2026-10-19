@@ -1,7 +1,7 @@
 /** @jsxImportSource react */
 import { useCallback, useEffect, useRef, useState, useMemo } from "react"
 import styles from "./networkDropdown.module.css"
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import walletStyles from "./WalletConnection.module.css"
 import { Contract, BrowserProvider, toQuantity } from "ethers"
 import { burnMintAbi } from "@features/abi/index.ts"

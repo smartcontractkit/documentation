@@ -2,7 +2,7 @@
 
 import { useState } from "preact/hooks"
 import "./NewsletterCTA.css"
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import { clsx } from "~/lib/clsx/clsx.ts"
 
 const TAG_1 = "Developers"

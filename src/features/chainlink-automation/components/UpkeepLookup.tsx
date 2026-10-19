@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { useMemo, useState } from "preact/hooks"
 import styles from "./UpkeepLookup.module.css"
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import { CopyText } from "@components"
 
 const NETWORK_LABELS: Record<string, string> = {
