@@ -16,7 +16,7 @@ import {
   calculateNetworkFeesForTokenMechanismDirect,
   calculateMessagingNetworkFeesDirect,
 } from "../../config/data/ccip/utils.js"
-import { TokenMechanism } from "../../config/data/ccip/types.js"
+import { TokenMechanism, type CCIPEventEntry, type CCIPSendErrorEntry } from "../../config/data/ccip/types.js"
 import { REPORT_SCHEMA_DEFINITIONS } from "../../features/feeds/components/reportSchemaData.js"
 
 type StaticValue = null | boolean | number | string | StaticValue[] | { [key: string]: StaticValue }
@@ -653,6 +653,29 @@ export function handleAside(node: MdxJsxNode, parent: Parent, index: number, con
 }
 
 /**
+ * Handle a one-line <Aside>…</Aside>, which MDX parses as the only inline child of a paragraph.
+ * Projects it like a flow Aside instead of leaking the raw JSX.
+ */
+export function handleInlineAsideParagraph(
+  node: Parent,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  const children = (node.children || []).filter(
+    (child) => child.type !== "text" || String((child as Literal).value).trim() !== ""
+  )
+  const aside = children[0] as MdxJsxNode | undefined
+  if (children.length !== 1 || aside?.type !== "mdxJsxTextElement" || aside.name !== "Aside") return
+  const flowAside = {
+    ...aside,
+    type: "mdxJsxFlowElement",
+    children: [paragraphNode((aside as Parent).children || [])],
+  } as MdxJsxNode
+  return handleAside(flowAside, parent, index, context)
+}
+
+/**
  * Handle ClickToZoom component - convert to markdown image
  * @param node - AST node
  * @param parent - Parent node
@@ -1111,7 +1134,32 @@ const SELECTOR_COMPONENTS = {
   ResourcesCallout: { astro: "src/features/resources/callouts/ResourcesCallout.astro", attribute: "callout" },
   DataStreams: { astro: "src/features/data-streams/common/DataStreams.astro", attribute: "section" },
   VrfDeprecation: { astro: "src/features/vrf/VrfDeprecation.astro", attribute: "version" },
+  Common: { astro: "src/features/chainlink-local/Common.astro", attribute: "callout" },
+  AceCallout: { astro: "src/features/ace/callouts/AceCallout.astro", attribute: "callout" },
+  CrecCommon: { astro: "src/features/crec/common/CrecCommon.astro", attribute: "callout" },
+  Vrf2_5Common: { astro: "src/features/vrf/v2-5/Vrf2_5Common.astro", attribute: "callout" },
+  Dta: { astro: "src/features/dta/common/Dta.astro", attribute: "section" },
+  TokenizedEquityFeeds: {
+    astro: "src/features/tokenized-equity-feeds/common/TokenizedEquityFeeds.astro",
+    attribute: "section",
+  },
+  ContentCommon: { astro: "src/features/common/ContentCommon.astro", attribute: "section" },
 } as const
+
+export function isSelectorComponent(name: string | null | undefined): name is keyof typeof SELECTOR_COMPONENTS {
+  return typeof name === "string" && Object.hasOwn(SELECTOR_COMPONENTS, name)
+}
+
+/** Inline the static MDX that a registered Astro selector component renders for its attribute value. */
+export function handleSelectorComponent(
+  node: MdxJsxNode,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  if (!isSelectorComponent(node.name)) return
+  return handleAstroSelector(node, parent, index, context, node.name)
+}
 
 function handleAstroSelector(
   node: MdxJsxNode,
@@ -1222,6 +1270,93 @@ export function handleSchemaFieldsTable(
   const tree = context.processor.parse(rows.join("\n")) as Parent
   parent.children.splice(index, 1, ...(tree.children || []))
   return index + (tree.children?.length || 0)
+}
+
+// Same type-to-data mapping as the CCIPSendError and CCIPEvent Astro components.
+const CCIP_ERROR_FILES: Record<string, string> = {
+  erc20: "erc20.json",
+  router: "router.json",
+  onramp: "onramp.json",
+  "rate-limiter": "ratelimiter.json",
+  "price-registry": "priceregistry.json",
+  pool: "pool.json",
+  burnMintERC20: "burnMintERC20.json",
+  feequoter: "feequoter.json",
+}
+
+const CCIP_EVENT_FILES: Record<string, string> = {
+  "onramp-send": "onramp-send.json",
+  "pool-send": "pool-send.json",
+  "offramp-receive": "offramp-receive.json",
+  "router-receive": "router-receive.json",
+  "pool-receive": "pool-receive.json",
+}
+
+function readCcipReferenceEntries<T>(node: MdxJsxNode, kind: "errors" | "events", files: Record<string, string>): T[] {
+  const type = staticAttribute(node, "type")
+  const version = staticAttribute(node, "version")
+  const file = typeof type === "string" && Object.hasOwn(files, type) ? files[type] : undefined
+  if (!file || typeof version !== "string" || !/^v\d+_\d+_\d+$/.test(version)) return []
+  const dataPath = resolveExistingWithin(path.resolve("src/config/data/ccip", kind), `${version}/${file}`)
+  const entries: unknown = dataPath ? JSON.parse(fs.readFileSync(dataPath, "utf-8")) : []
+  return Array.isArray(entries) ? (entries as T[]) : []
+}
+
+function replaceWithTable(parent: Parent, index: number, context: ComponentContext, rows: string[][]): number {
+  const [header, ...body] = rows
+  const markdown = [header, header.map(() => "---"), ...body].map((cells) => `| ${cells.join(" | ")} |`).join("\n")
+  const tree = context.processor.parse(markdown) as Parent
+  parent.children.splice(index, 1, ...(tree.children || []))
+  return index + (tree.children?.length || 0)
+}
+
+/** Project CCIPSendError as a Markdown table with the columns shown on the page. */
+export function handleCcipSendErrors(
+  node: MdxJsxNode,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  const entries = readCcipReferenceEntries<CCIPSendErrorEntry>(node, "errors", CCIP_ERROR_FILES)
+  if (entries.length === 0) return dropNode(parent, index)
+  const hasParameters = entries.some((entry) => entry.parameters?.length)
+  const hasSelector = entries.some((entry) => entry.errorSelector)
+  const header = ["Error", ...(hasParameters ? ["Parameters"] : []), ...(hasSelector ? ["Error selector"] : [])]
+  const rows = entries.map((entry) => [
+    `\`${escapeTableCell(entry.error)}\``,
+    ...(hasParameters
+      ? [entry.parameters?.map((p) => `\`${escapeTableCell(`${p.type} ${p.name}`)}\``).join(", ") || "-"]
+      : []),
+    ...(hasSelector ? [entry.errorSelector ? `\`${escapeTableCell(entry.errorSelector)}\`` : "-"] : []),
+    escapeTableCell(entry.description),
+  ])
+  return replaceWithTable(parent, index, context, [[...header, "Description"], ...rows])
+}
+
+/** Project CCIPEvent as a Markdown table; parameters use Solidity syntax and keep type links. */
+export function handleCcipEvents(
+  node: MdxJsxNode,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  const entries = readCcipReferenceEntries<CCIPEventEntry>(node, "events", CCIP_EVENT_FILES)
+  if (entries.length === 0) return dropNode(parent, index)
+  const hasParameters = entries.some((entry) => entry.parameters?.length)
+  const parameter = (p: NonNullable<CCIPEventEntry["parameters"]>[number]) => {
+    const name = escapeTableCell(`${p.indexed ? "indexed " : ""}${p.name}`)
+    const type = escapeTableCell(p.type)
+    return p.typeLink ? `[\`${type}\`](${p.typeLink}) \`${name}\`` : `\`${type} ${name}\``
+  }
+  const rows = entries.map((entry) => [
+    `\`${escapeTableCell(entry.event)}\``,
+    ...(hasParameters ? [entry.parameters?.map(parameter).join(", ") || "-"] : []),
+    escapeTableCell(entry.description),
+  ])
+  return replaceWithTable(parent, index, context, [
+    ["Event", ...(hasParameters ? ["Parameters"] : []), "Description"],
+    ...rows,
+  ])
 }
 
 export function handleFeedPage(
