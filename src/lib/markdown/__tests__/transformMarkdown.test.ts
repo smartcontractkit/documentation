@@ -741,6 +741,50 @@ Read the warning.
     expect(result).toContain("> Read the warning.")
   })
 
+  it.each([
+    [
+      "<Aside>Thrown when the caller is not the owner.</Aside>",
+      "> **NOTE**\n>\n> Thrown when the caller is not the owner.",
+    ],
+    [
+      '<Aside type="caution" title="Disclaimer">Use at your own risk.</Aside>',
+      "> **CAUTION: Disclaimer**\n>\n> Use at your own risk.",
+    ],
+    [
+      "<Aside>Call `withdraw` with <b>care</b>, see [the guide](/guide).</Aside>",
+      "> **NOTE**\n>\n> Call `withdraw` with **care**, see [the guide](/guide).",
+    ],
+  ])("projects a one-line Aside %s as a blockquote", async (source, projection) => {
+    const result = await transformMarkdown(`Before.\n\n${source}\n\nAfter.`, "/fake/page.mdx")
+    expect(result).toBe(`Before.\n\n${projection}\n\nAfter.\n`)
+  })
+
+  it("projects a one-line Aside inside a list item without leaking JSX", async () => {
+    const result = await transformMarkdown(
+      `- First step.
+
+  <Aside type="note">Keep the receipt.</Aside>
+- Second step.`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("  > **NOTE**\n  >\n  > Keep the receipt.")
+    expect(result).toContain("- Second step.")
+    expect(result).not.toContain("<Aside")
+  })
+
+  it("leaves a paragraph untouched when an inline Aside is not its only content", async () => {
+    const result = await transformMarkdown("See <Aside>inline</Aside> here.", "/fake/page.mdx")
+    expect(result).toBe("See <Aside>inline</Aside> here.\n")
+  })
+
+  it.each(["<Aside type={kind}>Dynamic type.</Aside>", "<Aside title={label}>Dynamic title.</Aside>"])(
+    "drops a one-line Aside with dynamic attributes like a flow Aside: %s",
+    async (source) => {
+      const result = await transformMarkdown(`Before.\n\n${source}\n\nAfter.`, "/fake/page.mdx")
+      expect(result).toBe("Before.\n\nAfter.\n")
+    }
+  )
+
   it("projects an Aside with a long repeated attribute value", async () => {
     const repeated = "a".repeat(100_000)
     const result = await transformMarkdown(

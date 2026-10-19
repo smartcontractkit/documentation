@@ -1634,7 +1634,9 @@ CCIP is a cross-chain messaging protocol built on Chainlink and secured by its d
 
 - **Data Transmission**: Send arbitrary data (i.e., bytes) to a receiving contract.
 
-<Aside>TON currently supports arbitrary message passing only. Token transfers are not yet supported.</Aside>
+> **NOTE**
+>
+> TON currently supports arbitrary message passing only. Token transfers are not yet supported.
 
 > **NOTE: Terminology**
 >
@@ -2924,7 +2926,9 @@ On the TON source blockchain, a user or another contract initiates a cross-chain
 
 On the TON destination blockchain, the `OffRamp` contract receives two types of OCR3 reports from the offchain DONs. The Committing DON submits a `Commit` report containing a Merkle root of batched messages. The `OffRamp` verifies the OCR3 signatures, deploys an ephemeral `MerkleRoot{id}` contract to track per-message execution state for that root, and emits a `CommitReportAccepted` log. The Executing DON observes this log along with the original source chain messages, and for each message submits an `Execute` report. The `OffRamp` sends a `Validate` message to the relevant `MerkleRoot{id}` contract to verify the Merkle proof and mark the message as in-progress. The `MerkleRoot{id}` replies with `ExecuteValidated`, after which the `OffRamp` deploys (or reuses) an ephemeral `ReceiveExecutor{id}` to track the delivery state. The `ReceiveExecutor{id}` dispatches the message back to the `OffRamp`, which routes it via the `Router` to the Receiver contract. The Receiver processes the data and sends a `CCIPReceiveConfirm` back through the `Router` and `OffRamp`, which forwards a `Confirm` to the `ReceiveExecutor{id}`. On success, the `ReceiveExecutor{id}` reports `NotifySuccess` to the `OffRamp`, which emits an `ExecutionStateChanged` log marking the message as `Success`.
 
-<Aside>TON currently supports arbitrary message passing only. Token transfers are not yet supported.</Aside>
+> **NOTE**
+>
+> TON currently supports arbitrary message passing only. Token transfers are not yet supported.
 
 ## Key Components
 
@@ -3022,7 +3026,9 @@ Last Updated: 2026-04-07
 
 This section provides more detail on the onchain components for TON.
 
-<Aside>TON currently supports arbitrary message passing only. Token transfers are not yet supported.</Aside>
+> **NOTE**
+>
+> TON currently supports arbitrary message passing only. Token transfers are not yet supported.
 
 ## Sender/Receiver
 
@@ -5723,7 +5729,9 @@ Last Updated: 2026-04-07
 > [Architecture](/ccip/v1/ton/concepts/architecture/overview) pages to understand all the concepts discussed on this
 > page.
 
-<Aside>TON currently supports arbitrary message passing only. Token transfers are not yet supported.</Aside>
+> **NOTE**
+>
+> TON currently supports arbitrary message passing only. Token transfers are not yet supported.
 
 In general, messages are successfully delivered and processed via CCIP as described in the [Architecture](/ccip/v1/ton/concepts/architecture/overview) page. However, some exceptional conditions might require users to manually execute the transaction on the destination blockchain:
 
@@ -35974,7 +35982,9 @@ Last Updated: 2025-09-08
 > forge install smartcontractkit/chainlink-ccip@bbab0601244ce58e2ffac0dbc178a80aab1fa4a3
 > ```
 
-<Aside type="note">You are viewing API documentation for CCIP v1.6.1, which is the latest version.</Aside>
+> **NOTE**
+>
+> You are viewing API documentation for CCIP v1.6.1, which is the latest version.
 
 ## API References
 
@@ -36128,7 +36138,9 @@ struct EVMExtraArgsV1 {
 }
 ```
 
-<Aside>First version of extra arguments, supporting basic gas limit configuration.</Aside>
+> **NOTE**
+>
+> First version of extra arguments, supporting basic gas limit configuration.
 
 **Properties**
 
@@ -36231,7 +36243,9 @@ struct EVMTokenAmount {
 bytes4 public constant EVM_EXTRA_ARGS_V1_TAG = 0x97a657c9;
 ```
 
-<Aside>The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).</Aside>
+> **NOTE**
+>
+> The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).
 
 ### GENERIC_EXTRA_ARGS_V2_TAG
 
@@ -36250,7 +36264,9 @@ bytes4 public constant GENERIC_EXTRA_ARGS_V2_TAG = 0x181dcf10;
 bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 ```
 
-<Aside>The identifier tag for Solana VM extra arguments.</Aside>
+> **NOTE**
+>
+> The identifier tag for Solana VM extra arguments.
 
 ### SVM_EXTRA_ARGS_MAX_ACCOUNTS
 
@@ -36258,7 +36274,9 @@ bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 uint256 public constant SVM_EXTRA_ARGS_MAX_ACCOUNTS = 64;
 ```
 
-<Aside>The maximum number of accounts that can be passed in SVMExtraArgs.</Aside>
+> **NOTE**
+>
+> The maximum number of accounts that can be passed in SVMExtraArgs.
 
 ### SVM_TOKEN_TRANSFER_DATA_OVERHEAD
 
@@ -36288,7 +36306,9 @@ uint256 public constant SVM_TOKEN_TRANSFER_DATA_OVERHEAD = (4 + 32) // source_po
 uint256 public constant SVM_MESSAGING_ACCOUNTS_OVERHEAD = 2;
 ```
 
-<Aside>Number of overhead accounts needed for message execution on SVM.</Aside>
+> **NOTE**
+>
+> Number of overhead accounts needed for message execution on SVM.
 
 ### SVM_ACCOUNT_BYTE_SIZE
 
@@ -36296,7 +36316,9 @@ uint256 public constant SVM_MESSAGING_ACCOUNTS_OVERHEAD = 2;
 uint256 public constant SVM_ACCOUNT_BYTE_SIZE = 32;
 ```
 
-<Aside>The size of each SVM account address in bytes.</Aside>
+> **NOTE**
+>
+> The size of each SVM account address in bytes.
 
 ## Functions
 
@@ -36308,7 +36330,9 @@ Encodes EVMExtraArgsV1 into bytes for message transmission.
 function _argsToBytes(EVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -36330,7 +36354,9 @@ Encodes GenericExtraArgsV2 into bytes for message transmission.
 function _argsToBytes(GenericExtraArgsV2 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V2 generic extra arguments with the V2 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V2 generic extra arguments with the V2 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -36352,7 +36378,9 @@ Encodes SVMExtraArgsV1 into bytes for message transmission.
 function _svmArgsToBytes(SVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes Solana VM extra arguments with the SVM tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes Solana VM extra arguments with the SVM tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -36534,7 +36562,9 @@ struct EVM2AnyRampMessage {
 bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 ```
 
-<Aside>Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).
 
 ### CHAIN_FAMILY_SELECTOR_SVM
 
@@ -36542,7 +36572,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_SVM = 0x1e10bdc4;
 ```
 
-<Aside>Chain family selector for SVM chains: bytes4(keccak256("CCIP ChainFamilySelector SVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for SVM chains: bytes4(keccak256("CCIP ChainFamilySelector SVM")).
 
 ### CHAIN_FAMILY_SELECTOR_APTOS
 
@@ -36550,7 +36582,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_SVM = 0x1e10bdc4;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_APTOS = 0xac77ffec;
 ```
 
-<Aside>Chain family selector for Aptos chains: bytes4(keccak256("CCIP ChainFamilySelector APTOS")).</Aside>
+> **NOTE**
+>
+> Chain family selector for Aptos chains: bytes4(keccak256("CCIP ChainFamilySelector APTOS")).
 
 ### CHAIN_FAMILY_SELECTOR_SUI
 
@@ -36558,7 +36592,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_APTOS = 0xac77ffec;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_SUI = 0xc4e05953;
 ```
 
-<Aside>Chain family selector for SUI chains: bytes4(keccak256("CCIP ChainFamilySelector SUI")).</Aside>
+> **NOTE**
+>
+> Chain family selector for SUI chains: bytes4(keccak256("CCIP ChainFamilySelector SUI")).
 
 ### CHAIN_FAMILY_SELECTOR_TVM
 
@@ -36566,7 +36602,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_SUI = 0xc4e05953;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_TVM = 0x647e2ba9;
 ```
 
-<Aside>Chain family selector for TVM chains: bytes4(keccak256("CCIP ChainFamiliySelector TVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for TVM chains: bytes4(keccak256("CCIP ChainFamiliySelector TVM")).
 
 ---
 
@@ -36770,7 +36808,9 @@ Checks if the given chain ID is supported for sending/receiving.
 function isChainSupported(uint64 destChainSelector) external view returns (bool supported);
 ```
 
-<Aside>Checks if the given chain ID is supported for sending/receiving.</Aside>
+> **NOTE**
+>
+> Checks if the given chain ID is supported for sending/receiving.
 
 **Parameters**
 
@@ -36830,7 +36870,9 @@ The FeeQuoter contract stores gas and token prices in USD, manages chain-specifi
 error TokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to get the price or fee for an unsupported token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to get the price or fee for an unsupported token.
 
 **Parameters**
 
@@ -36844,7 +36886,9 @@ error TokenNotSupported(address token);
 error FeeTokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to use an unsupported token for fee payment.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unsupported token for fee payment.
 
 **Parameters**
 
@@ -36858,7 +36902,9 @@ error FeeTokenNotSupported(address token);
 error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePassed);
 ```
 
-<Aside>Thrown when the gas price for a destination chain is stale.</Aside>
+> **NOTE**
+>
+> Thrown when the gas price for a destination chain is stale.
 
 **Parameters**
 
@@ -36874,7 +36920,9 @@ error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePas
 error MessageGasLimitTooHigh();
 ```
 
-<Aside>Thrown when the message gas limit exceeds the maximum allowed for the destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when the message gas limit exceeds the maximum allowed for the destination chain.
 
 ### MessageComputeUnitLimitTooHigh
 
@@ -36882,7 +36930,9 @@ error MessageGasLimitTooHigh();
 error MessageComputeUnitLimitTooHigh();
 ```
 
-<Aside>Thrown when the message compute unit limit exceeds the maximum allowed for Solana VM chains.</Aside>
+> **NOTE**
+>
+> Thrown when the message compute unit limit exceeds the maximum allowed for Solana VM chains.
 
 ### DestinationChainNotEnabled
 
@@ -36890,7 +36940,9 @@ error MessageComputeUnitLimitTooHigh();
 error DestinationChainNotEnabled(uint64 destChainSelector);
 ```
 
-<Aside>Thrown when attempting to send a message to a disabled destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to send a message to a disabled destination chain.
 
 **Parameters**
 
@@ -36904,7 +36956,9 @@ error DestinationChainNotEnabled(uint64 destChainSelector);
 error ExtraArgOutOfOrderExecutionMustBeTrue();
 ```
 
-<Aside>Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.</Aside>
+> **NOTE**
+>
+> Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.
 
 ### InvalidExtraArgsTag
 
@@ -36912,7 +36966,9 @@ error ExtraArgOutOfOrderExecutionMustBeTrue();
 error InvalidExtraArgsTag();
 ```
 
-<Aside>Thrown when the extra args tag is invalid or unsupported.</Aside>
+> **NOTE**
+>
+> Thrown when the extra args tag is invalid or unsupported.
 
 ### InvalidExtraArgsData
 
@@ -36920,7 +36976,9 @@ error InvalidExtraArgsTag();
 error InvalidExtraArgsData();
 ```
 
-<Aside>Thrown when extra args data is missing or malformed.</Aside>
+> **NOTE**
+>
+> Thrown when extra args data is missing or malformed.
 
 ### MessageTooLarge
 
@@ -36928,7 +36986,9 @@ error InvalidExtraArgsData();
 error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 ```
 
-<Aside>Thrown when the message data payload exceeds the maximum allowed size.</Aside>
+> **NOTE**
+>
+> Thrown when the message data payload exceeds the maximum allowed size.
 
 **Parameters**
 
@@ -36943,7 +37003,9 @@ error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 error UnsupportedNumberOfTokens(uint256 numberOfTokens, uint256 maxNumberOfTokensPerMsg);
 ```
 
-<Aside>Thrown when the number of tokens in a message exceeds the maximum allowed.</Aside>
+> **NOTE**
+>
+> Thrown when the number of tokens in a message exceeds the maximum allowed.
 
 **Parameters**
 
@@ -36987,7 +37049,9 @@ error InvalidTokenReceiver();
 error TooManySVMExtraArgsAccounts(uint256 numAccounts, uint256 maxAccounts);
 ```
 
-<Aside>Thrown when too many accounts are specified in SVM (Solana) extra args.</Aside>
+> **NOTE**
+>
+> Thrown when too many accounts are specified in SVM (Solana) extra args.
 
 **Parameters**
 
@@ -37002,7 +37066,9 @@ error TooManySVMExtraArgsAccounts(uint256 numAccounts, uint256 maxAccounts);
 error InvalidSVMExtraArgsWritableBitmap(uint64 accountIsWritableBitmap, uint256 numAccounts);
 ```
 
-<Aside>Thrown when the SVM writable bitmap is invalid for the number of accounts.</Aside>
+> **NOTE**
+>
+> Thrown when the SVM writable bitmap is invalid for the number of accounts.
 
 **Parameters**
 
@@ -37149,7 +37215,9 @@ struct StaticConfig {
 uint256 public constant FEE_BASE_DECIMALS = 36;
 ```
 
-<Aside>The base decimals for cost calculations.</Aside>
+> **NOTE**
+>
+> The base decimals for cost calculations.
 
 ### typeAndVersion
 
@@ -37157,7 +37225,9 @@ uint256 public constant FEE_BASE_DECIMALS = 36;
 string public constant typeAndVersion = "FeeQuoter 1.6.1";
 ```
 
-<Aside>Returns the contract type and version identifier.</Aside>
+> **NOTE**
+>
+> Returns the contract type and version identifier.
 
 ## Functions
 
@@ -37448,7 +37518,9 @@ Returns the address of the current CCIP router.
 function getRouter() public view virtual returns (address);
 ```
 
-<Aside>Provides access to the immutable router address used for message validation.</Aside>
+> **NOTE**
+>
+> Provides access to the immutable router address used for message validation.
 
 **Returns**
 
@@ -37952,7 +38024,9 @@ event InboundRateLimitConsumed(uint64 indexed remoteChainSelector, address token
 error AllowListNotEnabled();
 ```
 
-<Aside>Thrown when attempting to modify the allowlist when the feature is disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to modify the allowlist when the feature is disabled.
 
 ### CallerIsNotARampOnRouter
 
@@ -37960,7 +38034,9 @@ error AllowListNotEnabled();
 error CallerIsNotARampOnRouter(address caller);
 ```
 
-<Aside>Thrown when an unauthorized address attempts to act as an onRamp or offRamp.</Aside>
+> **NOTE**
+>
+> Thrown when an unauthorized address attempts to act as an onRamp or offRamp.
 
 ### ChainAlreadyExists
 
@@ -37968,7 +38044,9 @@ error CallerIsNotARampOnRouter(address caller);
 error ChainAlreadyExists(uint64 chainSelector);
 ```
 
-<Aside>Thrown when attempting to add a chain that is already configured.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a chain that is already configured.
 
 **Parameters**
 
@@ -37982,7 +38060,9 @@ error ChainAlreadyExists(uint64 chainSelector);
 error ChainNotAllowed(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to use a chain that is not authorized.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use a chain that is not authorized.
 
 ### CursedByRMN
 
@@ -37990,7 +38070,9 @@ error ChainNotAllowed(uint64 remoteChainSelector);
 error CursedByRMN();
 ```
 
-<Aside>Thrown when the Risk Management Network has flagged operations as unsafe.</Aside>
+> **NOTE**
+>
+> Thrown when the Risk Management Network has flagged operations as unsafe.
 
 ### InvalidDecimalArgs
 
@@ -37998,7 +38080,9 @@ error CursedByRMN();
 error InvalidDecimalArgs(uint8 expected, uint8 actual);
 ```
 
-<Aside>Thrown when token decimals don't match the expected configuration.</Aside>
+> **NOTE**
+>
+> Thrown when token decimals don't match the expected configuration.
 
 **Parameters**
 
@@ -38013,7 +38097,9 @@ error InvalidDecimalArgs(uint8 expected, uint8 actual);
 error InvalidRemoteChainDecimals(bytes sourcePoolData);
 ```
 
-<Aside>Thrown when the decimal configuration from a remote chain is invalid or malformed.</Aside>
+> **NOTE**
+>
+> Thrown when the decimal configuration from a remote chain is invalid or malformed.
 
 **Parameters**
 
@@ -38027,7 +38113,9 @@ error InvalidRemoteChainDecimals(bytes sourcePoolData);
 error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to remove a pool that isn't configured for the specified chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to remove a pool that isn't configured for the specified chain.
 
 **Parameters**
 
@@ -38042,7 +38130,9 @@ error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddr
 error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 ```
 
-<Aside>Thrown when attempting to use an unconfigured or invalid remote pool address.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unconfigured or invalid remote pool address.
 
 ### InvalidToken
 
@@ -38050,7 +38140,9 @@ error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 error InvalidToken(address token);
 ```
 
-<Aside>Thrown when attempting to operate with a token that is not supported by the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with a token that is not supported by the pool.
 
 **Parameters**
 
@@ -38064,7 +38156,9 @@ error InvalidToken(address token);
 error MismatchedArrayLengths();
 ```
 
-<Aside>Thrown when array parameters have different lengths in multi-chain operations.</Aside>
+> **NOTE**
+>
+> Thrown when array parameters have different lengths in multi-chain operations.
 
 ### NonExistentChain
 
@@ -38072,7 +38166,9 @@ error MismatchedArrayLengths();
 error NonExistentChain(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to operate with an unconfigured chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with an unconfigured chain.
 
 ### OverflowDetected
 
@@ -38080,7 +38176,9 @@ error NonExistentChain(uint64 remoteChainSelector);
 error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remoteAmount);
 ```
 
-<Aside>Thrown when a token amount conversion would result in an arithmetic overflow.</Aside>
+> **NOTE**
+>
+> Thrown when a token amount conversion would result in an arithmetic overflow.
 
 **Parameters**
 
@@ -38096,7 +38194,9 @@ error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remote
 error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to add a pool that is already configured for a chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a pool that is already configured for a chain.
 
 **Parameters**
 
@@ -38111,7 +38211,9 @@ error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 error SenderNotAllowed(address sender);
 ```
 
-<Aside>Thrown when a non-allowlisted address attempts an operation in allowlist mode.</Aside>
+> **NOTE**
+>
+> Thrown when a non-allowlisted address attempts an operation in allowlist mode.
 
 ### Unauthorized
 
@@ -38119,7 +38221,9 @@ error SenderNotAllowed(address sender);
 error Unauthorized(address caller);
 ```
 
-<Aside>Thrown when a caller lacks the required permissions for an operation.</Aside>
+> **NOTE**
+>
+> Thrown when a caller lacks the required permissions for an operation.
 
 **Parameters**
 
@@ -38133,7 +38237,9 @@ error Unauthorized(address caller);
 error ZeroAddressNotAllowed();
 ```
 
-<Aside>Thrown when attempting to use address(0) for critical contract addresses.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) for critical contract addresses.
 
 ## Structs
 
@@ -38223,7 +38329,9 @@ bool internal immutable i_allowlistEnabled;
 
 Set of addresses authorized to initiate cross-chain operations.
 
-<Aside>Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.</Aside>
+> **NOTE**
+>
+> Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.
 
 ```solidity
 EnumerableSet.AddressSet internal s_allowlist;
@@ -38804,7 +38912,9 @@ Returns the configured pool addresses for a remote chain.
 function getRemotePools(uint64 remoteChainSelector) public view returns (bytes[] memory);
 ```
 
-<Aside>Returns encoded addresses to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded addresses to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -38826,7 +38936,9 @@ Returns the token address on a remote chain.
 function getRemoteToken(uint64 remoteChainSelector) public view returns (bytes memory);
 ```
 
-<Aside>Returns encoded address to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded address to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -39084,7 +39196,9 @@ function setChainRateLimiterConfigs(
 ) external;
 ```
 
-<Aside>Callable by owner or rate limit admin. All array lengths must match.</Aside>
+> **NOTE**
+>
+> Callable by owner or rate limit admin. All array lengths must match.
 
 **Parameters**
 
@@ -39102,7 +39216,9 @@ Sets the address authorized to manage rate limits.
 function setRateLimitAdmin(address rateLimitAdmin) external onlyOwner;
 ```
 
-<Aside>Only callable by owner. The rate limit admin can modify rate limit configurations independently.</Aside>
+> **NOTE**
+>
+> Only callable by owner. The rate limit admin can modify rate limit configurations independently.
 
 ### setRouter
 
@@ -39112,7 +39228,9 @@ Updates the router contract address.
 function setRouter(address newRouter) public onlyOwner;
 ```
 
-<Aside>Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.</Aside>
+> **NOTE**
+>
+> Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.
 
 **Parameters**
 
@@ -39433,7 +39551,9 @@ A specialized token pool contract that manages third-party tokens through mintin
 string public constant override typeAndVersion = "BurnFromMintTokenPool 1.6.1";
 ```
 
-<Aside>A constant identifier that specifies the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier that specifies the contract type and version number.
 
 **Returns**
 
@@ -39553,7 +39673,9 @@ A specialized token pool for managing native tokens through a lock and release m
 event LiquidityTransferred(address indexed from, uint256 amount);
 ```
 
-<Aside>Emitted when liquidity is transferred from an older pool version during an upgrade.</Aside>
+> **NOTE**
+>
+> Emitted when liquidity is transferred from an older pool version during an upgrade.
 
 **Parameters**
 
@@ -39568,7 +39690,9 @@ event LiquidityTransferred(address indexed from, uint256 amount);
 event LiquidityAdded(address indexed provider, uint256 indexed amount);
 ```
 
-<Aside>Emitted when liquidity is added to the pool via [`provideLiquidity`](#provideliquidity).</Aside>
+> **NOTE**
+>
+> Emitted when liquidity is added to the pool via [`provideLiquidity`](#provideliquidity).
 
 **Parameters**
 
@@ -39583,7 +39707,9 @@ event LiquidityAdded(address indexed provider, uint256 indexed amount);
 event LiquidityRemoved(address indexed provider, uint256 indexed amount);
 ```
 
-<Aside>Emitted when liquidity is removed from the pool via [`withdrawLiquidity`](#withdrawliquidity).</Aside>
+> **NOTE**
+>
+> Emitted when liquidity is removed from the pool via [`withdrawLiquidity`](#withdrawliquidity).
 
 **Parameters**
 
@@ -39598,7 +39724,9 @@ event LiquidityRemoved(address indexed provider, uint256 indexed amount);
 event RebalancerSet(address oldRebalancer, address newRebalancer);
 ```
 
-<Aside>Emitted when the rebalancer (liquidity manager) address is updated via [`setRebalancer`](#setrebalancer).</Aside>
+> **NOTE**
+>
+> Emitted when the rebalancer (liquidity manager) address is updated via [`setRebalancer`](#setrebalancer).
 
 **Parameters**
 
@@ -39615,7 +39743,9 @@ event RebalancerSet(address oldRebalancer, address newRebalancer);
 error InsufficientLiquidity();
 ```
 
-<Aside>Thrown when attempting to withdraw more liquidity than available in the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to withdraw more liquidity than available in the pool.
 
 ## State Variables
 
@@ -39625,7 +39755,9 @@ error InsufficientLiquidity();
 address internal s_rebalancer;
 ```
 
-<Aside>The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.</Aside>
+> **NOTE**
+>
+> The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.
 
 ### typeAndVersion
 
@@ -39633,7 +39765,9 @@ address internal s_rebalancer;
 string public constant override typeAndVersion = "LockReleaseTokenPool 1.6.1";
 ```
 
-<Aside>A constant identifier specifying the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier specifying the contract type and version number.
 
 ## Functions
 
@@ -39738,7 +39872,9 @@ Updates the rebalancer address.
 function setRebalancer(address rebalancer) external onlyOwner;
 ```
 
-<Aside>Allows the owner to update the liquidity manager (rebalancer) address.</Aside>
+> **NOTE**
+>
+> Allows the owner to update the liquidity manager (rebalancer) address.
 
 **Parameters**
 
@@ -39853,7 +39989,9 @@ A contract that manages token pool configurations and administrator access for C
 event AdministratorTransferred(address indexed token, address indexed newAdmin);
 ```
 
-<Aside>Emitted when an administrator role transfer is completed via [`acceptAdminRole`](#acceptadminrole).</Aside>
+> **NOTE**
+>
+> Emitted when an administrator role transfer is completed via [`acceptAdminRole`](#acceptadminrole).
 
 **Parameters**
 
@@ -39887,7 +40025,9 @@ event AdministratorTransferRequested(address indexed token, address indexed curr
 event PoolSet(address indexed token, address indexed previousPool, address indexed newPool);
 ```
 
-<Aside>Emitted when a token pool address is updated via [`setPool`](#setpool).</Aside>
+> **NOTE**
+>
+> Emitted when a token pool address is updated via [`setPool`](#setpool).
 
 **Parameters**
 
@@ -39903,7 +40043,9 @@ event PoolSet(address indexed token, address indexed previousPool, address index
 event RegistryModuleAdded(address module);
 ```
 
-<Aside>Emitted when a registry module is added via [`addRegistryModule`](#addregistrymodule).</Aside>
+> **NOTE**
+>
+> Emitted when a registry module is added via [`addRegistryModule`](#addregistrymodule).
 
 **Parameters**
 
@@ -39917,7 +40059,9 @@ event RegistryModuleAdded(address module);
 event RegistryModuleRemoved(address indexed module);
 ```
 
-<Aside>Emitted when a registry module is removed via [`removeRegistryModule`](#removeregistrymodule).</Aside>
+> **NOTE**
+>
+> Emitted when a registry module is removed via [`removeRegistryModule`](#removeregistrymodule).
 
 **Parameters**
 
@@ -40260,7 +40404,9 @@ event AdministratorTransferRequested(address indexed token, address indexed curr
 event AdministratorTransferred(address indexed token, address indexed newAdmin);
 ```
 
-<Aside>Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).</Aside>
+> **NOTE**
+>
+> Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).
 
 **Parameters**
 
@@ -40275,7 +40421,9 @@ event AdministratorTransferred(address indexed token, address indexed newAdmin);
 event PoolSet(address indexed token, address indexed previousPool, address indexed newPool);
 ```
 
-<Aside>Emitted when a token's pool configuration is changed via [`setPool`](#setpool).</Aside>
+> **NOTE**
+>
+> Emitted when a token's pool configuration is changed via [`setPool`](#setpool).
 
 **Parameters**
 
@@ -40291,7 +40439,9 @@ event PoolSet(address indexed token, address indexed previousPool, address index
 event RegistryModuleAdded(address module);
 ```
 
-<Aside>Emitted when a new registry module is authorized.</Aside>
+> **NOTE**
+>
+> Emitted when a new registry module is authorized.
 
 **Parameters**
 
@@ -40305,7 +40455,9 @@ event RegistryModuleAdded(address module);
 event RegistryModuleRemoved(address indexed module);
 ```
 
-<Aside>Emitted when a registry module is deauthorized.</Aside>
+> **NOTE**
+>
+> Emitted when a registry module is deauthorized.
 
 **Parameters**
 
@@ -40321,7 +40473,9 @@ event RegistryModuleRemoved(address indexed module);
 error ZeroAddress();
 ```
 
-<Aside>Thrown when attempting to use address(0) where not allowed.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) where not allowed.
 
 ### AlreadyRegistered
 
@@ -40329,7 +40483,9 @@ error ZeroAddress();
 error AlreadyRegistered(address token);
 ```
 
-<Aside>Thrown when attempting to register an administrator for a token that already has one.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to register an administrator for a token that already has one.
 
 **Parameters**
 
@@ -40343,7 +40499,9 @@ error AlreadyRegistered(address token);
 error InvalidTokenPoolToken(address token);
 ```
 
-<Aside>Thrown when attempting to set a pool that doesn't support the token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set a pool that doesn't support the token.
 
 **Parameters**
 
@@ -40357,7 +40515,9 @@ error InvalidTokenPoolToken(address token);
 error OnlyAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when a function restricted to the token administrator is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to the token administrator is called by another address.
 
 **Parameters**
 
@@ -40372,7 +40532,9 @@ error OnlyAdministrator(address sender, address token);
 error OnlyPendingAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when acceptAdminRole is called by an address other than the pending administrator.</Aside>
+> **NOTE**
+>
+> Thrown when acceptAdminRole is called by an address other than the pending administrator.
 
 **Parameters**
 
@@ -40387,7 +40549,9 @@ error OnlyPendingAdministrator(address sender, address token);
 error OnlyRegistryModuleOrOwner(address sender);
 ```
 
-<Aside>Thrown when a function restricted to registry modules or owner is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to registry modules or owner is called by another address.
 
 **Parameters**
 
@@ -40425,7 +40589,9 @@ struct TokenConfig {
 EnumerableSet.AddressSet internal s_registryModules;
 ```
 
-<Aside>Set of authorized registry modules that can register administrators.</Aside>
+> **NOTE**
+>
+> Set of authorized registry modules that can register administrators.
 
 ### s_tokenConfig
 
@@ -40433,7 +40599,9 @@ EnumerableSet.AddressSet internal s_registryModules;
 mapping(address token => TokenConfig) internal s_tokenConfig;
 ```
 
-<Aside>Stores configuration data for each token, including administrators and pool addresses.</Aside>
+> **NOTE**
+>
+> Stores configuration data for each token, including administrators and pool addresses.
 
 ### s_tokens
 
@@ -40441,7 +40609,9 @@ mapping(address token => TokenConfig) internal s_tokenConfig;
 EnumerableSet.AddressSet internal s_tokens;
 ```
 
-<Aside>Set of all configured tokens for efficient enumeration.</Aside>
+> **NOTE**
+>
+> Set of all configured tokens for efficient enumeration.
 
 ### typeAndVersion
 
@@ -40449,7 +40619,9 @@ EnumerableSet.AddressSet internal s_tokens;
 string public constant override typeAndVersion = "TokenAdminRegistry 1.5.0";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ---
 
@@ -40593,7 +40765,9 @@ ITokenAdminRegistry internal immutable i_tokenAdminRegistry;
 string public constant override typeAndVersion = "RegistryModuleOwnerCustom 1.6.1";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ## Functions
 
@@ -41190,7 +41364,9 @@ A library implementing the Token Bucket algorithm for rate limiting cross-chain 
 event TokensConsumed(uint256 tokens);
 ```
 
-<Aside>Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).</Aside>
+> **NOTE**
+>
+> Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).
 
 **Parameters**
 
@@ -41204,7 +41380,9 @@ event TokensConsumed(uint256 tokens);
 event ConfigChanged(Config config);
 ```
 
-<Aside>Emitted when the rate limiter [`Config`](#config) is updated.</Aside>
+> **NOTE**
+>
+> Emitted when the rate limiter [`Config`](#config) is updated.
 
 **Parameters**
 
@@ -41220,7 +41398,9 @@ event ConfigChanged(Config config);
 error BucketOverfilled();
 ```
 
-<Aside>Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.</Aside>
+> **NOTE**
+>
+> Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.
 
 ### OnlyCallableByAdminOrOwner
 
@@ -41228,7 +41408,9 @@ error BucketOverfilled();
 error OnlyCallableByAdminOrOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by an unauthorized address.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by an unauthorized address.
 
 ### TokenMaxCapacityExceeded
 
@@ -41236,7 +41418,9 @@ error OnlyCallableByAdminOrOwner();
 error TokenMaxCapacityExceeded(uint256 capacity, uint256 requested, address tokenAddress);
 ```
 
-<Aside>Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### TokenRateLimitReached
 
@@ -41254,7 +41438,9 @@ error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address
 error AggregateValueMaxCapacityExceeded(uint256 capacity, uint256 requested);
 ```
 
-<Aside>Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### AggregateValueRateLimitReached
 
@@ -41272,7 +41458,9 @@ error AggregateValueRateLimitReached(uint256 minWaitInSeconds, uint256 available
 error InvalidRateLimitRate(Config rateLimiterConfig);
 ```
 
-<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).</Aside>
+> **NOTE**
+>
+> Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).
 
 ### DisabledNonZeroRateLimit
 
@@ -41280,7 +41468,9 @@ error InvalidRateLimitRate(Config rateLimiterConfig);
 error DisabledNonZeroRateLimit(Config config);
 ```
 
-<Aside>Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.</Aside>
+> **NOTE**
+>
+> Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.
 
 ### RateLimitMustBeDisabled
 
@@ -41288,7 +41478,9 @@ error DisabledNonZeroRateLimit(Config config);
 error RateLimitMustBeDisabled();
 ```
 
-<Aside>Thrown when attempting to enable rate limiting in a context where it must be disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to enable rate limiting in a context where it must be disabled.
 
 ## Structs
 
@@ -41483,7 +41675,9 @@ Returns the smaller of two numbers.
 function _min(uint256 a, uint256 b) internal pure returns (uint256);
 ```
 
-<Aside>Utility function for safe minimum value calculation.</Aside>
+> **NOTE**
+>
+> Utility function for safe minimum value calculation.
 
 **Parameters**
 
@@ -41663,7 +41857,9 @@ A minimal contract that implements 2-step ownership transfer and nothing more. I
 event OwnershipTransferRequested(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when the current owner initiates an ownership transfer.</Aside>
+> **NOTE**
+>
+> Emitted when the current owner initiates an ownership transfer.
 
 **Parameters**
 
@@ -41678,7 +41874,9 @@ event OwnershipTransferRequested(address indexed from, address indexed to);
 event OwnershipTransferred(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when an ownership transfer is completed.</Aside>
+> **NOTE**
+>
+> Emitted when an ownership transfer is completed.
 
 **Parameters**
 
@@ -41695,7 +41893,9 @@ event OwnershipTransferred(address indexed from, address indexed to);
 error CannotTransferToSelf();
 ```
 
-<Aside>Thrown when attempting to transfer ownership to the current owner.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to transfer ownership to the current owner.
 
 ### MustBeProposedOwner
 
@@ -41703,7 +41903,9 @@ error CannotTransferToSelf();
 error MustBeProposedOwner();
 ```
 
-<Aside>Thrown when someone other than the pending owner tries to accept ownership.</Aside>
+> **NOTE**
+>
+> Thrown when someone other than the pending owner tries to accept ownership.
 
 ### OnlyCallableByOwner
 
@@ -41711,7 +41913,9 @@ error MustBeProposedOwner();
 error OnlyCallableByOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by someone other than the owner.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by someone other than the owner.
 
 ### OwnerCannotBeZero
 
@@ -41719,7 +41923,9 @@ error OnlyCallableByOwner();
 error OwnerCannotBeZero();
 ```
 
-<Aside>Thrown when attempting to set the owner to address(0).</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set the owner to address(0).
 
 ## State Variables
 
@@ -41793,7 +41999,9 @@ Modifier that restricts function access to the contract owner.
 modifier onlyOwner();
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner.
 
 ### owner
 
@@ -41840,7 +42048,9 @@ Internal function to validate access control.
 function _validateOwnership() internal view;
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.
 
 ---
 
@@ -41954,7 +42164,9 @@ Last Updated: 2025-05-19
 > forge install smartcontractkit/chainlink-ccip@2114b90f39c82c052e05af7c33d42c1ae98f4180
 > ```
 
-<Aside type="note">You are viewing API documentation for CCIP v1.6.0, which is the latest version.</Aside>
+> **NOTE**
+>
+> You are viewing API documentation for CCIP v1.6.0, which is the latest version.
 
 ## API References
 
@@ -42108,7 +42320,9 @@ struct EVMExtraArgsV1 {
 }
 ```
 
-<Aside>First version of extra arguments, supporting basic gas limit configuration.</Aside>
+> **NOTE**
+>
+> First version of extra arguments, supporting basic gas limit configuration.
 
 **Properties**
 
@@ -42211,7 +42425,9 @@ struct EVMTokenAmount {
 bytes4 public constant EVM_EXTRA_ARGS_V1_TAG = 0x97a657c9;
 ```
 
-<Aside>The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).</Aside>
+> **NOTE**
+>
+> The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).
 
 ### GENERIC_EXTRA_ARGS_V2_TAG
 
@@ -42230,7 +42446,9 @@ bytes4 public constant GENERIC_EXTRA_ARGS_V2_TAG = 0x181dcf10;
 bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 ```
 
-<Aside>The identifier tag for Solana VM extra arguments.</Aside>
+> **NOTE**
+>
+> The identifier tag for Solana VM extra arguments.
 
 ### SVM_EXTRA_ARGS_MAX_ACCOUNTS
 
@@ -42238,7 +42456,9 @@ bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 uint256 public constant SVM_EXTRA_ARGS_MAX_ACCOUNTS = 64;
 ```
 
-<Aside>The maximum number of accounts that can be passed in SVMExtraArgs.</Aside>
+> **NOTE**
+>
+> The maximum number of accounts that can be passed in SVMExtraArgs.
 
 ### SVM_TOKEN_TRANSFER_DATA_OVERHEAD
 
@@ -42268,7 +42488,9 @@ uint256 public constant SVM_TOKEN_TRANSFER_DATA_OVERHEAD = (4 + 32) // source_po
 uint256 public constant SVM_MESSAGING_ACCOUNTS_OVERHEAD = 2;
 ```
 
-<Aside>Number of overhead accounts needed for message execution on SVM.</Aside>
+> **NOTE**
+>
+> Number of overhead accounts needed for message execution on SVM.
 
 ### SVM_ACCOUNT_BYTE_SIZE
 
@@ -42276,7 +42498,9 @@ uint256 public constant SVM_MESSAGING_ACCOUNTS_OVERHEAD = 2;
 uint256 public constant SVM_ACCOUNT_BYTE_SIZE = 32;
 ```
 
-<Aside>The size of each SVM account address in bytes.</Aside>
+> **NOTE**
+>
+> The size of each SVM account address in bytes.
 
 ## Functions
 
@@ -42288,7 +42512,9 @@ Encodes EVMExtraArgsV1 into bytes for message transmission.
 function _argsToBytes(EVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -42310,7 +42536,9 @@ Encodes GenericExtraArgsV2 into bytes for message transmission.
 function _argsToBytes(GenericExtraArgsV2 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V2 generic extra arguments with the V2 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V2 generic extra arguments with the V2 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -42332,7 +42560,9 @@ Encodes SVMExtraArgsV1 into bytes for message transmission.
 function _svmArgsToBytes(SVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes Solana VM extra arguments with the SVM tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes Solana VM extra arguments with the SVM tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -42514,7 +42744,9 @@ struct EVM2AnyRampMessage {
 bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 ```
 
-<Aside>Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).
 
 ### CHAIN_FAMILY_SELECTOR_SVM
 
@@ -42522,7 +42754,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_SVM = 0x1e10bdc4;
 ```
 
-<Aside>Chain family selector for SVM chains: bytes4(keccak256("CCIP ChainFamilySelector SVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for SVM chains: bytes4(keccak256("CCIP ChainFamilySelector SVM")).
 
 ### CHAIN_FAMILY_SELECTOR_APTOS
 
@@ -42530,7 +42764,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_SVM = 0x1e10bdc4;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_APTOS = 0xac77ffec;
 ```
 
-<Aside>Chain family selector for Aptos chains: bytes4(keccak256("CCIP ChainFamilySelector APTOS")).</Aside>
+> **NOTE**
+>
+> Chain family selector for Aptos chains: bytes4(keccak256("CCIP ChainFamilySelector APTOS")).
 
 ### CHAIN_FAMILY_SELECTOR_SUI
 
@@ -42538,7 +42774,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_APTOS = 0xac77ffec;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_SUI = 0xc4e05953;
 ```
 
-<Aside>Chain family selector for SUI chains: bytes4(keccak256("CCIP ChainFamilySelector SUI")).</Aside>
+> **NOTE**
+>
+> Chain family selector for SUI chains: bytes4(keccak256("CCIP ChainFamilySelector SUI")).
 
 ---
 
@@ -42742,7 +42980,9 @@ Checks if the given chain ID is supported for sending/receiving.
 function isChainSupported(uint64 destChainSelector) external view returns (bool supported);
 ```
 
-<Aside>Checks if the given chain ID is supported for sending/receiving.</Aside>
+> **NOTE**
+>
+> Checks if the given chain ID is supported for sending/receiving.
 
 **Parameters**
 
@@ -42802,7 +43042,9 @@ The FeeQuoter contract stores gas and token prices in USD, manages chain-specifi
 error TokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to get the price or fee for an unsupported token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to get the price or fee for an unsupported token.
 
 **Parameters**
 
@@ -42816,7 +43058,9 @@ error TokenNotSupported(address token);
 error FeeTokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to use an unsupported token for fee payment.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unsupported token for fee payment.
 
 **Parameters**
 
@@ -42830,7 +43074,9 @@ error FeeTokenNotSupported(address token);
 error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePassed);
 ```
 
-<Aside>Thrown when the gas price for a destination chain is stale.</Aside>
+> **NOTE**
+>
+> Thrown when the gas price for a destination chain is stale.
 
 **Parameters**
 
@@ -42846,7 +43092,9 @@ error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePas
 error MessageGasLimitTooHigh();
 ```
 
-<Aside>Thrown when the message gas limit exceeds the maximum allowed for the destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when the message gas limit exceeds the maximum allowed for the destination chain.
 
 ### MessageComputeUnitLimitTooHigh
 
@@ -42854,7 +43102,9 @@ error MessageGasLimitTooHigh();
 error MessageComputeUnitLimitTooHigh();
 ```
 
-<Aside>Thrown when the message compute unit limit exceeds the maximum allowed for Solana VM chains.</Aside>
+> **NOTE**
+>
+> Thrown when the message compute unit limit exceeds the maximum allowed for Solana VM chains.
 
 ### DestinationChainNotEnabled
 
@@ -42862,7 +43112,9 @@ error MessageComputeUnitLimitTooHigh();
 error DestinationChainNotEnabled(uint64 destChainSelector);
 ```
 
-<Aside>Thrown when attempting to send a message to a disabled destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to send a message to a disabled destination chain.
 
 **Parameters**
 
@@ -42876,7 +43128,9 @@ error DestinationChainNotEnabled(uint64 destChainSelector);
 error ExtraArgOutOfOrderExecutionMustBeTrue();
 ```
 
-<Aside>Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.</Aside>
+> **NOTE**
+>
+> Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.
 
 ### InvalidExtraArgsTag
 
@@ -42884,7 +43138,9 @@ error ExtraArgOutOfOrderExecutionMustBeTrue();
 error InvalidExtraArgsTag();
 ```
 
-<Aside>Thrown when the extra args tag is invalid or unsupported.</Aside>
+> **NOTE**
+>
+> Thrown when the extra args tag is invalid or unsupported.
 
 ### InvalidExtraArgsData
 
@@ -42892,7 +43148,9 @@ error InvalidExtraArgsTag();
 error InvalidExtraArgsData();
 ```
 
-<Aside>Thrown when extra args data is missing or malformed.</Aside>
+> **NOTE**
+>
+> Thrown when extra args data is missing or malformed.
 
 ### MessageTooLarge
 
@@ -42900,7 +43158,9 @@ error InvalidExtraArgsData();
 error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 ```
 
-<Aside>Thrown when the message data payload exceeds the maximum allowed size.</Aside>
+> **NOTE**
+>
+> Thrown when the message data payload exceeds the maximum allowed size.
 
 **Parameters**
 
@@ -42915,7 +43175,9 @@ error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 error UnsupportedNumberOfTokens(uint256 numberOfTokens, uint256 maxNumberOfTokensPerMsg);
 ```
 
-<Aside>Thrown when the number of tokens in a message exceeds the maximum allowed.</Aside>
+> **NOTE**
+>
+> Thrown when the number of tokens in a message exceeds the maximum allowed.
 
 **Parameters**
 
@@ -42959,7 +43221,9 @@ error InvalidTokenReceiver();
 error TooManySVMExtraArgsAccounts(uint256 numAccounts, uint256 maxAccounts);
 ```
 
-<Aside>Thrown when too many accounts are specified in SVM (Solana) extra args.</Aside>
+> **NOTE**
+>
+> Thrown when too many accounts are specified in SVM (Solana) extra args.
 
 **Parameters**
 
@@ -42974,7 +43238,9 @@ error TooManySVMExtraArgsAccounts(uint256 numAccounts, uint256 maxAccounts);
 error InvalidSVMExtraArgsWritableBitmap(uint64 accountIsWritableBitmap, uint256 numAccounts);
 ```
 
-<Aside>Thrown when the SVM writable bitmap is invalid for the number of accounts.</Aside>
+> **NOTE**
+>
+> Thrown when the SVM writable bitmap is invalid for the number of accounts.
 
 **Parameters**
 
@@ -42989,7 +43255,9 @@ error InvalidSVMExtraArgsWritableBitmap(uint64 accountIsWritableBitmap, uint256 
 error TooManySuiExtraArgsReceiverObjectIds(uint256 numReceiverObjectIds, uint256 maxReceiverObjectIds);
 ```
 
-<Aside>Thrown when too many receiver object IDs are specified in SUI extra args.</Aside>
+> **NOTE**
+>
+> Thrown when too many receiver object IDs are specified in SUI extra args.
 
 **Parameters**
 
@@ -43136,7 +43404,9 @@ struct StaticConfig {
 uint256 public constant FEE_BASE_DECIMALS = 36;
 ```
 
-<Aside>The base decimals for cost calculations.</Aside>
+> **NOTE**
+>
+> The base decimals for cost calculations.
 
 ### typeAndVersion
 
@@ -43144,7 +43414,9 @@ uint256 public constant FEE_BASE_DECIMALS = 36;
 string public constant typeAndVersion = "FeeQuoter 1.6.0";
 ```
 
-<Aside>Returns the contract type and version identifier.</Aside>
+> **NOTE**
+>
+> Returns the contract type and version identifier.
 
 ## Functions
 
@@ -43435,7 +43707,9 @@ Returns the address of the current CCIP router.
 function getRouter() public view virtual returns (address);
 ```
 
-<Aside>Provides access to the immutable router address used for message validation.</Aside>
+> **NOTE**
+>
+> Provides access to the immutable router address used for message validation.
 
 **Returns**
 
@@ -43934,7 +44208,9 @@ event RateLimitAdminSet(address rateLimitAdmin);
 error AllowListNotEnabled();
 ```
 
-<Aside>Thrown when attempting to modify the allowlist when the feature is disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to modify the allowlist when the feature is disabled.
 
 ### CallerIsNotARampOnRouter
 
@@ -43942,7 +44218,9 @@ error AllowListNotEnabled();
 error CallerIsNotARampOnRouter(address caller);
 ```
 
-<Aside>Thrown when an unauthorized address attempts to act as an onRamp or offRamp.</Aside>
+> **NOTE**
+>
+> Thrown when an unauthorized address attempts to act as an onRamp or offRamp.
 
 ### ChainAlreadyExists
 
@@ -43950,7 +44228,9 @@ error CallerIsNotARampOnRouter(address caller);
 error ChainAlreadyExists(uint64 chainSelector);
 ```
 
-<Aside>Thrown when attempting to add a chain that is already configured.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a chain that is already configured.
 
 **Parameters**
 
@@ -43964,7 +44244,9 @@ error ChainAlreadyExists(uint64 chainSelector);
 error ChainNotAllowed(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to use a chain that is not authorized.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use a chain that is not authorized.
 
 ### CursedByRMN
 
@@ -43972,7 +44254,9 @@ error ChainNotAllowed(uint64 remoteChainSelector);
 error CursedByRMN();
 ```
 
-<Aside>Thrown when the Risk Management Network has flagged operations as unsafe.</Aside>
+> **NOTE**
+>
+> Thrown when the Risk Management Network has flagged operations as unsafe.
 
 ### InvalidDecimalArgs
 
@@ -43980,7 +44264,9 @@ error CursedByRMN();
 error InvalidDecimalArgs(uint8 expected, uint8 actual);
 ```
 
-<Aside>Thrown when token decimals don't match the expected configuration.</Aside>
+> **NOTE**
+>
+> Thrown when token decimals don't match the expected configuration.
 
 **Parameters**
 
@@ -43995,7 +44281,9 @@ error InvalidDecimalArgs(uint8 expected, uint8 actual);
 error InvalidRemoteChainDecimals(bytes sourcePoolData);
 ```
 
-<Aside>Thrown when the decimal configuration from a remote chain is invalid or malformed.</Aside>
+> **NOTE**
+>
+> Thrown when the decimal configuration from a remote chain is invalid or malformed.
 
 **Parameters**
 
@@ -44009,7 +44297,9 @@ error InvalidRemoteChainDecimals(bytes sourcePoolData);
 error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to remove a pool that isn't configured for the specified chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to remove a pool that isn't configured for the specified chain.
 
 **Parameters**
 
@@ -44024,7 +44314,9 @@ error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddr
 error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 ```
 
-<Aside>Thrown when attempting to use an unconfigured or invalid remote pool address.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unconfigured or invalid remote pool address.
 
 ### InvalidToken
 
@@ -44032,7 +44324,9 @@ error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 error InvalidToken(address token);
 ```
 
-<Aside>Thrown when attempting to operate with a token that is not supported by the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with a token that is not supported by the pool.
 
 **Parameters**
 
@@ -44046,7 +44340,9 @@ error InvalidToken(address token);
 error MismatchedArrayLengths();
 ```
 
-<Aside>Thrown when array parameters have different lengths in multi-chain operations.</Aside>
+> **NOTE**
+>
+> Thrown when array parameters have different lengths in multi-chain operations.
 
 ### NonExistentChain
 
@@ -44054,7 +44350,9 @@ error MismatchedArrayLengths();
 error NonExistentChain(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to operate with an unconfigured chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with an unconfigured chain.
 
 ### OverflowDetected
 
@@ -44062,7 +44360,9 @@ error NonExistentChain(uint64 remoteChainSelector);
 error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remoteAmount);
 ```
 
-<Aside>Thrown when a token amount conversion would result in an arithmetic overflow.</Aside>
+> **NOTE**
+>
+> Thrown when a token amount conversion would result in an arithmetic overflow.
 
 **Parameters**
 
@@ -44078,7 +44378,9 @@ error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remote
 error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to add a pool that is already configured for a chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a pool that is already configured for a chain.
 
 **Parameters**
 
@@ -44093,7 +44395,9 @@ error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 error SenderNotAllowed(address sender);
 ```
 
-<Aside>Thrown when a non-allowlisted address attempts an operation in allowlist mode.</Aside>
+> **NOTE**
+>
+> Thrown when a non-allowlisted address attempts an operation in allowlist mode.
 
 ### Unauthorized
 
@@ -44101,7 +44405,9 @@ error SenderNotAllowed(address sender);
 error Unauthorized(address caller);
 ```
 
-<Aside>Thrown when a caller lacks the required permissions for an operation.</Aside>
+> **NOTE**
+>
+> Thrown when a caller lacks the required permissions for an operation.
 
 **Parameters**
 
@@ -44115,7 +44421,9 @@ error Unauthorized(address caller);
 error ZeroAddressNotAllowed();
 ```
 
-<Aside>Thrown when attempting to use address(0) for critical contract addresses.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) for critical contract addresses.
 
 ## Structs
 
@@ -44205,7 +44513,9 @@ bool internal immutable i_allowlistEnabled;
 
 Set of addresses authorized to initiate cross-chain operations.
 
-<Aside>Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.</Aside>
+> **NOTE**
+>
+> Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.
 
 ```solidity
 EnumerableSet.AddressSet internal s_allowlist;
@@ -44743,7 +45053,9 @@ Returns the configured pool addresses for a remote chain.
 function getRemotePools(uint64 remoteChainSelector) public view returns (bytes[] memory);
 ```
 
-<Aside>Returns encoded addresses to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded addresses to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -44765,7 +45077,9 @@ Returns the token address on a remote chain.
 function getRemoteToken(uint64 remoteChainSelector) public view returns (bytes memory);
 ```
 
-<Aside>Returns encoded address to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded address to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -44962,7 +45276,9 @@ function setChainRateLimiterConfigs(
 ) external;
 ```
 
-<Aside>Callable by owner or rate limit admin. All array lengths must match.</Aside>
+> **NOTE**
+>
+> Callable by owner or rate limit admin. All array lengths must match.
 
 **Parameters**
 
@@ -44980,7 +45296,9 @@ Sets the address authorized to manage rate limits.
 function setRateLimitAdmin(address rateLimitAdmin) external onlyOwner;
 ```
 
-<Aside>Only callable by owner. The rate limit admin can modify rate limit configurations independently.</Aside>
+> **NOTE**
+>
+> Only callable by owner. The rate limit admin can modify rate limit configurations independently.
 
 ### setRouter
 
@@ -44990,7 +45308,9 @@ Updates the router contract address.
 function setRouter(address newRouter) public onlyOwner;
 ```
 
-<Aside>Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.</Aside>
+> **NOTE**
+>
+> Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.
 
 **Parameters**
 
@@ -45232,7 +45552,9 @@ An abstract contract that implements core token pool functionality for burning a
 event Burned(address indexed sender, uint256 amount);
 ```
 
-<Aside>Emitted when tokens are burned in the pool.</Aside>
+> **NOTE**
+>
+> Emitted when tokens are burned in the pool.
 
 **Parameters**
 
@@ -45247,7 +45569,9 @@ event Burned(address indexed sender, uint256 amount);
 event Minted(address indexed sender, address indexed recipient, uint256 amount);
 ```
 
-<Aside>Emitted when new tokens are minted from the pool.</Aside>
+> **NOTE**
+>
+> Emitted when new tokens are minted from the pool.
 
 **Parameters**
 
@@ -45403,7 +45727,9 @@ A specialized token pool contract that manages third-party tokens through mintin
 string public constant override typeAndVersion = "BurnFromMintTokenPool 1.5.1";
 ```
 
-<Aside>A constant identifier that specifies the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier that specifies the contract type and version number.
 
 **Returns**
 
@@ -45521,7 +45847,9 @@ A specialized token pool for managing native tokens through a lock and release m
 event LiquidityTransferred(address indexed from, uint256 amount);
 ```
 
-<Aside>Emitted when liquidity is transferred from an older pool version during an upgrade.</Aside>
+> **NOTE**
+>
+> Emitted when liquidity is transferred from an older pool version during an upgrade.
 
 **Parameters**
 
@@ -45538,7 +45866,9 @@ event LiquidityTransferred(address indexed from, uint256 amount);
 error InsufficientLiquidity();
 ```
 
-<Aside>Thrown when attempting to withdraw more liquidity than available in the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to withdraw more liquidity than available in the pool.
 
 ### LiquidityNotAccepted
 
@@ -45546,7 +45876,9 @@ error InsufficientLiquidity();
 error LiquidityNotAccepted();
 ```
 
-<Aside>Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.
 
 ## State Variables
 
@@ -45567,7 +45899,9 @@ bool internal immutable i_acceptLiquidity;
 address internal s_rebalancer;
 ```
 
-<Aside>The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.</Aside>
+> **NOTE**
+>
+> The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.
 
 ### typeAndVersion
 
@@ -45575,7 +45909,9 @@ address internal s_rebalancer;
 string public constant override typeAndVersion = "LockReleaseTokenPool 1.5.1";
 ```
 
-<Aside>A constant identifier specifying the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier specifying the contract type and version number.
 
 ## Functions
 
@@ -45744,7 +46080,9 @@ Updates the rebalancer address.
 function setRebalancer(address rebalancer) external onlyOwner;
 ```
 
-<Aside>Allows the owner to update the liquidity manager (rebalancer) address.</Aside>
+> **NOTE**
+>
+> Allows the owner to update the liquidity manager (rebalancer) address.
 
 **Parameters**
 
@@ -45760,7 +46098,9 @@ Checks interface support using ERC165.
 function supportsInterface(bytes4 interfaceId) public pure virtual override returns (bool);
 ```
 
-<Aside>Implements ERC165 interface detection, adding support for ILiquidityContainer.</Aside>
+> **NOTE**
+>
+> Implements ERC165 interface detection, adding support for ILiquidityContainer.
 
 **Parameters**
 
@@ -46208,7 +46548,9 @@ event AdministratorTransferRequested(address indexed token, address indexed curr
 event AdministratorTransferred(address indexed token, address indexed newAdmin);
 ```
 
-<Aside>Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).</Aside>
+> **NOTE**
+>
+> Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).
 
 **Parameters**
 
@@ -46223,7 +46565,9 @@ event AdministratorTransferred(address indexed token, address indexed newAdmin);
 event PoolSet(address indexed token, address indexed previousPool, address indexed newPool);
 ```
 
-<Aside>Emitted when a token's pool configuration is changed via [`setPool`](#setpool).</Aside>
+> **NOTE**
+>
+> Emitted when a token's pool configuration is changed via [`setPool`](#setpool).
 
 **Parameters**
 
@@ -46239,7 +46583,9 @@ event PoolSet(address indexed token, address indexed previousPool, address index
 event RegistryModuleAdded(address module);
 ```
 
-<Aside>Emitted when a new registry module is authorized.</Aside>
+> **NOTE**
+>
+> Emitted when a new registry module is authorized.
 
 **Parameters**
 
@@ -46253,7 +46599,9 @@ event RegistryModuleAdded(address module);
 event RegistryModuleRemoved(address indexed module);
 ```
 
-<Aside>Emitted when a registry module is deauthorized.</Aside>
+> **NOTE**
+>
+> Emitted when a registry module is deauthorized.
 
 **Parameters**
 
@@ -46269,7 +46617,9 @@ event RegistryModuleRemoved(address indexed module);
 error ZeroAddress();
 ```
 
-<Aside>Thrown when attempting to use address(0) where not allowed.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) where not allowed.
 
 ### AlreadyRegistered
 
@@ -46277,7 +46627,9 @@ error ZeroAddress();
 error AlreadyRegistered(address token);
 ```
 
-<Aside>Thrown when attempting to register an administrator for a token that already has one.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to register an administrator for a token that already has one.
 
 **Parameters**
 
@@ -46291,7 +46643,9 @@ error AlreadyRegistered(address token);
 error InvalidTokenPoolToken(address token);
 ```
 
-<Aside>Thrown when attempting to set a pool that doesn't support the token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set a pool that doesn't support the token.
 
 **Parameters**
 
@@ -46305,7 +46659,9 @@ error InvalidTokenPoolToken(address token);
 error OnlyAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when a function restricted to the token administrator is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to the token administrator is called by another address.
 
 **Parameters**
 
@@ -46320,7 +46676,9 @@ error OnlyAdministrator(address sender, address token);
 error OnlyPendingAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when acceptAdminRole is called by an address other than the pending administrator.</Aside>
+> **NOTE**
+>
+> Thrown when acceptAdminRole is called by an address other than the pending administrator.
 
 **Parameters**
 
@@ -46335,7 +46693,9 @@ error OnlyPendingAdministrator(address sender, address token);
 error OnlyRegistryModuleOrOwner(address sender);
 ```
 
-<Aside>Thrown when a function restricted to registry modules or owner is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to registry modules or owner is called by another address.
 
 **Parameters**
 
@@ -46373,7 +46733,9 @@ struct TokenConfig {
 EnumerableSet.AddressSet internal s_registryModules;
 ```
 
-<Aside>Set of authorized registry modules that can register administrators.</Aside>
+> **NOTE**
+>
+> Set of authorized registry modules that can register administrators.
 
 ### s_tokenConfig
 
@@ -46381,7 +46743,9 @@ EnumerableSet.AddressSet internal s_registryModules;
 mapping(address token => TokenConfig) internal s_tokenConfig;
 ```
 
-<Aside>Stores configuration data for each token, including administrators and pool addresses.</Aside>
+> **NOTE**
+>
+> Stores configuration data for each token, including administrators and pool addresses.
 
 ### s_tokens
 
@@ -46389,7 +46753,9 @@ mapping(address token => TokenConfig) internal s_tokenConfig;
 EnumerableSet.AddressSet internal s_tokens;
 ```
 
-<Aside>Set of all configured tokens for efficient enumeration.</Aside>
+> **NOTE**
+>
+> Set of all configured tokens for efficient enumeration.
 
 ### typeAndVersion
 
@@ -46397,7 +46763,9 @@ EnumerableSet.AddressSet internal s_tokens;
 string public constant override typeAndVersion = "TokenAdminRegistry 1.5.0";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ---
 
@@ -46541,7 +46909,9 @@ ITokenAdminRegistry internal immutable i_tokenAdminRegistry;
 string public constant override typeAndVersion = "RegistryModuleOwnerCustom 1.6.0";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ## Functions
 
@@ -47138,7 +47508,9 @@ A library implementing the Token Bucket algorithm for rate limiting cross-chain 
 event TokensConsumed(uint256 tokens);
 ```
 
-<Aside>Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).</Aside>
+> **NOTE**
+>
+> Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).
 
 **Parameters**
 
@@ -47152,7 +47524,9 @@ event TokensConsumed(uint256 tokens);
 event ConfigChanged(Config config);
 ```
 
-<Aside>Emitted when the rate limiter [`Config`](#config) is updated.</Aside>
+> **NOTE**
+>
+> Emitted when the rate limiter [`Config`](#config) is updated.
 
 **Parameters**
 
@@ -47168,7 +47542,9 @@ event ConfigChanged(Config config);
 error BucketOverfilled();
 ```
 
-<Aside>Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.</Aside>
+> **NOTE**
+>
+> Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.
 
 ### OnlyCallableByAdminOrOwner
 
@@ -47176,7 +47552,9 @@ error BucketOverfilled();
 error OnlyCallableByAdminOrOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by an unauthorized address.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by an unauthorized address.
 
 ### TokenMaxCapacityExceeded
 
@@ -47184,7 +47562,9 @@ error OnlyCallableByAdminOrOwner();
 error TokenMaxCapacityExceeded(uint256 capacity, uint256 requested, address tokenAddress);
 ```
 
-<Aside>Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### TokenRateLimitReached
 
@@ -47202,7 +47582,9 @@ error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address
 error AggregateValueMaxCapacityExceeded(uint256 capacity, uint256 requested);
 ```
 
-<Aside>Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### AggregateValueRateLimitReached
 
@@ -47220,7 +47602,9 @@ error AggregateValueRateLimitReached(uint256 minWaitInSeconds, uint256 available
 error InvalidRateLimitRate(Config rateLimiterConfig);
 ```
 
-<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).</Aside>
+> **NOTE**
+>
+> Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).
 
 ### DisabledNonZeroRateLimit
 
@@ -47228,7 +47612,9 @@ error InvalidRateLimitRate(Config rateLimiterConfig);
 error DisabledNonZeroRateLimit(Config config);
 ```
 
-<Aside>Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.</Aside>
+> **NOTE**
+>
+> Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.
 
 ### RateLimitMustBeDisabled
 
@@ -47236,7 +47622,9 @@ error DisabledNonZeroRateLimit(Config config);
 error RateLimitMustBeDisabled();
 ```
 
-<Aside>Thrown when attempting to enable rate limiting in a context where it must be disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to enable rate limiting in a context where it must be disabled.
 
 ## Structs
 
@@ -47431,7 +47819,9 @@ Returns the smaller of two numbers.
 function _min(uint256 a, uint256 b) internal pure returns (uint256);
 ```
 
-<Aside>Utility function for safe minimum value calculation.</Aside>
+> **NOTE**
+>
+> Utility function for safe minimum value calculation.
 
 **Parameters**
 
@@ -47611,7 +48001,9 @@ A minimal contract that implements 2-step ownership transfer and nothing more. I
 event OwnershipTransferRequested(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when the current owner initiates an ownership transfer.</Aside>
+> **NOTE**
+>
+> Emitted when the current owner initiates an ownership transfer.
 
 **Parameters**
 
@@ -47626,7 +48018,9 @@ event OwnershipTransferRequested(address indexed from, address indexed to);
 event OwnershipTransferred(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when an ownership transfer is completed.</Aside>
+> **NOTE**
+>
+> Emitted when an ownership transfer is completed.
 
 **Parameters**
 
@@ -47643,7 +48037,9 @@ event OwnershipTransferred(address indexed from, address indexed to);
 error CannotTransferToSelf();
 ```
 
-<Aside>Thrown when attempting to transfer ownership to the current owner.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to transfer ownership to the current owner.
 
 ### MustBeProposedOwner
 
@@ -47651,7 +48047,9 @@ error CannotTransferToSelf();
 error MustBeProposedOwner();
 ```
 
-<Aside>Thrown when someone other than the pending owner tries to accept ownership.</Aside>
+> **NOTE**
+>
+> Thrown when someone other than the pending owner tries to accept ownership.
 
 ### OnlyCallableByOwner
 
@@ -47659,7 +48057,9 @@ error MustBeProposedOwner();
 error OnlyCallableByOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by someone other than the owner.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by someone other than the owner.
 
 ### OwnerCannotBeZero
 
@@ -47667,7 +48067,9 @@ error OnlyCallableByOwner();
 error OwnerCannotBeZero();
 ```
 
-<Aside>Thrown when attempting to set the owner to address(0).</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set the owner to address(0).
 
 ## State Variables
 
@@ -47741,7 +48143,9 @@ Modifier that restricts function access to the contract owner.
 modifier onlyOwner();
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner.
 
 ### owner
 
@@ -47788,7 +48192,9 @@ Internal function to validate access control.
 function _validateOwnership() internal view;
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.
 
 ---
 
@@ -47901,7 +48307,9 @@ Source: https://docs.chain.link/ccip/v1/evm/api-reference/v1.5.1
 > forge install smartcontractkit/ccip@5e7b2096586bc32c6e975fc13f4c411eb687f833
 > ```
 
-<Aside type="note">You are viewing API documentation for CCIP v1.5.1, which is the latest version.</Aside>
+> **NOTE**
+>
+> You are viewing API documentation for CCIP v1.5.1, which is the latest version.
 
 ## API References
 
@@ -48054,7 +48462,9 @@ struct EVMExtraArgsV1 {
 }
 ```
 
-<Aside>First version of extra arguments, supporting basic gas limit configuration.</Aside>
+> **NOTE**
+>
+> First version of extra arguments, supporting basic gas limit configuration.
 
 **Properties**
 
@@ -48122,7 +48532,9 @@ struct EVMTokenAmount {
 bytes4 public constant EVM_EXTRA_ARGS_V1_TAG = 0x97a657c9;
 ```
 
-<Aside>The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).</Aside>
+> **NOTE**
+>
+> The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).
 
 ### EVM_EXTRA_ARGS_V2_TAG
 
@@ -48130,7 +48542,9 @@ bytes4 public constant EVM_EXTRA_ARGS_V1_TAG = 0x97a657c9;
 bytes4 public constant EVM_EXTRA_ARGS_V2_TAG = 0x181dcf10;
 ```
 
-<Aside>The identifier tag for V2 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV2"))).</Aside>
+> **NOTE**
+>
+> The identifier tag for V2 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV2"))).
 
 ## Functions
 
@@ -48142,7 +48556,9 @@ Encodes EVMExtraArgsV1 into bytes for message transmission.
 function _argsToBytes(EVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -48164,7 +48580,9 @@ Encodes EVMExtraArgsV2 into bytes for message transmission.
 function _argsToBytes(EVMExtraArgsV2 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V2 extra arguments with the V2 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V2 extra arguments with the V2 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -48224,7 +48642,9 @@ A library for CCIP internal definitions common to multiple contracts. Provides c
 error InvalidEVMAddress(bytes encodedAddress);
 ```
 
-<Aside>Thrown when an encoded address is invalid (wrong length or outside valid EVM address range).</Aside>
+> **NOTE**
+>
+> Thrown when an encoded address is invalid (wrong length or outside valid EVM address range).
 
 **Parameters**
 
@@ -48289,7 +48709,9 @@ struct PriceUpdates {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -48309,7 +48731,9 @@ struct TokenPriceUpdate {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -48329,7 +48753,9 @@ struct GasPriceUpdate {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -48418,7 +48844,9 @@ struct ExecutionReportSingleChain {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -48443,7 +48871,9 @@ struct ExecutionReport {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -48716,7 +49146,9 @@ uint16 internal constant MAX_RET_BYTES = 4 + 4 * 32;
 uint256 internal constant MAX_BALANCE_OF_RET_BYTES = 32;
 ```
 
-<Aside>The expected number of bytes returned by the balanceOf function.</Aside>
+> **NOTE**
+>
+> The expected number of bytes returned by the balanceOf function.
 
 ### GAS_PRICE_BITS
 
@@ -48785,7 +49217,9 @@ uint256 public constant ANY_2_EVM_MESSAGE_FIXED_BYTES_PER_TOKEN = 32 * ((2 * 3) 
 bytes32 internal constant EVM_2_EVM_MESSAGE_HASH = keccak256("EVM2EVMMessageHashV2");
 ```
 
-<Aside>Hash identifier for EVM to EVM messages version 2.</Aside>
+> **NOTE**
+>
+> Hash identifier for EVM to EVM messages version 2.
 
 ### ANY_2_EVM_MESSAGE_HASH
 
@@ -48793,7 +49227,9 @@ bytes32 internal constant EVM_2_EVM_MESSAGE_HASH = keccak256("EVM2EVMMessageHash
 bytes32 internal constant ANY_2_EVM_MESSAGE_HASH = keccak256("Any2EVMMessageHashV1");
 ```
 
-<Aside>Hash identifier for Any to EVM messages version 1.</Aside>
+> **NOTE**
+>
+> Hash identifier for Any to EVM messages version 1.
 
 ### EVM_2_ANY_MESSAGE_HASH
 
@@ -48801,7 +49237,9 @@ bytes32 internal constant ANY_2_EVM_MESSAGE_HASH = keccak256("Any2EVMMessageHash
 bytes32 internal constant EVM_2_ANY_MESSAGE_HASH = keccak256("EVM2AnyMessageHashV1");
 ```
 
-<Aside>Hash identifier for EVM to Any messages version 1.</Aside>
+> **NOTE**
+>
+> Hash identifier for EVM to Any messages version 1.
 
 ### CHAIN_FAMILY_SELECTOR_EVM
 
@@ -48809,7 +49247,9 @@ bytes32 internal constant EVM_2_ANY_MESSAGE_HASH = keccak256("EVM2AnyMessageHash
 bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 ```
 
-<Aside>Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).
 
 ### PRECOMPILE_SPACE
 
@@ -49133,7 +49573,9 @@ Checks if the given chain ID is supported for sending/receiving.
 function isChainSupported(uint64 destChainSelector) external view returns (bool supported);
 ```
 
-<Aside>Checks if the given chain ID is supported for sending/receiving.</Aside>
+> **NOTE**
+>
+> Checks if the given chain ID is supported for sending/receiving.
 
 **Parameters**
 
@@ -49193,7 +49635,9 @@ The FeeQuoter contract stores gas and token prices in USD, manages chain-specifi
 error TokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to get the price or fee for an unsupported token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to get the price or fee for an unsupported token.
 
 **Parameters**
 
@@ -49207,7 +49651,9 @@ error TokenNotSupported(address token);
 error FeeTokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to use an unsupported token for fee payment.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unsupported token for fee payment.
 
 **Parameters**
 
@@ -49221,7 +49667,9 @@ error FeeTokenNotSupported(address token);
 error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePassed);
 ```
 
-<Aside>Thrown when the gas price for a destination chain is stale.</Aside>
+> **NOTE**
+>
+> Thrown when the gas price for a destination chain is stale.
 
 **Parameters**
 
@@ -49237,7 +49685,9 @@ error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePas
 error StaleKeystoneUpdate(address token, uint256 feedTimestamp, uint256 storedTimeStamp);
 ```
 
-<Aside>Thrown when a Keystone feed update is older than the currently stored timestamp.</Aside>
+> **NOTE**
+>
+> Thrown when a Keystone feed update is older than the currently stored timestamp.
 
 **Parameters**
 
@@ -49253,7 +49703,9 @@ error StaleKeystoneUpdate(address token, uint256 feedTimestamp, uint256 storedTi
 error DataFeedValueOutOfUint224Range();
 ```
 
-<Aside>Thrown when a data feed value cannot fit in a uint224.</Aside>
+> **NOTE**
+>
+> Thrown when a data feed value cannot fit in a uint224.
 
 ### InvalidDestBytesOverhead
 
@@ -49261,7 +49713,9 @@ error DataFeedValueOutOfUint224Range();
 error InvalidDestBytesOverhead(address token, uint32 destBytesOverhead);
 ```
 
-<Aside>Thrown when the destination bytes overhead configuration is invalid for a token.</Aside>
+> **NOTE**
+>
+> Thrown when the destination bytes overhead configuration is invalid for a token.
 
 **Parameters**
 
@@ -49276,7 +49730,9 @@ error InvalidDestBytesOverhead(address token, uint32 destBytesOverhead);
 error MessageGasLimitTooHigh();
 ```
 
-<Aside>Thrown when the message gas limit exceeds the maximum allowed for the destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when the message gas limit exceeds the maximum allowed for the destination chain.
 
 ### DestinationChainNotEnabled
 
@@ -49284,7 +49740,9 @@ error MessageGasLimitTooHigh();
 error DestinationChainNotEnabled(uint64 destChainSelector);
 ```
 
-<Aside>Thrown when attempting to send a message to a disabled destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to send a message to a disabled destination chain.
 
 **Parameters**
 
@@ -49298,7 +49756,9 @@ error DestinationChainNotEnabled(uint64 destChainSelector);
 error ExtraArgOutOfOrderExecutionMustBeTrue();
 ```
 
-<Aside>Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.</Aside>
+> **NOTE**
+>
+> Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.
 
 ### InvalidExtraArgsTag
 
@@ -49306,7 +49766,9 @@ error ExtraArgOutOfOrderExecutionMustBeTrue();
 error InvalidExtraArgsTag();
 ```
 
-<Aside>Thrown when the extra args tag is invalid or unsupported.</Aside>
+> **NOTE**
+>
+> Thrown when the extra args tag is invalid or unsupported.
 
 ### SourceTokenDataTooLarge
 
@@ -49314,7 +49776,9 @@ error InvalidExtraArgsTag();
 error SourceTokenDataTooLarge(address token);
 ```
 
-<Aside>Thrown when the source token data size exceeds the maximum allowed.</Aside>
+> **NOTE**
+>
+> Thrown when the source token data size exceeds the maximum allowed.
 
 **Parameters**
 
@@ -49328,7 +49792,9 @@ error SourceTokenDataTooLarge(address token);
 error InvalidDestChainConfig(uint64 destChainSelector);
 ```
 
-<Aside>Thrown when the destination chain configuration is invalid.</Aside>
+> **NOTE**
+>
+> Thrown when the destination chain configuration is invalid.
 
 **Parameters**
 
@@ -49360,7 +49826,9 @@ error MessageFeeTooHigh(uint256 msgFeeJuels, uint256 maxFeeJuelsPerMsg);
 error InvalidStaticConfig();
 ```
 
-<Aside>Thrown when the static configuration provided during construction is invalid.</Aside>
+> **NOTE**
+>
+> Thrown when the static configuration provided during construction is invalid.
 
 ### MessageTooLarge
 
@@ -49368,7 +49836,9 @@ error InvalidStaticConfig();
 error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 ```
 
-<Aside>Thrown when the message data payload exceeds the maximum allowed size.</Aside>
+> **NOTE**
+>
+> Thrown when the message data payload exceeds the maximum allowed size.
 
 **Parameters**
 
@@ -49383,7 +49853,9 @@ error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 error UnsupportedNumberOfTokens();
 ```
 
-<Aside>Thrown when the number of tokens in a message exceeds the maximum allowed for the destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when the number of tokens in a message exceeds the maximum allowed for the destination chain.
 
 ## Events
 
@@ -49393,7 +49865,9 @@ error UnsupportedNumberOfTokens();
 event FeeTokenAdded(address indexed feeToken);
 ```
 
-<Aside>Emitted when a new fee token is added to the allowed list.</Aside>
+> **NOTE**
+>
+> Emitted when a new fee token is added to the allowed list.
 
 **Parameters**
 
@@ -49407,7 +49881,9 @@ event FeeTokenAdded(address indexed feeToken);
 event FeeTokenRemoved(address indexed feeToken);
 ```
 
-<Aside>Emitted when a fee token is removed from the allowed list.</Aside>
+> **NOTE**
+>
+> Emitted when a fee token is removed from the allowed list.
 
 **Parameters**
 
@@ -49421,7 +49897,9 @@ event FeeTokenRemoved(address indexed feeToken);
 event UsdPerUnitGasUpdated(uint64 indexed destChain, uint256 value, uint256 timestamp);
 ```
 
-<Aside>Emitted when the gas price for a destination chain is updated.</Aside>
+> **NOTE**
+>
+> Emitted when the gas price for a destination chain is updated.
 
 **Parameters**
 
@@ -49437,7 +49915,9 @@ event UsdPerUnitGasUpdated(uint64 indexed destChain, uint256 value, uint256 time
 event UsdPerTokenUpdated(address indexed token, uint256 value, uint256 timestamp);
 ```
 
-<Aside>Emitted when the price of a token is updated.</Aside>
+> **NOTE**
+>
+> Emitted when the price of a token is updated.
 
 **Parameters**
 
@@ -49453,7 +49933,9 @@ event UsdPerTokenUpdated(address indexed token, uint256 value, uint256 timestamp
 event PriceFeedPerTokenUpdated(address indexed token, TokenPriceFeedConfig priceFeedConfig);
 ```
 
-<Aside>Emitted when a token's price feed configuration is updated.</Aside>
+> **NOTE**
+>
+> Emitted when a token's price feed configuration is updated.
 
 **Parameters**
 
@@ -49472,7 +49954,9 @@ event TokenTransferFeeConfigUpdated(
 );
 ```
 
-<Aside>Emitted when token transfer fee configuration is updated for a token on a destination chain.</Aside>
+> **NOTE**
+>
+> Emitted when token transfer fee configuration is updated for a token on a destination chain.
 
 **Parameters**
 
@@ -49488,7 +49972,9 @@ event TokenTransferFeeConfigUpdated(
 event TokenTransferFeeConfigDeleted(uint64 indexed destChainSelector, address indexed token);
 ```
 
-<Aside>Emitted when token transfer fee configuration is deleted for a token on a destination chain.</Aside>
+> **NOTE**
+>
+> Emitted when token transfer fee configuration is deleted for a token on a destination chain.
 
 **Parameters**
 
@@ -49503,7 +49989,9 @@ event TokenTransferFeeConfigDeleted(uint64 indexed destChainSelector, address in
 event PremiumMultiplierWeiPerEthUpdated(address indexed token, uint64 premiumMultiplierWeiPerEth);
 ```
 
-<Aside>Emitted when the premium multiplier is updated for a token.</Aside>
+> **NOTE**
+>
+> Emitted when the premium multiplier is updated for a token.
 
 **Parameters**
 
@@ -49518,7 +50006,9 @@ event PremiumMultiplierWeiPerEthUpdated(address indexed token, uint64 premiumMul
 event DestChainConfigUpdated(uint64 indexed destChainSelector, DestChainConfig destChainConfig);
 ```
 
-<Aside>Emitted when the configuration for an existing destination chain is updated.</Aside>
+> **NOTE**
+>
+> Emitted when the configuration for an existing destination chain is updated.
 
 **Parameters**
 
@@ -49533,7 +50023,9 @@ event DestChainConfigUpdated(uint64 indexed destChainSelector, DestChainConfig d
 event DestChainAdded(uint64 indexed destChainSelector, DestChainConfig destChainConfig);
 ```
 
-<Aside>Emitted when a new destination chain is added with its configuration.</Aside>
+> **NOTE**
+>
+> Emitted when a new destination chain is added with its configuration.
 
 **Parameters**
 
@@ -49592,7 +50084,9 @@ struct StaticConfig {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -49820,7 +50314,9 @@ struct PremiumMultiplierWeiPerEthArgs {
 uint256 public constant FEE_BASE_DECIMALS = 36;
 ```
 
-<Aside>The base decimals for cost calculations.</Aside>
+> **NOTE**
+>
+> The base decimals for cost calculations.
 
 ### KEYSTONE_PRICE_DECIMALS
 
@@ -49828,7 +50324,9 @@ uint256 public constant FEE_BASE_DECIMALS = 36;
 uint256 public constant KEYSTONE_PRICE_DECIMALS = 18;
 ```
 
-<Aside>The decimals that Keystone reports prices in.</Aside>
+> **NOTE**
+>
+> The decimals that Keystone reports prices in.
 
 ### typeAndVersion
 
@@ -49836,7 +50334,9 @@ uint256 public constant KEYSTONE_PRICE_DECIMALS = 18;
 string public constant override typeAndVersion = "FeeQuoter 1.6.0-dev";
 ```
 
-<Aside>The version identifier for the FeeQuoter contract.</Aside>
+> **NOTE**
+>
+> The version identifier for the FeeQuoter contract.
 
 ---
 
@@ -49980,7 +50480,9 @@ Returns the address of the current CCIP router.
 function getRouter() public view virtual returns (address);
 ```
 
-<Aside>Provides access to the immutable router address used for message validation.</Aside>
+> **NOTE**
+>
+> Provides access to the immutable router address used for message validation.
 
 **Returns**
 
@@ -50479,7 +50981,9 @@ event RateLimitAdminSet(address rateLimitAdmin);
 error AllowListNotEnabled();
 ```
 
-<Aside>Thrown when attempting to modify the allowlist when the feature is disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to modify the allowlist when the feature is disabled.
 
 ### CallerIsNotARampOnRouter
 
@@ -50487,7 +50991,9 @@ error AllowListNotEnabled();
 error CallerIsNotARampOnRouter(address caller);
 ```
 
-<Aside>Thrown when an unauthorized address attempts to act as an onRamp or offRamp.</Aside>
+> **NOTE**
+>
+> Thrown when an unauthorized address attempts to act as an onRamp or offRamp.
 
 ### ChainAlreadyExists
 
@@ -50495,7 +51001,9 @@ error CallerIsNotARampOnRouter(address caller);
 error ChainAlreadyExists(uint64 chainSelector);
 ```
 
-<Aside>Thrown when attempting to add a chain that is already configured.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a chain that is already configured.
 
 **Parameters**
 
@@ -50509,7 +51017,9 @@ error ChainAlreadyExists(uint64 chainSelector);
 error ChainNotAllowed(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to use a chain that is not authorized.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use a chain that is not authorized.
 
 ### CursedByRMN
 
@@ -50517,7 +51027,9 @@ error ChainNotAllowed(uint64 remoteChainSelector);
 error CursedByRMN();
 ```
 
-<Aside>Thrown when the Risk Management Network has flagged operations as unsafe.</Aside>
+> **NOTE**
+>
+> Thrown when the Risk Management Network has flagged operations as unsafe.
 
 ### InvalidDecimalArgs
 
@@ -50525,7 +51037,9 @@ error CursedByRMN();
 error InvalidDecimalArgs(uint8 expected, uint8 actual);
 ```
 
-<Aside>Thrown when token decimals don't match the expected configuration.</Aside>
+> **NOTE**
+>
+> Thrown when token decimals don't match the expected configuration.
 
 **Parameters**
 
@@ -50540,7 +51054,9 @@ error InvalidDecimalArgs(uint8 expected, uint8 actual);
 error InvalidRemoteChainDecimals(bytes sourcePoolData);
 ```
 
-<Aside>Thrown when the decimal configuration from a remote chain is invalid or malformed.</Aside>
+> **NOTE**
+>
+> Thrown when the decimal configuration from a remote chain is invalid or malformed.
 
 **Parameters**
 
@@ -50554,7 +51070,9 @@ error InvalidRemoteChainDecimals(bytes sourcePoolData);
 error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to remove a pool that isn't configured for the specified chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to remove a pool that isn't configured for the specified chain.
 
 **Parameters**
 
@@ -50569,7 +51087,9 @@ error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddr
 error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 ```
 
-<Aside>Thrown when attempting to use an unconfigured or invalid remote pool address.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unconfigured or invalid remote pool address.
 
 ### InvalidToken
 
@@ -50577,7 +51097,9 @@ error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 error InvalidToken(address token);
 ```
 
-<Aside>Thrown when attempting to operate with a token that is not supported by the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with a token that is not supported by the pool.
 
 **Parameters**
 
@@ -50591,7 +51113,9 @@ error InvalidToken(address token);
 error MismatchedArrayLengths();
 ```
 
-<Aside>Thrown when array parameters have different lengths in multi-chain operations.</Aside>
+> **NOTE**
+>
+> Thrown when array parameters have different lengths in multi-chain operations.
 
 ### NonExistentChain
 
@@ -50599,7 +51123,9 @@ error MismatchedArrayLengths();
 error NonExistentChain(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to operate with an unconfigured chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with an unconfigured chain.
 
 ### OverflowDetected
 
@@ -50607,7 +51133,9 @@ error NonExistentChain(uint64 remoteChainSelector);
 error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remoteAmount);
 ```
 
-<Aside>Thrown when a token amount conversion would result in an arithmetic overflow.</Aside>
+> **NOTE**
+>
+> Thrown when a token amount conversion would result in an arithmetic overflow.
 
 **Parameters**
 
@@ -50623,7 +51151,9 @@ error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remote
 error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to add a pool that is already configured for a chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a pool that is already configured for a chain.
 
 **Parameters**
 
@@ -50638,7 +51168,9 @@ error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 error SenderNotAllowed(address sender);
 ```
 
-<Aside>Thrown when a non-allowlisted address attempts an operation in allowlist mode.</Aside>
+> **NOTE**
+>
+> Thrown when a non-allowlisted address attempts an operation in allowlist mode.
 
 ### Unauthorized
 
@@ -50646,7 +51178,9 @@ error SenderNotAllowed(address sender);
 error Unauthorized(address caller);
 ```
 
-<Aside>Thrown when a caller lacks the required permissions for an operation.</Aside>
+> **NOTE**
+>
+> Thrown when a caller lacks the required permissions for an operation.
 
 **Parameters**
 
@@ -50660,7 +51194,9 @@ error Unauthorized(address caller);
 error ZeroAddressNotAllowed();
 ```
 
-<Aside>Thrown when attempting to use address(0) for critical contract addresses.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) for critical contract addresses.
 
 ## Structs
 
@@ -50750,7 +51286,9 @@ bool internal immutable i_allowlistEnabled;
 
 Set of addresses authorized to initiate cross-chain operations.
 
-<Aside>Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.</Aside>
+> **NOTE**
+>
+> Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.
 
 ```solidity
 EnumerableSet.AddressSet internal s_allowlist;
@@ -51288,7 +51826,9 @@ Returns the configured pool addresses for a remote chain.
 function getRemotePools(uint64 remoteChainSelector) public view returns (bytes[] memory);
 ```
 
-<Aside>Returns encoded addresses to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded addresses to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -51310,7 +51850,9 @@ Returns the token address on a remote chain.
 function getRemoteToken(uint64 remoteChainSelector) public view returns (bytes memory);
 ```
 
-<Aside>Returns encoded address to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded address to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -51507,7 +52049,9 @@ function setChainRateLimiterConfigs(
 ) external;
 ```
 
-<Aside>Callable by owner or rate limit admin. All array lengths must match.</Aside>
+> **NOTE**
+>
+> Callable by owner or rate limit admin. All array lengths must match.
 
 **Parameters**
 
@@ -51525,7 +52069,9 @@ Sets the address authorized to manage rate limits.
 function setRateLimitAdmin(address rateLimitAdmin) external onlyOwner;
 ```
 
-<Aside>Only callable by owner. The rate limit admin can modify rate limit configurations independently.</Aside>
+> **NOTE**
+>
+> Only callable by owner. The rate limit admin can modify rate limit configurations independently.
 
 ### setRouter
 
@@ -51535,7 +52081,9 @@ Updates the router contract address.
 function setRouter(address newRouter) public onlyOwner;
 ```
 
-<Aside>Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.</Aside>
+> **NOTE**
+>
+> Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.
 
 **Parameters**
 
@@ -51777,7 +52325,9 @@ An abstract contract that implements core token pool functionality for burning a
 event Burned(address indexed sender, uint256 amount);
 ```
 
-<Aside>Emitted when tokens are burned in the pool.</Aside>
+> **NOTE**
+>
+> Emitted when tokens are burned in the pool.
 
 **Parameters**
 
@@ -51792,7 +52342,9 @@ event Burned(address indexed sender, uint256 amount);
 event Minted(address indexed sender, address indexed recipient, uint256 amount);
 ```
 
-<Aside>Emitted when new tokens are minted from the pool.</Aside>
+> **NOTE**
+>
+> Emitted when new tokens are minted from the pool.
 
 **Parameters**
 
@@ -51948,7 +52500,9 @@ A specialized token pool contract that manages third-party tokens through mintin
 string public constant override typeAndVersion = "BurnFromMintTokenPool 1.5.1";
 ```
 
-<Aside>A constant identifier that specifies the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier that specifies the contract type and version number.
 
 **Returns**
 
@@ -52066,7 +52620,9 @@ A specialized token pool for managing native tokens through a lock and release m
 event LiquidityTransferred(address indexed from, uint256 amount);
 ```
 
-<Aside>Emitted when liquidity is transferred from an older pool version during an upgrade.</Aside>
+> **NOTE**
+>
+> Emitted when liquidity is transferred from an older pool version during an upgrade.
 
 **Parameters**
 
@@ -52083,7 +52639,9 @@ event LiquidityTransferred(address indexed from, uint256 amount);
 error InsufficientLiquidity();
 ```
 
-<Aside>Thrown when attempting to withdraw more liquidity than available in the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to withdraw more liquidity than available in the pool.
 
 ### LiquidityNotAccepted
 
@@ -52091,7 +52649,9 @@ error InsufficientLiquidity();
 error LiquidityNotAccepted();
 ```
 
-<Aside>Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.
 
 ## State Variables
 
@@ -52112,7 +52672,9 @@ bool internal immutable i_acceptLiquidity;
 address internal s_rebalancer;
 ```
 
-<Aside>The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.</Aside>
+> **NOTE**
+>
+> The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.
 
 ### typeAndVersion
 
@@ -52120,7 +52682,9 @@ address internal s_rebalancer;
 string public constant override typeAndVersion = "LockReleaseTokenPool 1.5.1";
 ```
 
-<Aside>A constant identifier specifying the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier specifying the contract type and version number.
 
 ## Functions
 
@@ -52289,7 +52853,9 @@ Updates the rebalancer address.
 function setRebalancer(address rebalancer) external onlyOwner;
 ```
 
-<Aside>Allows the owner to update the liquidity manager (rebalancer) address.</Aside>
+> **NOTE**
+>
+> Allows the owner to update the liquidity manager (rebalancer) address.
 
 **Parameters**
 
@@ -52305,7 +52871,9 @@ Checks interface support using ERC165.
 function supportsInterface(bytes4 interfaceId) public pure virtual override returns (bool);
 ```
 
-<Aside>Implements ERC165 interface detection, adding support for ILiquidityContainer.</Aside>
+> **NOTE**
+>
+> Implements ERC165 interface detection, adding support for ILiquidityContainer.
 
 **Parameters**
 
@@ -52753,7 +53321,9 @@ event AdministratorTransferRequested(address indexed token, address indexed curr
 event AdministratorTransferred(address indexed token, address indexed newAdmin);
 ```
 
-<Aside>Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).</Aside>
+> **NOTE**
+>
+> Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).
 
 **Parameters**
 
@@ -52768,7 +53338,9 @@ event AdministratorTransferred(address indexed token, address indexed newAdmin);
 event PoolSet(address indexed token, address indexed previousPool, address indexed newPool);
 ```
 
-<Aside>Emitted when a token's pool configuration is changed via [`setPool`](#setpool).</Aside>
+> **NOTE**
+>
+> Emitted when a token's pool configuration is changed via [`setPool`](#setpool).
 
 **Parameters**
 
@@ -52784,7 +53356,9 @@ event PoolSet(address indexed token, address indexed previousPool, address index
 event RegistryModuleAdded(address module);
 ```
 
-<Aside>Emitted when a new registry module is authorized.</Aside>
+> **NOTE**
+>
+> Emitted when a new registry module is authorized.
 
 **Parameters**
 
@@ -52798,7 +53372,9 @@ event RegistryModuleAdded(address module);
 event RegistryModuleRemoved(address indexed module);
 ```
 
-<Aside>Emitted when a registry module is deauthorized.</Aside>
+> **NOTE**
+>
+> Emitted when a registry module is deauthorized.
 
 **Parameters**
 
@@ -52814,7 +53390,9 @@ event RegistryModuleRemoved(address indexed module);
 error ZeroAddress();
 ```
 
-<Aside>Thrown when attempting to use address(0) where not allowed.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) where not allowed.
 
 ### AlreadyRegistered
 
@@ -52822,7 +53400,9 @@ error ZeroAddress();
 error AlreadyRegistered(address token);
 ```
 
-<Aside>Thrown when attempting to register an administrator for a token that already has one.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to register an administrator for a token that already has one.
 
 **Parameters**
 
@@ -52836,7 +53416,9 @@ error AlreadyRegistered(address token);
 error InvalidTokenPoolToken(address token);
 ```
 
-<Aside>Thrown when attempting to set a pool that doesn't support the token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set a pool that doesn't support the token.
 
 **Parameters**
 
@@ -52850,7 +53432,9 @@ error InvalidTokenPoolToken(address token);
 error OnlyAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when a function restricted to the token administrator is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to the token administrator is called by another address.
 
 **Parameters**
 
@@ -52865,7 +53449,9 @@ error OnlyAdministrator(address sender, address token);
 error OnlyPendingAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when acceptAdminRole is called by an address other than the pending administrator.</Aside>
+> **NOTE**
+>
+> Thrown when acceptAdminRole is called by an address other than the pending administrator.
 
 **Parameters**
 
@@ -52880,7 +53466,9 @@ error OnlyPendingAdministrator(address sender, address token);
 error OnlyRegistryModuleOrOwner(address sender);
 ```
 
-<Aside>Thrown when a function restricted to registry modules or owner is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to registry modules or owner is called by another address.
 
 **Parameters**
 
@@ -52918,7 +53506,9 @@ struct TokenConfig {
 EnumerableSet.AddressSet internal s_registryModules;
 ```
 
-<Aside>Set of authorized registry modules that can register administrators.</Aside>
+> **NOTE**
+>
+> Set of authorized registry modules that can register administrators.
 
 ### s_tokenConfig
 
@@ -52926,7 +53516,9 @@ EnumerableSet.AddressSet internal s_registryModules;
 mapping(address token => TokenConfig) internal s_tokenConfig;
 ```
 
-<Aside>Stores configuration data for each token, including administrators and pool addresses.</Aside>
+> **NOTE**
+>
+> Stores configuration data for each token, including administrators and pool addresses.
 
 ### s_tokens
 
@@ -52934,7 +53526,9 @@ mapping(address token => TokenConfig) internal s_tokenConfig;
 EnumerableSet.AddressSet internal s_tokens;
 ```
 
-<Aside>Set of all configured tokens for efficient enumeration.</Aside>
+> **NOTE**
+>
+> Set of all configured tokens for efficient enumeration.
 
 ### typeAndVersion
 
@@ -52942,7 +53536,9 @@ EnumerableSet.AddressSet internal s_tokens;
 string public constant override typeAndVersion = "TokenAdminRegistry 1.5.0";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ---
 
@@ -53086,7 +53682,9 @@ ITokenAdminRegistry internal immutable i_tokenAdminRegistry;
 string public constant override typeAndVersion = "RegistryModuleOwnerCustom 1.6.0";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ## Functions
 
@@ -53671,7 +54269,9 @@ A library implementing the Token Bucket algorithm for rate limiting cross-chain 
 event TokensConsumed(uint256 tokens);
 ```
 
-<Aside>Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).</Aside>
+> **NOTE**
+>
+> Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).
 
 **Parameters**
 
@@ -53685,7 +54285,9 @@ event TokensConsumed(uint256 tokens);
 event ConfigChanged(Config config);
 ```
 
-<Aside>Emitted when the rate limiter [`Config`](#config) is updated.</Aside>
+> **NOTE**
+>
+> Emitted when the rate limiter [`Config`](#config) is updated.
 
 **Parameters**
 
@@ -53701,7 +54303,9 @@ event ConfigChanged(Config config);
 error BucketOverfilled();
 ```
 
-<Aside>Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.</Aside>
+> **NOTE**
+>
+> Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.
 
 ### OnlyCallableByAdminOrOwner
 
@@ -53709,7 +54313,9 @@ error BucketOverfilled();
 error OnlyCallableByAdminOrOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by an unauthorized address.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by an unauthorized address.
 
 ### TokenMaxCapacityExceeded
 
@@ -53717,7 +54323,9 @@ error OnlyCallableByAdminOrOwner();
 error TokenMaxCapacityExceeded(uint256 capacity, uint256 requested, address tokenAddress);
 ```
 
-<Aside>Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### TokenRateLimitReached
 
@@ -53735,7 +54343,9 @@ error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address
 error AggregateValueMaxCapacityExceeded(uint256 capacity, uint256 requested);
 ```
 
-<Aside>Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### AggregateValueRateLimitReached
 
@@ -53753,7 +54363,9 @@ error AggregateValueRateLimitReached(uint256 minWaitInSeconds, uint256 available
 error InvalidRateLimitRate(Config rateLimiterConfig);
 ```
 
-<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).</Aside>
+> **NOTE**
+>
+> Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).
 
 ### DisabledNonZeroRateLimit
 
@@ -53761,7 +54373,9 @@ error InvalidRateLimitRate(Config rateLimiterConfig);
 error DisabledNonZeroRateLimit(Config config);
 ```
 
-<Aside>Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.</Aside>
+> **NOTE**
+>
+> Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.
 
 ### RateLimitMustBeDisabled
 
@@ -53769,7 +54383,9 @@ error DisabledNonZeroRateLimit(Config config);
 error RateLimitMustBeDisabled();
 ```
 
-<Aside>Thrown when attempting to enable rate limiting in a context where it must be disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to enable rate limiting in a context where it must be disabled.
 
 ## Structs
 
@@ -53964,7 +54580,9 @@ Returns the smaller of two numbers.
 function _min(uint256 a, uint256 b) internal pure returns (uint256);
 ```
 
-<Aside>Utility function for safe minimum value calculation.</Aside>
+> **NOTE**
+>
+> Utility function for safe minimum value calculation.
 
 **Parameters**
 
@@ -54130,7 +54748,9 @@ A minimal contract that implements 2-step ownership transfer and nothing more. I
 event OwnershipTransferRequested(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when the current owner initiates an ownership transfer.</Aside>
+> **NOTE**
+>
+> Emitted when the current owner initiates an ownership transfer.
 
 **Parameters**
 
@@ -54145,7 +54765,9 @@ event OwnershipTransferRequested(address indexed from, address indexed to);
 event OwnershipTransferred(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when an ownership transfer is completed.</Aside>
+> **NOTE**
+>
+> Emitted when an ownership transfer is completed.
 
 **Parameters**
 
@@ -54162,7 +54784,9 @@ event OwnershipTransferred(address indexed from, address indexed to);
 error CannotTransferToSelf();
 ```
 
-<Aside>Thrown when attempting to transfer ownership to the current owner.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to transfer ownership to the current owner.
 
 ### MustBeProposedOwner
 
@@ -54170,7 +54794,9 @@ error CannotTransferToSelf();
 error MustBeProposedOwner();
 ```
 
-<Aside>Thrown when someone other than the pending owner tries to accept ownership.</Aside>
+> **NOTE**
+>
+> Thrown when someone other than the pending owner tries to accept ownership.
 
 ### OnlyCallableByOwner
 
@@ -54178,7 +54804,9 @@ error MustBeProposedOwner();
 error OnlyCallableByOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by someone other than the owner.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by someone other than the owner.
 
 ### OwnerCannotBeZero
 
@@ -54186,7 +54814,9 @@ error OnlyCallableByOwner();
 error OwnerCannotBeZero();
 ```
 
-<Aside>Thrown when attempting to set the owner to address(0).</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set the owner to address(0).
 
 ## State Variables
 
@@ -54260,7 +54890,9 @@ Modifier that restricts function access to the contract owner.
 modifier onlyOwner();
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner.
 
 ### owner
 
@@ -54307,7 +54939,9 @@ Internal function to validate access control.
 function _validateOwnership() internal view;
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.
 
 ---
 
@@ -54544,7 +55178,9 @@ struct EVM2AnyMessage {
 
 #### EVM_EXTRA_ARGS_V1_TAG
 
-<Aside type="note">This version (v1) is maintained for backward compatibility. You can already switch to v2.</Aside>
+> **NOTE**
+>
+> This version (v1) is maintained for backward compatibility. You can already switch to v2.
 
 ```solidity
 bytes4 EVM_EXTRA_ARGS_V1_TAG
@@ -54560,7 +55196,9 @@ bytes4 EVM_EXTRA_ARGS_V2_TAG
 
 #### EVMExtraArgsV1
 
-<Aside type="note">This version (v1) is maintained for backward compatibility. You can already switch to v2.</Aside>
+> **NOTE**
+>
+> This version (v1) is maintained for backward compatibility. You can already switch to v2.
 
 ```solidity
 struct EVMExtraArgsV1 {
@@ -54592,7 +55230,9 @@ struct EVMExtraArgsV2 {
 
 #### _argsToBytes (v1)
 
-<Aside type="note">This version (v1) is maintained for backward compatibility. You can already switch to v2.</Aside>
+> **NOTE**
+>
+> This version (v1) is maintained for backward compatibility. You can already switch to v2.
 
 ```solidity
 function _argsToBytes(struct Client.EVMExtraArgsV1 extraArgs) internal pure returns (bytes bts)
@@ -54677,7 +55317,9 @@ A library for CCIP internal definitions common to multiple contracts. Provides c
 error InvalidEVMAddress(bytes encodedAddress);
 ```
 
-<Aside>Thrown when an encoded address is invalid (wrong length or outside valid EVM address range).</Aside>
+> **NOTE**
+>
+> Thrown when an encoded address is invalid (wrong length or outside valid EVM address range).
 
 **Parameters**
 
@@ -54742,7 +55384,9 @@ struct PriceUpdates {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -54762,7 +55406,9 @@ struct TokenPriceUpdate {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -54782,7 +55428,9 @@ struct GasPriceUpdate {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -54871,7 +55519,9 @@ struct ExecutionReportSingleChain {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -54896,7 +55546,9 @@ struct ExecutionReport {
 }
 ```
 
-<Aside>RMN depends on this struct. If changing, please notify the RMN maintainers.</Aside>
+> **NOTE**
+>
+> RMN depends on this struct. If changing, please notify the RMN maintainers.
 
 **Properties**
 
@@ -55169,7 +55821,9 @@ uint16 internal constant MAX_RET_BYTES = 4 + 4 * 32;
 uint256 internal constant MAX_BALANCE_OF_RET_BYTES = 32;
 ```
 
-<Aside>The expected number of bytes returned by the balanceOf function.</Aside>
+> **NOTE**
+>
+> The expected number of bytes returned by the balanceOf function.
 
 ### GAS_PRICE_BITS
 
@@ -55238,7 +55892,9 @@ uint256 public constant ANY_2_EVM_MESSAGE_FIXED_BYTES_PER_TOKEN = 32 * 10;
 bytes32 internal constant EVM_2_EVM_MESSAGE_HASH = keccak256("EVM2EVMMessageHashV2");
 ```
 
-<Aside>Hash identifier for EVM to EVM messages version 2.</Aside>
+> **NOTE**
+>
+> Hash identifier for EVM to EVM messages version 2.
 
 ### ANY_2_EVM_MESSAGE_HASH
 
@@ -55246,7 +55902,9 @@ bytes32 internal constant EVM_2_EVM_MESSAGE_HASH = keccak256("EVM2EVMMessageHash
 bytes32 internal constant ANY_2_EVM_MESSAGE_HASH = keccak256("Any2EVMMessageHashV1");
 ```
 
-<Aside>Hash identifier for Any to EVM messages version 1.</Aside>
+> **NOTE**
+>
+> Hash identifier for Any to EVM messages version 1.
 
 ### EVM_2_ANY_MESSAGE_HASH
 
@@ -55254,7 +55912,9 @@ bytes32 internal constant ANY_2_EVM_MESSAGE_HASH = keccak256("Any2EVMMessageHash
 bytes32 internal constant EVM_2_ANY_MESSAGE_HASH = keccak256("EVM2AnyMessageHashV1");
 ```
 
-<Aside>Hash identifier for EVM to Any messages version 1.</Aside>
+> **NOTE**
+>
+> Hash identifier for EVM to Any messages version 1.
 
 ### CHAIN_FAMILY_SELECTOR_EVM
 
@@ -55262,7 +55922,9 @@ bytes32 internal constant EVM_2_ANY_MESSAGE_HASH = keccak256("EVM2AnyMessageHash
 bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 ```
 
-<Aside>Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).
 
 ### PRECOMPILE_SPACE
 
@@ -61540,7 +62202,9 @@ struct ExecutionStateChanged has store, drop {
 # CCIP Contract Interface Reference Documentation (TON)
 Source: https://docs.chain.link/ccip/v1/ton/api-reference
 
-<Aside>TON currently supports arbitrary message passing only. Token transfers are not yet supported.</Aside>
+> **NOTE**
+>
+> TON currently supports arbitrary message passing only. Token transfers are not yet supported.
 
 ## Available Versions
 
@@ -61571,7 +62235,9 @@ The [TON Starter Kit Helper Reference](/ccip/v1/ton/api-reference/starter-kit-he
 # CCIP v1.6.0 TON Contract Interface Reference
 Source: https://docs.chain.link/ccip/v1/ton/api-reference/v1.6.0
 
-<Aside>TON currently supports arbitrary message passing only. Token transfers are not yet supported.</Aside>
+> **NOTE**
+>
+> TON currently supports arbitrary message passing only. Token transfers are not yet supported.
 
 ## API References
 
@@ -62082,7 +62748,9 @@ A specialized token pool contract that manages third-party tokens through mintin
 string public constant override typeAndVersion = "BurnFromMintTokenPool 1.6.2";
 ```
 
-<Aside>A constant identifier that specifies the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier that specifies the contract type and version number.
 
 **Returns**
 
@@ -63012,7 +63680,9 @@ Returns the address of the current CCIP router.
 function getRouter() public view virtual returns (address);
 ```
 
-<Aside>Provides access to the immutable router address used for message validation.</Aside>
+> **NOTE**
+>
+> Provides access to the immutable router address used for message validation.
 
 **Returns**
 
@@ -63218,7 +63888,9 @@ struct EVMExtraArgsV1 {
 }
 ```
 
-<Aside>First version of extra arguments, supporting basic gas limit configuration.</Aside>
+> **NOTE**
+>
+> First version of extra arguments, supporting basic gas limit configuration.
 
 **Properties**
 
@@ -63321,7 +63993,9 @@ struct EVMTokenAmount {
 bytes4 public constant EVM_EXTRA_ARGS_V1_TAG = 0x97a657c9;
 ```
 
-<Aside>The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).</Aside>
+> **NOTE**
+>
+> The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).
 
 ### GENERIC_EXTRA_ARGS_V2_TAG
 
@@ -63340,7 +64014,9 @@ bytes4 public constant GENERIC_EXTRA_ARGS_V2_TAG = 0x181dcf10;
 bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 ```
 
-<Aside>The identifier tag for Solana VM extra arguments.</Aside>
+> **NOTE**
+>
+> The identifier tag for Solana VM extra arguments.
 
 ### SVM_EXTRA_ARGS_MAX_ACCOUNTS
 
@@ -63348,7 +64024,9 @@ bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 uint256 public constant SVM_EXTRA_ARGS_MAX_ACCOUNTS = 64;
 ```
 
-<Aside>The maximum number of accounts that can be passed in SVMExtraArgs.</Aside>
+> **NOTE**
+>
+> The maximum number of accounts that can be passed in SVMExtraArgs.
 
 ### SVM_TOKEN_TRANSFER_DATA_OVERHEAD
 
@@ -63378,7 +64056,9 @@ uint256 public constant SVM_TOKEN_TRANSFER_DATA_OVERHEAD = (4 + 32) // source_po
 uint256 public constant SVM_MESSAGING_ACCOUNTS_OVERHEAD = 2;
 ```
 
-<Aside>Number of overhead accounts needed for message execution on SVM.</Aside>
+> **NOTE**
+>
+> Number of overhead accounts needed for message execution on SVM.
 
 ### SVM_ACCOUNT_BYTE_SIZE
 
@@ -63386,7 +64066,9 @@ uint256 public constant SVM_MESSAGING_ACCOUNTS_OVERHEAD = 2;
 uint256 public constant SVM_ACCOUNT_BYTE_SIZE = 32;
 ```
 
-<Aside>The size of each SVM account address in bytes.</Aside>
+> **NOTE**
+>
+> The size of each SVM account address in bytes.
 
 ## Functions
 
@@ -63398,7 +64080,9 @@ Encodes EVMExtraArgsV1 into bytes for message transmission.
 function _argsToBytes(EVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -63420,7 +64104,9 @@ Encodes GenericExtraArgsV2 into bytes for message transmission.
 function _argsToBytes(GenericExtraArgsV2 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V2 generic extra arguments with the V2 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V2 generic extra arguments with the V2 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -63442,7 +64128,9 @@ Encodes SVMExtraArgsV1 into bytes for message transmission.
 function _svmArgsToBytes(SVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes Solana VM extra arguments with the SVM tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes Solana VM extra arguments with the SVM tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -63705,7 +64393,9 @@ The FeeQuoter contract stores gas and token prices in USD, manages chain-specifi
 error TokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to get the price or fee for an unsupported token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to get the price or fee for an unsupported token.
 
 **Parameters**
 
@@ -63719,7 +64409,9 @@ error TokenNotSupported(address token);
 error FeeTokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to use an unsupported token for fee payment.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unsupported token for fee payment.
 
 **Parameters**
 
@@ -63733,7 +64425,9 @@ error FeeTokenNotSupported(address token);
 error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePassed);
 ```
 
-<Aside>Thrown when the gas price for a destination chain is stale.</Aside>
+> **NOTE**
+>
+> Thrown when the gas price for a destination chain is stale.
 
 **Parameters**
 
@@ -63749,7 +64443,9 @@ error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePas
 error MessageGasLimitTooHigh();
 ```
 
-<Aside>Thrown when the message gas limit exceeds the maximum allowed for the destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when the message gas limit exceeds the maximum allowed for the destination chain.
 
 ### MessageComputeUnitLimitTooHigh
 
@@ -63757,7 +64453,9 @@ error MessageGasLimitTooHigh();
 error MessageComputeUnitLimitTooHigh();
 ```
 
-<Aside>Thrown when the message compute unit limit exceeds the maximum allowed for Solana VM chains.</Aside>
+> **NOTE**
+>
+> Thrown when the message compute unit limit exceeds the maximum allowed for Solana VM chains.
 
 ### DestinationChainNotEnabled
 
@@ -63765,7 +64463,9 @@ error MessageComputeUnitLimitTooHigh();
 error DestinationChainNotEnabled(uint64 destChainSelector);
 ```
 
-<Aside>Thrown when attempting to send a message to a disabled destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to send a message to a disabled destination chain.
 
 **Parameters**
 
@@ -63779,7 +64479,9 @@ error DestinationChainNotEnabled(uint64 destChainSelector);
 error ExtraArgOutOfOrderExecutionMustBeTrue();
 ```
 
-<Aside>Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.</Aside>
+> **NOTE**
+>
+> Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.
 
 ### InvalidExtraArgsTag
 
@@ -63787,7 +64489,9 @@ error ExtraArgOutOfOrderExecutionMustBeTrue();
 error InvalidExtraArgsTag();
 ```
 
-<Aside>Thrown when the extra args tag is invalid or unsupported.</Aside>
+> **NOTE**
+>
+> Thrown when the extra args tag is invalid or unsupported.
 
 ### InvalidExtraArgsData
 
@@ -63795,7 +64499,9 @@ error InvalidExtraArgsTag();
 error InvalidExtraArgsData();
 ```
 
-<Aside>Thrown when extra args data is missing or malformed.</Aside>
+> **NOTE**
+>
+> Thrown when extra args data is missing or malformed.
 
 ### MessageTooLarge
 
@@ -63803,7 +64509,9 @@ error InvalidExtraArgsData();
 error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 ```
 
-<Aside>Thrown when the message data payload exceeds the maximum allowed size.</Aside>
+> **NOTE**
+>
+> Thrown when the message data payload exceeds the maximum allowed size.
 
 **Parameters**
 
@@ -63818,7 +64526,9 @@ error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 error UnsupportedNumberOfTokens(uint256 numberOfTokens, uint256 maxNumberOfTokensPerMsg);
 ```
 
-<Aside>Thrown when the number of tokens in a message exceeds the maximum allowed.</Aside>
+> **NOTE**
+>
+> Thrown when the number of tokens in a message exceeds the maximum allowed.
 
 **Parameters**
 
@@ -63862,7 +64572,9 @@ error InvalidTokenReceiver();
 error TooManySVMExtraArgsAccounts(uint256 numAccounts, uint256 maxAccounts);
 ```
 
-<Aside>Thrown when too many accounts are specified in SVM (Solana) extra args.</Aside>
+> **NOTE**
+>
+> Thrown when too many accounts are specified in SVM (Solana) extra args.
 
 **Parameters**
 
@@ -63877,7 +64589,9 @@ error TooManySVMExtraArgsAccounts(uint256 numAccounts, uint256 maxAccounts);
 error InvalidSVMExtraArgsWritableBitmap(uint64 accountIsWritableBitmap, uint256 numAccounts);
 ```
 
-<Aside>Thrown when the SVM writable bitmap is invalid for the number of accounts.</Aside>
+> **NOTE**
+>
+> Thrown when the SVM writable bitmap is invalid for the number of accounts.
 
 **Parameters**
 
@@ -63892,7 +64606,9 @@ error InvalidSVMExtraArgsWritableBitmap(uint64 accountIsWritableBitmap, uint256 
 error TooManySuiExtraArgsReceiverObjectIds(uint256 numReceiverObjectIds, uint256 maxReceiverObjectIds);
 ```
 
-<Aside>Thrown when too many receiver object IDs are specified in SUI extra args.</Aside>
+> **NOTE**
+>
+> Thrown when too many receiver object IDs are specified in SUI extra args.
 
 **Parameters**
 
@@ -63907,7 +64623,9 @@ error TooManySuiExtraArgsReceiverObjectIds(uint256 numReceiverObjectIds, uint256
 error InvalidChainFamilySelector(bytes4 chainFamilySelector);
 ```
 
-<Aside>Thrown when an unsupported or invalid chain family selector is used during message validation.</Aside>
+> **NOTE**
+>
+> Thrown when an unsupported or invalid chain family selector is used during message validation.
 
 **Parameters**
 
@@ -64035,7 +64753,9 @@ struct StaticConfig {
 uint256 public constant FEE_BASE_DECIMALS = 36;
 ```
 
-<Aside>The base decimals used for fee calculations to maintain precision.</Aside>
+> **NOTE**
+>
+> The base decimals used for fee calculations to maintain precision.
 
 ### typeAndVersion
 
@@ -64043,7 +64763,9 @@ uint256 public constant FEE_BASE_DECIMALS = 36;
 string public constant typeAndVersion = "FeeQuoter 1.6.2";
 ```
 
-<Aside>The type and version of the FeeQuoter contract.</Aside>
+> **NOTE**
+>
+> The type and version of the FeeQuoter contract.
 
 ## Functions
 
@@ -64081,7 +64803,9 @@ Gets the list of supported fee tokens.
 function getFeeTokens() external view returns (address[] memory);
 ```
 
-<Aside>Returns all tokens that can be used to pay for cross-chain message fees.</Aside>
+> **NOTE**
+>
+> Returns all tokens that can be used to pay for cross-chain message fees.
 
 **Returns**
 
@@ -64153,7 +64877,9 @@ Gets the configuration for a destination chain.
 function getDestChainConfig(uint64 destChainSelector) external view returns (DestChainConfig memory);
 ```
 
-<Aside>Returns fee and validation parameters specific to the destination chain.</Aside>
+> **NOTE**
+>
+> Returns fee and validation parameters specific to the destination chain.
 
 **Parameters**
 
@@ -64175,7 +64901,9 @@ Gets the static configuration of the FeeQuoter.
 function getStaticConfig() external view returns (StaticConfig memory);
 ```
 
-<Aside>Returns immutable configuration values set at deployment.</Aside>
+> **NOTE**
+>
+> Returns immutable configuration values set at deployment.
 
 **Returns**
 
@@ -64355,7 +65083,9 @@ Checks if the given chain ID is supported for sending/receiving.
 function isChainSupported(uint64 destChainSelector) external view returns (bool supported);
 ```
 
-<Aside>Checks if the given chain ID is supported for sending/receiving.</Aside>
+> **NOTE**
+>
+> Checks if the given chain ID is supported for sending/receiving.
 
 **Parameters**
 
@@ -64501,7 +65231,9 @@ Last Updated: 2025-10-06
 > "@openzeppelin/contracts@5.0.2/=lib/openzeppelin-contracts/contracts/"
 > ```
 
-<Aside type="note">You are viewing API documentation for CCIP v1.6.2, which is the latest version.</Aside>
+> **NOTE**
+>
+> You are viewing API documentation for CCIP v1.6.2, which is the latest version.
 
 ## API References
 
@@ -64743,7 +65475,9 @@ struct EVM2AnyRampMessage {
 bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 ```
 
-<Aside>Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).
 
 ### CHAIN_FAMILY_SELECTOR_SVM
 
@@ -64751,7 +65485,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_SVM = 0x1e10bdc4;
 ```
 
-<Aside>Chain family selector for SVM chains: bytes4(keccak256("CCIP ChainFamilySelector SVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for SVM chains: bytes4(keccak256("CCIP ChainFamilySelector SVM")).
 
 ### CHAIN_FAMILY_SELECTOR_APTOS
 
@@ -64759,7 +65495,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_SVM = 0x1e10bdc4;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_APTOS = 0xac77ffec;
 ```
 
-<Aside>Chain family selector for Aptos chains: bytes4(keccak256("CCIP ChainFamilySelector APTOS")).</Aside>
+> **NOTE**
+>
+> Chain family selector for Aptos chains: bytes4(keccak256("CCIP ChainFamilySelector APTOS")).
 
 ### CHAIN_FAMILY_SELECTOR_SUI
 
@@ -64767,7 +65505,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_APTOS = 0xac77ffec;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_SUI = 0xc4e05953;
 ```
 
-<Aside>Chain family selector for Sui chains: bytes4(keccak256("CCIP ChainFamilySelector SUI")).</Aside>
+> **NOTE**
+>
+> Chain family selector for Sui chains: bytes4(keccak256("CCIP ChainFamilySelector SUI")).
 
 ### CHAIN_FAMILY_SELECTOR_TVM
 
@@ -64775,7 +65515,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_SUI = 0xc4e05953;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_TVM = 0x647e2ba9;
 ```
 
-<Aside>Chain family selector for TVM chains: bytes4(keccak256("CCIP ChainFamilySelector TVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for TVM chains: bytes4(keccak256("CCIP ChainFamilySelector TVM")).
 
 ---
 
@@ -64872,7 +65614,9 @@ A specialized token pool for managing native tokens through a lock and release m
 event LiquidityTransferred(address indexed from, uint256 amount);
 ```
 
-<Aside>Emitted when liquidity is transferred from an older pool version during an upgrade.</Aside>
+> **NOTE**
+>
+> Emitted when liquidity is transferred from an older pool version during an upgrade.
 
 **Parameters**
 
@@ -64887,7 +65631,9 @@ event LiquidityTransferred(address indexed from, uint256 amount);
 event RebalancerSet(address oldRebalancer, address newRebalancer);
 ```
 
-<Aside>Emitted when the rebalancer (liquidity manager) address is updated via [`setRebalancer`](#setrebalancer).</Aside>
+> **NOTE**
+>
+> Emitted when the rebalancer (liquidity manager) address is updated via [`setRebalancer`](#setrebalancer).
 
 **Parameters**
 
@@ -64904,7 +65650,9 @@ event RebalancerSet(address oldRebalancer, address newRebalancer);
 error InsufficientLiquidity();
 ```
 
-<Aside>Thrown when attempting to withdraw more liquidity than available in the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to withdraw more liquidity than available in the pool.
 
 ### LiquidityNotAccepted
 
@@ -64912,7 +65660,9 @@ error InsufficientLiquidity();
 error LiquidityNotAccepted();
 ```
 
-<Aside>Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.
 
 ## State Variables
 
@@ -64933,7 +65683,9 @@ bool internal immutable i_acceptLiquidity;
 address internal s_rebalancer;
 ```
 
-<Aside>The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.</Aside>
+> **NOTE**
+>
+> The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.
 
 ### typeAndVersion
 
@@ -64941,7 +65693,9 @@ address internal s_rebalancer;
 string public constant override typeAndVersion = "LockReleaseTokenPool 1.6.2";
 ```
 
-<Aside>A constant identifier specifying the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier specifying the contract type and version number.
 
 ## Functions
 
@@ -65071,7 +65825,9 @@ Updates the rebalancer address.
 function setRebalancer(address rebalancer) external onlyOwner;
 ```
 
-<Aside>Allows the owner to update the liquidity manager (rebalancer) address.</Aside>
+> **NOTE**
+>
+> Allows the owner to update the liquidity manager (rebalancer) address.
 
 **Parameters**
 
@@ -65272,7 +66028,9 @@ A minimal contract that implements 2-step ownership transfer and nothing more. I
 event OwnershipTransferRequested(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when the current owner initiates an ownership transfer.</Aside>
+> **NOTE**
+>
+> Emitted when the current owner initiates an ownership transfer.
 
 **Parameters**
 
@@ -65287,7 +66045,9 @@ event OwnershipTransferRequested(address indexed from, address indexed to);
 event OwnershipTransferred(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when an ownership transfer is completed.</Aside>
+> **NOTE**
+>
+> Emitted when an ownership transfer is completed.
 
 **Parameters**
 
@@ -65304,7 +66064,9 @@ event OwnershipTransferred(address indexed from, address indexed to);
 error CannotTransferToSelf();
 ```
 
-<Aside>Thrown when attempting to transfer ownership to the current owner.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to transfer ownership to the current owner.
 
 ### MustBeProposedOwner
 
@@ -65312,7 +66074,9 @@ error CannotTransferToSelf();
 error MustBeProposedOwner();
 ```
 
-<Aside>Thrown when someone other than the pending owner tries to accept ownership.</Aside>
+> **NOTE**
+>
+> Thrown when someone other than the pending owner tries to accept ownership.
 
 ### OnlyCallableByOwner
 
@@ -65320,7 +66084,9 @@ error MustBeProposedOwner();
 error OnlyCallableByOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by someone other than the owner.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by someone other than the owner.
 
 ### OwnerCannotBeZero
 
@@ -65328,7 +66094,9 @@ error OnlyCallableByOwner();
 error OwnerCannotBeZero();
 ```
 
-<Aside>Thrown when attempting to set the owner to address(0).</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set the owner to address(0).
 
 ## State Variables
 
@@ -65402,7 +66170,9 @@ Modifier that restricts function access to the contract owner.
 modifier onlyOwner();
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner.
 
 ### owner
 
@@ -65449,7 +66219,9 @@ Internal function to validate access control.
 function _validateOwnership() internal view;
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.
 
 ---
 
@@ -65753,7 +66525,9 @@ A library implementing the Token Bucket algorithm for rate limiting cross-chain 
 event TokensConsumed(uint256 tokens);
 ```
 
-<Aside>Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).</Aside>
+> **NOTE**
+>
+> Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).
 
 **Parameters**
 
@@ -65767,7 +66541,9 @@ event TokensConsumed(uint256 tokens);
 event ConfigChanged(Config config);
 ```
 
-<Aside>Emitted when the rate limiter [`Config`](#config) is updated.</Aside>
+> **NOTE**
+>
+> Emitted when the rate limiter [`Config`](#config) is updated.
 
 **Parameters**
 
@@ -65783,7 +66559,9 @@ event ConfigChanged(Config config);
 error BucketOverfilled();
 ```
 
-<Aside>Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.</Aside>
+> **NOTE**
+>
+> Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.
 
 ### OnlyCallableByAdminOrOwner
 
@@ -65791,7 +66569,9 @@ error BucketOverfilled();
 error OnlyCallableByAdminOrOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by an unauthorized address.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by an unauthorized address.
 
 ### TokenMaxCapacityExceeded
 
@@ -65799,7 +66579,9 @@ error OnlyCallableByAdminOrOwner();
 error TokenMaxCapacityExceeded(uint256 capacity, uint256 requested, address tokenAddress);
 ```
 
-<Aside>Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### TokenRateLimitReached
 
@@ -65817,7 +66599,9 @@ error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address
 error AggregateValueMaxCapacityExceeded(uint256 capacity, uint256 requested);
 ```
 
-<Aside>Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### AggregateValueRateLimitReached
 
@@ -65835,7 +66619,9 @@ error AggregateValueRateLimitReached(uint256 minWaitInSeconds, uint256 available
 error InvalidRateLimitRate(Config rateLimiterConfig);
 ```
 
-<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).</Aside>
+> **NOTE**
+>
+> Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).
 
 ### DisabledNonZeroRateLimit
 
@@ -65843,7 +66629,9 @@ error InvalidRateLimitRate(Config rateLimiterConfig);
 error DisabledNonZeroRateLimit(Config config);
 ```
 
-<Aside>Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.</Aside>
+> **NOTE**
+>
+> Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.
 
 ### RateLimitMustBeDisabled
 
@@ -65851,7 +66639,9 @@ error DisabledNonZeroRateLimit(Config config);
 error RateLimitMustBeDisabled();
 ```
 
-<Aside>Thrown when attempting to enable rate limiting in a context where it must be disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to enable rate limiting in a context where it must be disabled.
 
 ## Structs
 
@@ -66046,7 +66836,9 @@ Returns the smaller of two numbers.
 function _min(uint256 a, uint256 b) internal pure returns (uint256);
 ```
 
-<Aside>Utility function for safe minimum value calculation.</Aside>
+> **NOTE**
+>
+> Utility function for safe minimum value calculation.
 
 **Parameters**
 
@@ -66238,7 +67030,9 @@ ITokenAdminRegistry internal immutable i_tokenAdminRegistry;
 string public constant override typeAndVersion = "RegistryModuleOwnerCustom 1.6.2";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ## Functions
 
@@ -66773,7 +67567,9 @@ event AdministratorTransferRequested(address indexed token, address indexed curr
 event AdministratorTransferred(address indexed token, address indexed newAdmin);
 ```
 
-<Aside>Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).</Aside>
+> **NOTE**
+>
+> Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).
 
 **Parameters**
 
@@ -66788,7 +67584,9 @@ event AdministratorTransferred(address indexed token, address indexed newAdmin);
 event PoolSet(address indexed token, address indexed previousPool, address indexed newPool);
 ```
 
-<Aside>Emitted when a token's pool configuration is changed via [`setPool`](#setpool).</Aside>
+> **NOTE**
+>
+> Emitted when a token's pool configuration is changed via [`setPool`](#setpool).
 
 **Parameters**
 
@@ -66804,7 +67602,9 @@ event PoolSet(address indexed token, address indexed previousPool, address index
 event RegistryModuleAdded(address module);
 ```
 
-<Aside>Emitted when a new registry module is authorized.</Aside>
+> **NOTE**
+>
+> Emitted when a new registry module is authorized.
 
 **Parameters**
 
@@ -66818,7 +67618,9 @@ event RegistryModuleAdded(address module);
 event RegistryModuleRemoved(address indexed module);
 ```
 
-<Aside>Emitted when a registry module is deauthorized.</Aside>
+> **NOTE**
+>
+> Emitted when a registry module is deauthorized.
 
 **Parameters**
 
@@ -66834,7 +67636,9 @@ event RegistryModuleRemoved(address indexed module);
 error ZeroAddress();
 ```
 
-<Aside>Thrown when attempting to use address(0) where not allowed.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) where not allowed.
 
 ### AlreadyRegistered
 
@@ -66842,7 +67646,9 @@ error ZeroAddress();
 error AlreadyRegistered(address token);
 ```
 
-<Aside>Thrown when attempting to register an administrator for a token that already has one.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to register an administrator for a token that already has one.
 
 **Parameters**
 
@@ -66856,7 +67662,9 @@ error AlreadyRegistered(address token);
 error InvalidTokenPoolToken(address token);
 ```
 
-<Aside>Thrown when attempting to set a pool that doesn't support the token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set a pool that doesn't support the token.
 
 **Parameters**
 
@@ -66870,7 +67678,9 @@ error InvalidTokenPoolToken(address token);
 error OnlyAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when a function restricted to the token administrator is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to the token administrator is called by another address.
 
 **Parameters**
 
@@ -66885,7 +67695,9 @@ error OnlyAdministrator(address sender, address token);
 error OnlyPendingAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when acceptAdminRole is called by an address other than the pending administrator.</Aside>
+> **NOTE**
+>
+> Thrown when acceptAdminRole is called by an address other than the pending administrator.
 
 **Parameters**
 
@@ -66900,7 +67712,9 @@ error OnlyPendingAdministrator(address sender, address token);
 error OnlyRegistryModuleOrOwner(address sender);
 ```
 
-<Aside>Thrown when a function restricted to registry modules or owner is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to registry modules or owner is called by another address.
 
 **Parameters**
 
@@ -66938,7 +67752,9 @@ struct TokenConfig {
 EnumerableSet.AddressSet internal s_registryModules;
 ```
 
-<Aside>Set of authorized registry modules that can register administrators.</Aside>
+> **NOTE**
+>
+> Set of authorized registry modules that can register administrators.
 
 ### s_tokenConfig
 
@@ -66946,7 +67762,9 @@ EnumerableSet.AddressSet internal s_registryModules;
 mapping(address token => TokenConfig) internal s_tokenConfig;
 ```
 
-<Aside>Stores configuration data for each token, including administrators and pool addresses.</Aside>
+> **NOTE**
+>
+> Stores configuration data for each token, including administrators and pool addresses.
 
 ### s_tokens
 
@@ -66954,7 +67772,9 @@ mapping(address token => TokenConfig) internal s_tokenConfig;
 EnumerableSet.AddressSet internal s_tokens;
 ```
 
-<Aside>Set of all configured tokens for efficient enumeration.</Aside>
+> **NOTE**
+>
+> Set of all configured tokens for efficient enumeration.
 
 ### typeAndVersion
 
@@ -66962,7 +67782,9 @@ EnumerableSet.AddressSet internal s_tokens;
 string public constant override typeAndVersion = "TokenAdminRegistry 1.6.2";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ---
 
@@ -67267,7 +68089,9 @@ event InboundRateLimitConsumed(uint64 indexed remoteChainSelector, address token
 error AllowListNotEnabled();
 ```
 
-<Aside>Thrown when attempting to modify the allowlist when the feature is disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to modify the allowlist when the feature is disabled.
 
 ### CallerIsNotARampOnRouter
 
@@ -67275,7 +68099,9 @@ error AllowListNotEnabled();
 error CallerIsNotARampOnRouter(address caller);
 ```
 
-<Aside>Thrown when an unauthorized address attempts to act as an onRamp or offRamp.</Aside>
+> **NOTE**
+>
+> Thrown when an unauthorized address attempts to act as an onRamp or offRamp.
 
 ### ChainAlreadyExists
 
@@ -67283,7 +68109,9 @@ error CallerIsNotARampOnRouter(address caller);
 error ChainAlreadyExists(uint64 chainSelector);
 ```
 
-<Aside>Thrown when attempting to add a chain that is already configured.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a chain that is already configured.
 
 **Parameters**
 
@@ -67297,7 +68125,9 @@ error ChainAlreadyExists(uint64 chainSelector);
 error ChainNotAllowed(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to use a chain that is not authorized.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use a chain that is not authorized.
 
 ### CursedByRMN
 
@@ -67305,7 +68135,9 @@ error ChainNotAllowed(uint64 remoteChainSelector);
 error CursedByRMN();
 ```
 
-<Aside>Thrown when the Risk Management Network has flagged operations as unsafe.</Aside>
+> **NOTE**
+>
+> Thrown when the Risk Management Network has flagged operations as unsafe.
 
 ### InvalidDecimalArgs
 
@@ -67313,7 +68145,9 @@ error CursedByRMN();
 error InvalidDecimalArgs(uint8 expected, uint8 actual);
 ```
 
-<Aside>Thrown when token decimals don't match the expected configuration.</Aside>
+> **NOTE**
+>
+> Thrown when token decimals don't match the expected configuration.
 
 **Parameters**
 
@@ -67328,7 +68162,9 @@ error InvalidDecimalArgs(uint8 expected, uint8 actual);
 error InvalidRemoteChainDecimals(bytes sourcePoolData);
 ```
 
-<Aside>Thrown when the decimal configuration from a remote chain is invalid or malformed.</Aside>
+> **NOTE**
+>
+> Thrown when the decimal configuration from a remote chain is invalid or malformed.
 
 **Parameters**
 
@@ -67342,7 +68178,9 @@ error InvalidRemoteChainDecimals(bytes sourcePoolData);
 error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to remove a pool that isn't configured for the specified chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to remove a pool that isn't configured for the specified chain.
 
 **Parameters**
 
@@ -67357,7 +68195,9 @@ error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddr
 error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 ```
 
-<Aside>Thrown when attempting to use an unconfigured or invalid remote pool address.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unconfigured or invalid remote pool address.
 
 ### InvalidToken
 
@@ -67365,7 +68205,9 @@ error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 error InvalidToken(address token);
 ```
 
-<Aside>Thrown when attempting to operate with a token that is not supported by the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with a token that is not supported by the pool.
 
 **Parameters**
 
@@ -67379,7 +68221,9 @@ error InvalidToken(address token);
 error MismatchedArrayLengths();
 ```
 
-<Aside>Thrown when array parameters have different lengths in multi-chain operations.</Aside>
+> **NOTE**
+>
+> Thrown when array parameters have different lengths in multi-chain operations.
 
 ### NonExistentChain
 
@@ -67387,7 +68231,9 @@ error MismatchedArrayLengths();
 error NonExistentChain(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to operate with an unconfigured chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with an unconfigured chain.
 
 ### OverflowDetected
 
@@ -67395,7 +68241,9 @@ error NonExistentChain(uint64 remoteChainSelector);
 error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remoteAmount);
 ```
 
-<Aside>Thrown when a token amount conversion would result in an arithmetic overflow.</Aside>
+> **NOTE**
+>
+> Thrown when a token amount conversion would result in an arithmetic overflow.
 
 **Parameters**
 
@@ -67411,7 +68259,9 @@ error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remote
 error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to add a pool that is already configured for a chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a pool that is already configured for a chain.
 
 **Parameters**
 
@@ -67426,7 +68276,9 @@ error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 error SenderNotAllowed(address sender);
 ```
 
-<Aside>Thrown when a non-allowlisted address attempts an operation in allowlist mode.</Aside>
+> **NOTE**
+>
+> Thrown when a non-allowlisted address attempts an operation in allowlist mode.
 
 ### Unauthorized
 
@@ -67434,7 +68286,9 @@ error SenderNotAllowed(address sender);
 error Unauthorized(address caller);
 ```
 
-<Aside>Thrown when a caller lacks the required permissions for an operation.</Aside>
+> **NOTE**
+>
+> Thrown when a caller lacks the required permissions for an operation.
 
 **Parameters**
 
@@ -67448,7 +68302,9 @@ error Unauthorized(address caller);
 error ZeroAddressNotAllowed();
 ```
 
-<Aside>Thrown when attempting to use address(0) for critical contract addresses.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) for critical contract addresses.
 
 ## Structs
 
@@ -67538,7 +68394,9 @@ bool internal immutable i_allowlistEnabled;
 
 Set of addresses authorized to initiate cross-chain operations.
 
-<Aside>Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.</Aside>
+> **NOTE**
+>
+> Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.
 
 ```solidity
 EnumerableSet.AddressSet internal s_allowlist;
@@ -68119,7 +68977,9 @@ Returns the configured pool addresses for a remote chain.
 function getRemotePools(uint64 remoteChainSelector) public view returns (bytes[] memory);
 ```
 
-<Aside>Returns encoded addresses to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded addresses to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -68141,7 +69001,9 @@ Returns the token address on a remote chain.
 function getRemoteToken(uint64 remoteChainSelector) public view returns (bytes memory);
 ```
 
-<Aside>Returns encoded address to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded address to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -68399,7 +69261,9 @@ function setChainRateLimiterConfigs(
 ) external;
 ```
 
-<Aside>Callable by owner or rate limit admin. All array lengths must match.</Aside>
+> **NOTE**
+>
+> Callable by owner or rate limit admin. All array lengths must match.
 
 **Parameters**
 
@@ -68417,7 +69281,9 @@ Sets the address authorized to manage rate limits.
 function setRateLimitAdmin(address rateLimitAdmin) external onlyOwner;
 ```
 
-<Aside>Only callable by owner. The rate limit admin can modify rate limit configurations independently.</Aside>
+> **NOTE**
+>
+> Only callable by owner. The rate limit admin can modify rate limit configurations independently.
 
 ### setRouter
 
@@ -68427,7 +69293,9 @@ Updates the router contract address.
 function setRouter(address newRouter) public onlyOwner;
 ```
 
-<Aside>Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.</Aside>
+> **NOTE**
+>
+> Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.
 
 **Parameters**
 
@@ -68590,7 +69458,9 @@ A specialized token pool contract that manages third-party tokens through mintin
 string public constant override typeAndVersion = "BurnFromMintTokenPool 1.6.3";
 ```
 
-<Aside>A constant identifier that specifies the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier that specifies the contract type and version number.
 
 **Returns**
 
@@ -69520,7 +70390,9 @@ Returns the address of the current CCIP router.
 function getRouter() public view virtual returns (address);
 ```
 
-<Aside>Provides access to the immutable router address used for message validation.</Aside>
+> **NOTE**
+>
+> Provides access to the immutable router address used for message validation.
 
 **Returns**
 
@@ -69726,7 +70598,9 @@ struct EVMExtraArgsV1 {
 }
 ```
 
-<Aside>First version of extra arguments, supporting basic gas limit configuration.</Aside>
+> **NOTE**
+>
+> First version of extra arguments, supporting basic gas limit configuration.
 
 **Properties**
 
@@ -69860,7 +70734,9 @@ struct EVMTokenAmount {
 bytes4 public constant EVM_EXTRA_ARGS_V1_TAG = 0x97a657c9;
 ```
 
-<Aside>The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).</Aside>
+> **NOTE**
+>
+> The identifier tag for V1 extra arguments (bytes4(keccak256("CCIP EVMExtraArgsV1"))).
 
 ### GENERIC_EXTRA_ARGS_V2_TAG
 
@@ -69879,7 +70755,9 @@ bytes4 public constant GENERIC_EXTRA_ARGS_V2_TAG = 0x181dcf10;
 bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 ```
 
-<Aside>The identifier tag for Solana VM extra arguments.</Aside>
+> **NOTE**
+>
+> The identifier tag for Solana VM extra arguments.
 
 ### SUI_EXTRA_ARGS_V1_TAG
 
@@ -69887,7 +70765,9 @@ bytes4 public constant SVM_EXTRA_ARGS_V1_TAG = 0x1f3b3aba;
 bytes4 public constant SUI_EXTRA_ARGS_V1_TAG = 0x21ea4ca9;
 ```
 
-<Aside>The identifier tag for SUI extra arguments.</Aside>
+> **NOTE**
+>
+> The identifier tag for SUI extra arguments.
 
 ### SVM_EXTRA_ARGS_MAX_ACCOUNTS
 
@@ -69895,7 +70775,9 @@ bytes4 public constant SUI_EXTRA_ARGS_V1_TAG = 0x21ea4ca9;
 uint256 public constant SVM_EXTRA_ARGS_MAX_ACCOUNTS = 64;
 ```
 
-<Aside>The maximum number of accounts that can be passed in SVMExtraArgs.</Aside>
+> **NOTE**
+>
+> The maximum number of accounts that can be passed in SVMExtraArgs.
 
 ### SVM_TOKEN_TRANSFER_DATA_OVERHEAD
 
@@ -69925,7 +70807,9 @@ uint256 public constant SVM_TOKEN_TRANSFER_DATA_OVERHEAD = (4 + 32) // source_po
 uint256 public constant SVM_MESSAGING_ACCOUNTS_OVERHEAD = 2;
 ```
 
-<Aside>Number of overhead accounts needed for message execution on SVM.</Aside>
+> **NOTE**
+>
+> Number of overhead accounts needed for message execution on SVM.
 
 ### SVM_ACCOUNT_BYTE_SIZE
 
@@ -69933,7 +70817,9 @@ uint256 public constant SVM_MESSAGING_ACCOUNTS_OVERHEAD = 2;
 uint256 public constant SVM_ACCOUNT_BYTE_SIZE = 32;
 ```
 
-<Aside>The size of each SVM account address in bytes.</Aside>
+> **NOTE**
+>
+> The size of each SVM account address in bytes.
 
 ### SUI_TOKEN_TRANSFER_DATA_OVERHEAD
 
@@ -69957,7 +70843,9 @@ uint256 public constant SUI_TOKEN_TRANSFER_DATA_OVERHEAD = (4 + 32) // source_po
 uint256 public constant SUI_MESSAGING_ACCOUNTS_OVERHEAD = 1;
 ```
 
-<Aside>Number of overhead accounts needed for message execution on SUI.</Aside>
+> **NOTE**
+>
+> Number of overhead accounts needed for message execution on SUI.
 
 ### SUI_EXTRA_ARGS_MAX_RECEIVER_OBJECT_IDS
 
@@ -69965,7 +70853,9 @@ uint256 public constant SUI_MESSAGING_ACCOUNTS_OVERHEAD = 1;
 uint256 public constant SUI_EXTRA_ARGS_MAX_RECEIVER_OBJECT_IDS = 64;
 ```
 
-<Aside>The maximum number of receiver object IDs that can be passed in SuiExtraArgs.</Aside>
+> **NOTE**
+>
+> The maximum number of receiver object IDs that can be passed in SuiExtraArgs.
 
 ### SUI_ACCOUNT_BYTE_SIZE
 
@@ -69973,7 +70863,9 @@ uint256 public constant SUI_EXTRA_ARGS_MAX_RECEIVER_OBJECT_IDS = 64;
 uint256 public constant SUI_ACCOUNT_BYTE_SIZE = 32;
 ```
 
-<Aside>The size of each SUI account address in bytes.</Aside>
+> **NOTE**
+>
+> The size of each SUI account address in bytes.
 
 ## Functions
 
@@ -69985,7 +70877,9 @@ Encodes EVMExtraArgsV1 into bytes for message transmission.
 function _argsToBytes(EVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V1 extra arguments with the V1 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -70007,7 +70901,9 @@ Encodes GenericExtraArgsV2 into bytes for message transmission.
 function _argsToBytes(GenericExtraArgsV2 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes V2 generic extra arguments with the V2 tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes V2 generic extra arguments with the V2 tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -70029,7 +70925,9 @@ Encodes SVMExtraArgsV1 into bytes for message transmission.
 function _svmArgsToBytes(SVMExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes Solana VM extra arguments with the SVM tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes Solana VM extra arguments with the SVM tag identifier for cross-chain message processing.
 
 **Parameters**
 
@@ -70051,7 +70949,9 @@ Encodes SuiExtraArgsV1 into bytes for message transmission.
 function _suiArgsToBytes(SuiExtraArgsV1 memory extraArgs) internal pure returns (bytes memory bts);
 ```
 
-<Aside>Serializes SUI extra arguments with the SUI tag identifier for cross-chain message processing.</Aside>
+> **NOTE**
+>
+> Serializes SUI extra arguments with the SUI tag identifier for cross-chain message processing.
 
 ---
 
@@ -70302,7 +71202,9 @@ The FeeQuoter contract stores gas and token prices in USD, manages chain-specifi
 error TokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to get the price or fee for an unsupported token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to get the price or fee for an unsupported token.
 
 **Parameters**
 
@@ -70316,7 +71218,9 @@ error TokenNotSupported(address token);
 error FeeTokenNotSupported(address token);
 ```
 
-<Aside>Thrown when attempting to use an unsupported token for fee payment.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unsupported token for fee payment.
 
 **Parameters**
 
@@ -70330,7 +71234,9 @@ error FeeTokenNotSupported(address token);
 error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePassed);
 ```
 
-<Aside>Thrown when the gas price for a destination chain is stale.</Aside>
+> **NOTE**
+>
+> Thrown when the gas price for a destination chain is stale.
 
 **Parameters**
 
@@ -70346,7 +71252,9 @@ error StaleGasPrice(uint64 destChainSelector, uint256 threshold, uint256 timePas
 error MessageGasLimitTooHigh();
 ```
 
-<Aside>Thrown when the message gas limit exceeds the maximum allowed for the destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when the message gas limit exceeds the maximum allowed for the destination chain.
 
 ### MessageComputeUnitLimitTooHigh
 
@@ -70354,7 +71262,9 @@ error MessageGasLimitTooHigh();
 error MessageComputeUnitLimitTooHigh();
 ```
 
-<Aside>Thrown when the message compute unit limit exceeds the maximum allowed for Solana VM chains.</Aside>
+> **NOTE**
+>
+> Thrown when the message compute unit limit exceeds the maximum allowed for Solana VM chains.
 
 ### DestinationChainNotEnabled
 
@@ -70362,7 +71272,9 @@ error MessageComputeUnitLimitTooHigh();
 error DestinationChainNotEnabled(uint64 destChainSelector);
 ```
 
-<Aside>Thrown when attempting to send a message to a disabled destination chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to send a message to a disabled destination chain.
 
 **Parameters**
 
@@ -70376,7 +71288,9 @@ error DestinationChainNotEnabled(uint64 destChainSelector);
 error ExtraArgOutOfOrderExecutionMustBeTrue();
 ```
 
-<Aside>Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.</Aside>
+> **NOTE**
+>
+> Thrown when a destination chain enforces out-of-order execution but the extra args specify otherwise.
 
 ### InvalidExtraArgsTag
 
@@ -70384,7 +71298,9 @@ error ExtraArgOutOfOrderExecutionMustBeTrue();
 error InvalidExtraArgsTag();
 ```
 
-<Aside>Thrown when the extra args tag is invalid or unsupported.</Aside>
+> **NOTE**
+>
+> Thrown when the extra args tag is invalid or unsupported.
 
 ### InvalidExtraArgsData
 
@@ -70392,7 +71308,9 @@ error InvalidExtraArgsTag();
 error InvalidExtraArgsData();
 ```
 
-<Aside>Thrown when extra args data is missing or malformed.</Aside>
+> **NOTE**
+>
+> Thrown when extra args data is missing or malformed.
 
 ### MessageTooLarge
 
@@ -70400,7 +71318,9 @@ error InvalidExtraArgsData();
 error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 ```
 
-<Aside>Thrown when the message data payload exceeds the maximum allowed size.</Aside>
+> **NOTE**
+>
+> Thrown when the message data payload exceeds the maximum allowed size.
 
 **Parameters**
 
@@ -70415,7 +71335,9 @@ error MessageTooLarge(uint256 maxSize, uint256 actualSize);
 error UnsupportedNumberOfTokens(uint256 numberOfTokens, uint256 maxNumberOfTokensPerMsg);
 ```
 
-<Aside>Thrown when the number of tokens in a message exceeds the maximum allowed.</Aside>
+> **NOTE**
+>
+> Thrown when the number of tokens in a message exceeds the maximum allowed.
 
 **Parameters**
 
@@ -70459,7 +71381,9 @@ error InvalidTokenReceiver();
 error TooManySVMExtraArgsAccounts(uint256 numAccounts, uint256 maxAccounts);
 ```
 
-<Aside>Thrown when too many accounts are specified in SVM (Solana) extra args.</Aside>
+> **NOTE**
+>
+> Thrown when too many accounts are specified in SVM (Solana) extra args.
 
 **Parameters**
 
@@ -70474,7 +71398,9 @@ error TooManySVMExtraArgsAccounts(uint256 numAccounts, uint256 maxAccounts);
 error InvalidSVMExtraArgsWritableBitmap(uint64 accountIsWritableBitmap, uint256 numAccounts);
 ```
 
-<Aside>Thrown when the SVM writable bitmap is invalid for the number of accounts.</Aside>
+> **NOTE**
+>
+> Thrown when the SVM writable bitmap is invalid for the number of accounts.
 
 **Parameters**
 
@@ -70489,7 +71415,9 @@ error InvalidSVMExtraArgsWritableBitmap(uint64 accountIsWritableBitmap, uint256 
 error TooManySuiExtraArgsReceiverObjectIds(uint256 numReceiverObjectIds, uint256 maxReceiverObjectIds);
 ```
 
-<Aside>Thrown when too many receiver object IDs are specified in SUI extra args.</Aside>
+> **NOTE**
+>
+> Thrown when too many receiver object IDs are specified in SUI extra args.
 
 **Parameters**
 
@@ -70504,7 +71432,9 @@ error TooManySuiExtraArgsReceiverObjectIds(uint256 numReceiverObjectIds, uint256
 error InvalidChainFamilySelector(bytes4 chainFamilySelector);
 ```
 
-<Aside>Thrown when an unsupported or invalid chain family selector is used during message validation.</Aside>
+> **NOTE**
+>
+> Thrown when an unsupported or invalid chain family selector is used during message validation.
 
 **Parameters**
 
@@ -70632,7 +71562,9 @@ struct StaticConfig {
 uint256 public constant FEE_BASE_DECIMALS = 36;
 ```
 
-<Aside>The base decimals used for fee calculations to maintain precision.</Aside>
+> **NOTE**
+>
+> The base decimals used for fee calculations to maintain precision.
 
 ### typeAndVersion
 
@@ -70640,7 +71572,9 @@ uint256 public constant FEE_BASE_DECIMALS = 36;
 string public constant typeAndVersion = "FeeQuoter 1.6.3";
 ```
 
-<Aside>The type and version of the FeeQuoter contract.</Aside>
+> **NOTE**
+>
+> The type and version of the FeeQuoter contract.
 
 ## Functions
 
@@ -70678,7 +71612,9 @@ Gets the list of supported fee tokens.
 function getFeeTokens() external view returns (address[] memory);
 ```
 
-<Aside>Returns all tokens that can be used to pay for cross-chain message fees.</Aside>
+> **NOTE**
+>
+> Returns all tokens that can be used to pay for cross-chain message fees.
 
 **Returns**
 
@@ -70750,7 +71686,9 @@ Gets the configuration for a destination chain.
 function getDestChainConfig(uint64 destChainSelector) external view returns (DestChainConfig memory);
 ```
 
-<Aside>Returns fee and validation parameters specific to the destination chain.</Aside>
+> **NOTE**
+>
+> Returns fee and validation parameters specific to the destination chain.
 
 **Parameters**
 
@@ -70772,7 +71710,9 @@ Gets the static configuration of the FeeQuoter.
 function getStaticConfig() external view returns (StaticConfig memory);
 ```
 
-<Aside>Returns immutable configuration values set at deployment.</Aside>
+> **NOTE**
+>
+> Returns immutable configuration values set at deployment.
 
 **Returns**
 
@@ -70952,7 +71892,9 @@ Checks if the given chain ID is supported for sending/receiving.
 function isChainSupported(uint64 destChainSelector) external view returns (bool supported);
 ```
 
-<Aside>Checks if the given chain ID is supported for sending/receiving.</Aside>
+> **NOTE**
+>
+> Checks if the given chain ID is supported for sending/receiving.
 
 **Parameters**
 
@@ -71098,7 +72040,9 @@ Last Updated: 2025-11-05
 > "@openzeppelin/contracts@5.0.2/=lib/openzeppelin-contracts/contracts/"
 > ```
 
-<Aside type="note">You are viewing API documentation for CCIP v1.6.3, which is the latest version.</Aside>
+> **NOTE**
+>
+> You are viewing API documentation for CCIP v1.6.3, which is the latest version.
 
 ## API References
 
@@ -71340,7 +72284,9 @@ struct EVM2AnyRampMessage {
 bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 ```
 
-<Aside>Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for EVM chains: bytes4(keccak256("CCIP ChainFamilySelector EVM")).
 
 ### CHAIN_FAMILY_SELECTOR_SVM
 
@@ -71348,7 +72294,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_EVM = 0x2812d52c;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_SVM = 0x1e10bdc4;
 ```
 
-<Aside>Chain family selector for SVM chains: bytes4(keccak256("CCIP ChainFamilySelector SVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for SVM chains: bytes4(keccak256("CCIP ChainFamilySelector SVM")).
 
 ### CHAIN_FAMILY_SELECTOR_APTOS
 
@@ -71356,7 +72304,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_SVM = 0x1e10bdc4;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_APTOS = 0xac77ffec;
 ```
 
-<Aside>Chain family selector for Aptos chains: bytes4(keccak256("CCIP ChainFamilySelector APTOS")).</Aside>
+> **NOTE**
+>
+> Chain family selector for Aptos chains: bytes4(keccak256("CCIP ChainFamilySelector APTOS")).
 
 ### CHAIN_FAMILY_SELECTOR_SUI
 
@@ -71364,7 +72314,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_APTOS = 0xac77ffec;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_SUI = 0xc4e05953;
 ```
 
-<Aside>Chain family selector for Sui chains: bytes4(keccak256("CCIP ChainFamilySelector SUI")).</Aside>
+> **NOTE**
+>
+> Chain family selector for Sui chains: bytes4(keccak256("CCIP ChainFamilySelector SUI")).
 
 ### CHAIN_FAMILY_SELECTOR_TVM
 
@@ -71372,7 +72324,9 @@ bytes4 public constant CHAIN_FAMILY_SELECTOR_SUI = 0xc4e05953;
 bytes4 public constant CHAIN_FAMILY_SELECTOR_TVM = 0x647e2ba9;
 ```
 
-<Aside>Chain family selector for TVM chains: bytes4(keccak256("CCIP ChainFamilySelector TVM")).</Aside>
+> **NOTE**
+>
+> Chain family selector for TVM chains: bytes4(keccak256("CCIP ChainFamilySelector TVM")).
 
 ---
 
@@ -71469,7 +72423,9 @@ A specialized token pool for managing native tokens through a lock and release m
 event LiquidityTransferred(address indexed from, uint256 amount);
 ```
 
-<Aside>Emitted when liquidity is transferred from an older pool version during an upgrade.</Aside>
+> **NOTE**
+>
+> Emitted when liquidity is transferred from an older pool version during an upgrade.
 
 **Parameters**
 
@@ -71484,7 +72440,9 @@ event LiquidityTransferred(address indexed from, uint256 amount);
 event RebalancerSet(address oldRebalancer, address newRebalancer);
 ```
 
-<Aside>Emitted when the rebalancer (liquidity manager) address is updated via [`setRebalancer`](#setrebalancer).</Aside>
+> **NOTE**
+>
+> Emitted when the rebalancer (liquidity manager) address is updated via [`setRebalancer`](#setrebalancer).
 
 **Parameters**
 
@@ -71501,7 +72459,9 @@ event RebalancerSet(address oldRebalancer, address newRebalancer);
 error InsufficientLiquidity();
 ```
 
-<Aside>Thrown when attempting to withdraw more liquidity than available in the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to withdraw more liquidity than available in the pool.
 
 ### LiquidityNotAccepted
 
@@ -71509,7 +72469,9 @@ error InsufficientLiquidity();
 error LiquidityNotAccepted();
 ```
 
-<Aside>Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to provide liquidity to a pool that doesn't accept external liquidity.
 
 ## State Variables
 
@@ -71530,7 +72492,9 @@ bool internal immutable i_acceptLiquidity;
 address internal s_rebalancer;
 ```
 
-<Aside>The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.</Aside>
+> **NOTE**
+>
+> The address of the current rebalancer (liquidity manager) authorized to manage pool liquidity.
 
 ### typeAndVersion
 
@@ -71538,7 +72502,9 @@ address internal s_rebalancer;
 string public constant override typeAndVersion = "LockReleaseTokenPool 1.6.3";
 ```
 
-<Aside>A constant identifier specifying the contract type and version number.</Aside>
+> **NOTE**
+>
+> A constant identifier specifying the contract type and version number.
 
 ## Functions
 
@@ -71668,7 +72634,9 @@ Updates the rebalancer address.
 function setRebalancer(address rebalancer) external onlyOwner;
 ```
 
-<Aside>Allows the owner to update the liquidity manager (rebalancer) address.</Aside>
+> **NOTE**
+>
+> Allows the owner to update the liquidity manager (rebalancer) address.
 
 **Parameters**
 
@@ -71869,7 +72837,9 @@ A minimal contract that implements 2-step ownership transfer and nothing more. I
 event OwnershipTransferRequested(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when the current owner initiates an ownership transfer.</Aside>
+> **NOTE**
+>
+> Emitted when the current owner initiates an ownership transfer.
 
 **Parameters**
 
@@ -71884,7 +72854,9 @@ event OwnershipTransferRequested(address indexed from, address indexed to);
 event OwnershipTransferred(address indexed from, address indexed to);
 ```
 
-<Aside>Emitted when an ownership transfer is completed.</Aside>
+> **NOTE**
+>
+> Emitted when an ownership transfer is completed.
 
 **Parameters**
 
@@ -71901,7 +72873,9 @@ event OwnershipTransferred(address indexed from, address indexed to);
 error CannotTransferToSelf();
 ```
 
-<Aside>Thrown when attempting to transfer ownership to the current owner.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to transfer ownership to the current owner.
 
 ### MustBeProposedOwner
 
@@ -71909,7 +72883,9 @@ error CannotTransferToSelf();
 error MustBeProposedOwner();
 ```
 
-<Aside>Thrown when someone other than the pending owner tries to accept ownership.</Aside>
+> **NOTE**
+>
+> Thrown when someone other than the pending owner tries to accept ownership.
 
 ### OnlyCallableByOwner
 
@@ -71917,7 +72893,9 @@ error MustBeProposedOwner();
 error OnlyCallableByOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by someone other than the owner.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by someone other than the owner.
 
 ### OwnerCannotBeZero
 
@@ -71925,7 +72903,9 @@ error OnlyCallableByOwner();
 error OwnerCannotBeZero();
 ```
 
-<Aside>Thrown when attempting to set the owner to address(0).</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set the owner to address(0).
 
 ## State Variables
 
@@ -71999,7 +72979,9 @@ Modifier that restricts function access to the contract owner.
 modifier onlyOwner();
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner.
 
 ### owner
 
@@ -72046,7 +73028,9 @@ Internal function to validate access control.
 function _validateOwnership() internal view;
 ```
 
-<Aside>Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.</Aside>
+> **NOTE**
+>
+> Reverts with `OnlyCallableByOwner` if caller is not the current owner. Used by the onlyOwner modifier.
 
 ---
 
@@ -72350,7 +73334,9 @@ A library implementing the Token Bucket algorithm for rate limiting cross-chain 
 event TokensConsumed(uint256 tokens);
 ```
 
-<Aside>Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).</Aside>
+> **NOTE**
+>
+> Emitted when tokens are successfully consumed from the [`TokenBucket`](#tokenbucket).
 
 **Parameters**
 
@@ -72364,7 +73350,9 @@ event TokensConsumed(uint256 tokens);
 event ConfigChanged(Config config);
 ```
 
-<Aside>Emitted when the rate limiter [`Config`](#config) is updated.</Aside>
+> **NOTE**
+>
+> Emitted when the rate limiter [`Config`](#config) is updated.
 
 **Parameters**
 
@@ -72380,7 +73368,9 @@ event ConfigChanged(Config config);
 error BucketOverfilled();
 ```
 
-<Aside>Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.</Aside>
+> **NOTE**
+>
+> Thrown when the [`TokenBucket`](#tokenbucket) contains more tokens than its capacity.
 
 ### OnlyCallableByAdminOrOwner
 
@@ -72388,7 +73378,9 @@ error BucketOverfilled();
 error OnlyCallableByAdminOrOwner();
 ```
 
-<Aside>Thrown when a restricted function is called by an unauthorized address.</Aside>
+> **NOTE**
+>
+> Thrown when a restricted function is called by an unauthorized address.
 
 ### TokenMaxCapacityExceeded
 
@@ -72396,7 +73388,9 @@ error OnlyCallableByAdminOrOwner();
 error TokenMaxCapacityExceeded(uint256 capacity, uint256 requested, address tokenAddress);
 ```
 
-<Aside>Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more tokens than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### TokenRateLimitReached
 
@@ -72414,7 +73408,9 @@ error TokenRateLimitReached(uint256 minWaitInSeconds, uint256 available, address
 error AggregateValueMaxCapacityExceeded(uint256 capacity, uint256 requested);
 ```
 
-<Aside>Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to consume more aggregate value than the [`TokenBucket`](#tokenbucket)'s capacity.
 
 ### AggregateValueRateLimitReached
 
@@ -72432,7 +73428,9 @@ error AggregateValueRateLimitReached(uint256 minWaitInSeconds, uint256 available
 error InvalidRateLimitRate(Config rateLimiterConfig);
 ```
 
-<Aside>Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).</Aside>
+> **NOTE**
+>
+> Thrown when the rate limit [`Config`](#config) is invalid (rate is zero or exceeds capacity).
 
 ### DisabledNonZeroRateLimit
 
@@ -72440,7 +73438,9 @@ error InvalidRateLimitRate(Config rateLimiterConfig);
 error DisabledNonZeroRateLimit(Config config);
 ```
 
-<Aside>Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.</Aside>
+> **NOTE**
+>
+> Thrown when a disabled [`Config`](#config) has non-zero rate or capacity values.
 
 ### RateLimitMustBeDisabled
 
@@ -72448,7 +73448,9 @@ error DisabledNonZeroRateLimit(Config config);
 error RateLimitMustBeDisabled();
 ```
 
-<Aside>Thrown when attempting to enable rate limiting in a context where it must be disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to enable rate limiting in a context where it must be disabled.
 
 ## Structs
 
@@ -72643,7 +73645,9 @@ Returns the smaller of two numbers.
 function _min(uint256 a, uint256 b) internal pure returns (uint256);
 ```
 
-<Aside>Utility function for safe minimum value calculation.</Aside>
+> **NOTE**
+>
+> Utility function for safe minimum value calculation.
 
 **Parameters**
 
@@ -72835,7 +73839,9 @@ ITokenAdminRegistry internal immutable i_tokenAdminRegistry;
 string public constant override typeAndVersion = "RegistryModuleOwnerCustom 1.6.3";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ## Functions
 
@@ -73370,7 +74376,9 @@ event AdministratorTransferRequested(address indexed token, address indexed curr
 event AdministratorTransferred(address indexed token, address indexed newAdmin);
 ```
 
-<Aside>Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).</Aside>
+> **NOTE**
+>
+> Emitted when an administrator transfer is completed via [`acceptAdminRole`](#acceptadminrole).
 
 **Parameters**
 
@@ -73385,7 +74393,9 @@ event AdministratorTransferred(address indexed token, address indexed newAdmin);
 event PoolSet(address indexed token, address indexed previousPool, address indexed newPool);
 ```
 
-<Aside>Emitted when a token's pool configuration is changed via [`setPool`](#setpool).</Aside>
+> **NOTE**
+>
+> Emitted when a token's pool configuration is changed via [`setPool`](#setpool).
 
 **Parameters**
 
@@ -73401,7 +74411,9 @@ event PoolSet(address indexed token, address indexed previousPool, address index
 event RegistryModuleAdded(address module);
 ```
 
-<Aside>Emitted when a new registry module is authorized.</Aside>
+> **NOTE**
+>
+> Emitted when a new registry module is authorized.
 
 **Parameters**
 
@@ -73415,7 +74427,9 @@ event RegistryModuleAdded(address module);
 event RegistryModuleRemoved(address indexed module);
 ```
 
-<Aside>Emitted when a registry module is deauthorized.</Aside>
+> **NOTE**
+>
+> Emitted when a registry module is deauthorized.
 
 **Parameters**
 
@@ -73431,7 +74445,9 @@ event RegistryModuleRemoved(address indexed module);
 error ZeroAddress();
 ```
 
-<Aside>Thrown when attempting to use address(0) where not allowed.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) where not allowed.
 
 ### AlreadyRegistered
 
@@ -73439,7 +74455,9 @@ error ZeroAddress();
 error AlreadyRegistered(address token);
 ```
 
-<Aside>Thrown when attempting to register an administrator for a token that already has one.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to register an administrator for a token that already has one.
 
 **Parameters**
 
@@ -73453,7 +74471,9 @@ error AlreadyRegistered(address token);
 error InvalidTokenPoolToken(address token);
 ```
 
-<Aside>Thrown when attempting to set a pool that doesn't support the token.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to set a pool that doesn't support the token.
 
 **Parameters**
 
@@ -73467,7 +74487,9 @@ error InvalidTokenPoolToken(address token);
 error OnlyAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when a function restricted to the token administrator is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to the token administrator is called by another address.
 
 **Parameters**
 
@@ -73482,7 +74504,9 @@ error OnlyAdministrator(address sender, address token);
 error OnlyPendingAdministrator(address sender, address token);
 ```
 
-<Aside>Thrown when acceptAdminRole is called by an address other than the pending administrator.</Aside>
+> **NOTE**
+>
+> Thrown when acceptAdminRole is called by an address other than the pending administrator.
 
 **Parameters**
 
@@ -73497,7 +74521,9 @@ error OnlyPendingAdministrator(address sender, address token);
 error OnlyRegistryModuleOrOwner(address sender);
 ```
 
-<Aside>Thrown when a function restricted to registry modules or owner is called by another address.</Aside>
+> **NOTE**
+>
+> Thrown when a function restricted to registry modules or owner is called by another address.
 
 **Parameters**
 
@@ -73535,7 +74561,9 @@ struct TokenConfig {
 EnumerableSet.AddressSet internal s_registryModules;
 ```
 
-<Aside>Set of authorized registry modules that can register administrators.</Aside>
+> **NOTE**
+>
+> Set of authorized registry modules that can register administrators.
 
 ### s_tokenConfig
 
@@ -73543,7 +74571,9 @@ EnumerableSet.AddressSet internal s_registryModules;
 mapping(address token => TokenConfig) internal s_tokenConfig;
 ```
 
-<Aside>Stores configuration data for each token, including administrators and pool addresses.</Aside>
+> **NOTE**
+>
+> Stores configuration data for each token, including administrators and pool addresses.
 
 ### s_tokens
 
@@ -73551,7 +74581,9 @@ mapping(address token => TokenConfig) internal s_tokenConfig;
 EnumerableSet.AddressSet internal s_tokens;
 ```
 
-<Aside>Set of all configured tokens for efficient enumeration.</Aside>
+> **NOTE**
+>
+> Set of all configured tokens for efficient enumeration.
 
 ### typeAndVersion
 
@@ -73559,7 +74591,9 @@ EnumerableSet.AddressSet internal s_tokens;
 string public constant override typeAndVersion = "TokenAdminRegistry 1.6.3";
 ```
 
-<Aside>Contract identifier that specifies the implementation version.</Aside>
+> **NOTE**
+>
+> Contract identifier that specifies the implementation version.
 
 ---
 
@@ -73864,7 +74898,9 @@ event InboundRateLimitConsumed(uint64 indexed remoteChainSelector, address token
 error AllowListNotEnabled();
 ```
 
-<Aside>Thrown when attempting to modify the allowlist when the feature is disabled.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to modify the allowlist when the feature is disabled.
 
 ### CallerIsNotARampOnRouter
 
@@ -73872,7 +74908,9 @@ error AllowListNotEnabled();
 error CallerIsNotARampOnRouter(address caller);
 ```
 
-<Aside>Thrown when an unauthorized address attempts to act as an onRamp or offRamp.</Aside>
+> **NOTE**
+>
+> Thrown when an unauthorized address attempts to act as an onRamp or offRamp.
 
 ### ChainAlreadyExists
 
@@ -73880,7 +74918,9 @@ error CallerIsNotARampOnRouter(address caller);
 error ChainAlreadyExists(uint64 chainSelector);
 ```
 
-<Aside>Thrown when attempting to add a chain that is already configured.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a chain that is already configured.
 
 **Parameters**
 
@@ -73894,7 +74934,9 @@ error ChainAlreadyExists(uint64 chainSelector);
 error ChainNotAllowed(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to use a chain that is not authorized.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use a chain that is not authorized.
 
 ### CursedByRMN
 
@@ -73902,7 +74944,9 @@ error ChainNotAllowed(uint64 remoteChainSelector);
 error CursedByRMN();
 ```
 
-<Aside>Thrown when the Risk Management Network has flagged operations as unsafe.</Aside>
+> **NOTE**
+>
+> Thrown when the Risk Management Network has flagged operations as unsafe.
 
 ### InvalidDecimalArgs
 
@@ -73910,7 +74954,9 @@ error CursedByRMN();
 error InvalidDecimalArgs(uint8 expected, uint8 actual);
 ```
 
-<Aside>Thrown when token decimals don't match the expected configuration.</Aside>
+> **NOTE**
+>
+> Thrown when token decimals don't match the expected configuration.
 
 **Parameters**
 
@@ -73925,7 +74971,9 @@ error InvalidDecimalArgs(uint8 expected, uint8 actual);
 error InvalidRemoteChainDecimals(bytes sourcePoolData);
 ```
 
-<Aside>Thrown when the decimal configuration from a remote chain is invalid or malformed.</Aside>
+> **NOTE**
+>
+> Thrown when the decimal configuration from a remote chain is invalid or malformed.
 
 **Parameters**
 
@@ -73939,7 +74987,9 @@ error InvalidRemoteChainDecimals(bytes sourcePoolData);
 error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to remove a pool that isn't configured for the specified chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to remove a pool that isn't configured for the specified chain.
 
 **Parameters**
 
@@ -73954,7 +75004,9 @@ error InvalidRemotePoolForChain(uint64 remoteChainSelector, bytes remotePoolAddr
 error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 ```
 
-<Aside>Thrown when attempting to use an unconfigured or invalid remote pool address.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use an unconfigured or invalid remote pool address.
 
 ### InvalidToken
 
@@ -73962,7 +75014,9 @@ error InvalidSourcePoolAddress(bytes sourcePoolAddress);
 error InvalidToken(address token);
 ```
 
-<Aside>Thrown when attempting to operate with a token that is not supported by the pool.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with a token that is not supported by the pool.
 
 **Parameters**
 
@@ -73976,7 +75030,9 @@ error InvalidToken(address token);
 error MismatchedArrayLengths();
 ```
 
-<Aside>Thrown when array parameters have different lengths in multi-chain operations.</Aside>
+> **NOTE**
+>
+> Thrown when array parameters have different lengths in multi-chain operations.
 
 ### NonExistentChain
 
@@ -73984,7 +75040,9 @@ error MismatchedArrayLengths();
 error NonExistentChain(uint64 remoteChainSelector);
 ```
 
-<Aside>Thrown when attempting to operate with an unconfigured chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to operate with an unconfigured chain.
 
 ### OverflowDetected
 
@@ -73992,7 +75050,9 @@ error NonExistentChain(uint64 remoteChainSelector);
 error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remoteAmount);
 ```
 
-<Aside>Thrown when a token amount conversion would result in an arithmetic overflow.</Aside>
+> **NOTE**
+>
+> Thrown when a token amount conversion would result in an arithmetic overflow.
 
 **Parameters**
 
@@ -74008,7 +75068,9 @@ error OverflowDetected(uint8 remoteDecimals, uint8 localDecimals, uint256 remote
 error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 ```
 
-<Aside>Thrown when attempting to add a pool that is already configured for a chain.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to add a pool that is already configured for a chain.
 
 **Parameters**
 
@@ -74023,7 +75085,9 @@ error PoolAlreadyAdded(uint64 remoteChainSelector, bytes remotePoolAddress);
 error SenderNotAllowed(address sender);
 ```
 
-<Aside>Thrown when a non-allowlisted address attempts an operation in allowlist mode.</Aside>
+> **NOTE**
+>
+> Thrown when a non-allowlisted address attempts an operation in allowlist mode.
 
 ### Unauthorized
 
@@ -74031,7 +75095,9 @@ error SenderNotAllowed(address sender);
 error Unauthorized(address caller);
 ```
 
-<Aside>Thrown when a caller lacks the required permissions for an operation.</Aside>
+> **NOTE**
+>
+> Thrown when a caller lacks the required permissions for an operation.
 
 **Parameters**
 
@@ -74045,7 +75111,9 @@ error Unauthorized(address caller);
 error ZeroAddressNotAllowed();
 ```
 
-<Aside>Thrown when attempting to use address(0) for critical contract addresses.</Aside>
+> **NOTE**
+>
+> Thrown when attempting to use address(0) for critical contract addresses.
 
 ## Structs
 
@@ -74135,7 +75203,9 @@ bool internal immutable i_allowlistEnabled;
 
 Set of addresses authorized to initiate cross-chain operations.
 
-<Aside>Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.</Aside>
+> **NOTE**
+>
+> Only active when i_allowlistEnabled is true. Used to restrict token movements to authorized addresses.
 
 ```solidity
 EnumerableSet.AddressSet internal s_allowlist;
@@ -74716,7 +75786,9 @@ Returns the configured pool addresses for a remote chain.
 function getRemotePools(uint64 remoteChainSelector) public view returns (bytes[] memory);
 ```
 
-<Aside>Returns encoded addresses to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded addresses to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -74738,7 +75810,9 @@ Returns the token address on a remote chain.
 function getRemoteToken(uint64 remoteChainSelector) public view returns (bytes memory);
 ```
 
-<Aside>Returns encoded address to support both EVM and non-EVM chains.</Aside>
+> **NOTE**
+>
+> Returns encoded address to support both EVM and non-EVM chains.
 
 **Parameters**
 
@@ -74996,7 +76070,9 @@ function setChainRateLimiterConfigs(
 ) external;
 ```
 
-<Aside>Callable by owner or rate limit admin. All array lengths must match.</Aside>
+> **NOTE**
+>
+> Callable by owner or rate limit admin. All array lengths must match.
 
 **Parameters**
 
@@ -75014,7 +76090,9 @@ Sets the address authorized to manage rate limits.
 function setRateLimitAdmin(address rateLimitAdmin) external onlyOwner;
 ```
 
-<Aside>Only callable by owner. The rate limit admin can modify rate limit configurations independently.</Aside>
+> **NOTE**
+>
+> Only callable by owner. The rate limit admin can modify rate limit configurations independently.
 
 ### setRouter
 
@@ -75024,7 +76102,9 @@ Updates the router contract address.
 function setRouter(address newRouter) public onlyOwner;
 ```
 
-<Aside>Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.</Aside>
+> **NOTE**
+>
+> Only callable by the contract owner. Emits [`RouterUpdated`](#routerupdated) event.
 
 **Parameters**
 
@@ -75181,7 +76261,7 @@ Review the reference documentation:
 
 Review the basic UI example below:
 
-````ts
+```ts
 import 'ccip-react-components/dist/style.css';
 import { CCIPWidget, Config, Token } from 'ccip-react-components';
 import { sepolia, optimismSepolia } from 'viem/chains';
@@ -75226,7 +76306,7 @@ const config: Config = {
 };
 
 <CCIPWidget config={config} tokensList={tokensList} />;
-```typescript
+```
 
 ### Theme configuration
 
@@ -75264,7 +76344,7 @@ const config: Config = { theme:
       radius?: number;
     };
   };}
-```typescript
+```
 
 ## Review a CCIP-JS example
 
@@ -75342,7 +76422,7 @@ const { txHash, messageId } = await client.transferTokens({
   destinationChainSelector: "1234",
   feeTokenAddress: "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
 })
-```typescript
+```
 
 ## Build packages
 
@@ -75350,47 +76430,24 @@ Optionally, if you need to modify the packages and use your modified version, fo
 
 You can use `pnpm build` to build both packages together. If you're building each package individually, make sure to build the `build-ccip-js` package before you build the `ccip-react-components` package. The React components depend on the JS package.
 
-1.  Build the `build-ccip-js` package:
-    ```sh
-    pnpm i -w
-    pnpm build-ccip-js
-    ```
-1.  Build the `ccip-react-components` package:
-    ```sh
-    pnpm build-components
-    ```
-1.  Update the `ccip-react-components` package to use the local `ccip-js` version by modifying the `packages/ccip-react-components/package.json` file. Replace the `@chainlink/ccip-js` dependency with the workspace reference:
-    ```
-    "@chainlink/ccip-js": "workspace:*"
-    ```
-1.  Update the `examples/nextjs` app to use both local `ccip-js` and `ccip-react-components` versions by modifying the `examples/nextjs/package.json` file. Replace the `@chainlink/ccip-js` and `@chainlink/ccip-react-components` dependencies with these relative paths:
-    ```
-    "@chainlink/ccip-js": "link:../../packages/ccip-js",
-    "@chainlink/ccip-react-components": "link:../../packages/ccip-react-components",
-    ```
-
-
-
-<Aside type="caution" title="Educational Example Disclaimer">
-  Please note, this page contains community examples only — these are not Chainlink products or services and are not
-  supported or maintained by Chainlink. This code represents an example of using a Chainlink product or service, and is
-  intended for demonstration and educational purposes only. It is provided "AS IS" and "AS AVAILABLE" without warranties
-  of any kind, may not have been audited, and may omit checks or error handling. Each party intending to use this
-  example code does so entirely at their own risk and must perform its own audits, security and code review, key
-  management, and testing before any production deployment and ensure the operation and performance of such code matches
-  expectations. Neither Chainlink Labs nor the Chainlink Foundation deploys, operates, monitors, maintains or endorses
-  any deployment of this code. Note that this is not a Chainlink product, feature or service, and there are no
-  commitments made with respect to the code, including compatibility with future Chainlink releases. You should not rely
-  on this code without first conducting your own technical, engineering, and security review. This code is also outside
-  the scope of any Chainlink bug bounty programs. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node
-  operators are responsible for outcomes due to errors in this example or how it is deployed or operated, or liable for
-  any resulting claims or damages. Use of the Chainlink Network is subject to the Chainlink Foundation [Terms of
-  Service](https://chain.link/terms), which provides important information and disclosures. By using this code, you
-  acknowledge and agree to these terms.
-</Aside>
-
-
-````
+1. Build the `build-ccip-js` package:
+   ```sh
+   pnpm i -w
+   pnpm build-ccip-js
+   ```
+2. Build the `ccip-react-components` package:
+   ```sh
+   pnpm build-components
+   ```
+3. Update the `ccip-react-components` package to use the local `ccip-js` version by modifying the `packages/ccip-react-components/package.json` file. Replace the `@chainlink/ccip-js` dependency with the workspace reference:
+   ```
+   "@chainlink/ccip-js": "workspace:*"
+   ```
+4. Update the `examples/nextjs` app to use both local `ccip-js` and `ccip-react-components` versions by modifying the `examples/nextjs/package.json` file. Replace the `@chainlink/ccip-js` and `@chainlink/ccip-react-components` dependencies with these relative paths:
+   ```
+   "@chainlink/ccip-js": "link:../../packages/ccip-js",
+   "@chainlink/ccip-react-components": "link:../../packages/ccip-react-components",
+   ```
 
 ---
 
@@ -78886,7 +79943,9 @@ This is a TypeScript command-line interface (CLI) and library designed for inter
 
 This tool is useful for debugging interactions, automating tasks, verifying configurations, and manually interacting with the CCIP protocol. It requires RPC endpoint configuration and wallet access (private key or Ledger) for certain commands.
 
-<Aside type="note">The ccip-tools-ts tool is intended for convenience and illustration.</Aside>
+> **NOTE**
+>
+> The ccip-tools-ts tool is intended for convenience and illustration.
 
 ---
 
@@ -84943,7 +86002,9 @@ This fee compensates the infrastructure and services involved in message deliver
 | Arbitrary messaging                             | Not Ethereum           | Ethereum               | $0.45      | $0.50       |
 | Arbitrary messaging                             | Not Ethereum           | Not Ethereum           | $0.09      | $0.10       |
 
-<Aside type="note">The table above reflects the current fee setting and is subject to change.</Aside>
+> **NOTE**
+>
+> The table above reflects the current fee setting and is subject to change.
 
 ## Fee Tokens
 

@@ -653,6 +653,29 @@ export function handleAside(node: MdxJsxNode, parent: Parent, index: number, con
 }
 
 /**
+ * Handle a one-line <Aside>…</Aside>, which MDX parses as the only inline child of a paragraph.
+ * Projects it like a flow Aside instead of leaking the raw JSX.
+ */
+export function handleInlineAsideParagraph(
+  node: Parent,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  const children = (node.children || []).filter(
+    (child) => child.type !== "text" || String((child as Literal).value).trim() !== ""
+  )
+  const aside = children[0] as MdxJsxNode | undefined
+  if (children.length !== 1 || aside?.type !== "mdxJsxTextElement" || aside.name !== "Aside") return
+  const flowAside = {
+    ...aside,
+    type: "mdxJsxFlowElement",
+    children: [paragraphNode((aside as Parent).children || [])],
+  } as MdxJsxNode
+  return handleAside(flowAside, parent, index, context)
+}
+
+/**
  * Handle ClickToZoom component - convert to markdown image
  * @param node - AST node
  * @param parent - Parent node

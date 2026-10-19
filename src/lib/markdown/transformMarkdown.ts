@@ -17,6 +17,7 @@ import {
   handleCopyText,
   handleDiv,
   handleAside,
+  handleInlineAsideParagraph,
   handleClickToZoom,
   handleCodeSample,
   handleBilling,
@@ -177,6 +178,11 @@ export async function transformMarkdown(
         // Handle Aside
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Aside") {
           return handleAside(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "paragraph") {
+          const projected = handleInlineAsideParagraph(node as Parent, parent, index, context)
+          if (typeof projected === "number") return projected
         }
 
         // Handle ClickToZoom
