@@ -182,7 +182,7 @@ describe("Markdown fidelity execution modes", () => {
     const exception: FidelityException = {
       path: first.path,
       occurrence: first.occurrence,
-      status: "unsupported",
+      status: first.status as FidelityException["status"],
       reason: "Known projection gap",
       owner: "docs-platform",
       removalCondition: "Remove when UnknownWidget has a static projection",
@@ -203,7 +203,7 @@ describe("Markdown fidelity execution modes", () => {
 })
 
 describe("raw source analysis", () => {
-  test("unsupported findings preserve component name, repository path, and original line", () => {
+  test("unknown source expectations preserve component name, repository path, and original line", () => {
     const source = [
       "---",
       "title: Fixture",
@@ -218,7 +218,7 @@ describe("raw source analysis", () => {
       "src/content/fixture.mdx",
       source,
       artifact("Visible text")
-    ).filter((candidate) => candidate.status === "unsupported")
+    ).filter((candidate) => candidate.status === "unverifiable")
 
     expect(unsupported).toMatchObject({
       name: "UnknownWidget",
@@ -655,19 +655,20 @@ describe("final projection and envelope regressions", () => {
         candidate.occurrence.includes('"kind":"code"')
     )
 
-    expect(findings.length).toBe(4)
+    expect(findings.filter((candidate) => !candidate.output)).toHaveLength(4)
+    expect(findings.filter((candidate) => candidate.outputs?.includes("txt"))).toHaveLength(2)
     expect(findings.every((candidate) => candidate.status === "present")).toBe(true)
     expect(new Set(findings.map((candidate) => candidate.lang ?? "default"))).toEqual(new Set(["default", "go", "ts"]))
   })
 
-  test("reports DownloadButton as an unsupported visible component", () => {
+  test("reports an unknown DownloadButton expectation as unverifiable", () => {
     const source = 'Visible\n\n<DownloadButton href="/download">Download the toolkit</DownloadButton>'
     const [unsupported] = compareSourceToArtifact(
       "fixture",
       "src/content/fixture.mdx",
       source,
       artifact("Visible")
-    ).filter((candidate) => candidate.status === "unsupported")
+    ).filter((candidate) => candidate.status === "unverifiable")
 
     expect(unsupported).toMatchObject({
       name: "DownloadButton",
@@ -1048,13 +1049,10 @@ test("checks the Data Feeds JSX-space callout and detects a missing inline code 
   ).toBe(true)
 })
 
-test("keeps diagnostics for dynamic inline HTML attributes and unprojected elements", () => {
+test("keeps dynamic inline HTML attributes unverifiable while checking emphasis text", () => {
   const source = "Keep <strong title={runtimeTitle}>this fact</strong> and <em>unprojected emphasis</em>."
   const analysis = analyzeSourceMarkdown(source, "fixture.mdx")
   expect(analysis.diagnostics).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ status: "unverifiable", name: "strong.title" }),
-      expect.objectContaining({ status: "unverifiable", name: "em" }),
-    ])
+    expect.arrayContaining([expect.objectContaining({ status: "unverifiable", name: "strong.title" })])
   )
 })

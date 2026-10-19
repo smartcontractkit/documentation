@@ -20,7 +20,6 @@ import { collectSolutionPages } from "../utils/solutionPages.js"
 import { readSolutionLlmsPages, renderSolutionLlmsDocument } from "../lib/markdown/solutionLlms.js"
 import { llmsFilesToValidate, validateLlmsFile } from "./validate-llms.js"
 import { SOLUTION_DISCLAIMER } from "../config/solutions/disclaimer.ts"
-import { createComponentCoverageCollector } from "../lib/markdown/componentCoverage.js"
 
 test("sidebar links order discovered pages without adding a solution to a product export", () => {
   const first = path.resolve("src/content/ccip/first.mdx")
@@ -58,11 +57,9 @@ describe("solution CLI exports", () => {
         expect(await generateSolutionLlmsFiles([fixture], directory)).toEqual([])
         expect(await fs.readdir(directory)).toEqual([])
         const published = { ...fixture, hidden: false }
-        const coverage = createComponentCoverageCollector()
-        const reports = await generateSolutionLlmsFiles([published], directory, coverage.observers)
+        const reports = await generateSolutionLlmsFiles([published], directory)
         const document = await fs.readFile(path.join(directory, fixture.slug, "llms-full.txt"), "utf8")
         const pageCount = fixture.nav?.flatMap((group) => group.pages).length ?? 1
-        expect(coverage.report({ baseline: {} }).pagesProcessed).toBe(pageCount)
         expect(reports).toHaveLength(1)
         expect(reports[0].pagesProcessed).toBe(pageCount)
         expect(reports[0].bytes).toBe(Buffer.byteLength(document))

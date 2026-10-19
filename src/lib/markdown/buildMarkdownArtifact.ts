@@ -59,7 +59,7 @@ export function normalizeMarkdownPath(pathParam: string | undefined): string | n
 
 export async function buildMarkdownArtifact(
   requestPath: string,
-  options: { lang?: string } = {}
+  options: { lang?: string; onDropComponent?: TransformConfig["onDropComponent"] } = {}
 ): Promise<MarkdownArtifact | null> {
   const cleanPath = normalizeMarkdownPath(requestPath)
   if (!cleanPath) return null
@@ -206,7 +206,7 @@ async function buildMarkdownArtifactFromPath(
   requestPath: string,
   resolvedPath: string,
   routeKind: "normal" | "special",
-  options: { lang?: string },
+  options: { lang?: string; onDropComponent?: TransformConfig["onDropComponent"] },
   knownSourcePath?: string,
   sourceCanonicalPathOverride?: string
 ): Promise<MarkdownArtifact | null> {
@@ -218,6 +218,7 @@ async function buildMarkdownArtifactFromPath(
   const transformed = await transformPageBodyToMarkdown(body, sourcePath, {
     siteBase: SITE_BASE,
     targetLanguage: options.lang,
+    onDropComponent: options.onDropComponent,
   })
 
   const section = resolvedPath.split("/")[0]

@@ -14,12 +14,24 @@ import {
   readStaticJsxSelectorConditions,
   stripHighlighterComments,
 } from "@lib/markdown/sourceScanners.js"
-import type { MarkdownArtifact } from "@lib/markdown/types.js"
+import type { DroppedComponent, MarkdownArtifact } from "@lib/markdown/types.js"
+import { renderLlmsPageMarkdown } from "../lib/markdown/llms.js"
+import { getPageLanguage, extractFrontmatter, shouldIncludeInLanguageFile } from "../lib/markdown/utils.js"
+import { LLM_SECTIONS_CONFIG, SUPPORTED_LLM_SECTIONS } from "../config/llms.js"
+import { SOLUTIONS } from "../config/solutions/index.ts"
 import { markdownFidelityExceptions } from "./markdown-fidelity-exceptions.js"
 import { isSunsetDocsPath } from "../config/sunset.js"
 
 const CONTENT_ROOT = path.resolve("src/content")
+// One diagnostic for observed drops, missing content, and limits of static verification.
+// Source expectations stay independent of the converter.
+// The absence of observed drops does not prove fidelity.
+// CI writes reports/markdown-fidelity-report.json and keeps known findings visible in the report.
+// Weekly, from up-to-date main, run npm run report:markdown-fidelity and open a dedicated
+// PR containing only public/reports/component-coverage.json. TXT bundles are never rewritten.
+// Refresh known debt after review: npm run check:markdown-fidelity -- --update-baseline.
 const DEFAULT_REPORT_PATH = "reports/markdown-fidelity-report.json"
+const PUBLIC_REPORT_PATH = "public/reports/component-coverage.json"
 const DEFAULT_BASELINE_PATH = fileURLToPath(new URL("./markdown-fidelity-baseline.json", import.meta.url))
 const SITE_BASE = "https://docs.chain.link"
 const LLMS_DIRECTIVE = "> For the complete documentation index, see [llms.txt](/llms.txt)."
@@ -64,17 +76,35 @@ export interface FidelityFinding {
   servedLine?: number
   servedText?: string
   display?: string
+  /** Owning JSX component, when a finding can be attributed to one. */
+  component?: string
+  /** Omitted for the existing Markdown findings; TXT is checked after its final cleanup. */
+  output?: "txt"
+  /** Identical Markdown/TXT evidence shares one finding and one baseline identity. */
+  outputs?: ("markdown" | "txt")[]
+}
+
+export interface ComponentSummary {
+  name: string
+  /** Lowercase JSX names are HTML elements, kept visible separately from app components. */
+  kind: "component" | "html"
+  pageCount: number
+  pages: string[]
+  statuses: Exclude<FidelityStatus, "present">[]
+  /** Unique pages per status; a page may appear under more than one status. */
+  pagesByStatus: Record<Exclude<FidelityStatus, "present">, number>
 }
 
 export interface FidelityReport {
   pathCount: number
   counts: Record<FidelityStatus, number>
   findings: FidelityFinding[]
+  components: ComponentSummary[]
 }
 
 export interface SourceFact {
   ordinal: number
-  kind: "text" | "heading" | "link" | "code" | "anchor"
+  kind: "text" | "heading" | "link" | "code" | "anchor" | "image"
   value: string
   url?: string
   depth?: number
@@ -83,16 +113,20 @@ export interface SourceFact {
   line: number
   sourceText: string
   sourcePath?: string
+  component?: string
+  componentAncestors?: string[]
 }
 
 export interface SourceDiagnostic {
-  status: "unsupported" | "unverifiable"
+  status: "unverifiable"
   ordinal: number
   name: string
   line: number
   sourceText: string
   reason: string
   sourcePath?: string
+  component?: string
+  componentAncestors?: string[]
 }
 
 export interface SourceAnalysis {
@@ -117,6 +151,7 @@ interface ObservedAnalysis {
 type AstRecord = Record<string, unknown>
 
 const processor = unified().use(remarkParse).use(remarkMdx).use(remarkGfm)
+const txtProcessor = unified().use(remarkParse).use(remarkGfm)
 const containerElements: Record<string, true> = {
   div: true,
   Fragment: true,
@@ -133,6 +168,9 @@ const projectedInlineElements: Record<string, true> = {
   span: true,
   br: true,
   nobr: true,
+  CopyText: true,
+  em: true,
+  i: true,
 }
 
 const selectorComponents = {
@@ -549,6 +587,17 @@ export function analyzeSourceMarkdown(
   let factOrdinal = 0
   let diagnosticOrdinal = 0
 
+  const componentsFor = (node: Node): string[] => {
+    const names: string[] = []
+    let current: Node | undefined = node
+    while (current) {
+      const name = (current as Node & { name?: string }).name
+      if (name && name !== "Fragment" && !containerElements[name]) names.push(name)
+      current = parentByNode.get(current)
+    }
+    return names
+  }
+
   const inlineBlock = (node: Node): Node | null => {
     let current: Node | undefined = node
     let inlineElement: Node | null = null
@@ -613,8 +662,11 @@ export function analyzeSourceMarkdown(
       return
     }
     const line = nodeLine(node)
+    const components = componentsFor(node)
     facts.push({
       ordinal: ++factOrdinal,
+      component: components[0],
+      componentAncestors: components,
       kind,
       value: normalized,
       url,
@@ -629,9 +681,12 @@ export function analyzeSourceMarkdown(
   }
   const addDiagnostic = (status: SourceDiagnostic["status"], name: string, node: Node, reason: string) => {
     const line = nodeLine(node)
+    const components = componentsFor(node)
     diagnostics.push({
       status,
       ordinal: ++diagnosticOrdinal,
+      component: components[0],
+      componentAncestors: components,
       name,
       line,
       sourceText: lineText(lines, line),
@@ -691,7 +746,7 @@ export function analyzeSourceMarkdown(
       }
       if (node.type === "image") {
         const alt = String((node as Node & { alt?: unknown }).alt ?? "Image") || "Image"
-        addFact("text", `(Image: ${alt})`, node)
+        addFact("image", alt, node, String((node as Node & { url?: unknown }).url ?? ""))
         return SKIP
       }
       if (node.type === "code") {
@@ -739,6 +794,55 @@ export function analyzeSourceMarkdown(
         inspect({ type: "root", children: childrenOf(node) } as Parent)
         return SKIP
       }
+      if (name === "DocCards") {
+        inspect({ type: "root", children: childrenOf(node) } as Parent)
+        return SKIP
+      }
+      if (name === "DocCard") {
+        const title = staticAttribute(node, "title")
+        const href = staticAttribute(node, "href")
+        if (
+          title.syntax ||
+          typeof title.value !== "string" ||
+          href.syntax ||
+          (href.found && typeof href.value !== "string")
+        ) {
+          addDiagnostic("unverifiable", name, node, "Card title or URL cannot be determined statically")
+        } else {
+          addFact(
+            href.value ? "link" : "text",
+            title.value,
+            node,
+            typeof href.value === "string" && href.value ? href.value : undefined
+          )
+          const body = nodeVisibleText(node).trim()
+          if (body) addFact("text", `: ${body}`, node)
+        }
+        return SKIP
+      }
+      if (name === "FeedPage") {
+        addDiagnostic("unverifiable", name, node, "FeedPage exports a placeholder; live feed data is not included")
+        return SKIP
+      }
+      if (name === "a") {
+        const href = staticAttribute(node, "href")
+        if (href.syntax || typeof href.value !== "string") {
+          addDiagnostic("unverifiable", name, node, "Link URL cannot be determined statically")
+        } else {
+          addFact("link", nodeVisibleText(node), node, href.value)
+        }
+        return SKIP
+      }
+      if (name === "img") {
+        const src = staticAttribute(node, "src")
+        const alt = staticAttribute(node, "alt")
+        if (src.syntax || typeof src.value !== "string" || alt.syntax) {
+          addDiagnostic("unverifiable", name, node, "Image URL or label cannot be determined statically")
+        } else {
+          addFact("image", typeof alt.value === "string" && alt.value ? alt.value : "Image", node, src.value)
+        }
+        return SKIP
+      }
       if (containerElements[name] || (name === "ul" && node.type === "mdxJsxFlowElement")) {
         if (name === "li") breakTextGroup(node)
         for (const failure of expressionAttributes(node)) {
@@ -748,7 +852,7 @@ export function analyzeSourceMarkdown(
         if (name === "li") breakTextGroup(node)
         return SKIP
       }
-      if (projectedInlineElements[name]) {
+      if (projectedInlineElements[name] && name !== "CopyText") {
         for (const failure of expressionAttributes(node)) {
           addDiagnostic("unverifiable", `${name}.${failure.name}`, node, `Dynamic JSX attribute (${failure.syntax})`)
         }
@@ -783,7 +887,7 @@ export function analyzeSourceMarkdown(
         if (text.syntax || !text.found || typeof text.value !== "string") {
           addDiagnostic("unverifiable", "CopyText.text", node, `Dynamic CopyText text (${text.syntax ?? "missing"})`)
         } else {
-          addFact("text", text.value, node)
+          addFact("text", text.value, node, undefined, undefined, undefined, node.type === "mdxJsxTextElement")
         }
         return SKIP
       }
@@ -799,7 +903,7 @@ export function analyzeSourceMarkdown(
             `Dynamic image attributes (${src.syntax ?? alt.syntax ?? "missing src"})`
           )
         } else {
-          addFact("text", `(Image: ${typeof alt.value === "string" && alt.value ? alt.value : "Image"})`, node)
+          addFact("image", typeof alt.value === "string" && alt.value ? alt.value : "Image", node, src.value)
         }
         return SKIP
       }
@@ -1057,6 +1161,19 @@ export function analyzeSourceMarkdown(
         return SKIP
       }
 
+      if (name === "MethodTabs") {
+        for (const [slotName, label] of [
+          ["ui", "Platform UI"],
+          ["api", "API"],
+        ]) {
+          const panel = childrenOf(node).find((child) => staticAttribute(child, "slot").value === slotName)
+          if (!panel) continue
+          addFact("text", label, panel)
+          inspect({ type: "root", children: childrenOf(panel) } as Parent)
+        }
+        return SKIP
+      }
+
       if (name === "PackageManagerTabs") {
         const slots: Record<string, Node> = {}
         for (const child of childrenOf(node)) {
@@ -1192,7 +1309,7 @@ export function analyzeSourceMarkdown(
         return SKIP
       }
 
-      addDiagnostic("unsupported", name, node, `Unsupported MDX component ${name}`)
+      addDiagnostic("unverifiable", name, node, `No static content expectation for component ${name}`)
       return SKIP
     })
   }
@@ -1217,10 +1334,14 @@ function staticHeadingAnchor(node: Node): string | undefined {
   return attributes[0].value
 }
 
-function analyzeObservedMarkdown(markdown: string, expectedAnchors: readonly SourceFact[] = []): ObservedAnalysis {
+function analyzeObservedMarkdown(
+  markdown: string,
+  expectedAnchors: readonly SourceFact[] = [],
+  output?: "txt"
+): ObservedAnalysis {
   let tree: Node
   try {
-    tree = processor.parse(markdown)
+    tree = (output === "txt" ? txtProcessor : processor).parse(markdown)
   } catch (error) {
     return {
       facts: [],
@@ -1366,7 +1487,10 @@ function analyzeObservedMarkdown(markdown: string, expectedAnchors: readonly Sou
     }
     if (node.type === "image") {
       const alt = String((node as Node & { alt?: unknown }).alt ?? "Image") || "Image"
-      addFact({ kind: "text", value: `(Image: ${alt})` }, node)
+      addFact(
+        { kind: "image", value: normalizeText(alt), url: String((node as Node & { url?: unknown }).url ?? "") },
+        node
+      )
       return SKIP
     }
     if (node.type === "code") {
@@ -1395,7 +1519,7 @@ function factMatches(source: SourceFact, observed: ObservedFact): boolean {
     source.value === observed.value &&
     (source.kind !== "heading" || source.depth === observed.depth) &&
     (source.kind !== "anchor" || (source.depth === observed.depth && source.heading === observed.heading)) &&
-    (source.kind !== "link" || source.url === observed.url)
+    ((source.kind !== "link" && source.kind !== "image") || source.url === observed.url)
   )
 }
 function frontmatterTitle(source: string): { title?: string; line: number } {
@@ -1524,21 +1648,28 @@ export function compareSourceToArtifact(
   source: string,
   artifact: MarkdownArtifact,
   lang = "default",
-  exceptions: readonly FidelityException[] = markdownFidelityExceptions
+  exceptions: readonly FidelityException[] = markdownFidelityExceptions,
+  observation: { drops?: readonly DroppedComponent[]; output?: "txt"; analysis?: SourceAnalysis } = {}
 ): FidelityFinding[] {
-  const analysis = analyzeSourceMarkdown(source, sourcePath)
+  const analysis = observation.analysis ?? analyzeSourceMarkdown(source, sourcePath)
   const servedLines = artifact.markdown.split(/\r?\n/)
   const directiveIndex = servedLines.findIndex((line) => line === LLMS_DIRECTIVE)
-  const servedBody = directiveIndex >= 0 ? servedLines.slice(directiveIndex + 1).join("\n") : artifact.markdown
-  const servedLineOffset = directiveIndex >= 0 ? directiveIndex + 1 : 0
+  const txtHeaderEnd =
+    observation.output && servedLines[0]?.startsWith("# ") && servedLines[1]?.startsWith("Source: ")
+      ? servedLines.findIndex((line, index) => index > 1 && line === "")
+      : -1
+  const servedLineOffset = observation.output ? Math.max(0, txtHeaderEnd + 1) : Math.max(0, directiveIndex + 1)
+  const servedBody = servedLines.slice(servedLineOffset).join("\n")
   const observed = analyzeObservedMarkdown(
     servedBody,
-    analysis.facts.filter((fact) => fact.kind === "anchor")
+    analysis.facts.filter((fact) => fact.kind === "anchor"),
+    observation.output
   )
   const findings: FidelityFinding[] =
-    artifact.sourcePath && !path.isAbsolute(artifact.sourcePath)
+    !observation.output && artifact.sourcePath && !path.isAbsolute(artifact.sourcePath)
       ? inspectNormalEnvelope(requestPath, sourcePath, source, artifact, servedLines, lang, exceptions)
       : []
+  const droppedNames = new Set(observation.drops?.map((drop) => drop.name))
   let observedIndex = 0
   const presentFactDuplicates = new Map<string, number>()
   const missingFactDuplicates = new Map<string, number>()
@@ -1559,6 +1690,7 @@ export function compareSourceToArtifact(
     const duplicateMap = matchedAt >= 0 ? presentFactDuplicates : missingFactDuplicates
     const duplicate = (duplicateMap.get(semantic) ?? 0) + 1
     duplicateMap.set(semantic, duplicate)
+    const component = fact.componentAncestors?.find((name) => droppedNames.has(name)) ?? fact.component
     const finding: FidelityFinding = {
       ...(matchedAt >= 0 ? {} : { reason: "Expected source fact is missing from served Markdown" }),
       path: requestPath,
@@ -1568,14 +1700,36 @@ export function compareSourceToArtifact(
       sourceLine: fact.line,
       sourceText: fact.sourceText,
       ...(lang === "default" ? {} : { lang }),
-      expected: fact.kind === "link" ? `${fact.value} -> ${fact.url}` : fact.value,
-      display: shortValue(fact.kind === "link" ? `${fact.value} -> ${fact.url}` : fact.value),
+      ...(component ? { component } : {}),
+      expected: fact.kind === "link" || fact.kind === "image" ? `${fact.value} -> ${fact.url}` : fact.value,
+      display: shortValue(fact.kind === "link" || fact.kind === "image" ? `${fact.value} -> ${fact.url}` : fact.value),
     }
     findings.push(withException(finding, exceptions))
     if (matchedAt >= 0) observedIndex = matchedAt + 1
   }
 
+  for (const name of [...droppedNames].sort()) {
+    findings.push(
+      withException(
+        {
+          path: requestPath,
+          status: "unsupported",
+          occurrence: `lang=${lang};dropped=${name}`,
+          sourcePath,
+          sourceLine: null,
+          ...(lang === "default" ? {} : { lang }),
+          name,
+          component: name,
+          reason: "Component subtree was removed by the actual transform",
+        },
+        exceptions
+      )
+    )
+  }
+
   for (const diagnostic of analysis.diagnostics) {
+    const ancestors = diagnostic.componentAncestors ?? (diagnostic.component ? [diagnostic.component] : [])
+    if (ancestors.some((name) => droppedNames.has(name))) continue
     const semantic = diagnosticSemantic(diagnostic)
     const duplicate = (diagnosticDuplicates.get(semantic) ?? 0) + 1
     diagnosticDuplicates.set(semantic, duplicate)
@@ -1590,6 +1744,7 @@ export function compareSourceToArtifact(
           sourceText: diagnostic.sourceText,
           ...(lang === "default" ? {} : { lang }),
           name: diagnostic.name,
+          ...(diagnostic.component ? { component: diagnostic.component } : {}),
           reason: diagnostic.reason,
         },
         exceptions
@@ -1621,7 +1776,7 @@ export function compareSourceToArtifact(
     )
   })
 
-  return findings
+  return observation.output ? findings.map((finding) => ({ ...finding, output: observation.output })) : findings
 }
 
 export function findingIdentity(finding: FidelityFinding): string {
@@ -1630,6 +1785,7 @@ export function findingIdentity(finding: FidelityFinding): string {
     status: finding.status,
     language: finding.lang ?? "default",
     occurrence: finding.occurrence,
+    ...(finding.output ? { output: finding.output } : {}),
     ...(finding.name === undefined ? {} : { component: finding.name }),
     ...(finding.expected === undefined ? {} : { expected: finding.expected }),
     ...(finding.reason === undefined ? {} : { reason: finding.reason }),
@@ -1658,8 +1814,8 @@ export function determineExitCode(
   return blockingFindings(mode, findings, baselineIdentities).length > 0 ? 1 : 0
 }
 
-async function loadBaseline(): Promise<ReadonlySet<string>> {
-  const baseline: unknown = JSON.parse(await fs.readFile(DEFAULT_BASELINE_PATH, "utf8"))
+async function loadBaseline(baselinePath = DEFAULT_BASELINE_PATH): Promise<ReadonlySet<string>> {
+  const baseline: unknown = JSON.parse(await fs.readFile(baselinePath, "utf8"))
   if (
     typeof baseline !== "object" ||
     baseline === null ||
@@ -1672,6 +1828,16 @@ async function loadBaseline(): Promise<ReadonlySet<string>> {
     throw new Error("Invalid Markdown fidelity baseline")
   }
   return new Set(baseline.identities)
+}
+
+/** Known debt only: findings stay in reports; reviewed intentional losses use exceptions. */
+export function baselineFromFindings(findings: readonly FidelityFinding[]) {
+  return {
+    version: 1,
+    identities: [
+      ...new Set(findings.filter((finding) => finding.status !== "present" && !finding.exception).map(findingIdentity)),
+    ].sort(),
+  }
 }
 
 function compareFinding(left: FidelityFinding, right: FidelityFinding): number {
@@ -1691,11 +1857,56 @@ export function createReport(pathCount: number, findings: readonly FidelityFindi
   findings.forEach((finding) => {
     counts[finding.status] += 1
   })
-  return { pathCount, counts, findings: [...findings].sort(compareFinding) }
+  const grouped = new Map<
+    string,
+    { pages: Set<string>; byStatus: Record<Exclude<FidelityStatus, "present">, Set<string>> }
+  >()
+  for (const finding of findings) {
+    if (!finding.component || finding.status === "present") continue
+    const entry = grouped.get(finding.component) ?? {
+      pages: new Set<string>(),
+      byStatus: {
+        unsupported: new Set<string>(),
+        missing: new Set<string>(),
+        unverifiable: new Set<string>(),
+        degraded: new Set<string>(),
+      },
+    }
+    const page = finding.sourcePath ?? finding.path
+    entry.pages.add(page)
+    entry.byStatus[finding.status].add(page)
+    grouped.set(finding.component, entry)
+  }
+  const components: ComponentSummary[] = [...grouped].map(([name, entry]) => ({
+    name,
+    kind: /^[a-z]/.test(name) ? "html" : "component",
+    pageCount: entry.pages.size,
+    pages: [...entry.pages].sort(),
+    statuses: (Object.keys(entry.byStatus) as ComponentSummary["statuses"])
+      .filter((status) => entry.byStatus[status].size > 0)
+      .sort(),
+    pagesByStatus: {
+      unsupported: entry.byStatus.unsupported.size,
+      missing: entry.byStatus.missing.size,
+      unverifiable: entry.byStatus.unverifiable.size,
+      degraded: entry.byStatus.degraded.size,
+    },
+  }))
+  components.sort(
+    (a, b) =>
+      b.pagesByStatus.unsupported - a.pagesByStatus.unsupported ||
+      b.pagesByStatus.missing - a.pagesByStatus.missing ||
+      b.pageCount - a.pageCount ||
+      (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)
+  )
+  return { pathCount, counts, findings: [...findings].sort(compareFinding), components }
 }
 
-export function serializeReport(report: FidelityReport): string {
-  return `${JSON.stringify(report, null, 2)}\n`
+export function serializeReport(report: FidelityReport, options: { omitPresent?: boolean } = {}): string {
+  const serialized = options.omitPresent
+    ? { ...report, omittedPresent: true, findings: report.findings.filter((finding) => finding.status !== "present") }
+    : report
+  return `${JSON.stringify(serialized, null, 2)}\n`
 }
 
 function cliRequestPath(value: string): string | null {
@@ -1715,10 +1926,32 @@ function cliRequestPath(value: string): string | null {
   return normalizeMarkdownPath(value)
 }
 
-export function parseCliArguments(argv: readonly string[]): { mode: RunMode; paths: string[]; warnOnly: boolean } {
+export function parseCliArguments(argv: readonly string[]): {
+  mode: RunMode
+  paths: string[]
+  warnOnly: boolean
+  publish?: boolean
+  updateBaseline?: boolean
+  omitPresent?: boolean
+} {
   const paths: string[] = []
   let warnOnly = false
+  let publish = false
+  let updateBaseline = false
+  let omitPresent = false
   for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] === "--update-baseline") {
+      updateBaseline = true
+      continue
+    }
+    if (argv[index] === "--omit-present") {
+      omitPresent = true
+      continue
+    }
+    if (argv[index] === "--publish") {
+      publish = true
+      continue
+    }
     if (argv[index] === "--warn-only") {
       warnOnly = true
       continue
@@ -1731,9 +1964,16 @@ export function parseCliArguments(argv: readonly string[]): { mode: RunMode; pat
     paths.push(normalized)
     index += 1
   }
+  if (publish && paths.length) throw new Error("--publish requires a full-corpus check")
+  if (updateBaseline && paths.length) throw new Error("--update-baseline requires a full-corpus check")
+  const flags = {
+    ...(publish ? { publish: true } : {}),
+    ...(updateBaseline ? { updateBaseline: true } : {}),
+    ...(omitPresent ? { omitPresent: true } : {}),
+  }
   return paths.length
-    ? { mode: "focused", paths: [...new Set(paths)].sort(), warnOnly }
-    : { mode: "full-corpus", paths: [], warnOnly }
+    ? { mode: "focused", paths: [...new Set(paths)].sort(), warnOnly, ...flags }
+    : { mode: "full-corpus", paths: [], warnOnly, ...flags }
 }
 
 function sourceRoute(relativePath: string): string {
@@ -1873,7 +2113,10 @@ async function checkPathInternal(
   globallyVisitedPaths?.add(requestPath)
   const nextAncestors = new Set(ancestorPaths)
   nextAncestors.add(requestPath)
-  const defaultArtifact = await buildMarkdownArtifact(requestPath)
+  const defaultDrops: DroppedComponent[] = []
+  const defaultArtifact = await buildMarkdownArtifact(requestPath, {
+    onDropComponent: (drop) => defaultDrops.push(drop),
+  })
   if (!defaultArtifact) {
     return [
       withException(
@@ -1956,7 +2199,11 @@ async function checkPathInternal(
   const variants = ["default", ...analysis.languages]
   const findings: FidelityFinding[] = []
   for (const lang of variants) {
-    const artifact = lang === "default" ? defaultArtifact : await buildMarkdownArtifact(requestPath, { lang })
+    const drops: DroppedComponent[] = lang === "default" ? defaultDrops : []
+    const artifact =
+      lang === "default"
+        ? defaultArtifact
+        : await buildMarkdownArtifact(requestPath, { lang, onDropComponent: (drop) => drops.push(drop) })
     if (!artifact) {
       findings.push(
         withException(
@@ -1982,9 +2229,48 @@ async function checkPathInternal(
         source,
         artifact,
         lang,
-        markdownFidelityExceptions
+        markdownFidelityExceptions,
+        { drops, analysis }
       )
     )
+  }
+
+  const relative = path.relative(CONTENT_ROOT, sourceLocation.absolute).split(path.sep).join("/")
+  const [section, solutionSlug] = relative.split("/")
+  const config = LLM_SECTIONS_CONFIG[section as keyof typeof LLM_SECTIONS_CONFIG]
+  const exported =
+    (SUPPORTED_LLM_SECTIONS as readonly string[]).includes(section) ||
+    (section === "solutions" && SOLUTIONS.some((solution) => !solution.hidden && solution.slug === solutionSlug))
+  if (exported) {
+    const markdownByIdentity = new Map(findings.map((finding) => [findingIdentity(finding), finding]))
+    const pageLanguage = getPageLanguage(sourceLocation.absolute, extractFrontmatter(source).sdkLang)
+    const languages = config?.languages?.filter((language) => shouldIncludeInLanguageFile(pageLanguage, language)) ?? [
+      undefined,
+    ]
+    for (const language of languages) {
+      const drops: DroppedComponent[] = []
+      const rendered = await renderLlmsPageMarkdown(source, sourceLocation.absolute, section, language, {
+        onDropComponent: (drop) => drops.push(drop),
+      })
+      const artifact: MarkdownArtifact = { ...rendered, requestPath, routeKind: defaultArtifact.routeKind }
+      const txtFindings = [
+        ...degraded(artifact, language ?? "default").map((finding) => ({ ...finding, output: "txt" as const })),
+        ...compareSourceToArtifact(
+          requestPath,
+          sourceLocation.relative,
+          source,
+          artifact,
+          language ?? "default",
+          markdownFidelityExceptions,
+          { drops, output: "txt", analysis }
+        ),
+      ]
+      for (const finding of txtFindings) {
+        const sameMarkdown = markdownByIdentity.get(findingIdentity({ ...finding, output: undefined }))
+        if (sameMarkdown) sameMarkdown.outputs = ["markdown", "txt"]
+        else findings.push(finding)
+      }
+    }
   }
   return findings
 }
@@ -1996,20 +2282,67 @@ export async function checkPath(
   return checkPathInternal(requestPath, new Set(), options.globallyScheduledPaths, options.globallyVisitedPaths)
 }
 
+/** Public v2 inventory for docs-agent-score. Statuses are evidence, not a coverage score.
+ * Pages are unique source paths; findings can cover both Markdown/TXT and language variants.
+ * pagesByStatus counts unique pages per status; counts may overlap. kind separates HTML.
+ * Observed drops sort first. No observed drop does not establish that rendering is correct.
+ * Baseline findings remain visible. newSinceBaseline means a component has a new finding.
+ */
+export function componentInventory(
+  report: FidelityReport,
+  blockers: readonly FidelityFinding[],
+  generatedAt = new Date().toISOString()
+) {
+  return {
+    schemaVersion: 2 as const,
+    generatedAt,
+    pathCount: report.pathCount,
+    counts: report.counts,
+    components: report.components,
+    newSinceBaseline: [
+      ...new Set(blockers.flatMap((finding) => (finding.component ? [finding.component] : []))),
+    ].sort(),
+  }
+}
+
+export async function publishComponentInventory(
+  inventory: ReturnType<typeof componentInventory>,
+  outputPath = PUBLIC_REPORT_PATH
+): Promise<void> {
+  await writeJsonAtomically(outputPath, inventory)
+}
+
+async function writeJsonAtomically(outputPath: string, value: unknown): Promise<void> {
+  await fs.mkdir(path.dirname(outputPath), { recursive: true })
+  const temporaryPath = path.join(path.dirname(outputPath), `.${path.basename(outputPath)}.${process.pid}.tmp`)
+  try {
+    await fs.writeFile(temporaryPath, JSON.stringify(value, null, 2) + "\n", "utf8")
+    await fs.rename(temporaryPath, outputPath)
+  } finally {
+    await fs.rm(temporaryPath, { force: true }).catch(() => {
+      // Cleanup must not replace the original write error.
+    })
+  }
+}
+
 export async function runMarkdownFidelity(
   argv: readonly string[],
-  options: { reportPath?: string; contentRoot?: string } = {}
+  options: { reportPath?: string; contentRoot?: string; baselinePath?: string } = {}
 ): Promise<{ report: FidelityReport; exitCode: 0 | 1; blockers: FidelityFinding[]; warnOnly: boolean }> {
   const parsed = parseCliArguments(argv)
-  const baselineIdentities = parsed.mode === "full-corpus" ? await loadBaseline() : new Set<string>()
+  const baselinePath = options.baselinePath ?? DEFAULT_BASELINE_PATH
+  let baselineIdentities =
+    parsed.mode === "full-corpus" && !parsed.updateBaseline ? await loadBaseline(baselinePath) : new Set<string>()
   const paths = parsed.mode === "focused" ? parsed.paths : await collectCorpusPaths(options.contentRoot)
   const findings: FidelityFinding[] = []
+  let checkerErrors = 0
   const globallyScheduledPaths = parsed.mode === "full-corpus" ? new Set(paths) : undefined
   const globallyVisitedPaths = parsed.mode === "full-corpus" ? new Set<string>() : undefined
   for (const requestPath of paths) {
     try {
       findings.push(...(await checkPathInternal(requestPath, new Set(), globallyScheduledPaths, globallyVisitedPaths)))
     } catch (error) {
+      checkerErrors++
       const reason = (error instanceof Error ? error.message : "Checker failed").split(process.cwd()).join(".")
       findings.push(
         withException(
@@ -2028,8 +2361,19 @@ export async function runMarkdownFidelity(
   const report = createReport(paths.length, findings)
   const reportPath = options.reportPath ?? DEFAULT_REPORT_PATH
   await fs.mkdir(path.dirname(reportPath), { recursive: true })
-  await fs.writeFile(reportPath, serializeReport(report), "utf8")
+  await fs.writeFile(reportPath, serializeReport(report, { omitPresent: parsed.omitPresent }), "utf8")
+  if (checkerErrors && (parsed.updateBaseline || parsed.publish)) {
+    throw new Error(`Baseline and public report unchanged: ${checkerErrors} page check(s) failed`)
+  }
+  if (parsed.updateBaseline) {
+    const baseline = baselineFromFindings(report.findings)
+    await writeJsonAtomically(baselinePath, baseline)
+    baselineIdentities = new Set(baseline.identities)
+  }
   const blockers = blockingFindings(parsed.mode, report.findings, baselineIdentities)
+  if (parsed.publish) {
+    await publishComponentInventory(componentInventory(report, blockers))
+  }
   return {
     report,
     exitCode: parsed.warnOnly || blockers.length === 0 ? 0 : 1,
@@ -2038,24 +2382,54 @@ export async function runMarkdownFidelity(
   }
 }
 
+export function formatFocusedFindings(findings: readonly FidelityFinding[]): string {
+  const issues = findings.filter((finding) => finding.status !== "present")
+  const rows = issues.slice(0, 50).map((finding) => {
+    const location = `${finding.sourcePath ?? finding.path}${finding.sourceLine === null ? "" : `:${finding.sourceLine}`}`
+    const evidence = finding.expected ?? finding.reason ?? finding.display ?? finding.occurrence
+    return `[${finding.status}] ${location}${finding.component ? ` (${finding.component})` : ""}${finding.lang ? ` [${finding.lang}]` : ""} [${finding.outputs?.join(", ") ?? finding.output ?? "markdown"}]${finding.exception ? " [excepted]" : ""}: ${shortValue(evidence)}`
+  })
+  if (issues.length > rows.length)
+    rows.push(`… ${issues.length - rows.length} more finding(s) in ${DEFAULT_REPORT_PATH}`)
+  return rows.join("\n") || "No non-present findings."
+}
+
+export function formatJobSummary(report: FidelityReport, blockers: readonly FidelityFinding[]): string {
+  const components = createReport(report.pathCount, blockers).components
+  const rows = components
+    .map(
+      (component) =>
+        `- **${component.name}** (${component.kind}; ${component.statuses.join(", ")}): ${component.pages.map((page) => `\`${page}\``).join(", ")}`
+    )
+    .join("\n")
+  const unattributed = blockers.filter((finding) => !finding.component).length
+  return `\n### Markdown and TXT fidelity\n\n${report.pathCount} routes checked; ${blockers.length} new finding(s) across ${components.length} component/HTML types${unattributed ? `; ${unattributed} finding(s) without component attribution` : ""}.\n\n${rows || "No new component findings."}\n\nInspect the new pages and evidence in the JSON artifact. Fix a handler for observed drops or missing content; review unverifiable content. Baseline findings remain visible as existing debt, not approved losses. Accept an intentional omission only with a justified entry in src/scripts/markdown-fidelity-exceptions.ts.\n`
+}
+
 async function main(): Promise<void> {
-  const { report, exitCode, blockers, warnOnly } = await runMarkdownFidelity(process.argv.slice(2))
+  const argv = process.argv.slice(2)
+  const parsed = parseCliArguments(argv)
+  const { report, exitCode, blockers, warnOnly } = await runMarkdownFidelity(argv)
   const counts = Object.entries(report.counts)
     .map(([status, count]) => `${status}=${count}`)
     .join(" ")
   console.log(`Markdown fidelity: paths=${report.pathCount} ${counts}`)
+  if (parsed.updateBaseline)
+    console.log(
+      `Updated Markdown fidelity baseline: ${baselineFromFindings(report.findings).identities.length} known finding(s); existing debt remains visible in reports.`
+    )
+  if (parsed.mode === "focused") console.log(formatFocusedFindings(report.findings))
   if (blockers.length > 0) {
-    const label = warnOnly ? "warning" : "failed"
-    console.error(`Markdown fidelity ${label}: ${blockers.length} new finding(s)`)
-    for (const finding of blockers) {
-      const detail = finding.reason ?? finding.expected ?? finding.occurrence
-      console.error(`${finding.path}: ${finding.status} ${detail}`)
-    }
-    if (warnOnly && process.env.GITHUB_ACTIONS === "true") {
-      console.error(
-        `::warning::Markdown fidelity found ${blockers.length} new finding(s). The check is warn-only and does not fail CI.`
-      )
-    }
+    const names = [...new Set(blockers.flatMap((finding) => (finding.component ? [finding.component] : [])))].sort()
+    const message = `Markdown fidelity found ${blockers.length} new finding(s)${names.length ? ` involving ${names.join(", ")}` : ""}. Check ${DEFAULT_REPORT_PATH} for affected pages. Add or fix a Markdown handler for an observed drop or missing content; review unverifiable content and record justified exceptions in src/scripts/markdown-fidelity-exceptions.ts.`
+    console.error(message)
+    if (warnOnly && process.env.GITHUB_ACTIONS === "true")
+      console.error(`::warning::${message.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A")}`)
+  }
+  if (process.env.GITHUB_STEP_SUMMARY) {
+    await fs
+      .appendFile(process.env.GITHUB_STEP_SUMMARY, formatJobSummary(report, blockers))
+      .catch((error) => console.warn(`Job summary unavailable: ${error instanceof Error ? error.message : error}`))
   }
   process.exitCode = exitCode
 }

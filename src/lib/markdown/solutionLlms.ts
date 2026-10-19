@@ -4,7 +4,6 @@ import type { Solution } from "../../config/solutions/index.ts"
 import { collectSolutionPages, getOrderedSolutionPages, type SolutionPage } from "../../utils/solutionPages.js"
 import { assembleLlmsDocument, renderLlmsPageMarkdown } from "./llms.js"
 import { extractFrontmatter, toContentRelative } from "./utils.js"
-import type { LlmsRenderObservers } from "./types.js"
 
 const SOLUTIONS_ROOT = path.resolve("src/content/solutions")
 
@@ -41,11 +40,7 @@ export async function readSolutionLlmsPages(solution: Solution, contentRoot = SO
 }
 
 /** Both the CLI and the Astro endpoint use this exact conversion, order, and disclaimer policy. */
-export async function renderSolutionLlmsDocument(
-  solution: Solution,
-  pages: readonly SolutionPage[],
-  observers: LlmsRenderObservers = {}
-): Promise<string> {
+export async function renderSolutionLlmsDocument(solution: Solution, pages: readonly SolutionPage[]): Promise<string> {
   const orderedPages = getOrderedSolutionPages(solution, collectSolutionPages(solution.slug, pages))
   const outputs: string[] = []
   for (const entry of orderedPages) {
@@ -54,7 +49,7 @@ export async function renderSolutionLlmsDocument(
     }
     const absFile = path.resolve(entry.filePath)
     const raw = await fs.readFile(absFile, "utf8")
-    const rendered = await renderLlmsPageMarkdown(raw, absFile, "solutions", undefined, observers)
+    const rendered = await renderLlmsPageMarkdown(raw, absFile, "solutions")
     if (rendered.transformMode !== "normal") {
       console.warn(`[llms] ${toContentRelative(absFile)}: transform mode ${rendered.transformMode}`)
     }

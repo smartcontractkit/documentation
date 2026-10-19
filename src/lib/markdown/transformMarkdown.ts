@@ -415,21 +415,7 @@ export async function transformMarkdown(
           node.type === "html"
         ) {
           if (config.onDropComponent && (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement")) {
-            const drop: DroppedComponent = {
-              name: (node as MdxJsxNode).name ?? "anonymous",
-              approxChars: 0,
-            }
-            try {
-              visit(node, (descendant) => {
-                if (descendant.type === "text" || descendant.type === "inlineCode" || descendant.type === "code") {
-                  drop.approxChars += String((descendant as Literal).value ?? "").length
-                }
-              })
-            } catch {
-              // Diagnostic measurement cannot change transformation behavior.
-              drop.approxChars = 0
-            }
-            drops.push(drop)
+            drops.push({ name: (node as MdxJsxNode).name ?? "anonymous" })
           }
           parent.children.splice(index, 1)
           return index

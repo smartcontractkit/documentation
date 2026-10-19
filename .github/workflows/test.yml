@@ -64,7 +64,6 @@ jobs:
               - 'src/utils/solutionPages.ts'
               - 'src/scripts/generate-llms.ts'
               - 'src/scripts/validate-llms.ts'
-              - 'src/scripts/component-coverage-baseline.json'
               - '.husky/pre-commit'
               - 'package.json'
               - 'package-lock.json'
@@ -364,15 +363,6 @@ jobs:
       - name: Regenerate LLM files
         run: npm run generate:llms
 
-      - name: Upload component coverage report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: component-coverage-report
-          path: reports/component-coverage.json
-          retention-days: 30
-          if-no-files-found: warn
-
       - name: Check LLM files are up-to-date
         if: ${{ !cancelled() }}
         run: |
@@ -386,7 +376,8 @@ jobs:
         run: npm run check:llms
 
       - name: Check Markdown fidelity
-        run: npm run check:markdown-fidelity -- --warn-only
+        if: ${{ !cancelled() }}
+        run: npm run check:markdown-fidelity -- --warn-only --omit-present
 
       - name: Upload Markdown fidelity report
         if: always()

@@ -9,16 +9,6 @@ import { isSunsetContentFile } from "../config/sunset.js"
 import type { SectionEntry, SectionContent } from "../config/sidebar.js"
 import { assembleLlmsDocument, renderLlmsPageMarkdown } from "../lib/markdown/llms.js"
 import { SOLUTIONS, type Solution } from "../config/solutions/index.ts"
-import type { LlmsRenderObservers } from "../lib/markdown/types.js"
-import {
-  COMPONENT_COVERAGE_PATH,
-  COMPONENT_COVERAGE_PUBLIC_PATH,
-  COMPONENT_COVERAGE_BASELINE_PATH,
-  createComponentCoverageCollector,
-  parseComponentCoverageBaseline,
-  writeComponentCoverageReport,
-  type ComponentCoverageBaseline,
-} from "../lib/markdown/componentCoverage.js"
 import {
   readSolutionLlmsPages,
   renderSolutionLlmsDocument,
@@ -50,7 +40,6 @@ type CliArgs = {
   section?: string
   pagesFile?: string
   reportPath?: string
-  coverageOnly?: boolean
 }
 
 export function selectLlmsTargets(section?: string): { sections: string[]; solutions: Solution[] } {
@@ -62,22 +51,18 @@ export function selectLlmsTargets(section?: string): { sections: string[]; solut
     if (!selected.length) throw new Error(`[llms] Unknown or hidden solution: ${section}`)
     return { sections: [], solutions: selected }
   }
-  if (!(SUPPORTED_LLM_SECTIONS as readonly string[]).includes(section)) {
-    throw new Error(`[llms] Unknown section: ${section}`)
-  }
   return { sections: [section], solutions: [] }
 }
 
 export async function generateSolutionLlmsFiles(
   solutions: readonly Solution[],
-  outputRoot?: string,
-  observers: LlmsRenderObservers = {}
+  outputRoot?: string
 ): Promise<SectionReport[]> {
   const reports: SectionReport[] = []
   for (const solution of solutions) {
     if (solution.hidden) continue
     const pages = await readSolutionLlmsPages(solution)
-    const document = await renderSolutionLlmsDocument(solution, pages, observers)
+    const document = await renderSolutionLlmsDocument(solution, pages)
     const outPath = solutionLlmsOutputPath(solution.slug, outputRoot)
     let prevBytes: number | undefined
     try {
@@ -101,27 +86,9 @@ export async function generateSolutionLlmsFiles(
 
 async function main() {
   const args = parseArgs(process.argv.slice(2))
-  if (args.coverageOnly && (args.section || args.pagesFile || args.reportPath)) {
-    throw new Error(
-      "[llms] --coverage-only uses the full corpus and cannot be combined with --section, --pages, or --report"
-    )
-  }
   const { sections, solutions } = selectLlmsTargets(args.section)
   if (args.pagesFile && args.section?.startsWith("solutions")) {
     throw new Error("[llms] --pages is only supported for product sections; solutions use their complete navigation.")
-  }
-  await generateLlms(args, sections, solutions)
-}
-
-async function generateLlms(args: CliArgs, sections: string[], solutions: Solution[]) {
-  const started = performance.now()
-  const coverage = createComponentCoverageCollector()
-  let baseline: ComponentCoverageBaseline = {}
-  try {
-    baseline = parseComponentCoverageBaseline(JSON.parse(await fs.readFile(COMPONENT_COVERAGE_BASELINE_PATH, "utf8")))
-  } catch (error) {
-    if (args.coverageOnly) throw error
-    warnCoverage(`Baseline unavailable; all observed types will be reported: ${errorMessage(error)}`)
   }
 
   const report: Report = {
@@ -160,16 +127,15 @@ async function generateLlms(args: CliArgs, sections: string[], solutions: Soluti
           // Skip if this page doesn't belong to this language
           if (!shouldIncludeInLanguageFile(pageLanguage, lang)) continue
 
-          const rendered = await renderLlmsPageMarkdown(raw, absFile, section, lang, coverage.observers)
+          const rendered = await renderLlmsPageMarkdown(raw, absFile, section, lang)
           if (rendered.transformMode !== "normal") {
             console.warn(`[llms] ${toContentRelative(absFile)}: transform mode ${rendered.transformMode}`)
           }
 
-          if (!args.coverageOnly) outputs.push(rendered.markdown)
+          outputs.push(rendered.markdown)
           processed += 1
         }
 
-        if (args.coverageOnly) continue
         const finalOutput = assembleLlmsDocument(outputs)
         const outPath = path.resolve(`src/content/${section}/llms-full-${lang}.txt`)
 
@@ -203,16 +169,15 @@ async function generateLlms(args: CliArgs, sections: string[], solutions: Soluti
         if (!absFile.endsWith(".mdx") && !absFile.endsWith(".md")) continue
         if (isSunsetContentFile(absFile)) continue
         const raw = await fs.readFile(absFile, "utf-8")
-        const rendered = await renderLlmsPageMarkdown(raw, absFile, section, undefined, coverage.observers)
+        const rendered = await renderLlmsPageMarkdown(raw, absFile, section)
         if (rendered.transformMode !== "normal") {
           console.warn(`[llms] ${toContentRelative(absFile)}: transform mode ${rendered.transformMode}`)
         }
 
-        if (!args.coverageOnly) outputs.push(rendered.markdown)
+        outputs.push(rendered.markdown)
         processed += 1
       }
 
-      if (args.coverageOnly) continue
       const finalOutput = assembleLlmsDocument(outputs)
       const outPath = path.resolve(`src/content/${section}/llms-full.txt`)
 
@@ -239,90 +204,19 @@ async function generateLlms(args: CliArgs, sections: string[], solutions: Soluti
     }
   }
 
-  if (args.coverageOnly) {
-    for (const solution of solutions) {
-      await renderSolutionLlmsDocument(solution, await readSolutionLlmsPages(solution), coverage.observers)
-    }
-  } else {
-    report.sections.push(...(await generateSolutionLlmsFiles(solutions, undefined, coverage.observers)))
-    report.finishedAt = new Date().toISOString()
-    await writeReports(report, args.reportPath)
-  }
-  const coverageReport = coverage.report({ baseline })
-  const coveragePath = args.coverageOnly ? COMPONENT_COVERAGE_PUBLIC_PATH : COMPONENT_COVERAGE_PATH
-  try {
-    await writeComponentCoverageReport(coverageReport, coveragePath)
-    console.log(`[component-coverage] ${coveragePath}`)
-  } catch (error) {
-    if (args.coverageOnly) throw error
-    await fs.rm(coveragePath, { force: true }).catch(() => {
-      // Cleanup failure must also remain non-blocking.
-    })
-    warnCoverage(`Report unavailable: ${errorMessage(error)}`)
-  }
-  const nextSteps = `Check the pages listed in ${coveragePath}, then add a Markdown handler or a "ComponentName": "Reason for accepting this loss" entry in ${COMPONENT_COVERAGE_BASELINE_PATH}.`
-  if (coverageReport.newSinceBaseline.length) {
-    warnCoverage(`Unhandled components outside baseline: ${coverageReport.newSinceBaseline.join(", ")}. ${nextSteps}`)
-  }
-  if (!args.coverageOnly && process.env.GITHUB_STEP_SUMMARY) {
-    try {
-      const findings = coverageReport.newSinceBaseline.length
-        ? `Outside baseline:\n\n${coverageReport.components
-            .filter((component) => coverageReport.newSinceBaseline.includes(component.name))
-            .map(
-              (component) =>
-                `- \`${component.name}\`: ${component.pages.map((page) => `\`src/content/${page}\``).join(", ")}`
-            )
-            .join("\n")}\n\n${nextSteps}`
-        : "No component types outside baseline."
-      await fs.appendFile(
-        process.env.GITHUB_STEP_SUMMARY,
-        `\n### Markdown component coverage\n\n${coverageReport.pagesProcessed} source pages; ${coverageReport.components.length} dropped component types.\n\n${findings}\n\nTransform modes: ${Object.entries(
-          coverageReport.transformModes
-        )
-          .map(([mode, count]) => `${mode}: ${count}`)
-          .join(", ")}.\n`
-      )
-    } catch (error) {
-      warnCoverage(`Job summary unavailable: ${errorMessage(error)}`)
-    }
-  }
-  console.log(
-    args.coverageOnly
-      ? `[component-coverage] Coverage-only completed in ${((performance.now() - started) / 1000).toFixed(2)}s`
-      : "LLM generation complete."
-  )
-}
-
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
-}
-
-function warnCoverage(message: string) {
-  const warning = `[component-coverage] ${message}`
-  console.warn(
-    process.env.GITHUB_ACTIONS === "true"
-      ? `::warning::${warning.replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A")}`
-      : warning
-  )
+  report.sections.push(...(await generateSolutionLlmsFiles(solutions)))
+  report.finishedAt = new Date().toISOString()
+  await writeReports(report, args.reportPath)
+  console.log("LLM generation complete.")
 }
 
 function parseArgs(argv: string[]): CliArgs {
   const args: CliArgs = {}
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i]
-    if (a === "--coverage-only") {
-      args.coverageOnly = true
-      continue
-    }
-    if (!["--section", "--pages", "--report"].includes(a)) {
-      throw new Error(`[llms] Unknown option: ${a}`)
-    }
-    const value = argv[++i]
-    if (!value || value.startsWith("--")) throw new Error(`[llms] ${a} requires a value`)
-    if (a === "--section") args.section = value
-    if (a === "--pages") args.pagesFile = value
-    if (a === "--report") args.reportPath = value
+    if (a === "--section") args.section = argv[++i]
+    if (a === "--pages") args.pagesFile = argv[++i]
+    if (a === "--report") args.reportPath = argv[++i]
   }
   return args
 }
@@ -405,6 +299,6 @@ async function writeReports(report: Report, reportPath?: string) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   main().catch((err) => {
     console.error(err)
-    process.exitCode = 1
+    process.exit(1)
   })
 }
