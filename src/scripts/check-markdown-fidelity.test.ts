@@ -742,6 +742,56 @@ describe("final projection and envelope regressions", () => {
     }
   })
 
+  test("expects the published CCIP URL, without the latest content directory, in the Source line", async () => {
+    const requestPath = "ccip/v2/canton/concepts/key-concepts"
+    const sourcePath = "src/content/ccip/v2/canton/concepts/key-concepts.mdx"
+    const source = await fs.readFile(sourcePath, "utf8")
+    const production = await buildMarkdownArtifact(requestPath)
+    if (!production) throw new Error(`Expected production Markdown artifact for ${requestPath}`)
+    const sourceFinding = (markdown: string) =>
+      compareSourceToArtifact(requestPath, sourcePath, source, { ...production, markdown }).find(
+        (candidate) => candidate.name === "Envelope.source"
+      )
+
+    expect(production.markdown).toContain("Source: https://docs.chain.link/ccip/canton/concepts/key-concepts")
+    expect(sourceFinding(production.markdown)).toMatchObject({ status: "present" })
+    expect(
+      sourceFinding(production.markdown.replace("docs.chain.link/ccip/canton", "docs.chain.link/ccip/v2/canton"))
+    ).toMatchObject({ status: "missing" })
+  })
+
+  test("reads one-line tab slots that MDX wraps in a paragraph", async () => {
+    const source = [
+      "<Tabs>",
+      '  <Fragment slot="tab.1">npm</Fragment>',
+      '  <Fragment slot="tab.2">yarn</Fragment>',
+      '  <Fragment slot="panel.1">',
+      "",
+      "Run `npm install example`.",
+      "",
+      "  </Fragment>",
+      '  <Fragment slot="panel.2">',
+      "",
+      "Run `yarn add example`.",
+      "",
+      "  </Fragment>",
+      "</Tabs>",
+    ].join("\n")
+    const markdown = await transformMarkdown(source, path.resolve("src/content/fixture.mdx"))
+    const findings = compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(markdown))
+
+    expect(analyzeSourceMarkdown(source, "src/content/fixture.mdx").diagnostics).toEqual([])
+    expect(findings.filter((candidate) => candidate.status !== "present")).toEqual([])
+    expect(findings.map((candidate) => candidate.expected)).toEqual(
+      expect.arrayContaining(["npm", "yarn", "Run npm install example.", "Run yarn add example."])
+    )
+    expect(
+      compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(markdown.replace("yarn add", "")))
+        .filter((candidate) => candidate.status === "missing")
+        .map((candidate) => candidate.expected)
+    ).toEqual(["Run yarn add example."])
+  })
+
   test("numbers unchanged missing duplicates independently from identical present copies", () => {
     const original = compareSourceToArtifact(
       "fixture",

@@ -9,6 +9,7 @@ import remarkParse from "remark-parse"
 import { SKIP, visit } from "unist-util-visit"
 import type { Node, Parent } from "unist"
 import { buildMarkdownArtifact, normalizeMarkdownPath } from "@lib/markdown/buildMarkdownArtifact.js"
+import { canonicalizeCcipUrlPath } from "@lib/ccip/contentPathMapping.js"
 import {
   readStaticDefaultImports,
   readStaticJsxSelectorConditions,
@@ -238,6 +239,15 @@ function nodeLine(node: Node): number {
 
 function childrenOf(node: Node): Node[] {
   return Array.isArray((node as Parent).children) ? (node as Parent).children : []
+}
+
+/** Children of a slot container, looking through the paragraph MDX creates around one-line slot elements. */
+function slottedChildren(node: Node): Node[] {
+  return childrenOf(node).flatMap((child) => {
+    if (child.type === "paragraph") return slottedChildren(child)
+    if (child.type === "text" && !String((child as Node & { value?: unknown }).value ?? "").trim()) return []
+    return [child]
+  })
 }
 
 function nodeVisibleText(node: Node): string {
@@ -1262,7 +1272,7 @@ export function analyzeSourceMarkdown(
       if (name === "Tabs" || name === "TabsContent") {
         const tabs: Array<{ key: string; node: Node }> = []
         const panels: Record<string, Node> = {}
-        for (const child of childrenOf(node)) {
+        for (const child of slottedChildren(node)) {
           const slot = staticAttribute(child, "slot")
           if (slot.syntax || typeof slot.value !== "string") {
             addDiagnostic("unverifiable", "Tabs.slot", child, `Dynamic tab slot (${slot.syntax ?? "missing"})`)
@@ -1288,7 +1298,7 @@ export function analyzeSourceMarkdown(
           ["ui", "Platform UI"],
           ["api", "API"],
         ]) {
-          const panel = childrenOf(node).find((child) => staticAttribute(child, "slot").value === slotName)
+          const panel = slottedChildren(node).find((child) => staticAttribute(child, "slot").value === slotName)
           if (!panel) continue
           addFact("text", label, panel)
           inspect({ type: "root", children: childrenOf(panel) } as Parent)
@@ -1298,7 +1308,7 @@ export function analyzeSourceMarkdown(
 
       if (name === "PackageManagerTabs") {
         const slots: Record<string, Node> = {}
-        for (const child of childrenOf(node)) {
+        for (const child of slottedChildren(node)) {
           const slot = staticAttribute(child, "slot")
           if (slot.syntax || typeof slot.value !== "string") {
             addDiagnostic(
@@ -1668,6 +1678,8 @@ function expectedCanonicalSource(
   const section = requestPath.split("/")[0]
   let slug = sourceRoute(relative)
   if (!slug.startsWith(section)) slug = `${section}/${slug}`
+  // The latest CCIP content directory is published without its version segment.
+  if (section === "ccip") slug = canonicalizeCcipUrlPath(slug)
   return `${SITE_BASE}/${slug}`
 }
 
