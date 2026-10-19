@@ -8323,9 +8323,10 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 
 > **NOTE: CLI and simulation**
 >
-> Solana read, write, and log trigger binding generation require **CRE CLI v1.33.0 or later**. Local simulation dry-runs
-> reads and writes against the Devnet forwarder and a fake `ContractReader` built into the CLI. Deployed workflows use
-> the live Keystone Forwarder and DON-run `ContractReader` on your target network.
+> Solana read, write, and log trigger binding generation require **CRE CLI v1.33.0 or later**. Local simulation reads
+> live account and program data from your configured Solana RPC, and dry-runs writes against a Devnet stand-in of the
+> Keystone Forwarder built into the CLI. Deployed workflows use the live Keystone Forwarder and a DON-run
+> `ContractReader` on your target network.
 
 ## Learn more
 
@@ -23512,10 +23513,10 @@ one Devnet transaction that already called `publish_price`.
 
 ## Step 2: Configure the workflow
 
-Open (or create) `config.staging.json`. Every log trigger needs the chain to watch, which comes from the IDL baked
-into the generated bindings. The `asset` field is specific to this example: it is not a general CRE or Solana
-concept, just a config value this guide uses to demonstrate filtering on one of `PriceUpdated`'s fields. Your own
-program's events will have their own fields to filter on instead.
+Open (or create) `config.staging.json`. Every log trigger needs the chain to watch, which you set with `chainSelector`;
+the IDL baked into the generated bindings supplies the program address. The `asset` field is specific to this example:
+it is not a general CRE or Solana concept, just a config value this guide uses to demonstrate filtering on one of
+`PriceUpdated`'s fields. Your own program's events will have their own fields to filter on instead.
 
 ```json
 {

@@ -8567,9 +8567,10 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 
 > **NOTE: CLI and simulation**
 >
-> Solana read, write, and log trigger binding generation require **CRE CLI v1.33.0 or later**. Local simulation dry-runs
-> reads and writes against the Devnet forwarder and a fake `ContractReader` built into the CLI. Deployed workflows use
-> the live Keystone Forwarder and DON-run `ContractReader` on your target network.
+> Solana read, write, and log trigger binding generation require **CRE CLI v1.33.0 or later**. Local simulation reads
+> live account and program data from your configured Solana RPC, and dry-runs writes against a Devnet stand-in of the
+> Keystone Forwarder built into the CLI. Deployed workflows use the live Keystone Forwarder and a DON-run
+> `ContractReader` on your target network.
 
 ## Learn more
 
@@ -23321,20 +23322,6 @@ one Devnet transaction that already called `publish_price`.
    ```bash
    go mod tidy
    ```
-
-> **CAUTION: If the build fails with undefined: solana.FilterLogTriggerRequest**
->
-> Solana log trigger support is not yet in a stable `cre-sdk-go` release, so `go mod tidy` alone may leave you on an
-> older version that predates it. If you see `undefined: solana.FilterLogTriggerRequest`, `undefined:
->   bindings.DecodedLog`, or similar, explicitly upgrade the Solana capability module to the beta release that includes
-> them:
->
-> ```bash
-> go get github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana@v0.2.0-beta.1
-> ```
->
-> You may need to repeat this after every `cre generate-bindings solana` run until a stable release is available, since
-> regenerating bindings can reset `go.mod` back to the last tagged version.
 
 ## Step 2: Configure the workflow
 
