@@ -572,13 +572,21 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-10-09
+Last Updated: 2026-10-19
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
 > **CAUTION: Ethereum Glamsterdam upgrade**
 >
 > Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Sepolia upgrades on 6 October 2026 at 13:53:36 UTC; Ethereum Hoodi and Mainnet follow in Q4 2026. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
+
+## Solana Onchain Read and Log Trigger - October 19, 2026
+
+**Solana is now fully supported in CRE.** In addition to onchain writes, workflows can now read consensus-verified account and program state from Solana, and start on Solana log triggers when a program emits a matching event.
+
+- **Solana Read**: Fetch account and program data through a DON-run `ContractReader`, then decode the result with generated bindings. See [Reading from Solana](/cre/guides/workflow/using-solana-client/onchain-read).
+- **Solana Log Trigger**: Fire a workflow when a Solana program emits a matching Anchor event, with optional filtering on the event's top-level scalar fields. See the [Solana Log Trigger guide](/cre/guides/workflow/using-triggers/solana-log-trigger).
+- **CLI requirements**: Solana requires **CRE CLI v1.33.0 or later**. See [Supported Networks](/cre/supported-networks).
 
 ## CLI v1.38.0 - October 8, 2026
 
@@ -5838,7 +5846,7 @@ By following this pattern, you can manage your secrets securely without ever exp
 
 # Simulating Workflows
 Source: https://docs.chain.link/cre/guides/operations/simulating-workflows
-Last Updated: 2026-06-11
+Last Updated: 2026-09-03
 
 Workflow simulation is a local execution environment that **compiles your workflow to [WebAssembly (WASM)](https://webassembly.org)** and runs it on **your machine**. It allows you to test and debug your workflow logic before deploying it. The simulator makes real calls to public testnets and live HTTP endpoints, giving you high confidence that your code will work as expected when deployed.
 
@@ -6080,6 +6088,45 @@ cre workflow simulate my-workflow \
 >
 > These are completely independent: one selects your workflow's
 > handler to execute, the other selects which event data from the blockchain to test with.
+
+### Solana log trigger
+
+[Solana log triggers](/cre/guides/workflow/using-triggers/solana-log-trigger) require a transaction signature and event index to fetch a specific event from Devnet or Mainnet. Unlike EVM log triggers, there is no listen mode for Solana — you always provide a signature for a transaction that already emitted the event.
+
+**Interactive mode:**
+
+When you select a Solana log trigger, the simulator prompts you for:
+
+1. **Transaction signature** (base58, e.g., `c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn`)
+2. **Event index** (0-based index among the program's events in that transaction, e.g., `0`)
+
+The simulator fetches the transaction from the configured RPC, parses its events, and passes the selected one to your workflow.
+
+**Non-interactive mode:**
+
+Use the `--solana-tx-sig` and `--solana-event-index` flags:
+
+```bash
+cre workflow simulate my-workflow \
+  --non-interactive \
+  --trigger-index 0 \
+  --solana-tx-sig c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn \
+  --solana-event-index 0 \
+  --target staging-settings
+```
+
+> **NOTE: Where to get a transaction signature**
+>
+> You need a Devnet (or Mainnet) transaction that already emitted the event you want to test with. If you are following
+> the [Solana Log Trigger guide](/cre/guides/workflow/using-triggers/solana-log-trigger), broadcast a transaction with
+> the [Writing to Solana guide](/cre/guides/workflow/using-solana-client/onchain-write) first (`cre workflow simulate
+>   ... --broadcast`), then reuse its `txSignature`.
+
+> **CAUTION: CRE_SOLANA_PRIVATE_KEY is still required**
+>
+> Solana simulation requires a funded `CRE_SOLANA_PRIVATE_KEY` for every run, including a log-trigger-only dry run that
+> never submits a transaction. See [Writing to Solana: Step
+> 4](/cre/guides/workflow/using-solana-client/onchain-write#step-4-run-the-simulation) for how to generate and fund one.
 
 ## Additional flags
 
@@ -8379,7 +8426,7 @@ This section provides a high-level, conceptual overview of the capabilities curr
 - **[HTTP](/cre/capabilities/http)**: Fetch and post data from external APIs with decentralized consensus.
 - **[Confidential HTTP](/cre/capabilities/confidential-http)**: Make privacy-preserving API calls with enclave execution, secret injection, and optional response encryption.
 - **[EVM Read & Write](/cre/capabilities/evm-read-write)**: Interact with smart contracts on EVM-compatible blockchains with decentralized consensus.
-- **[Solana Write](/cre/capabilities/solana-write)**: Write verified workflow results to Solana programs via the Keystone Forwarder.
+- **[Solana Read & Write](/cre/capabilities/solana-read-write)**: Read Solana account and program state, and write verified workflow results to Solana programs via the Keystone Forwarder.
 
 All execution capabilities automatically use [built-in consensus](/cre/concepts/consensus-computing) to validate results across multiple nodes, ensuring security and reliability.
 
@@ -8466,17 +8513,30 @@ This provides cryptographically verified, tamper-proof execution for your offcha
 
 ---
 
-# The Solana Write Capability
-Source: https://docs.chain.link/cre/capabilities/solana-write
-Last Updated: 2026-07-13
+# The Solana Read & Write Capabilities
+Source: https://docs.chain.link/cre/capabilities/solana-read-write
+Last Updated: 2026-09-04
 
-The **Solana Write** capability lets your CRE workflow submit cryptographically signed reports to Solana programs. Your workflow calls a single method while the underlying Decentralized Oracle Network (DON) handles consensus, report signing, and onchain submission through the Keystone Forwarder program.
+The **Solana Read & Write** capabilities provide a secure and reliable service for your workflow to interact with programs on Solana.
+
+- **Solana Read:** Allows your workflow to fetch consensus-verified data from Solana accounts and programs.
+- **Solana Write:** Allows your workflow to submit cryptographically signed reports to Solana programs.
 
 ## How it works
 
+When you use the SDK's [`solana.Client`](/cre/reference/sdk/solana-client) to interact with Solana, you are invoking these underlying capabilities. CRE routes requests to a Solana capability service backed by a `ContractReader` for reads and the Keystone Forwarder for writes, so your workflow gets consensus-verified results without managing RPC connections or oracle signing directly.
+
+### Understanding Solana Read operations
+
+For **Solana Read** operations, your workflow calls a read method on `solana.Client`, such as `GetAccountInfoWithOpts`, then decodes the raw bytes with a generated `Codec.Decode<AccountName>()`. Multiple DON nodes independently query the underlying `ContractReader` and reach consensus on the result before it is returned to your workflow.
+
+Learn more in the [Onchain Read guide](/cre/guides/workflow/using-solana-client/onchain-read).
+
+### Understanding Solana Write operations
+
 The Solana Write capability shares the same conceptual model as [EVM Write](/cre/capabilities/evm-read-write): your workflow generates a signed report, and the DON submits it to a Keystone Forwarder program onchain. The forwarder verifies the oracle signatures, then cross-program invokes (CPI) your receiver program's `on_report` instruction.
 
-### The secure write flow
+#### The secure write flow
 
 1. **Payload encoding**: Your workflow Borsh-encodes the data to deliver and wraps it in a `ForwarderReport` struct containing an account hash.
 2. **Report generation**: `runtime.report()` signs the encoded payload using the `solana` encoder (`ecdsa` + `keccak256`).
@@ -8484,7 +8544,7 @@ The Solana Write capability shares the same conceptual model as [EVM Write](/cre
 4. **Forwarder submission**: A DON node calls the Keystone Forwarder program with the signed report and the required accounts.
 5. **Delivery to your program**: The forwarder verifies the signatures and CPIs into your receiver program's `on_report` instruction.
 
-### Account layout
+#### Account layout
 
 Every Solana write request includes a `remainingAccounts` list. The Keystone Forwarder expects accounts in the following order:
 
@@ -8498,20 +8558,22 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 
 ## Key features
 
-- **DON consensus**: Reports are signed by multiple oracle nodes before submission.
+- **Decentralized consensus**: Multiple DON nodes independently verify read results and validate write reports before they are returned to your workflow or submitted onchain.
 - **Borsh encoding**: Payloads use Borsh, the standard serialization format for Solana programs.
-- **Type-safe bindings**: The CLI binding generator creates typed `writeReportFrom<StructName>()` helpers from your Anchor IDL.
-- **Configurable compute budget**: Override the default 290,000 compute unit limit via `ComputeConfig`.
+- **Type-safe bindings**: The CLI binding generator creates typed helpers (such as `writeReportFrom<StructName>()`) from your Anchor IDL.
+- **Configurable compute budget**: Override the default 290,000 compute unit limit via `ComputeConfig` for writes.
 - **Chain selector support**: Target Solana Mainnet or Devnet using Chainlink's chain selector system.
 
 > **NOTE: CLI and simulation**
 >
-> Solana write requires **CRE CLI v1.24.0 or later**. Local `cre workflow simulate` dry-runs the write path against the
-> Devnet forwarder built into the CLI. Deployed workflows use the live Keystone Forwarder on your target network.
+> Solana read, write, and log trigger binding generation require **CRE CLI v1.33.0 or later**. Local simulation dry-runs
+> reads and writes against the Devnet forwarder and a fake `ContractReader` built into the CLI. Deployed workflows use
+> the live Keystone Forwarder and DON-run `ContractReader` on your target network.
 
 ## Learn more
 
-- **[Solana Chain Interactions Guide](/cre/guides/workflow/using-solana-client/overview)**: Learn how to write data to Solana programs using the `SolanaClient`
+- **[Solana Chain Interactions Guide](/cre/guides/workflow/using-solana-client/overview)**: Learn how to read from and write to Solana programs using the `SolanaClient`
+- **[Solana Log Trigger](/cre/capabilities/triggers)**: Start a workflow when a Solana program emits a matching event
 - **[Solana Client SDK Reference](/cre/reference/sdk/solana-client)**: Detailed API reference for `SolanaClient` and helper functions
 - **[Supported Networks](/cre/supported-networks)**: Chain selector values and minimum SDK versions for Solana networks
 
@@ -8529,7 +8591,7 @@ CRE provides several types of triggers to start your workflows:
 
 - **Time-based:** The `Cron` trigger fires at a specific time or on a recurring schedule (e.g., "every 5 minutes").
 - **Request-based:** The `HTTP` trigger fires when an external system makes an HTTP request to your workflow's endpoint. HTTP triggers require authorization keys when deployed to ensure only authorized addresses can trigger your workflow.
-- **Onchain Events:** The `EVM Log` trigger fires when a specific event is emitted by a smart contract on a supported blockchain.
+- **Onchain Events:** The `EVM Log` trigger fires when a specific event is emitted by a smart contract on a supported blockchain. The `Solana Log` trigger does the same for programs on Solana.
 
 > **NOTE: Triggers in simulation vs. deployed workflows**
 >
@@ -21210,16 +21272,17 @@ program bytes under the `forwarderProgramId`.
 
 # Generating Solana Bindings
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/generating-bindings-go
-Last Updated: 2026-08-20
+Last Updated: 2026-09-03
 
 To interact with a Solana program from your Go workflow, you generate **bindings** from the program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). Bindings are typed Go structs and methods that handle Borsh encoding, account hashing, and report submission automatically.
 
-The Solana CRE capability is write-only. For each Anchor struct in your IDL, the generator creates a `WriteReportFrom<StructName>()` method. Your workflow calls this method with the struct data and the required accounts; the generated code handles everything else.
+For each Anchor struct in your IDL, the generator creates a `WriteReportFrom<StructName>()` method for onchain writes. For each event, it creates a `LogTrigger<EventName>Log()` method you can register as a [Solana Log
+trigger](/cre/guides/workflow/using-triggers/solana-log-trigger-go). Your workflow calls these methods with the struct data (or filters) and the required accounts; the generated code handles everything else.
 
-> **NOTE: CLI version requirement**
+> **NOTE: CLI version requirements**
 >
-> Solana binding generation and Solana write simulation require **CRE CLI v1.24.0 or later**. Run `cre version` to
-> check, then `cre update` if needed.
+> Solana binding generation and write simulation require **CRE CLI v1.24.0 or later**. Log trigger binding generation
+> requires **v1.32.0 or later**. Run `cre version` to check, then `cre update` if needed.
 
 > **NOTE: TypeScript support**
 >
@@ -21406,6 +21469,10 @@ What's inside depends on your IDL:
 - **For onchain writes** (each struct in `types`):
   - A `WriteReportFrom<StructName>(runtime, input, remainingAccounts, computeConfig)` method that returns a `cre.Promise[*solana.WriteReportReply]` you `.Await()`.
   - A `WriteReportFrom<StructName>s(...)` variant for Borsh `Vec` payloads.
+- **For log triggers** (each event in `events`):
+  - A `LogTrigger<EventName>Log(chainSelector, filterName, filters, opts)` method that returns a `cre.Trigger` decoding to that event's data.
+  - An `<EventName>Filters` struct for filtering on the event's top-level scalar fields. See [Solana Log
+    Trigger](/cre/guides/workflow/using-triggers/solana-log-trigger-go).
 
 ## `accounts` layout
 
@@ -21443,6 +21510,311 @@ Every Solana write requires an `[]*solana.AccountMeta` slice. The Keystone Forwa
 
 ---
 
+# Onchain Read
+Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/onchain-read-go
+Last Updated: 2026-09-04
+
+This guide explains how to read data from a Solana account from within your CRE workflow. Reading is deliberately
+split into two steps: fetch the raw account bytes with `solana.Client`'s
+[`GetAccountInfoWithOpts`](/cre/reference/sdk/solana-client-go#clientgetaccountinfowithopts), then decode them into your
+account's Go type with the generated `Codec.Decode<AccountName>()`. Fetching is generic. It works the same way
+for any account on any program. Decoding is schema-specific, so it has to be generated from your program's IDL. Keeping
+them separate is what lets one fetch call work for every account type you read.
+
+## Prerequisites
+
+- A CRE Go project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-go) if you are starting from scratch.
+- The latest version of the CRE CLI (`cre version` / `cre update`); **v1.32.0 or later** is required for Solana read binding generation.
+- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required for every Solana simulation, including a read-only workflow). See [Step 4](#step-4-run-the-simulation).
+
+## What you need: an account to read
+
+This guide reads a `DataAccount` owned by the `data_storage` program, deployed to Solana Devnet at
+`64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31`. `DataAccount` is a simple key/value record:
+
+```rust
+// data_storage (abridged)
+#[account]
+pub struct DataAccount {
+    pub key: String,
+    pub value: String,
+}
+```
+
+The account already exists and is initialized at a fixed PDA,
+[`HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K`](https://explorer.solana.com/address/HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K?cluster=devnet)
+(derived from the program with seed `"data"`), so you do not need to deploy or initialize anything to follow this
+guide.
+
+## Step 1: Add the IDL and generate bindings
+
+1. Save the following as `contracts/solana/src/idl/data_storage.json`.
+
+   ```json
+   {
+     "address": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+     "metadata": {
+       "name": "data_storage",
+       "version": "0.1.0",
+       "spec": "0.1.0",
+       "description": "CRE Solana Write example receiver with a persistent DataAccount PDA, reused for the Onchain Read docs guide"
+     },
+     "instructions": [
+       {
+         "name": "initialize",
+         "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
+         "accounts": [
+           {
+             "name": "data_account",
+             "writable": true,
+             "pda": { "seeds": [{ "kind": "const", "value": [100, 97, 116, 97] }] }
+           },
+           { "name": "payer", "writable": true, "signer": true },
+           { "name": "system_program", "address": "11111111111111111111111111111111" }
+         ],
+         "args": []
+       },
+       {
+         "name": "on_report",
+         "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
+         "accounts": [
+           { "name": "state" },
+           { "name": "forwarder_authority", "signer": true },
+           {
+             "name": "data_account",
+             "writable": true,
+             "pda": { "seeds": [{ "kind": "const", "value": [100, 97, 116, 97] }] }
+           }
+         ],
+         "args": [
+           { "name": "metadata", "type": "bytes" },
+           { "name": "payload", "type": "bytes" }
+         ]
+       }
+     ],
+     "accounts": [
+       {
+         "name": "DataAccount",
+         "discriminator": [85, 240, 182, 158, 76, 7, 18, 233]
+       }
+     ],
+     "events": [],
+     "errors": [
+       {
+         "code": 6000,
+         "name": "InvalidPayload",
+         "msg": "Failed to deserialize payload as UserData"
+       }
+     ],
+     "types": [
+       {
+         "name": "DataAccount",
+         "type": {
+           "kind": "struct",
+           "fields": [
+             { "name": "key", "type": "string" },
+             { "name": "value", "type": "string" }
+           ]
+         }
+       }
+     ]
+   }
+   ```
+
+2. From your project root, generate the bindings. See [Generating Solana
+   Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go) for what this command does in general.
+
+   ```bash
+   cre generate-bindings solana --language go
+   ```
+
+   This creates `contracts/solana/src/generated/data_storage/` with a `DataAccount` struct and a
+   `Codec.DecodeDataAccount(data []byte) (*DataAccount, error)` method, in `accounts.go`.
+
+3. Sync dependencies.
+
+   ```bash
+   go mod tidy
+   ```
+
+> **CAUTION: If the build fails with undefined: solana.GetAccountInfoWithOptsRequest**
+>
+> Solana read support has not shipped in a tagged `cre-sdk-go` release yet, so `go mod tidy` alone may leave you on an
+> older version that predates it. If you see `undefined: solana.GetAccountInfoWithOptsRequest` or similar, explicitly
+> upgrade the Solana capability module with `go get
+>   github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana@main`. You may need to repeat this after every
+> `cre generate-bindings solana` run until a tagged release is available, since regenerating bindings can reset `go.mod`
+> back to the last tagged version.
+
+## Step 2: Configure the workflow
+
+Open (or create) `config.staging.json`. Every read-only workflow needs a schedule and the chain to read from. The
+`dataAccount` field is specific to this example: it is not a general CRE or Solana concept, just a config value this
+guide uses to point at the one `DataAccount` PDA it reads. A workflow that reads a different account, or several,
+would name and structure this differently.
+
+```json
+{
+  "schedule": "*/30 * * * * *",
+  "chainSelector": "16423721717087811551",
+  "dataAccount": "HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K"
+}
+```
+
+| Field           | Description                                                                               |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| `schedule`      | Cron expression for how often to read the account.                                        |
+| `chainSelector` | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss. |
+| `dataAccount`   | Specific to this example: the base58 address of the `DataAccount` PDA to read.            |
+
+## Step 3: Write the workflow
+
+This step is a complete, pasteable workflow that reads `DataAccount` on a cron schedule and logs its decoded
+key/value.
+
+1. Save the following as `my-workflow/workflow.go`. Replace `<project-name>` with your Go module name from `go.mod`.
+
+   ```go
+   // my-workflow/workflow.go
+   package main
+
+   import (
+       "fmt"
+       "log/slog"
+
+       solanago "github.com/gagliardetto/solana-go"
+       solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+       "github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+       "github.com/smartcontractkit/cre-sdk-go/cre"
+
+       "<project-name>/contracts/solana/src/generated/data_storage"
+   )
+
+   type Config struct {
+       Schedule      string `json:"schedule"`
+       ChainSelector uint64 `json:"chainSelector,string"`
+       DataAccount   string `json:"dataAccount"`
+   }
+
+   func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+       cronTrigger := cron.Trigger(&cron.Config{Schedule: config.Schedule})
+
+       return cre.Workflow[*Config]{
+           cre.Handler(cronTrigger, onCronTrigger),
+       }, nil
+   }
+
+   func onCronTrigger(config *Config, runtime cre.Runtime, _ *cron.Payload) (string, error) {
+       logger := runtime.Logger()
+       client := &solana.Client{ChainSelector: config.ChainSelector}
+
+       // NewDataStorage gives you Codec.DecodeDataAccount to parse the raw bytes below.
+       ds, err := data_storage.NewDataStorage(client)
+       if err != nil {
+           return "", err
+       }
+
+       dataAccountPk := solanago.MustPublicKeyFromBase58(config.DataAccount)
+
+       reply, err := client.GetAccountInfoWithOpts(runtime, &solana.GetAccountInfoWithOptsRequest{
+           Account: dataAccountPk[:],
+           Opts: &solana.GetAccountInfoOpts{
+               // Base64 is required for accounts over 128 bytes; DataAccount's fixed layout is 528 bytes.
+               Encoding:   solana.EncodingType_ENCODING_TYPE_BASE64,
+               Commitment: solana.CommitmentType_COMMITMENT_TYPE_CONFIRMED,
+           },
+       }).Await()
+       if err != nil {
+           return "", fmt.Errorf("failed to read DataAccount: %w", err)
+       }
+       if reply.GetValue() == nil {
+           return "", fmt.Errorf("DataAccount %s does not exist", config.DataAccount)
+       }
+
+       data, err := ds.Codec.DecodeDataAccount(reply.GetValue().GetData().GetRaw())
+       if err != nil {
+           return "", fmt.Errorf("failed to decode DataAccount: %w", err)
+       }
+
+       logger.Info("DataAccount",
+           "key", data.Key,
+           "value", data.Value,
+           "lamports", reply.GetValue().GetLamports(),
+       )
+
+       return "Success", nil
+   }
+   ```
+
+> **NOTE: Consensus on reads**
+>
+> You do not need to guard against a single bad RPC response:
+> [`GetAccountInfoWithOpts`](/cre/reference/sdk/solana-client-go#clientgetaccountinfowithopts) is served by a
+> `ContractReader` on the Solana capability DON, so multiple nodes independently fetch the account and agree on the
+> result before your workflow ever sees it. This is the same consensus model EVM reads use, just applied to Solana's
+> account model instead of contract calls.
+
+## Step 4: Run the simulation
+
+1. Create a `workflow.yaml` in your workflow folder.
+
+   ```yaml
+   staging-settings:
+     user-workflow:
+       workflow-name: "my-solana-onchain-read"
+     workflow-artifacts:
+       workflow-path: "./main.go"
+       config-path: "./config.staging.json"
+       secrets-path: ""
+   ```
+
+2. Add a Solana RPC endpoint to your `project.yaml` (at your project root, **not** inside `my-workflow/`).
+
+   ```yaml
+   staging-settings:
+     rpcs:
+       - chain-name: solana-devnet
+         url: https://api.devnet.solana.com
+   ```
+
+3. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`. Solana simulation requires a funded 64-byte base58 keypair
+   for every run, even a read-only workflow. See [Writing to Solana: Step
+   4](/cre/guides/workflow/using-solana-client/onchain-write-go#step-4-run-the-simulation) for how to generate and
+   fund one. `CRE_ETH_PRIVATE_KEY` is required too, for the same workflow-owner-derivation reason described there.
+
+4. Run the simulation.
+
+   ```bash
+   cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
+   ```
+
+   The simulator runs your cron handler once, reads the live account from Devnet, and decodes it:
+
+   ```
+   ✓ Workflow compiled
+   [SIMULATION] Simulator Initialized
+   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+   [USER LOG] msg=DataAccount key=price value=500000 lamports=4565760
+
+   ✓ Workflow Simulation Result:
+   "Success"
+   ```
+
+## Deploying the workflow
+
+Once your handler behaves as expected in simulation, deploy it the same way as any other CRE workflow. See
+[Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry-go). A deployed read
+workflow runs on the schedule you configured, with the DON reaching consensus on each read.
+
+## Next steps
+
+- **[Solana Client SDK Reference](/cre/reference/sdk/solana-client-go)**: Full API reference for `solana.Client`'s read methods
+- **[Solana Log Trigger](/cre/guides/workflow/using-triggers/solana-log-trigger-go)**: React to Solana events instead of polling on a schedule
+- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go)**: Submit CRE workflow results to a Solana program
+- **[The Solana Read & Write Capabilities](/cre/capabilities/solana-read-write)**: Conceptual overview of how Solana reads reach consensus
+
+---
+
 # Writing to Solana
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/onchain-write-go
 Last Updated: 2026-08-20
@@ -21455,7 +21827,7 @@ do not hand-roll encoding.
 Onchain, the DON does not call your program directly. It submits a signed report to the **Keystone Forwarder** — a
 Chainlink-managed Solana program that verifies DON signatures, then cross-program invokes (CPI) your receiver's
 `on_report`. That is the same forwarder model as [EVM Write](/cre/capabilities/evm-read-write); see
-[Solana Write](/cre/capabilities/solana-write) for the full flow. Local simulation uses a Devnet stand-in of that
+[Solana Write](/cre/capabilities/solana-read-write) for the full flow. Local simulation uses a Devnet stand-in of that
 forwarder so you can dry-run without deploying. After you deploy, the live forwarder addresses apply.
 
 For IDL layout, generator output, and what each `WriteReportFrom...` method does under the hood, see
@@ -22057,20 +22429,15 @@ The transaction on Solana Explorer will show the forwarder program as the initia
 
 - **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go)**: IDL layout, generator output, and what `WriteReportFrom...` does
 - **[Solana Client SDK Reference](/cre/reference/sdk/solana-client-go)**: Full API reference for `solana.Client` and helpers
-- **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture and account layout reference
+- **[Solana Read & Write Capabilities](/cre/capabilities/solana-read-write)**: Architecture and account layout reference
 
 ---
 
 # Solana Chain Interactions
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/overview-go
-Last Updated: 2026-07-13
+Last Updated: 2026-09-03
 
-`solana.Client` is the Go SDK's interface for Solana chain interactions from CRE workflows. Writes submit cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program.
-
-> **NOTE: Write only — for now**
->
-> The current release supports **onchain writes** only. Solana Read and Solana Log Trigger capabilities are in active
-> development and will be documented when available.
+`solana.Client` is the Go SDK's interface for Solana chain interactions from CRE workflows. Reads fetch consensus-verified account and program data. Writes submit cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program. A separate [Solana Log trigger](/cre/guides/workflow/using-triggers/solana-log-trigger) starts a workflow when a Solana program emits a matching event.
 
 ## How it works
 
@@ -22085,7 +22452,9 @@ Typical flow:
 ## Guides
 
 - **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go)**: Generate typed Go structs from your Anchor IDL using the CRE CLI
+- **[Reading from Solana](/cre/guides/workflow/using-solana-client/onchain-read-go)**: Fetch consensus-verified account and program data with generated bindings
 - **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go)**: End-to-end first write with generated bindings, simulate, and deploy
+- **[Solana Log Trigger](/cre/guides/workflow/using-triggers/solana-log-trigger-go)**: Start a workflow when a Solana program emits a matching event
 
 ---
 
@@ -22824,6 +23193,354 @@ Start by learning how to configure HTTP triggers and write handler functions:
 Or explore the SDK reference for detailed API documentation:
 
 - **[HTTP Trigger SDK Reference](/cre/reference/sdk/triggers/http-trigger)** - Complete API documentation
+
+---
+
+# Solana Log Trigger
+Source: https://docs.chain.link/cre/guides/workflow/using-triggers/solana-log-trigger-go
+Last Updated: 2026-09-04
+
+The Solana Log trigger fires when a specific event is emitted by a program on Solana (via Anchor's `emit!` or
+`emit_cpi!`). This guide walks through triggering a workflow whenever a price feed program publishes an update for
+an asset you care about, using the same generated-bindings pattern as [Writing to
+Solana](/cre/guides/workflow/using-solana-client/onchain-write-go).
+
+A `solana.FilterLogTriggerRequest` watches a single program address, not a list, so you register one trigger per
+program you want to watch.
+
+## Prerequisites
+
+- A CRE Go project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-go) if you are starting from scratch.
+- The latest version of the CRE CLI (`cre version` / `cre update`); **v1.33.0 or later** is required for Solana log trigger binding generation.
+- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required for every Solana simulation, including a trigger-only dry run). See [Step 4](#step-4-run-the-simulation).
+- A Devnet transaction signature that already emitted a `PriceUpdated` event. Use the signature provided in [Step
+  4](#step-4-run-the-simulation), or [publish your own](#producing-a-test-event).
+
+## What you need: an event to trigger on
+
+This guide uses a minimal example program deployed to Solana Devnet at
+[`67qyQ7aDLwamUFCbz6xzB5dayveVStif9tkis9rK1jNY`](https://explorer.solana.com/address/67qyQ7aDLwamUFCbz6xzB5dayveVStif9tkis9rK1jNY?cluster=devnet).
+It has one permissionless instruction, `publish_price`, which anyone can call directly. There are no accounts, no
+state, and no CRE involvement in publishing. Calling it emits a `PriceUpdated` event with the data at the **top
+level** of the event, which matters for filtering (see [Step 3](#step-3-write-the-workflow)):
+
+```rust
+// cre_docs_log_trigger_example (abridged)
+pub fn publish_price(ctx: Context<Publish>, asset: String, price: u64) -> Result<()> {
+    emit!(PriceUpdated { asset, price });
+    Ok(())
+}
+
+#[event]
+pub struct PriceUpdated {
+    pub asset: String,
+    pub price: u64,
+}
+```
+
+Because this program is already deployed, you do not need to deploy anything to follow this guide. You only need
+one Devnet transaction that already called `publish_price`.
+
+## Step 1: Add the IDL and generate bindings
+
+1. Save the following as `contracts/solana/src/idl/cre_docs_log_trigger_example.json`.
+
+   ```json
+   {
+     "address": "67qyQ7aDLwamUFCbz6xzB5dayveVStif9tkis9rK1jNY",
+     "metadata": {
+       "name": "cre_docs_log_trigger_example",
+       "version": "0.1.0",
+       "spec": "0.1.0",
+       "description": "Minimal permissionless price-feed example for the CRE Solana Log Trigger docs guide"
+     },
+     "instructions": [
+       {
+         "name": "publish_price",
+         "discriminator": [117, 13, 6, 171, 29, 204, 11, 1],
+         "accounts": [],
+         "args": [
+           { "name": "asset", "type": "string" },
+           { "name": "price", "type": "u64" }
+         ]
+       }
+     ],
+     "accounts": [],
+     "events": [
+       {
+         "name": "PriceUpdated",
+         "discriminator": [154, 72, 87, 150, 246, 230, 23, 217]
+       }
+     ],
+     "errors": [],
+     "types": [
+       {
+         "name": "PriceUpdated",
+         "type": {
+           "kind": "struct",
+           "fields": [
+             { "name": "asset", "type": "string" },
+             { "name": "price", "type": "u64" }
+           ]
+         }
+       }
+     ]
+   }
+   ```
+
+2. From your project root, generate the bindings:
+
+   ```bash
+   cre generate-bindings solana --language go
+   ```
+
+   This creates `contracts/solana/src/generated/cre_docs_log_trigger_example/` with a `LogTriggerPriceUpdatedLog(...)`
+   method and a `PriceUpdatedFilters` struct for filtering, in `triggers.go`.
+
+3. Sync dependencies.
+
+   ```bash
+   go mod tidy
+   ```
+
+> **CAUTION: If the build fails with undefined: solana.FilterLogTriggerRequest**
+>
+> Solana log trigger support has not shipped in a tagged `cre-sdk-go` release yet, so `go mod tidy` alone may leave you
+> on an older version that predates it. If you see `undefined: solana.FilterLogTriggerRequest`, `undefined:
+>   bindings.DecodedLog`, or similar, explicitly upgrade the Solana capability module with `go get
+>   github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana@main`. You may need to repeat this after every
+> `cre generate-bindings solana` run until a tagged release is available, since regenerating bindings can reset `go.mod`
+> back to the last tagged version.
+
+## Step 2: Configure the workflow
+
+Open (or create) `config.staging.json`. Every log trigger needs the chain to watch, which comes from the IDL baked
+into the generated bindings. The `asset` field is specific to this example: it is not a general CRE or Solana
+concept, just a config value this guide uses to demonstrate filtering on one of `PriceUpdated`'s fields. Your own
+program's events will have their own fields to filter on instead.
+
+```json
+{
+  "chainSelector": "16423721717087811551",
+  "asset": "SOL/USD"
+}
+```
+
+| Field           | Description                                                                               |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| `chainSelector` | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss. |
+| `asset`         | Specific to this example: the `PriceUpdated.asset` value to filter on.                    |
+
+## Step 3: Write the workflow
+
+This step is a complete, pasteable workflow that logs the decoded `PriceUpdated` event whenever the price feed
+publishes an update for the configured asset, using the generated `LogTriggerPriceUpdatedLog` binding helper.
+
+1. Save the following as `my-workflow/workflow.go`. Replace `<project-name>` with your Go module name from `go.mod`.
+
+   ```go
+   // my-workflow/workflow.go
+   package main
+
+   import (
+       "fmt"
+       "log/slog"
+
+       solanago "github.com/gagliardetto/solana-go"
+       solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+       "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana/bindings"
+       "github.com/smartcontractkit/cre-sdk-go/cre"
+
+       "<project-name>/contracts/solana/src/generated/cre_docs_log_trigger_example"
+   )
+
+   type Config struct {
+       ChainSelector uint64 `json:"chainSelector,string"`
+       Asset         string `json:"asset"`
+   }
+
+   func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+       client := &solana.Client{ChainSelector: config.ChainSelector}
+
+       // NewCreDocsLogTriggerExample uses the program ID baked into the IDL (regenerate bindings when it changes).
+       feed, err := cre_docs_log_trigger_example.NewCreDocsLogTriggerExample(client)
+       if err != nil {
+           return nil, err
+       }
+
+       // Only fire for updates to this asset; ignore PriceUpdated events for every other asset
+       // published through the same program.
+       logTrigger, err := feed.LogTriggerPriceUpdatedLog(
+           config.ChainSelector,
+           "price-updated-"+config.Asset,
+           []cre_docs_log_trigger_example.PriceUpdatedFilters{
+               {Asset: &config.Asset},
+           },
+           nil, // opts: PriceUpdated is emitted with Anchor's emit!, not emit_cpi!.
+       )
+       if err != nil {
+           return nil, fmt.Errorf("failed to create log trigger: %w", err)
+       }
+
+       return cre.Workflow[*Config]{
+           cre.Handler(logTrigger, onPriceUpdated),
+       }, nil
+   }
+
+   func onPriceUpdated(config *Config, runtime cre.Runtime, payload *bindings.DecodedLog[cre_docs_log_trigger_example.PriceUpdated]) (string, error) {
+       logger := runtime.Logger()
+
+       // payload.Data is the decoded PriceUpdated event; payload.Log is the raw log metadata.
+       var txSig solanago.Signature
+       copy(txSig[:], payload.Log.GetTxHash())
+
+       logger.Info("PriceUpdated event",
+           "asset", payload.Data.Asset,
+           "price", payload.Data.Price,
+           "blockNumber", payload.Log.GetBlockNumber(),
+           "txHash", txSig.String(),
+       )
+
+       return "Success", nil
+   }
+   ```
+
+> **NOTE: Filtering by event fields**
+>
+> The third argument to `LogTrigger<EventName>Log` filters on the event's top-level scalar fields. Both `Asset` and
+> `Price` are top-level here, so both are filterable. `PriceUpdatedFilters{Asset: &config.Asset}` only fires for
+> updates to that asset. Nested structs, vecs, arrays, `bool`, `u128`, and `i128` are not auto-filterable; if your
+> own program needs to filter on a field like that, emit it as a top-level scalar instead. See the [SDK
+> reference](/cre/reference/sdk/triggers/solana-log-trigger-go) for the full filtering model.
+
+## Producing a test event
+
+The transaction signature used in [Step 4](#step-4-run-the-simulation) already works, so you can skip this section
+on a first read. To test with your own data, you need a fresh transaction. This script sends a real Solana
+transaction that calls `publish_price` directly, entirely outside of CRE. That call is the action that emits the
+`PriceUpdated` event your workflow reacts to. The instruction is permissionless, so any funded Devnet keypair can
+call it. For example, using `@solana/web3.js` in a short script:
+
+```javascript
+const {
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  sendAndConfirmTransaction,
+} = require("@solana/web3.js")
+
+const PROGRAM_ID = new PublicKey("67qyQ7aDLwamUFCbz6xzB5dayveVStif9tkis9rK1jNY")
+const DISCRIMINATOR = Buffer.from([117, 13, 6, 171, 29, 204, 11, 1]) // sha256("global:publish_price")[:8]
+
+function encodeArgs(asset, price) {
+  const assetBytes = Buffer.from(asset, "utf8")
+  const lenBuf = Buffer.alloc(4)
+  lenBuf.writeUInt32LE(assetBytes.length, 0)
+  const priceBuf = Buffer.alloc(8)
+  priceBuf.writeBigUInt64LE(BigInt(price), 0)
+  return Buffer.concat([DISCRIMINATOR, lenBuf, assetBytes, priceBuf])
+}
+
+async function main() {
+  const payer = Keypair.fromSecretKey(/* your funded Devnet keypair bytes */)
+  const connection = new Connection("https://api.devnet.solana.com", "confirmed")
+  const ix = new TransactionInstruction({ programId: PROGRAM_ID, keys: [], data: encodeArgs("SOL/USD", 15000) })
+  const sig = await sendAndConfirmTransaction(connection, new Transaction().add(ix), [payer])
+  console.log("Signature:", sig)
+}
+
+main()
+```
+
+## Step 4: Run the simulation
+
+Solana log trigger simulation replays a real onchain event: you give the simulator a transaction signature and an
+event index, and it fetches that event from Devnet.
+
+> **NOTE: Two separate YAML files**
+>
+> CRE uses two configuration files that live in different directories:
+>
+> - **`workflow.yaml`** lives inside your workflow folder (`my-workflow/workflow.yaml`). It defines workflow metadata
+>   (name, registry) and points to your `main.go` and config JSON.
+> - **`project.yaml`** lives at your **project root** (the directory you ran `cre init` in, one level above
+>   `my-workflow/`). It defines RPC endpoints and other project-level settings per target.
+>
+> Both files use the same target names (e.g. `staging-settings`) to link a workflow to its RPCs.
+
+1. Create a `workflow.yaml` in your workflow folder so the CLI can find your staging target.
+
+   ```yaml
+   staging-settings:
+     user-workflow:
+       workflow-name: "my-solana-log-trigger"
+     workflow-artifacts:
+       workflow-path: "./main.go"
+       config-path: "./config.staging.json"
+       secrets-path: ""
+   ```
+
+2. Add a Solana RPC endpoint to your `project.yaml` (at your project root, **not** inside `my-workflow/`) under your
+   simulation target.
+
+   ```yaml
+   staging-settings:
+     rpcs:
+       - chain-name: solana-devnet
+         url: https://api.devnet.solana.com
+   ```
+
+3. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`. Solana simulation requires a funded 64-byte base58 keypair for
+   every run, even a trigger-only dry run that never submits a transaction. See [Writing to Solana: Step
+   4](/cre/guides/workflow/using-solana-client/onchain-write-go#step-4-run-the-simulation) for how to generate and
+   fund one. `CRE_ETH_PRIVATE_KEY` is required too, for the same workflow-owner-derivation reason described there.
+
+4. Run the simulation, passing the transaction signature and event index non-interactively. `publish_price` emits
+   exactly one event with nothing else in the transaction, so the event index is always `0`.
+
+   ```bash
+   cre workflow simulate my-workflow \
+     --non-interactive \
+     --trigger-index 0 \
+     --solana-tx-sig Ub8Xo7QMik6eLewpecdZCANc7CLmsJP7vd7bCLhDoe7fNXmRM7fL4qEx3drMGkMbE4Sh8W7nL49EV3tijziTy4z \
+     --solana-event-index 0 \
+     --target staging-settings
+   ```
+
+   The simulator fetches the transaction, extracts the `PriceUpdated` event, decodes it, and runs your handler:
+
+   ```
+   ✓ Workflow compiled
+   [SIMULATION] Simulator Initialized
+   [SIMULATION] Running trigger trigger=solana:ChainSelector:16423721717087811551@1.0.0
+   [USER LOG] msg="PriceUpdated event" asset=SOL/USD price=15000 blockNumber=493117543 txHash=Ub8Xo7QMik6eLewpecdZCANc7CLmsJP7vd7bCLhDoe7fNXmRM7fL4qEx3drMGkMbE4Sh8W7nL49EV3tijziTy4z
+
+   ✓ Workflow Simulation Result:
+   "Success"
+   ```
+
+   Omit interactive mode (drop `--non-interactive` and its accompanying flags) to be prompted for the transaction
+   signature and event index instead. See [Simulating Workflows: Solana log
+   trigger](/cre/guides/operations/simulating-workflows#solana-log-trigger) for both modes.
+
+## Deploying the workflow
+
+Once your handler behaves as expected in simulation, deploy it the same way as any other CRE workflow. See [Deploying
+to the Private Registry](/cre/guides/operations/deploying-to-private-registry-go). A deployed log trigger runs
+continuously: the DON watches for new `PriceUpdated` events onchain and runs your handler each time one occurs for
+your configured asset, without you needing to supply a transaction signature.
+
+To verify a deployed workflow, emit a fresh `PriceUpdated` event after deployment (see [Producing a test
+event](#producing-a-test-event)) and check the workflow's executions with `cre execution list`. A deployed log
+trigger only reacts to events emitted **after** it is deployed — it does not replay events that happened before.
+
+## Next steps
+
+- **[Solana Log Trigger SDK Reference](/cre/reference/sdk/triggers/solana-log-trigger-go)**: Full filter configuration and payload reference
+- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go)**: Submit CRE workflow results to a Solana program
+- **[The Trigger Capability](/cre/capabilities/triggers)**: Conceptual overview of all CRE trigger types
 
 ---
 
@@ -26002,14 +26719,9 @@ For interacting with smart contracts, use the [CRE CLI's binding generator](/cre
 
 # SDK Reference: Solana Client
 Source: https://docs.chain.link/cre/reference/sdk/solana-client-go
-Last Updated: 2026-07-06
+Last Updated: 2026-09-04
 
-This page provides a reference for `solana.Client`, the Go SDK interface for writing data to Solana programs via the Keystone Forwarder. It covers the client type, the `bindings` package helpers, and the chain selector reference for Solana networks.
-
-> **NOTE: Write only — for now**
->
-> The current release supports onchain **writes** only. Solana Read and Solana Log Trigger capabilities are in
-> development.
+This page provides a reference for `solana.Client`, the Go SDK interface for reading from and writing to Solana programs. It covers the client type, the `bindings` package helpers, and the chain selector reference for Solana networks.
 
 ## Import paths
 
@@ -26156,6 +26868,73 @@ result := client.WriteReport(runtime, &solana.WriteCreReportRequest{
 
 ***
 
+## Read methods
+
+`solana.Client` exposes read methods for fetching consensus-verified data from Solana accounts and programs, served by a `ContractReader` on the Solana capability DON. There is no generated per-account "fetch" helper — you call these directly, then decode the result with the generated `Codec.Decode<AccountName>()` for your account type.
+
+### `Client.GetAccountInfoWithOpts()`
+
+Fetches a single account's info, including its raw data.
+
+**Signature:**
+
+```go
+func (c *Client) GetAccountInfoWithOpts(runtime cre.Runtime, input *GetAccountInfoWithOptsRequest) cre.Promise[*GetAccountInfoWithOptsReply]
+```
+
+#### `GetAccountInfoWithOptsRequest`
+
+| Field     | Type                  | Description                                |
+| --------- | --------------------- | ------------------------------------------ |
+| `Account` | `[]byte`              | 32-byte account public key.                |
+| `Opts`    | `*GetAccountInfoOpts` | Encoding, commitment, and slicing options. |
+
+#### `GetAccountInfoOpts`
+
+| Field            | Type                    | Description                                                                                                                                                                   |
+| ---------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Encoding`       | `solana.EncodingType`   | `ENCODING_TYPE_BASE58` (accounts under 129 bytes only), `ENCODING_TYPE_BASE64` (any size), `ENCODING_TYPE_BASE64_ZSTD`, `ENCODING_TYPE_JSON_PARSED`, or `ENCODING_TYPE_JSON`. |
+| `Commitment`     | `solana.CommitmentType` | `COMMITMENT_TYPE_FINALIZED`, `COMMITMENT_TYPE_CONFIRMED`, or `COMMITMENT_TYPE_PROCESSED`.                                                                                     |
+| `DataSlice`      | `*solana.DataSlice`     | Optional `{Offset, Length}` window to fetch only part of the account data.                                                                                                    |
+| `MinContextSlot` | `uint64`                | Optional lower-bound slot for the read.                                                                                                                                       |
+
+#### `GetAccountInfoWithOptsReply`
+
+| Field   | Type              | Description                                 |
+| ------- | ----------------- | ------------------------------------------- |
+| `Value` | `*solana.Account` | The account, or `nil` if it does not exist. |
+
+#### `Account`
+
+| Field        | Type                      | Description                                                                                                                                                        |
+| ------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Lamports`   | `uint64`                  | Balance in lamports.                                                                                                                                               |
+| `Owner`      | `[]byte`                  | 32-byte program ID that owns the account.                                                                                                                          |
+| `Data`       | `*solana.DataBytesOrJSON` | Account data. Use `GetRaw()` for the encoded bytes (matches your requested `Encoding`) or `GetJson()` when using `ENCODING_TYPE_JSON_PARSED`/`ENCODING_TYPE_JSON`. |
+| `Executable` | `bool`                    | `true` if this is a program account.                                                                                                                               |
+| `RentEpoch`  | `*pb.BigInt`              | Next rent epoch.                                                                                                                                                   |
+| `Space`      | `uint64`                  | Data length in bytes.                                                                                                                                              |
+
+**Usage:** see the [Onchain Read guide](/cre/guides/workflow/using-solana-client/onchain-read-go) for a full,
+step-by-step example, including decoding the returned bytes with a generated `Codec.Decode<AccountName>()`.
+
+### Other read methods
+
+`solana.Client` also exposes these lower-level read methods, following the same `runtime, *XRequest) cre.Promise[*XReply]` shape:
+
+| Method                          | Description                                                 |
+| ------------------------------- | ----------------------------------------------------------- |
+| `GetBalance()`                  | Lamport balance of an account.                              |
+| `GetBlock()`                    | A block's contents at a given slot.                         |
+| `GetMultipleAccountsWithOpts()` | `GetAccountInfoWithOpts()`, batched for multiple accounts.  |
+| `GetProgramAccounts()`          | All accounts owned by a program, with optional filters.     |
+| `GetSignatureStatuses()`        | Confirmation status for one or more transaction signatures. |
+| `GetSlotHeight()`               | The current slot height.                                    |
+| `GetTransaction()`              | A confirmed transaction's details, given its signature.     |
+| `GetFeeForMessage()`            | The fee a compiled message would cost.                      |
+
+***
+
 ## `bindings` package
 
 The `bindings` package (`github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana/bindings`) provides the serialization primitives used by generated binding code. You can also use them directly when writing low-level Solana write logic.
@@ -26240,9 +27019,11 @@ type Config struct {
 
 ## Related resources
 
-- **[Solana Write Capability](/cre/capabilities/solana-write)**: Architecture reference and account layout
+- **[Solana Read & Write Capabilities](/cre/capabilities/solana-read-write)**: Architecture reference and account layout
 - **[Generating Solana Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-go)**: How to generate typed Go structs from your Anchor IDL
+- **[Reading from Solana guide](/cre/guides/workflow/using-solana-client/onchain-read-go)**: Step-by-step tutorial
 - **[Writing to Solana guide](/cre/guides/workflow/using-solana-client/onchain-write-go)**: Step-by-step tutorial
+- **[Solana Log Trigger reference](/cre/reference/sdk/triggers/solana-log-trigger-go)**: Filter configuration and payload fields
 - **[Supported Networks](/cre/supported-networks-go)**: Chain selector values for all supported networks
 
 ---
@@ -26473,9 +27254,162 @@ This section provides a reference for the built-in trigger capabilities of the C
 
 ---
 
+# SDK Reference: Solana Log Trigger
+Source: https://docs.chain.link/cre/reference/sdk/triggers/solana-log-trigger-go
+Last Updated: 2026-09-04
+
+The Solana Log Trigger fires when a specific event is emitted by an onchain Solana program.
+
+> **NOTE: Recommended usage**
+>
+> While this section documents the low-level trigger configuration, the recommended best practice is to use the
+> **type-safe helper functions** created by the `cre generate-bindings solana` command.
+>
+> For a complete guide on how to use these helpers, see the [Solana Log Trigger
+> Guide](/cre/guides/workflow/using-triggers/solana-log-trigger-go).
+
+### `solana.LogTrigger`
+
+Creates the Solana log trigger instance. Unlike `evm.LogTrigger`, this is the low-level primitive generated binding
+helpers call internally — you rarely construct it directly.
+
+```go
+import solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+
+func LogTrigger(chainSelector uint64, config *solana.FilterLogTriggerRequest) cre.Trigger[*solana.Log, *solana.Log]
+```
+
+### `solana.FilterLogTriggerRequest`
+
+The configuration struct for the Solana log trigger. Unlike the EVM log trigger, which filters on a list of contract
+addresses and up to four topics, a Solana log trigger watches a **single program address** and matches events by
+name and subkey values.
+
+| Field             | Type                      | Description                                                                                 |
+| ----------------- | ------------------------- | ------------------------------------------------------------------------------------------- |
+| `Name`            | `string`                  | A name you choose to identify this trigger registration.                                    |
+| `Address`         | `[]byte`                  | The 32-byte program public key to watch. Generated bindings set this from the IDL.          |
+| `EventName`       | `string`                  | The Anchor event name to match, e.g. `"PriceUpdated"`.                                      |
+| `ContractIdlJson` | `[]byte`                  | The program's Anchor IDL, used to decode subkey field paths. Generated bindings embed this. |
+| `Subkeys`         | `[]*solana.SubkeyConfig`  | Optional filters on the event's top-level scalar fields.                                    |
+| `CpiFilterConfig` | `*solana.CPIFilterConfig` | Optional. Set when the event is emitted via Anchor's `emit_cpi!` instead of `emit!`.        |
+
+### `solana.SubkeyConfig`
+
+One filter condition on a named event field.
+
+| Field       | Type                        | Description                                                                  |
+| ----------- | --------------------------- | ---------------------------------------------------------------------------- |
+| `Path`      | `[]string`                  | The field name to filter on (e.g. `[]string{"ForwarderState"}`).             |
+| `Comparers` | `[]*solana.ValueComparator` | Values to compare against. Multiple comparers on one path are OR conditions. |
+
+Generated bindings produce one `SubkeyConfig` per filtered field from an `<EventName>Filters` struct — see the
+[guide](/cre/guides/workflow/using-triggers/solana-log-trigger-go). Only top-level scalar
+fields are auto-filterable: nested structs, vecs, arrays, `bool`, `u128`, and `i128` are excluded and require a
+manually built `SubkeyConfig`.
+
+### `solana.ValueComparator`
+
+| Field      | Type                        | Description                                                                     |
+| ---------- | --------------------------- | ------------------------------------------------------------------------------- |
+| `Value`    | `[]byte`                    | The encoded comparison value. Use `bindings.PrepareSubkeyValue()` to encode it. |
+| `Operator` | `solana.ComparisonOperator` | One of the operators below.                                                     |
+
+**`ComparisonOperator` values:** `COMPARISON_OPERATOR_EQ`, `COMPARISON_OPERATOR_NEQ`, `COMPARISON_OPERATOR_GT`,
+`COMPARISON_OPERATOR_LT`, `COMPARISON_OPERATOR_GTE`, `COMPARISON_OPERATOR_LTE`. Generated binding filters always use
+`COMPARISON_OPERATOR_EQ`; the other operators are available for manually built `SubkeyConfig` values.
+
+### `solana.CPIFilterConfig`
+
+Identifies a cross-program-invoked event for programs that emit events via Anchor's `emit_cpi!` instead of `emit!`.
+
+| Field         | Type     | Description                                                                   |
+| ------------- | -------- | ----------------------------------------------------------------------------- |
+| `DestAddress` | `[]byte` | The program address the CPI event was emitted to.                             |
+| `MethodName`  | `[]byte` | The CPI method name. Always `"anchor:event"` for Anchor's `emit_cpi!` events. |
+
+`bindings.AnchorCPILogTriggerConfig(programID []byte) *solana.CPIFilterConfig` builds this for you — generated
+bindings call it automatically when you pass `&bindings.LogTriggerOptions{CPI: true}`.
+
+### `bindings.LogTriggerOptions`
+
+Passed as the last argument to a generated `LogTrigger<EventName>Log` method.
+
+| Field | Type   | Description                                                                                 |
+| ----- | ------ | ------------------------------------------------------------------------------------------- |
+| `CPI` | `bool` | Set `true` if the event is emitted via Anchor's `emit_cpi!`. Defaults to `false` (`emit!`). |
+
+### `solana.Log`
+
+The payload passed to the callback function for a matching Solana log.
+
+| Field            | Type     | Description                                             |
+| ---------------- | -------- | ------------------------------------------------------- |
+| `ChainId`        | `string` | Chain identifier.                                       |
+| `LogIndex`       | `int64`  | Index of the log within the block.                      |
+| `BlockHash`      | `[]byte` | 32-byte block hash.                                     |
+| `BlockNumber`    | `int64`  | Block/slot number.                                      |
+| `BlockTimestamp` | `uint64` | Unix timestamp of the block.                            |
+| `Address`        | `[]byte` | 32-byte program public key that emitted the event.      |
+| `EventSig`       | `[]byte` | 8-byte Anchor event discriminator.                      |
+| `TxHash`         | `[]byte` | 64-byte transaction signature.                          |
+| `Data`           | `[]byte` | Raw (Borsh-encoded, discriminator-prefixed) event data. |
+| `SequenceNum`    | `int64`  | Sequence number for ordering.                           |
+| `Error`          | `string` | Error message if log processing failed (optional).      |
+
+### `bindings.DecodedLog[T]`
+
+Wraps a `*solana.Log` with its decoded event data. Generated `LogTrigger<EventName>Log` methods adapt the raw trigger
+to this type automatically.
+
+```go
+type DecodedLog[T any] struct {
+    *solana.Log
+    Data T
+}
+```
+
+### Generated binding method
+
+For each event in your IDL, `cre generate-bindings solana` generates:
+
+```go
+func (c *Pkg) LogTrigger<EventName>Log(
+    chainSelector uint64,
+    filterName string,
+    filters []<EventName>Filters,
+    opts *bindings.LogTriggerOptions,
+) (cre.Trigger[*solana.Log, *bindings.DecodedLog[<EventName>]], error)
+```
+
+`<EventName>Filters` has one pointer field per filterable top-level scalar field on the event (`nil` means no filter
+on that field). Passing more than one filter row returns an error — only a single row (an AND of its set fields) is
+currently supported.
+
+### Callback function
+
+Your callback function for Solana log triggers must conform to this signature:
+
+```go
+func onSolanaTrigger(config *Config, runtime cre.Runtime, payload *bindings.DecodedLog[EventType]) (*YourReturnType, error)
+```
+
+**Parameters:**
+
+- `config`: Your workflow's static configuration struct.
+- `runtime`: The runtime object.
+- `payload`: The decoded event data (`payload.Data`) alongside the raw log metadata (`payload.Log`).
+
+## Learn more
+
+- **[Solana Log Trigger Guide](/cre/guides/workflow/using-triggers/solana-log-trigger-go)**: Step-by-step guide to configuring and using the Solana Log trigger
+- **[The Trigger Capability](/cre/capabilities/triggers)**: Conceptual overview of all CRE trigger types
+
+---
+
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-go
-Last Updated: 2026-09-18
+Last Updated: 2026-10-19
 
 This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 
@@ -26574,13 +27508,13 @@ Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-s
 
 ## Solana Networks
 
-Solana support is currently **write-only**. Read and Log Trigger capabilities are in development. Solana write requires
-**CRE CLI v1.24.0 or later** (`cre version` / `cre update`).
+Solana is fully supported for **onchain reads, onchain writes, and log triggers**. Solana requires **CRE CLI v1.33.0
+or later** (`cre version` / `cre update`).
 
-| Network        | CLI      | Capabilities | Chain Selector         |
-| -------------- | -------- | ------------ | ---------------------- |
-| Solana Mainnet | v1.24.0+ | Write        | `124615329519749607`   |
-| Solana Devnet  | v1.24.0+ | Write        | `16423721717087811551` |
+| Network        | CLI      | Capabilities             | Chain Selector         |
+| -------------- | -------- | ------------------------ | ---------------------- |
+| Solana Mainnet | v1.33.0+ | Read, Write, Log Trigger | `124615329519749607`   |
+| Solana Devnet  | v1.33.0+ | Read, Write, Log Trigger | `16423721717087811551` |
 
 Use `solana.SolanaMainnet` and `solana.SolanaDevnet` constants in your Go workflow code, or pass the numeric selector directly to `solana.Client`.
 

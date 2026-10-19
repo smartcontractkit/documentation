@@ -5,7 +5,7 @@ title: "Simulating Workflows"
 metadata:
   description: "Simulate your workflows: learn to simulate CRE workflows with real API and testnet calls before deploying them."
   datePublished: "2025-11-04"
-  lastModified: "2026-06-11"
+  lastModified: "2026-09-03"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -251,6 +251,45 @@ cre workflow simulate my-workflow \
   <br />
   These are completely independent: one selects your workflow's
   handler to execute, the other selects which event data from the blockchain to test with.
+</Aside>
+
+### Solana log trigger
+
+[Solana log triggers](/cre/guides/workflow/using-triggers/solana-log-trigger) require a transaction signature and event index to fetch a specific event from Devnet or Mainnet. Unlike EVM log triggers, there is no listen mode for Solana — you always provide a signature for a transaction that already emitted the event.
+
+**Interactive mode:**
+
+When you select a Solana log trigger, the simulator prompts you for:
+
+1. **Transaction signature** (base58, e.g., `c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn`)
+1. **Event index** (0-based index among the program's events in that transaction, e.g., `0`)
+
+The simulator fetches the transaction from the configured RPC, parses its events, and passes the selected one to your workflow.
+
+**Non-interactive mode:**
+
+Use the `--solana-tx-sig` and `--solana-event-index` flags:
+
+```bash
+cre workflow simulate my-workflow \
+  --non-interactive \
+  --trigger-index 0 \
+  --solana-tx-sig c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn \
+  --solana-event-index 0 \
+  --target staging-settings
+```
+
+<Aside type="note" title="Where to get a transaction signature">
+  You need a Devnet (or Mainnet) transaction that already emitted the event you want to test with. If you are following
+  the [Solana Log Trigger guide](/cre/guides/workflow/using-triggers/solana-log-trigger), broadcast a transaction with
+  the [Writing to Solana guide](/cre/guides/workflow/using-solana-client/onchain-write) first (`cre workflow simulate
+  ... --broadcast`), then reuse its `txSignature`.
+</Aside>
+
+<Aside type="caution" title="CRE_SOLANA_PRIVATE_KEY is still required">
+  Solana simulation requires a funded `CRE_SOLANA_PRIVATE_KEY` for every run, including a log-trigger-only dry run that
+  never submits a transaction. See [Writing to Solana: Step
+  4](/cre/guides/workflow/using-solana-client/onchain-write#step-4-run-the-simulation) for how to generate and fund one.
 </Aside>
 
 ## Additional flags
