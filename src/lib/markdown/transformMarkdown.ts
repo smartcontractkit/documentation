@@ -41,6 +41,8 @@ import {
   handleSelectorComponent,
   isSelectorComponent,
   handleSchemaFieldsTable,
+  handleCcipSendErrors,
+  handleCcipEvents,
   handleFeedPage,
   loadCcipCommonMapping,
   replaceNode,
@@ -265,6 +267,14 @@ export async function transformMarkdown(
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "SchemaFieldsTable") {
           return handleSchemaFieldsTable(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "CCIPSendError") {
+          return handleCcipSendErrors(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "CCIPEvent") {
+          return handleCcipEvents(node as MdxJsxNode, parent, index, context)
         }
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "FeedPage") {

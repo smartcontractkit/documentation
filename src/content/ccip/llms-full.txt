@@ -41727,17 +41727,81 @@ When invoking the `ccipSend` [function](/ccip/v1/evm/api-reference/v1.6.1/i-rout
 
 ## Router Errors
 
+| Error                         | Parameters                 | Error selector | Description                                                           |
+| ----------------------------- | -------------------------- | -------------- | --------------------------------------------------------------------- |
+| `UnsupportedDestinationChain` | `uint64 destChainSelector` | `0xae236d9c`   | Thrown when sending to an unsupported destination chain.              |
+| `InsufficientFeeTokenAmount`  | -                          | `0x07da6ee6`   | Thrown when the fee token amount provided is less than required.      |
+| `InvalidMsgValue`             | -                          | `0x1841b4e1`   | Thrown when msg.value is non-zero for non-native fee token payments.  |
+| `BadARMSignal`                | -                          | `0xc1483715`   | Thrown when the RMN (Risk Management Network) has cursed the network. |
+| `SafeERC20FailedOperation`    | -                          | `0x70c9c181`   | Thrown when an ERC20 token transfer fails.                            |
+
 ## OnRamp Errors
+
+| Error                         | Parameters      | Error selector | Description                                                                     |
+| ----------------------------- | --------------- | -------------- | ------------------------------------------------------------------------------- |
+| `CursedByRMN`                 | -               | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the destination chain. |
+| `RouterMustSetOriginalSender` | -               | `0xa4ec7479`   | Thrown when the router has not set the original sender address.                 |
+| `MustBeCalledByRouter`        | -               | `0x1c0a3529`   | Thrown when the caller is not the configured router address.                    |
+| `CannotSendZeroTokens`        | -               | `0x5cf04449`   | Thrown when attempting to send a token with amount zero.                        |
+| `UnsupportedToken`            | `address token` | `0xbf16aab6`   | Thrown when attempting to send an unsupported token.                            |
 
 ## FeeQuoter Errors
 
+| Error                                   | Parameters                                                            | Error selector | Description                                                                                                       |
+| --------------------------------------- | --------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `InvalidExtraArgsTag`                   | -                                                                     | `0x5247fdce`   | Thrown when an invalid extra arguments tag is used.                                                               |
+| `MessageTooLarge`                       | `uint256 maxSize`, `uint256 actualSize`                               | `0x86933789`   | Thrown when the message size exceeds the maximum allowed size.                                                    |
+| `MessageGasLimitTooHigh`                | -                                                                     | `0x4c4fc93a`   | Thrown when the gas limit exceeds the maximum per-message gas limit.                                              |
+| `UnsupportedNumberOfTokens`             | `uint256 numberOfTokens`, `uint256 maxNumberOfTokensPerMsg`           | `0x4c056b6a`   | Thrown when too many tokens are involved in the transfer.                                                         |
+| `ExtraArgOutOfOrderExecutionMustBeTrue` | -                                                                     | `0xee433e99`   | Thrown when enforceOutOfOrder is true but allowOutOfOrderExecution is false.                                      |
+| `SourceTokenDataTooLarge`               | `address token`                                                       | `0x36f536ca`   | Thrown when the source token data exceeds the configured maximum size.                                            |
+| `TokenNotSupported`                     | `address token`                                                       | `0x06439c6b`   | Thrown when a token's price isn't configured or is zero.                                                          |
+| `FeeTokenNotSupported`                  | `address token`                                                       | `0x2502348c`   | Thrown when the fee token isn't in the allowed fee tokens list.                                                   |
+| `StaleGasPrice`                         | `uint64 destChainSelector`, `uint256 threshold`, `uint256 timePassed` | `0xf08bcb3e`   | Thrown when a gas price is too old based on the chain's staleness threshold.                                      |
+| `DataFeedValueOutOfUint224Range`        | -                                                                     | `0x10cb51d1`   | Thrown when price feed values exceed uint224 range.                                                               |
+| `DestinationChainNotEnabled`            | `uint64 destChainSelector`                                            | `0x99ac52f2`   | Thrown when attempting to use a disabled destination chain.                                                       |
+| `InvalidExtraArgsData`                  | -                                                                     | `0xb00b53dc`   | Thrown when extra args data is missing or malformed.                                                              |
+| `MessageFeeTooHigh`                     | `uint256 msgFeeJuels`, `uint256 maxFeeJuelsPerMsg`                    | `0x6a92a483`   | Thrown when message fee exceeds the maximum allowed fee.                                                          |
+| `InvalidChainFamilySelector`            | `bytes4 chainFamilySelector`                                          | `0x2ee82075`   | Thrown when an unsupported chain family selector is used.                                                         |
+| `InvalidTokenReceiver`                  | -                                                                     | `0x5bed5192`   | Thrown when token receiver is invalid for SVM chains (typically when it's zero and tokens are being transferred). |
+| `TooManySVMExtraArgsAccounts`           | `uint256 numAccounts`, `uint256 maxAccounts`                          | `0x8a0d71f7`   | Thrown when too many accounts are specified in SVM extra args.                                                    |
+| `InvalidSVMExtraArgsWritableBitmap`     | `uint64 accountIsWritableBitmap`, `uint256 numAccounts`               | `0xafa93308`   | Thrown when SVM writable bitmap is invalid for the number of accounts.                                            |
+| `MessageComputeUnitLimitTooHigh`        | -                                                                     | `0x2e2b0c29`   | Thrown when compute unit limit exceeds maximum for SVM chains.                                                    |
+
 ## Rate Limiter Errors
+
+| Error                               | Parameters                                                              | Error selector | Description                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------- |
+| `BucketOverfilled`                  | -                                                                       | `0x9725942a`   | Thrown when the token bucket contains more tokens than its capacity.                           |
+| `OnlyCallableByAdminOrOwner`        | -                                                                       | `0xf6cd5620`   | Thrown when a function is called by an address that is not the admin or owner.                 |
+| `TokenMaxCapacityExceeded`          | `uint256 capacity`, `uint256 requested`, `address tokenAddress`         | `0x1a76572a`   | Thrown when attempting to consume more tokens than the bucket's maximum capacity.              |
+| `TokenRateLimitReached`             | `uint256 minWaitInSeconds`, `uint256 available`, `address tokenAddress` | `0xd0c8d23a`   | Thrown when attempting to consume more tokens than currently available in the bucket.          |
+| `AggregateValueMaxCapacityExceeded` | `uint256 capacity`, `uint256 requested`                                 | `0xf94ebcd1`   | Thrown when attempting to consume more aggregate value than the bucket's maximum capacity.     |
+| `AggregateValueRateLimitReached`    | `uint256 minWaitInSeconds`, `uint256 available`                         | `0x15279c08`   | Thrown when attempting to consume more aggregate value than currently available in the bucket. |
 
 ## Token (ERC20) Errors
 
+| Error                                      | Description                                                   |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| `ERC20: burn amount exceeds balance`       | Thrown when the amount to be burned exceeds the pool balance. |
+| `ERC20: transfer amount exceeds allowance` | Thrown when the transfer amount exceeds the allowance.        |
+
 ## BurnMintERC20 Errors
 
+| Error               | Parameters                | Error selector | Description                                                                                   |
+| ------------------- | ------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| `MaxSupplyExceeded` | `uint256 supplyAfterMint` | `0xcbbf1113`   | Thrown when a mint operation would cause the total supply to exceed the maximum supply limit. |
+| `InvalidRecipient`  | `address recipient`       | `0x17858bbe`   | Thrown when attempting to transfer or approve tokens for the contract itself (address(this)). |
+
 ## Token Pool Errors
+
+| Error                      | Parameters                   | Error selector | Description                                                                     |
+| -------------------------- | ---------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `InvalidToken`             | `address token`              | `0x961c9a4f`   | Thrown when the token being locked or burned is not supported by the pool.      |
+| `CursedByRMN`              | -                            | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the network.           |
+| `SenderNotAllowed`         | `address sender`             | `0xd0d25976`   | Thrown when the sender is not on the allowlist (when allowlist is enabled).     |
+| `ChainNotAllowed`          | `uint64 remoteChainSelector` | `0xa9902c7e`   | Thrown when the remote chain selector is not supported.                         |
+| `CallerIsNotARampOnRouter` | `address caller`             | `0x728fe07b`   | Thrown when the caller is not a valid onRamp for the given chain on the Router. |
 
 ---
 
@@ -41778,7 +41842,16 @@ These events are emitted when sending a cross-chain message using the `ccipSend`
 
 ### OnRamp
 
+| Event             | Parameters                                                                                                                                                                    | Description                                       |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `CCIPMessageSent` | `uint64 indexed destChainSelector`, `uint64 indexed sequenceNumber`, [`Internal.EVM2AnyRampMessage`](/ccip/v1/evm/api-reference/v1.6.1/internal#evm2anyrampmessage) `message` | Emitted when a CCIP message is successfully sent. |
+
 ### Token Pool (Send)
+
+| Event                       | Parameters                                                                                | Description                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `LockedOrBurned`            | `uint64 indexed remoteChainSelector`, `address token`, `address sender`, `uint256 amount` | Emitted when tokens are locked or burned during a cross-chain transfer.     |
+| `OutboundRateLimitConsumed` | `uint64 indexed remoteChainSelector`, `address token`, `uint256 amount`                   | Emitted when outbound rate limit capacity is consumed for a token transfer. |
 
 ## `ccipReceive`
 
@@ -41786,9 +41859,22 @@ These events are emitted when a cross-chain message is executed on the destinati
 
 ### OffRamp
 
+| Event                   | Parameters                                                                                                                                                                                                                                                                     | Description                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `ExecutionStateChanged` | `uint64 indexed sourceChainSelector`, `uint64 indexed sequenceNumber`, `bytes32 indexed messageId`, `bytes32 messageHash`, [`Internal.MessageExecutionState`](/ccip/v1/evm/api-reference/v1.6.1/internal#messageexecutionstate) `state`, `bytes returnData`, `uint256 gasUsed` | Emitted when a message execution state changes to SUCCESS or FAILURE. |
+
 ### Router
 
+| Event             | Parameters                                                                                   | Description                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `MessageExecuted` | `bytes32 messageId`, `uint64 sourceChainSelector`, `address offRamp`, `bytes32 calldataHash` | Emitted when the Router successfully routes a message to the receiver. |
+
 ### Token Pool (Receive)
+
+| Event                      | Parameters                                                                                                     | Description                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `ReleasedOrMinted`         | `uint64 indexed remoteChainSelector`, `address token`, `address sender`, `address recipient`, `uint256 amount` | Emitted when tokens are released or minted to the receiver on the destination chain. |
+| `InboundRateLimitConsumed` | `uint64 indexed remoteChainSelector`, `address token`, `uint256 amount`                                        | Emitted when inbound rate limit capacity is consumed for a token transfer.           |
 
 ---
 
@@ -47871,17 +47957,81 @@ When invoking the `ccipSend` [function](/ccip/v1/evm/api-reference/v1.6.0/i-rout
 
 ## Router Errors
 
+| Error                         | Parameters                 | Error selector | Description                                                           |
+| ----------------------------- | -------------------------- | -------------- | --------------------------------------------------------------------- |
+| `UnsupportedDestinationChain` | `uint64 destChainSelector` | `0xae236d9c`   | Thrown when sending to an unsupported destination chain.              |
+| `InsufficientFeeTokenAmount`  | -                          | `0x07da6ee6`   | Thrown when the fee token amount provided is less than required.      |
+| `InvalidMsgValue`             | -                          | `0x1841b4e1`   | Thrown when msg.value is non-zero for non-native fee token payments.  |
+| `BadARMSignal`                | -                          | `0xc1483715`   | Thrown when the RMN (Risk Management Network) has cursed the network. |
+| `SafeERC20FailedOperation`    | -                          | `0x70c9c181`   | Thrown when an ERC20 token transfer fails.                            |
+
 ## OnRamp Errors
+
+| Error                         | Parameters      | Error selector | Description                                                                     |
+| ----------------------------- | --------------- | -------------- | ------------------------------------------------------------------------------- |
+| `CursedByRMN`                 | -               | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the destination chain. |
+| `RouterMustSetOriginalSender` | -               | `0xa4ec7479`   | Thrown when the router has not set the original sender address.                 |
+| `MustBeCalledByRouter`        | -               | `0x1c0a3529`   | Thrown when the caller is not the configured router address.                    |
+| `CannotSendZeroTokens`        | -               | `0x5cf04449`   | Thrown when attempting to send a token with amount zero.                        |
+| `UnsupportedToken`            | `address token` | `0xbf16aab6`   | Thrown when attempting to send an unsupported token.                            |
 
 ## FeeQuoter Errors
 
+| Error                                   | Parameters                                                            | Error selector | Description                                                                                                       |
+| --------------------------------------- | --------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `InvalidExtraArgsTag`                   | -                                                                     | `0x5247fdce`   | Thrown when an invalid extra arguments tag is used.                                                               |
+| `MessageTooLarge`                       | `uint256 maxSize`, `uint256 actualSize`                               | `0x86933789`   | Thrown when the message size exceeds the maximum allowed size.                                                    |
+| `MessageGasLimitTooHigh`                | -                                                                     | `0x4c4fc93a`   | Thrown when the gas limit exceeds the maximum per-message gas limit.                                              |
+| `UnsupportedNumberOfTokens`             | `uint256 numberOfTokens`, `uint256 maxNumberOfTokensPerMsg`           | `0x4c056b6a`   | Thrown when too many tokens are involved in the transfer.                                                         |
+| `ExtraArgOutOfOrderExecutionMustBeTrue` | -                                                                     | `0xee433e99`   | Thrown when enforceOutOfOrder is true but allowOutOfOrderExecution is false.                                      |
+| `SourceTokenDataTooLarge`               | `address token`                                                       | `0x36f536ca`   | Thrown when the source token data exceeds the configured maximum size.                                            |
+| `TokenNotSupported`                     | `address token`                                                       | `0x06439c6b`   | Thrown when a token's price isn't configured or is zero.                                                          |
+| `FeeTokenNotSupported`                  | `address token`                                                       | `0x2502348c`   | Thrown when the fee token isn't in the allowed fee tokens list.                                                   |
+| `StaleGasPrice`                         | `uint64 destChainSelector`, `uint256 threshold`, `uint256 timePassed` | `0xf08bcb3e`   | Thrown when a gas price is too old based on the chain's staleness threshold.                                      |
+| `DataFeedValueOutOfUint224Range`        | -                                                                     | `0x10cb51d1`   | Thrown when price feed values exceed uint224 range.                                                               |
+| `DestinationChainNotEnabled`            | `uint64 destChainSelector`                                            | `0x99ac52f2`   | Thrown when attempting to use a disabled destination chain.                                                       |
+| `InvalidExtraArgsData`                  | -                                                                     | `0xb00b53dc`   | Thrown when extra args data is missing or malformed.                                                              |
+| `MessageFeeTooHigh`                     | `uint256 msgFeeJuels`, `uint256 maxFeeJuelsPerMsg`                    | `0x6a92a483`   | Thrown when message fee exceeds the maximum allowed fee.                                                          |
+| `InvalidChainFamilySelector`            | `bytes4 chainFamilySelector`                                          | `0x2ee82075`   | Thrown when an unsupported chain family selector is used.                                                         |
+| `InvalidTokenReceiver`                  | -                                                                     | `0x5bed5192`   | Thrown when token receiver is invalid for SVM chains (typically when it's zero and tokens are being transferred). |
+| `TooManySVMExtraArgsAccounts`           | `uint256 numAccounts`, `uint256 maxAccounts`                          | `0x8a0d71f7`   | Thrown when too many accounts are specified in SVM extra args.                                                    |
+| `InvalidSVMExtraArgsWritableBitmap`     | `uint64 accountIsWritableBitmap`, `uint256 numAccounts`               | `0xafa93308`   | Thrown when SVM writable bitmap is invalid for the number of accounts.                                            |
+| `MessageComputeUnitLimitTooHigh`        | -                                                                     | `0x2e2b0c29`   | Thrown when compute unit limit exceeds maximum for SVM chains.                                                    |
+
 ## Rate Limiter Errors
+
+| Error                               | Parameters                                                              | Error selector | Description                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------- |
+| `BucketOverfilled`                  | -                                                                       | `0x9725942a`   | Thrown when the token bucket contains more tokens than its capacity.                           |
+| `OnlyCallableByAdminOrOwner`        | -                                                                       | `0xf6cd5620`   | Thrown when a function is called by an address that is not the admin or owner.                 |
+| `TokenMaxCapacityExceeded`          | `uint256 capacity`, `uint256 requested`, `address tokenAddress`         | `0x1a76572a`   | Thrown when attempting to consume more tokens than the bucket's maximum capacity.              |
+| `TokenRateLimitReached`             | `uint256 minWaitInSeconds`, `uint256 available`, `address tokenAddress` | `0xd0c8d23a`   | Thrown when attempting to consume more tokens than currently available in the bucket.          |
+| `AggregateValueMaxCapacityExceeded` | `uint256 capacity`, `uint256 requested`                                 | `0xf94ebcd1`   | Thrown when attempting to consume more aggregate value than the bucket's maximum capacity.     |
+| `AggregateValueRateLimitReached`    | `uint256 minWaitInSeconds`, `uint256 available`                         | `0x15279c08`   | Thrown when attempting to consume more aggregate value than currently available in the bucket. |
 
 ## Token (ERC20) Errors
 
+| Error                                      | Description                                                   |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| `ERC20: burn amount exceeds balance`       | Thrown when the amount to be burned exceeds the pool balance. |
+| `ERC20: transfer amount exceeds allowance` | Thrown when the transfer amount exceeds the allowance.        |
+
 ## BurnMintERC20 Errors
 
+| Error               | Parameters                | Error selector | Description                                                                                   |
+| ------------------- | ------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| `MaxSupplyExceeded` | `uint256 supplyAfterMint` | `0xcbbf1113`   | Thrown when a mint operation would cause the total supply to exceed the maximum supply limit. |
+| `InvalidRecipient`  | `address recipient`       | `0x17858bbe`   | Thrown when attempting to transfer or approve tokens for the contract itself (address(this)). |
+
 ## Token Pool Errors
+
+| Error                      | Parameters                   | Error selector | Description                                                                     |
+| -------------------------- | ---------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `InvalidToken`             | `address token`              | `0x961c9a4f`   | Thrown when the token being locked or burned is not supported by the pool.      |
+| `CursedByRMN`              | -                            | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the network.           |
+| `SenderNotAllowed`         | `address sender`             | `0xd0d25976`   | Thrown when the sender is not on the allowlist (when allowlist is enabled).     |
+| `ChainNotAllowed`          | `uint64 remoteChainSelector` | `0xa9902c7e`   | Thrown when the remote chain selector is not supported.                         |
+| `CallerIsNotARampOnRouter` | `address caller`             | `0x728fe07b`   | Thrown when the caller is not a valid onRamp for the given chain on the Router. |
 
 ---
 
@@ -47922,7 +48072,16 @@ These events are emitted when sending a cross-chain message using the `ccipSend`
 
 ### OnRamp
 
+| Event             | Parameters                                                                                                                                                                    | Description                                       |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `CCIPMessageSent` | `uint64 indexed destChainSelector`, `uint64 indexed sequenceNumber`, [`Internal.EVM2AnyRampMessage`](/ccip/v1/evm/api-reference/v1.6.0/internal#evm2anyrampmessage) `message` | Emitted when a CCIP message is successfully sent. |
+
 ### Token Pool (Send)
+
+| Event    | Parameters                                 | Description                                                   |
+| -------- | ------------------------------------------ | ------------------------------------------------------------- |
+| `Locked` | `address indexed sender`, `uint256 amount` | Emitted when tokens are locked during a cross-chain transfer. |
+| `Burned` | `address indexed sender`, `uint256 amount` | Emitted when tokens are burned during a cross-chain transfer. |
 
 ## `ccipReceive`
 
@@ -47930,9 +48089,22 @@ These events are emitted when a cross-chain message is executed on the destinati
 
 ### OffRamp
 
+| Event                   | Parameters                                                                                                                                                                                                                                                                     | Description                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `ExecutionStateChanged` | `uint64 indexed sourceChainSelector`, `uint64 indexed sequenceNumber`, `bytes32 indexed messageId`, `bytes32 messageHash`, [`Internal.MessageExecutionState`](/ccip/v1/evm/api-reference/v1.6.0/internal#messageexecutionstate) `state`, `bytes returnData`, `uint256 gasUsed` | Emitted when a message execution state changes to SUCCESS or FAILURE. |
+
 ### Router
 
+| Event             | Parameters                                                                                   | Description                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `MessageExecuted` | `bytes32 messageId`, `uint64 sourceChainSelector`, `address offRamp`, `bytes32 calldataHash` | Emitted when the Router successfully routes a message to the receiver. |
+
 ### Token Pool (Receive)
+
+| Event      | Parameters                                                              | Description                                                                |
+| ---------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `Released` | `address indexed sender`, `address indexed recipient`, `uint256 amount` | Emitted when tokens are released to the receiver on the destination chain. |
+| `Minted`   | `address indexed sender`, `address indexed recipient`, `uint256 amount` | Emitted when tokens are minted to the receiver on the destination chain.   |
 
 ---
 
@@ -54632,15 +54804,66 @@ When invoking the `ccipSend` [function](/ccip/v1/evm/api-reference/v1.5.1/i-rout
 
 ## Router Errors
 
+| Error                         | Parameters                 | Error selector | Description                                                           |
+| ----------------------------- | -------------------------- | -------------- | --------------------------------------------------------------------- |
+| `UnsupportedDestinationChain` | `uint64 destChainSelector` | `0xae236d9c`   | Thrown when sending to an unsupported destination chain.              |
+| `InsufficientFeeTokenAmount`  | -                          | `0x07da6ee6`   | Thrown when the fee token amount provided is less than required.      |
+| `InvalidMsgValue`             | -                          | `0x1841b4e1`   | Thrown when msg.value is non-zero for non-native fee token payments.  |
+| `BadARMSignal`                | -                          | `0xc1483715`   | Thrown when the RMN (Risk Management Network) has cursed the network. |
+| `SafeERC20FailedOperation`    | -                          | `0x70c9c181`   | Thrown when an ERC20 token transfer fails.                            |
+
 ## OnRamp Errors
+
+| Error                                   | Parameters                              | Error selector | Description                                                                     |
+| --------------------------------------- | --------------------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `CursedByRMN`                           | -                                       | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the destination chain. |
+| `RouterMustSetOriginalSender`           | -                                       | `0xa4ec7479`   | Thrown when the router has not set the original sender address.                 |
+| `MustBeCalledByRouter`                  | -                                       | `0x1c0a3529`   | Thrown when the caller is not the configured router address.                    |
+| `InvalidChainSelector`                  | `uint64 destChainSelector`              | `0xd9a9cd68`   | Thrown when the destination chain selector does not match the configured one.   |
+| `InvalidExtraArgsTag`                   | -                                       | `0x5247fdce`   | Thrown when an invalid extra arguments tag is used.                             |
+| `MessageTooLarge`                       | `uint256 maxSize`, `uint256 actualSize` | `0x86933789`   | Thrown when the message size exceeds the maximum allowed size.                  |
+| `MessageGasLimitTooHigh`                | -                                       | `0x4c4fc93a`   | Thrown when the gas limit exceeds the maximum per-message gas limit.            |
+| `CannotSendZeroTokens`                  | -                                       | `0x5cf04449`   | Thrown when attempting to send a token with amount zero.                        |
+| `MaxFeeBalanceReached`                  | -                                       | `0xe5c7a491`   | Thrown when the onRamp has reached its maximum fee storage capacity.            |
+| `UnsupportedNumberOfTokens`             | -                                       | `0x4c056b6a`   | Thrown when too many tokens are involved in the transfer.                       |
+| `UnsupportedToken`                      | `address token`                         | `0xbf16aab6`   | Thrown when attempting to send an unsupported token.                            |
+| `ExtraArgOutOfOrderExecutionMustBeTrue` | -                                       | `0xee433e99`   | Thrown when enforceOutOfOrder is true but allowOutOfOrderExecution is false.    |
+| `SourceTokenDataTooLarge`               | `address token`                         | `0x36f536ca`   | Thrown when the source token data exceeds the configured maximum size.          |
 
 ## Rate Limiter Errors
 
+| Error                               | Parameters                                                              | Error selector | Description                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------- |
+| `BucketOverfilled`                  | -                                                                       | `0x9725942a`   | Thrown when the token bucket contains more tokens than its capacity.                           |
+| `OnlyCallableByAdminOrOwner`        | -                                                                       | `0xf6cd5620`   | Thrown when a function is called by an address that is not the admin or owner.                 |
+| `TokenMaxCapacityExceeded`          | `uint256 capacity`, `uint256 requested`, `address tokenAddress`         | `0x1a76572a`   | Thrown when attempting to consume more tokens than the bucket's maximum capacity.              |
+| `TokenRateLimitReached`             | `uint256 minWaitInSeconds`, `uint256 available`, `address tokenAddress` | `0xd0c8d23a`   | Thrown when attempting to consume more tokens than currently available in the bucket.          |
+| `AggregateValueMaxCapacityExceeded` | `uint256 capacity`, `uint256 requested`                                 | `0xf94ebcd1`   | Thrown when attempting to consume more aggregate value than the bucket's maximum capacity.     |
+| `AggregateValueRateLimitReached`    | `uint256 minWaitInSeconds`, `uint256 available`                         | `0x15279c08`   | Thrown when attempting to consume more aggregate value than currently available in the bucket. |
+
 ## Token (ERC20) Errors
+
+| Error                                      | Description                                                   |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| `ERC20: burn amount exceeds balance`       | Thrown when the amount to be burned exceeds the pool balance. |
+| `ERC20: transfer amount exceeds allowance` | Thrown when the transfer amount exceeds the allowance.        |
 
 ## BurnMintERC20 Errors
 
+| Error               | Parameters                | Error selector | Description                                                                                   |
+| ------------------- | ------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| `MaxSupplyExceeded` | `uint256 supplyAfterMint` | `0xcbbf1113`   | Thrown when a mint operation would cause the total supply to exceed the maximum supply limit. |
+| `InvalidRecipient`  | `address recipient`       | `0x17858bbe`   | Thrown when attempting to transfer or approve tokens for the contract itself (address(this)). |
+
 ## Token Pool Errors
+
+| Error                      | Parameters                   | Error selector | Description                                                                     |
+| -------------------------- | ---------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `InvalidToken`             | `address token`              | `0x961c9a4f`   | Thrown when the token being locked or burned is not supported by the pool.      |
+| `CursedByRMN`              | -                            | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the network.           |
+| `SenderNotAllowed`         | `address sender`             | `0xd0d25976`   | Thrown when the sender is not on the allowlist (when allowlist is enabled).     |
+| `ChainNotAllowed`          | `uint64 remoteChainSelector` | `0xa9902c7e`   | Thrown when the remote chain selector is not supported.                         |
+| `CallerIsNotARampOnRouter` | `address caller`             | `0x728fe07b`   | Thrown when the caller is not a valid onRamp for the given chain on the Router. |
 
 ---
 
@@ -54681,7 +54904,16 @@ These events are emitted when sending a cross-chain message using the `ccipSend`
 
 ### OnRamp
 
+| Event               | Parameters                                                                                       | Description                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `CCIPSendRequested` | [`Internal.EVM2EVMMessage`](/ccip/v1/evm/api-reference/v1.5.1/internal#evm2evmmessage) `message` | Emitted when a CCIP message is successfully sent. |
+
 ### Token Pool (Send)
+
+| Event    | Parameters                                 | Description                                                   |
+| -------- | ------------------------------------------ | ------------------------------------------------------------- |
+| `Locked` | `address indexed sender`, `uint256 amount` | Emitted when tokens are locked during a cross-chain transfer. |
+| `Burned` | `address indexed sender`, `uint256 amount` | Emitted when tokens are burned during a cross-chain transfer. |
 
 ## `ccipReceive`
 
@@ -54689,9 +54921,22 @@ These events are emitted when a cross-chain message is executed on the destinati
 
 ### OffRamp
 
+| Event                   | Parameters                                                                                                                                                                                     | Description                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `ExecutionStateChanged` | `uint64 indexed sequenceNumber`, `bytes32 indexed messageId`, [`Internal.MessageExecutionState`](/ccip/v1/evm/api-reference/v1.5.1/internal#messageexecutionstate) `state`, `bytes returnData` | Emitted when a message execution state changes to SUCCESS or FAILURE. |
+
 ### Router
 
+| Event             | Parameters                                                                                   | Description                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `MessageExecuted` | `bytes32 messageId`, `uint64 sourceChainSelector`, `address offRamp`, `bytes32 calldataHash` | Emitted when the Router successfully routes a message to the receiver. |
+
 ### Token Pool (Receive)
+
+| Event      | Parameters                                                              | Description                                                                |
+| ---------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `Released` | `address indexed sender`, `address indexed recipient`, `uint256 amount` | Emitted when tokens are released to the receiver on the destination chain. |
+| `Minted`   | `address indexed sender`, `address indexed recipient`, `uint256 amount` | Emitted when tokens are minted to the receiver on the destination chain.   |
 
 ---
 
@@ -58163,13 +58408,56 @@ If you get errors when invoking the `ccipSend` [function](/ccip/v1/evm/api-refer
 
 ## Router Errors
 
+| Error                         | Parameters                 | Error selector | Description                                                                                         |
+| ----------------------------- | -------------------------- | -------------- | --------------------------------------------------------------------------------------------------- |
+| `UnsupportedDestinationChain` | `uint64 destChainSelector` | `0xae236d9c`   | Thrown when the destination chain is not supported.                                                 |
+| `InsufficientFeeTokenAmount`  | -                          | `0x07da6ee6`   | Thrown when the CCIP fees are paid with native tokens, but not enough is sent with the transaction. |
+| `InvalidMsgValue`             | -                          | `0x1841b4e1`   | Thrown when the CCIP fees are *not* paid in native tokens, but `msg.value` is non-zero.             |
+
 ## OnRamp Errors
+
+| Error                         | Parameters                              | Error selector | Description                                                                                                             |
+| ----------------------------- | --------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `CannotSendZeroTokens`        | -                                       | `0x5cf04449`   | Thrown when the user tries to send a zero amount of tokens.                                                             |
+| `InvalidAddress`              | `bytes encodedAddress`                  | `0x370d875f`   | Thrown when the receiver address is invalid.                                                                            |
+| `InvalidChainSelector`        | `uint64 chainSelector`                  | `0xd9a9cd68`   | Thrown when an invalid destination chain selector is used.                                                              |
+| `InvalidExtraArgsTag`         | -                                       | `0x5247fdce`   | Thrown when an invalid extra arguments tag is used.                                                                     |
+| `MaxFeeBalanceReached`        | -                                       | `0xe5c7a491`   | Thrown when the onRamp has reached its maximum fee storage capacity. If it is full, it cannot process new transactions. |
+| `MessageGasLimitTooHigh`      | -                                       | `0x4c4fc93a`   | Thrown when the gas limit is too high.                                                                                  |
+| `MessageTooLarge`             | `uint256 maxSize`, `uint256 actualSize` | `0x86933789`   | Thrown when the message size exceeds the maximum allowed size.                                                          |
+| `MustBeCalledByRouter`        | -                                       | `0x1c0a3529`   | This error should never be thrown as the router always makes the call.                                                  |
+| `NotAFeeToken`                | `address token`                         | `0xa7499d20`   | Thrown when an unsupported fee token is used.                                                                           |
+| `RouterMustSetOriginalSender` | -                                       | `0xa4ec7479`   | This error should never be thrown as the router always sets the sender.                                                 |
+| `SenderNotAllowed`            | `address sender`                        | `0xd0d25976`   | Thrown when the sender is not allowlisted.                                                                              |
+| `UnsupportedNumberOfTokens`   | -                                       | `0x4c056b6a`   | Thrown when too many tokens are involved in the transfer.                                                               |
+| `UnsupportedToken`            | `IERC20 token`                          | `0xbf16aab6`   | Thrown when an unsupported transfer token is used.                                                                      |
 
 ## Rate Limiter Errors
 
+| Error                               | Parameters                                                              | Error selector | Description                                                                                                                                                                                                                      |
+| ----------------------------------- | ----------------------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `AggregateValueMaxCapacityExceeded` | `uint256 capacity`, `uint256 requested`                                 | `0xf94ebcd1`   | Thrown when the user requests to transfer more value than the capacity of the aggregate rate limit bucket.                                                                                                                       |
+| `AggregateValueRateLimitReached`    | `uint256 minWaitInSeconds`, `uint256 available`                         | `0x15279c08`   | Thrown when the user requests to transfer more value than currently available in the bucket. The user might have to wait for at least `minWaitInSeconds` for enough availability or transfer the currently `available` amount.   |
+| `BucketOverfilled`                  | -                                                                       | `0x9725942a`   | This error should never be thrown as it indicates an invalid bucket state.                                                                                                                                                       |
+| `PriceNotFoundForToken`             | `address token`                                                         | `0x9a655f7b`   | Thrown when a price cannot be found for a specific token.                                                                                                                                                                        |
+| `TokenMaxCapacityExceeded`          | `uint256 capacity`, `uint256 requested`, `address tokenAddress`         | `0x1a76572a`   | Thrown when the user requests to transfer more of a token than the capacity of the bucket.                                                                                                                                       |
+| `TokenRateLimitReached`             | `uint256 minWaitInSeconds`, `uint256 available`, `address tokenAddress` | `0xd0c8d23a`   | Thrown when the user requests to transfer more of a token than currently available in the bucket. The user might have to wait at least `minWaitInSeconds` for enough availability, or transfer the currently `available` amount. |
+
 ## Token (ERC20) Errors
 
+| Error                                      | Description                                                   |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| `ERC20: burn amount exceeds balance`       | Thrown when the amount to be burned exceeds the pool balance. |
+| `ERC20: transfer amount exceeds allowance` | Thrown when the transfer amount exceeds the allowance.        |
+
 ## Price Registry Errors
+
+| Error               | Parameters                                                            | Error selector | Description                                |
+| ------------------- | --------------------------------------------------------------------- | -------------- | ------------------------------------------ |
+| `ChainNotSupported` | `uint64 chain`                                                        | `0x2e59db3a`   | Thrown when a chain is not supported.      |
+| `StaleGasPrice`     | `uint64 destChainSelector`, `uint256 threshold`, `uint256 timePassed` | `0xf08bcb3e`   | Thrown when the gas price is stale.        |
+| `TokenNotSupported` | `address token`                                                       | `0x06439c6b`   | Thrown when a token is not supported.      |
+| `StaleTokenPrice`   | `address token`, `uint256 threshold`, `uint256 timePassed`            | `0xc65fdfca`   | Thrown when the price of a token is stale. |
 
 ---
 
@@ -58210,7 +58498,16 @@ These events are emitted when sending a cross-chain message using the `ccipSend`
 
 ### OnRamp
 
+| Event               | Parameters                                                                                       | Description                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `CCIPSendRequested` | [`Internal.EVM2EVMMessage`](/ccip/v1/evm/api-reference/v1.5.0/internal#evm2evmmessage) `message` | Emitted when a CCIP message is successfully sent. |
+
 ### Token Pool (Send)
+
+| Event    | Parameters                                 | Description                                                   |
+| -------- | ------------------------------------------ | ------------------------------------------------------------- |
+| `Locked` | `address indexed sender`, `uint256 amount` | Emitted when tokens are locked during a cross-chain transfer. |
+| `Burned` | `address indexed sender`, `uint256 amount` | Emitted when tokens are burned during a cross-chain transfer. |
 
 ## `ccipReceive`
 
@@ -58218,9 +58515,22 @@ These events are emitted when a cross-chain message is executed on the destinati
 
 ### OffRamp
 
+| Event                   | Parameters                                                                                                                                                                                     | Description                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `ExecutionStateChanged` | `uint64 indexed sequenceNumber`, `bytes32 indexed messageId`, [`Internal.MessageExecutionState`](/ccip/v1/evm/api-reference/v1.5.0/internal#messageexecutionstate) `state`, `bytes returnData` | Emitted when a message execution state changes to SUCCESS or FAILURE. |
+
 ### Router
 
+| Event             | Parameters                                                                                   | Description                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `MessageExecuted` | `bytes32 messageId`, `uint64 sourceChainSelector`, `address offRamp`, `bytes32 calldataHash` | Emitted when the Router successfully routes a message to the receiver. |
+
 ### Token Pool (Receive)
+
+| Event      | Parameters                                                              | Description                                                                |
+| ---------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `Released` | `address indexed sender`, `address indexed recipient`, `uint256 amount` | Emitted when tokens are released to the receiver on the destination chain. |
+| `Minted`   | `address indexed sender`, `address indexed recipient`, `uint256 amount` | Emitted when tokens are minted to the receiver on the destination chain.   |
 
 ---
 
@@ -64214,17 +64524,81 @@ When invoking the `ccipSend` [function](/ccip/v1/evm/api-reference/v1.6.2/i-rout
 
 ## Router Errors
 
+| Error                         | Parameters                 | Error selector | Description                                                           |
+| ----------------------------- | -------------------------- | -------------- | --------------------------------------------------------------------- |
+| `UnsupportedDestinationChain` | `uint64 destChainSelector` | `0xae236d9c`   | Thrown when sending to an unsupported destination chain.              |
+| `InsufficientFeeTokenAmount`  | -                          | `0x07da6ee6`   | Thrown when the fee token amount provided is less than required.      |
+| `InvalidMsgValue`             | -                          | `0x1841b4e1`   | Thrown when msg.value is non-zero for non-native fee token payments.  |
+| `BadARMSignal`                | -                          | `0xc1483715`   | Thrown when the RMN (Risk Management Network) has cursed the network. |
+| `SafeERC20FailedOperation`    | -                          | `0x70c9c181`   | Thrown when an ERC20 token transfer fails.                            |
+
 ## OnRamp Errors
+
+| Error                         | Parameters      | Error selector | Description                                                                     |
+| ----------------------------- | --------------- | -------------- | ------------------------------------------------------------------------------- |
+| `CursedByRMN`                 | -               | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the destination chain. |
+| `RouterMustSetOriginalSender` | -               | `0xa4ec7479`   | Thrown when the router has not set the original sender address.                 |
+| `MustBeCalledByRouter`        | -               | `0x1c0a3529`   | Thrown when the caller is not the configured router address.                    |
+| `CannotSendZeroTokens`        | -               | `0x5cf04449`   | Thrown when attempting to send a token with amount zero.                        |
+| `UnsupportedToken`            | `address token` | `0xbf16aab6`   | Thrown when attempting to send an unsupported token.                            |
 
 ## FeeQuoter Errors
 
+| Error                                   | Parameters                                                            | Error selector | Description                                                                                                       |
+| --------------------------------------- | --------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `InvalidExtraArgsTag`                   | -                                                                     | `0x5247fdce`   | Thrown when an invalid extra arguments tag is used.                                                               |
+| `MessageTooLarge`                       | `uint256 maxSize`, `uint256 actualSize`                               | `0x86933789`   | Thrown when the message size exceeds the maximum allowed size.                                                    |
+| `MessageGasLimitTooHigh`                | -                                                                     | `0x4c4fc93a`   | Thrown when the gas limit exceeds the maximum per-message gas limit.                                              |
+| `UnsupportedNumberOfTokens`             | `uint256 numberOfTokens`, `uint256 maxNumberOfTokensPerMsg`           | `0x4c056b6a`   | Thrown when too many tokens are involved in the transfer.                                                         |
+| `ExtraArgOutOfOrderExecutionMustBeTrue` | -                                                                     | `0xee433e99`   | Thrown when enforceOutOfOrder is true but allowOutOfOrderExecution is false.                                      |
+| `SourceTokenDataTooLarge`               | `address token`                                                       | `0x36f536ca`   | Thrown when the source token data exceeds the configured maximum size.                                            |
+| `TokenNotSupported`                     | `address token`                                                       | `0x06439c6b`   | Thrown when a token's price isn't configured or is zero.                                                          |
+| `FeeTokenNotSupported`                  | `address token`                                                       | `0x2502348c`   | Thrown when the fee token isn't in the allowed fee tokens list.                                                   |
+| `StaleGasPrice`                         | `uint64 destChainSelector`, `uint256 threshold`, `uint256 timePassed` | `0xf08bcb3e`   | Thrown when a gas price is too old based on the chain's staleness threshold.                                      |
+| `DataFeedValueOutOfUint224Range`        | -                                                                     | `0x10cb51d1`   | Thrown when price feed values exceed uint224 range.                                                               |
+| `DestinationChainNotEnabled`            | `uint64 destChainSelector`                                            | `0x99ac52f2`   | Thrown when attempting to use a disabled destination chain.                                                       |
+| `InvalidExtraArgsData`                  | -                                                                     | `0xb00b53dc`   | Thrown when extra args data is missing or malformed.                                                              |
+| `MessageFeeTooHigh`                     | `uint256 msgFeeJuels`, `uint256 maxFeeJuelsPerMsg`                    | `0x6a92a483`   | Thrown when message fee exceeds the maximum allowed fee.                                                          |
+| `InvalidChainFamilySelector`            | `bytes4 chainFamilySelector`                                          | `0x2ee82075`   | Thrown when an unsupported chain family selector is used.                                                         |
+| `InvalidTokenReceiver`                  | -                                                                     | `0x5bed5192`   | Thrown when token receiver is invalid for SVM chains (typically when it's zero and tokens are being transferred). |
+| `TooManySVMExtraArgsAccounts`           | `uint256 numAccounts`, `uint256 maxAccounts`                          | `0x8a0d71f7`   | Thrown when too many accounts are specified in SVM extra args.                                                    |
+| `InvalidSVMExtraArgsWritableBitmap`     | `uint64 accountIsWritableBitmap`, `uint256 numAccounts`               | `0xafa93308`   | Thrown when SVM writable bitmap is invalid for the number of accounts.                                            |
+| `MessageComputeUnitLimitTooHigh`        | -                                                                     | `0x2e2b0c29`   | Thrown when compute unit limit exceeds maximum for SVM chains.                                                    |
+
 ## Rate Limiter Errors
+
+| Error                               | Parameters                                                              | Error selector | Description                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------- |
+| `BucketOverfilled`                  | -                                                                       | `0x9725942a`   | Thrown when the token bucket contains more tokens than its capacity.                           |
+| `OnlyCallableByAdminOrOwner`        | -                                                                       | `0xf6cd5620`   | Thrown when a function is called by an address that is not the admin or owner.                 |
+| `TokenMaxCapacityExceeded`          | `uint256 capacity`, `uint256 requested`, `address tokenAddress`         | `0x1a76572a`   | Thrown when attempting to consume more tokens than the bucket's maximum capacity.              |
+| `TokenRateLimitReached`             | `uint256 minWaitInSeconds`, `uint256 available`, `address tokenAddress` | `0xd0c8d23a`   | Thrown when attempting to consume more tokens than currently available in the bucket.          |
+| `AggregateValueMaxCapacityExceeded` | `uint256 capacity`, `uint256 requested`                                 | `0xf94ebcd1`   | Thrown when attempting to consume more aggregate value than the bucket's maximum capacity.     |
+| `AggregateValueRateLimitReached`    | `uint256 minWaitInSeconds`, `uint256 available`                         | `0x15279c08`   | Thrown when attempting to consume more aggregate value than currently available in the bucket. |
 
 ## Token (ERC20) Errors
 
+| Error                                      | Description                                                   |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| `ERC20: burn amount exceeds balance`       | Thrown when the amount to be burned exceeds the pool balance. |
+| `ERC20: transfer amount exceeds allowance` | Thrown when the transfer amount exceeds the allowance.        |
+
 ## BurnMintERC20 Errors
 
+| Error               | Parameters                | Error selector | Description                                                                                   |
+| ------------------- | ------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| `MaxSupplyExceeded` | `uint256 supplyAfterMint` | `0xcbbf1113`   | Thrown when a mint operation would cause the total supply to exceed the maximum supply limit. |
+| `InvalidRecipient`  | `address recipient`       | `0x17858bbe`   | Thrown when attempting to transfer or approve tokens for the contract itself (address(this)). |
+
 ## Token Pool Errors
+
+| Error                      | Parameters                   | Error selector | Description                                                                     |
+| -------------------------- | ---------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `InvalidToken`             | `address token`              | `0x961c9a4f`   | Thrown when the token being locked or burned is not supported by the pool.      |
+| `CursedByRMN`              | -                            | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the network.           |
+| `SenderNotAllowed`         | `address sender`             | `0xd0d25976`   | Thrown when the sender is not on the allowlist (when allowlist is enabled).     |
+| `ChainNotAllowed`          | `uint64 remoteChainSelector` | `0xa9902c7e`   | Thrown when the remote chain selector is not supported.                         |
+| `CallerIsNotARampOnRouter` | `address caller`             | `0x728fe07b`   | Thrown when the caller is not a valid onRamp for the given chain on the Router. |
 
 ---
 
@@ -64300,7 +64674,16 @@ These events are emitted when sending a cross-chain message using the `ccipSend`
 
 ### OnRamp
 
+| Event             | Parameters                                                                                                                                                                    | Description                                       |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `CCIPMessageSent` | `uint64 indexed destChainSelector`, `uint64 indexed sequenceNumber`, [`Internal.EVM2AnyRampMessage`](/ccip/v1/evm/api-reference/v1.6.2/internal#evm2anyrampmessage) `message` | Emitted when a CCIP message is successfully sent. |
+
 ### Token Pool (Send)
+
+| Event                       | Parameters                                                                                | Description                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `LockedOrBurned`            | `uint64 indexed remoteChainSelector`, `address token`, `address sender`, `uint256 amount` | Emitted when tokens are locked or burned during a cross-chain transfer.     |
+| `OutboundRateLimitConsumed` | `uint64 indexed remoteChainSelector`, `address token`, `uint256 amount`                   | Emitted when outbound rate limit capacity is consumed for a token transfer. |
 
 ## `ccipReceive`
 
@@ -64308,9 +64691,22 @@ These events are emitted when a cross-chain message is executed on the destinati
 
 ### OffRamp
 
+| Event                   | Parameters                                                                                                                                                                                                                                                                     | Description                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `ExecutionStateChanged` | `uint64 indexed sourceChainSelector`, `uint64 indexed sequenceNumber`, `bytes32 indexed messageId`, `bytes32 messageHash`, [`Internal.MessageExecutionState`](/ccip/v1/evm/api-reference/v1.6.2/internal#messageexecutionstate) `state`, `bytes returnData`, `uint256 gasUsed` | Emitted when a message execution state changes to SUCCESS or FAILURE. |
+
 ### Router
 
+| Event             | Parameters                                                                                   | Description                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `MessageExecuted` | `bytes32 messageId`, `uint64 sourceChainSelector`, `address offRamp`, `bytes32 calldataHash` | Emitted when the Router successfully routes a message to the receiver. |
+
 ### Token Pool (Receive)
+
+| Event                      | Parameters                                                                                                     | Description                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `ReleasedOrMinted`         | `uint64 indexed remoteChainSelector`, `address token`, `address sender`, `address recipient`, `uint256 amount` | Emitted when tokens are released or minted to the receiver on the destination chain. |
+| `InboundRateLimitConsumed` | `uint64 indexed remoteChainSelector`, `address token`, `uint256 amount`                                        | Emitted when inbound rate limit capacity is consumed for a token transfer.           |
 
 ---
 
@@ -71023,17 +71419,82 @@ When invoking the `ccipSend` [function](/ccip/v1/evm/api-reference/v1.6.3/i-rout
 
 ## Router Errors
 
+| Error                         | Parameters                 | Error selector | Description                                                           |
+| ----------------------------- | -------------------------- | -------------- | --------------------------------------------------------------------- |
+| `UnsupportedDestinationChain` | `uint64 destChainSelector` | `0xae236d9c`   | Thrown when sending to an unsupported destination chain.              |
+| `InsufficientFeeTokenAmount`  | -                          | `0x07da6ee6`   | Thrown when the fee token amount provided is less than required.      |
+| `InvalidMsgValue`             | -                          | `0x1841b4e1`   | Thrown when msg.value is non-zero for non-native fee token payments.  |
+| `BadARMSignal`                | -                          | `0xc1483715`   | Thrown when the RMN (Risk Management Network) has cursed the network. |
+| `SafeERC20FailedOperation`    | -                          | `0x70c9c181`   | Thrown when an ERC20 token transfer fails.                            |
+
 ## OnRamp Errors
+
+| Error                         | Parameters      | Error selector | Description                                                                     |
+| ----------------------------- | --------------- | -------------- | ------------------------------------------------------------------------------- |
+| `CursedByRMN`                 | -               | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the destination chain. |
+| `RouterMustSetOriginalSender` | -               | `0xa4ec7479`   | Thrown when the router has not set the original sender address.                 |
+| `MustBeCalledByRouter`        | -               | `0x1c0a3529`   | Thrown when the caller is not the configured router address.                    |
+| `CannotSendZeroTokens`        | -               | `0x5cf04449`   | Thrown when attempting to send a token with amount zero.                        |
+| `UnsupportedToken`            | `address token` | `0xbf16aab6`   | Thrown when attempting to send an unsupported token.                            |
 
 ## FeeQuoter Errors
 
+| Error                                   | Parameters                                                            | Error selector | Description                                                                                                       |
+| --------------------------------------- | --------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `InvalidExtraArgsTag`                   | -                                                                     | `0x5247fdce`   | Thrown when an invalid extra arguments tag is used.                                                               |
+| `MessageTooLarge`                       | `uint256 maxSize`, `uint256 actualSize`                               | `0x86933789`   | Thrown when the message size exceeds the maximum allowed size.                                                    |
+| `MessageGasLimitTooHigh`                | -                                                                     | `0x4c4fc93a`   | Thrown when the gas limit exceeds the maximum per-message gas limit.                                              |
+| `UnsupportedNumberOfTokens`             | `uint256 numberOfTokens`, `uint256 maxNumberOfTokensPerMsg`           | `0x4c056b6a`   | Thrown when too many tokens are involved in the transfer.                                                         |
+| `ExtraArgOutOfOrderExecutionMustBeTrue` | -                                                                     | `0xee433e99`   | Thrown when enforceOutOfOrder is true but allowOutOfOrderExecution is false.                                      |
+| `SourceTokenDataTooLarge`               | `address token`                                                       | `0x36f536ca`   | Thrown when the source token data exceeds the configured maximum size.                                            |
+| `TokenNotSupported`                     | `address token`                                                       | `0x06439c6b`   | Thrown when a token's price isn't configured or is zero.                                                          |
+| `FeeTokenNotSupported`                  | `address token`                                                       | `0x2502348c`   | Thrown when the fee token isn't in the allowed fee tokens list.                                                   |
+| `StaleGasPrice`                         | `uint64 destChainSelector`, `uint256 threshold`, `uint256 timePassed` | `0xf08bcb3e`   | Thrown when a gas price is too old based on the chain's staleness threshold.                                      |
+| `DataFeedValueOutOfUint224Range`        | -                                                                     | `0x10cb51d1`   | Thrown when price feed values exceed uint224 range.                                                               |
+| `DestinationChainNotEnabled`            | `uint64 destChainSelector`                                            | `0x99ac52f2`   | Thrown when attempting to use a disabled destination chain.                                                       |
+| `InvalidExtraArgsData`                  | -                                                                     | `0xb00b53dc`   | Thrown when extra args data is missing or malformed.                                                              |
+| `MessageFeeTooHigh`                     | `uint256 msgFeeJuels`, `uint256 maxFeeJuelsPerMsg`                    | `0x6a92a483`   | Thrown when message fee exceeds the maximum allowed fee.                                                          |
+| `InvalidChainFamilySelector`            | `bytes4 chainFamilySelector`                                          | `0x2ee82075`   | Thrown when an unsupported chain family selector is used.                                                         |
+| `InvalidTokenReceiver`                  | -                                                                     | `0x5bed5192`   | Thrown when token receiver is invalid for SVM chains (typically when it's zero and tokens are being transferred). |
+| `TooManySVMExtraArgsAccounts`           | `uint256 numAccounts`, `uint256 maxAccounts`                          | `0x8a0d71f7`   | Thrown when too many accounts are specified in SVM extra args.                                                    |
+| `InvalidSVMExtraArgsWritableBitmap`     | `uint64 accountIsWritableBitmap`, `uint256 numAccounts`               | `0xafa93308`   | Thrown when SVM writable bitmap is invalid for the number of accounts.                                            |
+| `MessageComputeUnitLimitTooHigh`        | -                                                                     | `0x2e2b0c29`   | Thrown when compute unit limit exceeds maximum for SVM chains.                                                    |
+| `TooManySuiExtraArgsReceiverObjectIds`  | `uint256 numReceiverObjectIds`, `uint256 maxReceiverObjectIds`        | `0xc327a56c`   | Thrown when too many receiver object IDs are specified in Sui extra args.                                         |
+
 ## Rate Limiter Errors
+
+| Error                               | Parameters                                                              | Error selector | Description                                                                                    |
+| ----------------------------------- | ----------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------- |
+| `BucketOverfilled`                  | -                                                                       | `0x9725942a`   | Thrown when the token bucket contains more tokens than its capacity.                           |
+| `OnlyCallableByAdminOrOwner`        | -                                                                       | `0xf6cd5620`   | Thrown when a function is called by an address that is not the admin or owner.                 |
+| `TokenMaxCapacityExceeded`          | `uint256 capacity`, `uint256 requested`, `address tokenAddress`         | `0x1a76572a`   | Thrown when attempting to consume more tokens than the bucket's maximum capacity.              |
+| `TokenRateLimitReached`             | `uint256 minWaitInSeconds`, `uint256 available`, `address tokenAddress` | `0xd0c8d23a`   | Thrown when attempting to consume more tokens than currently available in the bucket.          |
+| `AggregateValueMaxCapacityExceeded` | `uint256 capacity`, `uint256 requested`                                 | `0xf94ebcd1`   | Thrown when attempting to consume more aggregate value than the bucket's maximum capacity.     |
+| `AggregateValueRateLimitReached`    | `uint256 minWaitInSeconds`, `uint256 available`                         | `0x15279c08`   | Thrown when attempting to consume more aggregate value than currently available in the bucket. |
 
 ## Token (ERC20) Errors
 
+| Error                                      | Description                                                   |
+| ------------------------------------------ | ------------------------------------------------------------- |
+| `ERC20: burn amount exceeds balance`       | Thrown when the amount to be burned exceeds the pool balance. |
+| `ERC20: transfer amount exceeds allowance` | Thrown when the transfer amount exceeds the allowance.        |
+
 ## BurnMintERC20 Errors
 
+| Error               | Parameters                | Error selector | Description                                                                                   |
+| ------------------- | ------------------------- | -------------- | --------------------------------------------------------------------------------------------- |
+| `MaxSupplyExceeded` | `uint256 supplyAfterMint` | `0xcbbf1113`   | Thrown when a mint operation would cause the total supply to exceed the maximum supply limit. |
+| `InvalidRecipient`  | `address recipient`       | `0x17858bbe`   | Thrown when attempting to transfer or approve tokens for the contract itself (address(this)). |
+
 ## Token Pool Errors
+
+| Error                      | Parameters                   | Error selector | Description                                                                     |
+| -------------------------- | ---------------------------- | -------------- | ------------------------------------------------------------------------------- |
+| `InvalidToken`             | `address token`              | `0x961c9a4f`   | Thrown when the token being locked or burned is not supported by the pool.      |
+| `CursedByRMN`              | -                            | `0x53ad11d8`   | Thrown when the RMN (Risk Management Network) has cursed the network.           |
+| `SenderNotAllowed`         | `address sender`             | `0xd0d25976`   | Thrown when the sender is not on the allowlist (when allowlist is enabled).     |
+| `ChainNotAllowed`          | `uint64 remoteChainSelector` | `0xa9902c7e`   | Thrown when the remote chain selector is not supported.                         |
+| `CallerIsNotARampOnRouter` | `address caller`             | `0x728fe07b`   | Thrown when the caller is not a valid onRamp for the given chain on the Router. |
 
 ---
 
@@ -71109,7 +71570,16 @@ These events are emitted when sending a cross-chain message using the `ccipSend`
 
 ### OnRamp
 
+| Event             | Parameters                                                                                                                                                                    | Description                                       |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `CCIPMessageSent` | `uint64 indexed destChainSelector`, `uint64 indexed sequenceNumber`, [`Internal.EVM2AnyRampMessage`](/ccip/v1/evm/api-reference/v1.6.3/internal#evm2anyrampmessage) `message` | Emitted when a CCIP message is successfully sent. |
+
 ### Token Pool (Send)
+
+| Event                       | Parameters                                                                                | Description                                                                 |
+| --------------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `LockedOrBurned`            | `uint64 indexed remoteChainSelector`, `address token`, `address sender`, `uint256 amount` | Emitted when tokens are locked or burned during a cross-chain transfer.     |
+| `OutboundRateLimitConsumed` | `uint64 indexed remoteChainSelector`, `address token`, `uint256 amount`                   | Emitted when outbound rate limit capacity is consumed for a token transfer. |
 
 ## `ccipReceive`
 
@@ -71117,9 +71587,22 @@ These events are emitted when a cross-chain message is executed on the destinati
 
 ### OffRamp
 
+| Event                   | Parameters                                                                                                                                                                                                                                                                     | Description                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| `ExecutionStateChanged` | `uint64 indexed sourceChainSelector`, `uint64 indexed sequenceNumber`, `bytes32 indexed messageId`, `bytes32 messageHash`, [`Internal.MessageExecutionState`](/ccip/v1/evm/api-reference/v1.6.3/internal#messageexecutionstate) `state`, `bytes returnData`, `uint256 gasUsed` | Emitted when a message execution state changes to SUCCESS or FAILURE. |
+
 ### Router
 
+| Event             | Parameters                                                                                   | Description                                                            |
+| ----------------- | -------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `MessageExecuted` | `bytes32 messageId`, `uint64 sourceChainSelector`, `address offRamp`, `bytes32 calldataHash` | Emitted when the Router successfully routes a message to the receiver. |
+
 ### Token Pool (Receive)
+
+| Event                      | Parameters                                                                                                     | Description                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `ReleasedOrMinted`         | `uint64 indexed remoteChainSelector`, `address token`, `address sender`, `address recipient`, `uint256 amount` | Emitted when tokens are released or minted to the receiver on the destination chain. |
+| `InboundRateLimitConsumed` | `uint64 indexed remoteChainSelector`, `address token`, `uint256 amount`                                        | Emitted when inbound rate limit capacity is consumed for a token transfer.           |
 
 ---
 

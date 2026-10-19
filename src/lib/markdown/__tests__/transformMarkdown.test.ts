@@ -829,6 +829,37 @@ Read the warning.
     expect(result).toBe("Before.\n\nAfter.\n")
   })
 
+  it("projects CCIPSendError data as a table with parameters, selectors, and Markdown descriptions", async () => {
+    const result = await transformMarkdown('<CCIPSendError type="router" version="v1_6_2" />', "/fake/page.mdx")
+    expect(result).toMatch(/^\| Error +\| Parameters +\| Error selector +\| Description +\|$/m)
+    expect(result).toMatch(/^\| `UnsupportedDestinationChain` +\| `uint64 destChainSelector` +\| `0xae236d9c` +\|/m)
+    expect(result).not.toContain("CCIPSendError")
+
+    const markdownDescription = await transformMarkdown(
+      '<CCIPSendError type="router" version="v1_5_0" />',
+      "/fake/page.mdx"
+    )
+    expect(markdownDescription).toContain("are *not* paid in native tokens, but `msg.value` is non-zero.")
+  })
+
+  it("projects CCIPEvent parameters in Solidity syntax and keeps type links", async () => {
+    const result = await transformMarkdown('<CCIPEvent type="onramp-send" version="v1_6_3" />', "/fake/page.mdx")
+    expect(result).toMatch(/^\| Event +\| Parameters +\| Description +\|$/m)
+    expect(result).toContain(
+      "`uint64 indexed destChainSelector`, `uint64 indexed sequenceNumber`, [`Internal.EVM2AnyRampMessage`](/ccip/v1/evm/api-reference/v1.6.3/internal#evm2anyrampmessage) `message`"
+    )
+    expect(result).not.toContain("CCIPEvent")
+  })
+
+  it.each([
+    '<CCIPSendError type="unknown" version="v1_6_2" />',
+    '<CCIPSendError type="router" version="v9_9_9" />',
+    '<CCIPEvent type="onramp-send" version="../v1_6_3" />',
+  ])("drops CCIP reference data that cannot be resolved: %s", async (component) => {
+    const result = await transformMarkdown(`Before.\n\n${component}\n\nAfter.`, "/fake/page.mdx")
+    expect(result).toBe("Before.\n\nAfter.\n")
+  })
+
   it("projects SchemaFieldsTable from report schema definitions", async () => {
     const result = await transformMarkdown(`<SchemaFieldsTable schema="v2" />`, "/fake/page.mdx")
     expect(result).toContain("| Field")

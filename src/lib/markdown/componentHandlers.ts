@@ -16,7 +16,7 @@ import {
   calculateNetworkFeesForTokenMechanismDirect,
   calculateMessagingNetworkFeesDirect,
 } from "../../config/data/ccip/utils.js"
-import { TokenMechanism } from "../../config/data/ccip/types.js"
+import { TokenMechanism, type CCIPEventEntry, type CCIPSendErrorEntry } from "../../config/data/ccip/types.js"
 import { REPORT_SCHEMA_DEFINITIONS } from "../../features/feeds/components/reportSchemaData.js"
 
 type StaticValue = null | boolean | number | string | StaticValue[] | { [key: string]: StaticValue }
@@ -1270,6 +1270,93 @@ export function handleSchemaFieldsTable(
   const tree = context.processor.parse(rows.join("\n")) as Parent
   parent.children.splice(index, 1, ...(tree.children || []))
   return index + (tree.children?.length || 0)
+}
+
+// Same type-to-data mapping as the CCIPSendError and CCIPEvent Astro components.
+const CCIP_ERROR_FILES: Record<string, string> = {
+  erc20: "erc20.json",
+  router: "router.json",
+  onramp: "onramp.json",
+  "rate-limiter": "ratelimiter.json",
+  "price-registry": "priceregistry.json",
+  pool: "pool.json",
+  burnMintERC20: "burnMintERC20.json",
+  feequoter: "feequoter.json",
+}
+
+const CCIP_EVENT_FILES: Record<string, string> = {
+  "onramp-send": "onramp-send.json",
+  "pool-send": "pool-send.json",
+  "offramp-receive": "offramp-receive.json",
+  "router-receive": "router-receive.json",
+  "pool-receive": "pool-receive.json",
+}
+
+function readCcipReferenceEntries<T>(node: MdxJsxNode, kind: "errors" | "events", files: Record<string, string>): T[] {
+  const type = staticAttribute(node, "type")
+  const version = staticAttribute(node, "version")
+  const file = typeof type === "string" && Object.hasOwn(files, type) ? files[type] : undefined
+  if (!file || typeof version !== "string" || !/^v\d+_\d+_\d+$/.test(version)) return []
+  const dataPath = resolveExistingWithin(path.resolve("src/config/data/ccip", kind), `${version}/${file}`)
+  const entries: unknown = dataPath ? JSON.parse(fs.readFileSync(dataPath, "utf-8")) : []
+  return Array.isArray(entries) ? (entries as T[]) : []
+}
+
+function replaceWithTable(parent: Parent, index: number, context: ComponentContext, rows: string[][]): number {
+  const [header, ...body] = rows
+  const markdown = [header, header.map(() => "---"), ...body].map((cells) => `| ${cells.join(" | ")} |`).join("\n")
+  const tree = context.processor.parse(markdown) as Parent
+  parent.children.splice(index, 1, ...(tree.children || []))
+  return index + (tree.children?.length || 0)
+}
+
+/** Project CCIPSendError as a Markdown table with the columns shown on the page. */
+export function handleCcipSendErrors(
+  node: MdxJsxNode,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  const entries = readCcipReferenceEntries<CCIPSendErrorEntry>(node, "errors", CCIP_ERROR_FILES)
+  if (entries.length === 0) return dropNode(parent, index)
+  const hasParameters = entries.some((entry) => entry.parameters?.length)
+  const hasSelector = entries.some((entry) => entry.errorSelector)
+  const header = ["Error", ...(hasParameters ? ["Parameters"] : []), ...(hasSelector ? ["Error selector"] : [])]
+  const rows = entries.map((entry) => [
+    `\`${escapeTableCell(entry.error)}\``,
+    ...(hasParameters
+      ? [entry.parameters?.map((p) => `\`${escapeTableCell(`${p.type} ${p.name}`)}\``).join(", ") || "-"]
+      : []),
+    ...(hasSelector ? [entry.errorSelector ? `\`${escapeTableCell(entry.errorSelector)}\`` : "-"] : []),
+    escapeTableCell(entry.description),
+  ])
+  return replaceWithTable(parent, index, context, [[...header, "Description"], ...rows])
+}
+
+/** Project CCIPEvent as a Markdown table; parameters use Solidity syntax and keep type links. */
+export function handleCcipEvents(
+  node: MdxJsxNode,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  const entries = readCcipReferenceEntries<CCIPEventEntry>(node, "events", CCIP_EVENT_FILES)
+  if (entries.length === 0) return dropNode(parent, index)
+  const hasParameters = entries.some((entry) => entry.parameters?.length)
+  const parameter = (p: NonNullable<CCIPEventEntry["parameters"]>[number]) => {
+    const name = escapeTableCell(`${p.indexed ? "indexed " : ""}${p.name}`)
+    const type = escapeTableCell(p.type)
+    return p.typeLink ? `[\`${type}\`](${p.typeLink}) \`${name}\`` : `\`${type} ${name}\``
+  }
+  const rows = entries.map((entry) => [
+    `\`${escapeTableCell(entry.event)}\``,
+    ...(hasParameters ? [entry.parameters?.map(parameter).join(", ") || "-"] : []),
+    escapeTableCell(entry.description),
+  ])
+  return replaceWithTable(parent, index, context, [
+    ["Event", ...(hasParameters ? ["Parameters"] : []), "Description"],
+    ...rows,
+  ])
 }
 
 export function handleFeedPage(
