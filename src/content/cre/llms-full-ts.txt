@@ -572,13 +572,21 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-10-09
+Last Updated: 2026-10-19
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
 > **CAUTION: Ethereum Glamsterdam upgrade**
 >
 > Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Sepolia upgrades on 6 October 2026 at 13:53:36 UTC; Ethereum Hoodi and Mainnet follow in Q4 2026. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
+
+## Solana Onchain Read and Log Trigger - October 19, 2026
+
+**Solana is now fully supported in CRE.** In addition to onchain writes, workflows can now read consensus-verified account and program state from Solana, and start on Solana log triggers when a program emits a matching event.
+
+- **Solana Read**: Fetch account and program data through a DON-run `ContractReader`, then decode the result with generated bindings. See [Reading from Solana](/cre/guides/workflow/using-solana-client/onchain-read).
+- **Solana Log Trigger**: Fire a workflow when a Solana program emits a matching Anchor event, with optional filtering on the event's top-level scalar fields. See the [Solana Log Trigger guide](/cre/guides/workflow/using-triggers/solana-log-trigger).
+- **CLI requirements**: Solana requires **CRE CLI v1.33.0 or later**. See [Supported Networks](/cre/supported-networks).
 
 ## CLI v1.38.0 - October 8, 2026
 
@@ -8314,9 +8322,9 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 
 > **NOTE: CLI and simulation**
 >
-> Solana read and write require **CRE CLI v1.24.0 or later**. Local `cre workflow simulate` dry-runs reads and writes
-> against the Devnet forwarder and a fake `ContractReader` built into the CLI. Deployed workflows use the live Keystone
-> Forwarder and DON-run `ContractReader` on your target network.
+> Solana read, write, and log trigger binding generation require **CRE CLI v1.33.0 or later**. Local simulation dry-runs
+> reads and writes against the Devnet forwarder and a fake `ContractReader` built into the CLI. Deployed workflows use
+> the live Keystone Forwarder and DON-run `ContractReader` on your target network.
 
 ## Learn more
 
@@ -29076,7 +29084,7 @@ One filter condition on a named event field.
 | `comparers` | `SolanaValueComparatorJson[]` | Values to compare against. Multiple comparers on one path are OR conditions. |
 
 Generated bindings produce one `SolanaSubkeyConfigJson` per filtered field from an `<EventName>Filters` object — see
-the [guide](/cre/guides/workflow/using-triggers/solana-log-trigger-ts#filtering-by-event-fields). Only top-level
+the [guide](/cre/guides/workflow/using-triggers/solana-log-trigger-ts). Only top-level
 scalar fields are auto-filterable: nested objects, arrays, `boolean`, and 128-bit integers are excluded and require a
 manually built `SolanaSubkeyConfigJson`.
 
@@ -29180,7 +29188,7 @@ Your callback function for Solana log triggers must conform to this signature:
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-09-18
+Last Updated: 2026-10-19
 
 This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 
@@ -29279,13 +29287,13 @@ Run [`cre workflow supported-chains`](/cre/reference/cli/workflow#cre-workflow-s
 
 ## Solana Networks
 
-Solana support is currently **write-only**. Read and Log Trigger capabilities are in development. Solana write requires
-**CRE CLI v1.24.0 or later** (`cre version` / `cre update`).
+Solana is fully supported for **onchain reads, onchain writes, and log triggers**. Solana requires **CRE CLI v1.33.0
+or later** (`cre version` / `cre update`).
 
-| Network        | CLI      | Capabilities | Chain Selector         |
-| -------------- | -------- | ------------ | ---------------------- |
-| Solana Mainnet | v1.24.0+ | Write        | `124615329519749607`   |
-| Solana Devnet  | v1.24.0+ | Write        | `16423721717087811551` |
+| Network        | CLI      | Capabilities             | Chain Selector         |
+| -------------- | -------- | ------------------------ | ---------------------- |
+| Solana Mainnet | v1.33.0+ | Read, Write, Log Trigger | `124615329519749607`   |
+| Solana Devnet  | v1.33.0+ | Read, Write, Log Trigger | `16423721717087811551` |
 
 In TypeScript, use `SolanaClient.SUPPORTED_CHAIN_SELECTORS['solana-mainnet']` (returns `124615329519749607n`) or pass the selector directly as a `bigint`.
 
