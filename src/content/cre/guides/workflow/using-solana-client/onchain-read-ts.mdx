@@ -1,0 +1,295 @@
+---
+section: cre
+title: "Onchain Read"
+sdkLang: "ts"
+pageId: "guides-workflow-solana-onchain-read"
+date: Last Modified
+metadata:
+  description: "Read data from Solana accounts in TypeScript: fetch consensus-verified account state in your workflows."
+  datePublished: "2026-09-03"
+  lastModified: "2026-09-04"
+---
+
+import { Aside } from "@components"
+
+This guide explains how to read data from a Solana account from within your CRE workflow. Reading is deliberately
+split into two steps: fetch the raw account bytes with `SolanaClient`'s
+[`getAccountInfoWithOpts`](/cre/reference/sdk/solana-client-ts#solanaclientgetaccountinfowithopts), then decode them into
+your account's type with the generated `decode<AccountName>Account()`. Fetching is generic. It works the same way
+for any account on any program. Decoding is schema-specific, so it has to be generated from your program's IDL. Keeping
+them separate is what lets one fetch call work for every account type you read.
+
+## Prerequisites
+
+- A CRE project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) if you are starting from scratch.
+- The latest version of the CRE CLI (`cre version` / `cre update`); **v1.32.0 or later** is required for TypeScript Solana read binding generation.
+- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required for every Solana simulation, including a read-only workflow). See [Step 4](#step-4-run-the-simulation).
+
+## What you need: an account to read
+
+This guide reads a `DataAccount` owned by the `data_storage` program, deployed to Solana Devnet at
+`64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31`. `DataAccount` is a simple key/value record:
+
+```rust
+// data_storage (abridged)
+#[account]
+pub struct DataAccount {
+    pub key: String,
+    pub value: String,
+}
+```
+
+The account already exists and is initialized at a fixed PDA,
+[`HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K`](https://explorer.solana.com/address/HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K?cluster=devnet)
+(derived from the program with seed `"data"`), so you do not need to deploy or initialize anything to follow this
+guide.
+
+## Step 1: Add the IDL and generate bindings
+
+1. Save the following as `contracts/solana/src/idl/data_storage.json`.
+
+   ```json
+   {
+     "address": "64Q1Xu7AEbc2xgaN21zZU1y1mkaLJNnP5cHFkthGuW31",
+     "metadata": {
+       "name": "data_storage",
+       "version": "0.1.0",
+       "spec": "0.1.0",
+       "description": "CRE Solana Write example receiver with a persistent DataAccount PDA, reused for the Onchain Read docs guide"
+     },
+     "instructions": [
+       {
+         "name": "initialize",
+         "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
+         "accounts": [
+           {
+             "name": "data_account",
+             "writable": true,
+             "pda": { "seeds": [{ "kind": "const", "value": [100, 97, 116, 97] }] }
+           },
+           { "name": "payer", "writable": true, "signer": true },
+           { "name": "system_program", "address": "11111111111111111111111111111111" }
+         ],
+         "args": []
+       },
+       {
+         "name": "on_report",
+         "discriminator": [214, 173, 18, 221, 173, 148, 151, 208],
+         "accounts": [
+           { "name": "state" },
+           { "name": "forwarder_authority", "signer": true },
+           {
+             "name": "data_account",
+             "writable": true,
+             "pda": { "seeds": [{ "kind": "const", "value": [100, 97, 116, 97] }] }
+           }
+         ],
+         "args": [
+           { "name": "metadata", "type": "bytes" },
+           { "name": "payload", "type": "bytes" }
+         ]
+       }
+     ],
+     "accounts": [
+       {
+         "name": "DataAccount",
+         "discriminator": [85, 240, 182, 158, 76, 7, 18, 233]
+       }
+     ],
+     "events": [],
+     "errors": [
+       {
+         "code": 6000,
+         "name": "InvalidPayload",
+         "msg": "Failed to deserialize payload as UserData"
+       }
+     ],
+     "types": [
+       {
+         "name": "DataAccount",
+         "type": {
+           "kind": "struct",
+           "fields": [
+             { "name": "key", "type": "string" },
+             { "name": "value", "type": "string" }
+           ]
+         }
+       }
+     ]
+   }
+   ```
+
+1. From your workflow directory, generate the bindings. See [Generating Solana
+   Bindings](/cre/guides/workflow/using-solana-client/generating-bindings-ts) for what this command does in general.
+
+   ```bash
+   cd my-workflow
+   cre generate-bindings solana
+   ```
+
+   This creates `contracts/solana/ts/generated/DataStorage.ts` (plus a mock and `index.ts`), exporting a
+   `decodeDataAccountAccount(data: Uint8Array): DataAccount` function.
+
+## Step 2: Configure the workflow
+
+Open (or create) `config.staging.json`. Every read-only workflow needs a schedule and the chain to read from. The
+`dataAccount` field is specific to this example: it is not a general CRE or Solana concept, just a config value this
+guide uses to point at the one `DataAccount` PDA it reads. A workflow that reads a different account, or several,
+would name and structure this differently.
+
+```json
+{
+  "schedule": "*/30 * * * * *",
+  "chainSelector": "16423721717087811551",
+  "dataAccount": "HxzqwQZNyDM3Tvp9nR8v9tgJ5ZZ1Lm8LiJ8kxoyu539K"
+}
+```
+
+| Field           | Description                                                                               |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| `schedule`      | Cron expression for how often to read the account.                                        |
+| `chainSelector` | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss. |
+| `dataAccount`   | Specific to this example: the base58 address of the `DataAccount` PDA to read.            |
+
+## Step 3: Write the workflow
+
+This step is a complete, pasteable workflow that reads `DataAccount` on a cron schedule and logs its decoded
+key/value.
+
+1. Save the following as `my-workflow/main.ts`.
+
+   ```typescript
+   // my-workflow/main.ts
+   import {
+     bytesToBase64,
+     CronCapability,
+     handler,
+     Runner,
+     SolanaClient,
+     solanaAddressToBytes,
+     type Runtime,
+   } from "@chainlink/cre-sdk"
+   import { decodeDataAccountAccount } from "./contracts/solana/ts/generated/DataStorage"
+
+   type Config = {
+     schedule: string
+     chainSelector: string
+     dataAccount: string
+   }
+
+   const onCronTrigger = (runtime: Runtime<Config>) => {
+     const config = runtime.config
+     const client = new SolanaClient(BigInt(config.chainSelector))
+
+     const reply = client
+       .getAccountInfoWithOpts(runtime, {
+         account: bytesToBase64(solanaAddressToBytes(config.dataAccount)),
+         opts: {
+           // Base64 is required for accounts over 128 bytes; DataAccount's fixed layout is 528 bytes.
+           encoding: "ENCODING_TYPE_BASE64",
+           commitment: "COMMITMENT_TYPE_CONFIRMED",
+         },
+       })
+       .result()
+
+     if (!reply.value) {
+       throw new Error(`DataAccount ${config.dataAccount} does not exist`)
+     }
+     if (reply.value.data?.body.case !== "raw") {
+       throw new Error(`expected raw-encoded account data, got ${reply.value.data?.body.case}`)
+     }
+
+     const data = decodeDataAccountAccount(reply.value.data.body.value)
+
+     runtime.log(`DataAccount key=${data.key} value=${data.value} lamports=${reply.value.lamports}`)
+
+     return "Success"
+   }
+
+   export const initWorkflow = (config: Config) => {
+     const cron = new CronCapability()
+     return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)]
+   }
+
+   export async function main() {
+     const runner = await Runner.newRunner<Config>()
+     await runner.run(initWorkflow)
+   }
+   ```
+
+<Aside type="note" title="Why the account field is base64 but the reply isn't">
+  If you swap in your own account address and get a confusing type error on the request, this is why: request and reply
+  fields don't use the same representation for bytes. Request fields like `account` use the JSON-friendly form, where
+  raw bytes are base64-encoded strings, so `bytesToBase64(solanaAddressToBytes(...))` converts a base58 address into
+  that form before you send it. The reply comes back with real `Uint8Array` fields directly, which is why
+  `reply.value.data.body.value` needs no decoding before you hand it to `decodeDataAccountAccount`. `data` is a oneof
+  (`body.case` is `"raw"` or `"json"` depending on the requested encoding), so check `body.case` before reading
+  `body.value`.
+</Aside>
+
+<Aside type="note" title="Consensus on reads">
+  You do not need to guard against a single bad RPC response:
+  [`getAccountInfoWithOpts`](/cre/reference/sdk/solana-client-ts#solanaclientgetaccountinfowithopts) is served by a
+  `ContractReader` on the Solana capability DON, so multiple nodes independently fetch the account and agree on the
+  result before your workflow ever sees it. This is the same consensus model EVM reads use, just applied to Solana's
+  account model instead of contract calls.
+</Aside>
+
+## Step 4: Run the simulation
+
+1. Create a `workflow.yaml` in your workflow folder.
+
+   ```yaml
+   staging-settings:
+     user-workflow:
+       workflow-name: "my-solana-onchain-read"
+     workflow-artifacts:
+       workflow-path: "./main.ts"
+       config-path: "./config.staging.json"
+       secrets-path: ""
+   ```
+
+1. Add a Solana RPC endpoint to your `project.yaml` (at your project root, **not** inside `my-workflow/`).
+
+   ```yaml
+   staging-settings:
+     rpcs:
+       - chain-name: solana-devnet
+         url: https://api.devnet.solana.com
+   ```
+
+1. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`. Solana simulation requires a funded 64-byte base58 keypair
+   for every run, even a read-only workflow. See [Writing to Solana: Step
+   4](/cre/guides/workflow/using-solana-client/onchain-write-ts#step-4-run-the-simulation) for how to generate and
+   fund one. `CRE_ETH_PRIVATE_KEY` is required too, for the same workflow-owner-derivation reason described there.
+
+1. Run the simulation.
+
+   ```bash
+   cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target staging-settings
+   ```
+
+   The simulator runs your cron handler once, reads the live account from Devnet, and decodes it:
+
+   ```
+   ✓ Workflow compiled
+   [SIMULATION] Simulator Initialized
+   [SIMULATION] Running trigger trigger=cron-trigger@1.0.0
+   [USER LOG] DataAccount key=price value=500000 lamports=4565760
+
+   ✓ Workflow Simulation Result:
+   "Success"
+   ```
+
+## Deploying the workflow
+
+Once your handler behaves as expected in simulation, deploy it the same way as any other CRE workflow. See
+[Deploying to the Private Registry](/cre/guides/operations/deploying-to-private-registry-ts). A deployed read
+workflow runs on the schedule you configured, with the DON reaching consensus on each read.
+
+## Next steps
+
+- **[Solana Client SDK Reference](/cre/reference/sdk/solana-client-ts)**: Full API reference for `SolanaClient`'s read methods
+- **[Solana Log Trigger](/cre/guides/workflow/using-triggers/solana-log-trigger-ts)**: React to Solana events instead of polling on a schedule
+- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts)**: Submit CRE workflow results to a Solana program
+- **[The Solana Read & Write Capabilities](/cre/capabilities/solana-read-write)**: Conceptual overview of how Solana reads reach consensus
