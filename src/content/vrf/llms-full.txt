@@ -1,6 +1,10 @@
 # Chainlink VRF
 Source: https://docs.chain.link/vrf
 
+> **TIP: Security Considerations**
+>
+> Be sure to review your contracts with the [security considerations](/vrf/v2-5/security) in mind.
+
 **Chainlink VRF (Verifiable Random Function)** is a provably fair and verifiable random number generator (RNG) that enables smart contracts to access random values without compromising security or usability. For each request, Chainlink VRF generates one or more random values and cryptographic proof of how those values were determined. The proof is published and verified onchain before any consuming applications can use it. This process helps ensure that results cannot be tampered with or manipulated by any single entity including oracle operators, smart contract developers, users, miners, or block builders\*.
 
 \*In the unlikely event that an adversary compromises VRF's randomness-generating secret key and obtains the ability to construct blocks on the target chain, they could strongly bias the result.
@@ -431,6 +435,10 @@ Source: https://docs.chain.link/vrf/v2-5/migration-from-v2
 > Security fixes for VRF v2 are not guaranteed. Complete this guide to migrate your application to Chainlink VRF v2.5.
 >
 > *Continued use of VRF v2 is at your own risk. Use of the Chainlink Network is subject to the [Chainlink Foundation Terms of Service](https://chain.link/terms), which provides important information and disclosures.*
+
+> **TIP: Security Considerations**
+>
+> Be sure to review your contracts with the [security considerations](/vrf/v2-5/security) in mind.
 
 VRF V2.5 replaces both VRF V1 and VRF V2 on November 29, 2024. [Learn more about VRF V2.5](https://blog.chain.link/introducing-vrf-v2-5/).
 
@@ -902,6 +910,10 @@ Source: https://docs.chain.link/vrf/v2-5/migration-from-v1
 >
 > *Continued use of VRF v1 is at your own risk. Use of the Chainlink Network is subject to the [Chainlink Foundation Terms of Service](https://chain.link/terms), which provides important information and disclosures.*
 
+> **TIP: Security Considerations**
+>
+> Be sure to review your contracts with the [security considerations](/vrf/v2-5/security) in mind.
+
 VRF V2.5 replaces both VRF V1 and VRF V2 on November 29, 2024. [Learn more about VRF V2.5](https://blog.chain.link/introducing-vrf-v2-5/).
 
 ## Comparing VRF v1 to VRF v2.5
@@ -1156,6 +1168,10 @@ Source: https://docs.chain.link/vrf/v2-5/supported-networks
 Chainlink VRF allows you to integrate provably fair and verifiably random data in your smart contract. For implementation details, read [Introduction to Chainlink VRF](/vrf).
 
 VRF v2.5 coordinators for subscription funding are available on several networks. To use Chainlink VRF on certain networks, you may need to conduct token transfers. You can transfer tokens by using [Chainlink CCIP](/ccip/evm/tutorials/application-developers/transfer-tokens-from-contract), [Transporter](https://www.transporter.io/) or third-party applications such as [XSwap](https://xswap.link/).
+
+> **TIP: Security Considerations**
+>
+> Be sure to review your contracts with the [security considerations](/vrf/v2-5/security) in mind.
 
 > **NOTE: Interfaces and Applications**
 >
@@ -1916,6 +1932,10 @@ Fulfillments require sufficient subscription balance at processing time. If the 
 # VRF Best Practices
 Source: https://docs.chain.link/vrf/v2-5/best-practices
 
+> **TIP: Security Considerations**
+>
+> Be sure to review your contracts with the [security considerations](/vrf/v2-5/security) in mind.
+
 These are example best practices for using Chainlink VRF. To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
 
 ## Getting a random number within a range
@@ -2446,6 +2466,10 @@ This example request would cost 0.01266474 ETH.
 # Subscription Method
 Source: https://docs.chain.link/vrf/v2-5/overview/subscription
 
+> **TIP: Security Considerations**
+>
+> Be sure to review your contracts with the [security considerations](/vrf/v2-5/security) in mind.
+
 This section explains how to generate random numbers using the subscription method.
 
 > **NOTE: Migrate to V2.5**
@@ -2829,6 +2853,10 @@ const VRFDirectFundingGasEstimate = P.mul(VRFDirectFundingGasTotal)
 # Create and manage VRF V2.5 subscriptions
 Source: https://docs.chain.link/vrf/v2-5/subscription/create-manage
 
+> **TIP: Security Considerations**
+>
+> Be sure to review your contracts with the [security considerations](/vrf/v2-5/security) in mind.
+
 ## Using the VRF Subscription Manager
 
 The [VRF Subscription Manager](https://vrf.chain.link/) is available to help you create and manage VRF V2.5 subscriptions. You can create and manage new V2.5 subscriptions, and manage existing V2 subscriptions, but you can no longer create new V2 subscriptions in the VRF Subscription Manager. Alternatively, you can [create and manage subscriptions programmatically](#create-a-subscription-programmatically).
@@ -2914,6 +2942,13 @@ If you prefer to create, fund and manage your subscriptions programmatically, yo
 Source: https://docs.chain.link/vrf/v2-5/subscription/get-a-random-number
 
 This guide explains how to get random values using a simple contract to request and receive random values from Chainlink VRF v2.5. The guide uses the Subscription Manager to create and manage your subscription. Alternatively, you can also [create and manage subscriptions programmatically](/vrf/v2-5/subscription/create-manage#create-a-subscription-programmatically). To explore more applications of VRF, refer to our [blog](https://blog.chain.link/).
+
+> **NOTE: VRF Subscription Manager limitations**
+>
+> The [VRF Subscription Manager](https://vrf.chain.link/) is available to help you create and manage VRF subscriptions.
+> You can create and manage new V2.5 subscriptions, and manage existing V2 subscriptions, but you can no longer create
+> new V2 subscriptions in the VRF Subscription Manager. Alternatively, you can [create and manage V2 subscriptions
+> programmatically](/vrf/v2/subscription/examples/programmatic-subscription).
 
 ## Requirements
 
@@ -3185,6 +3220,15 @@ This guide explains how to test Chainlink VRF v2.5 on a [Remix IDE](https://remi
 > sure to test your consumer contract thoroughly on public testnets.
 
 ## Benefits of local testing
+
+Testing locally using mock contracts saves you time and resources during development. Some of the key benefits include:
+
+- Faster feedback loop: Immediate feedback on the functionality and correctness of your smart contracts. This helps you quickly identify and fix issues without waiting for transactions to be mined/validated on a testnet.
+- Saving your native testnet gas: Deploying and interacting with contracts requires paying gas fees. Although native testnet gas does not have any associated value, supply is limited by public faucets. Using mock contracts locally allows you to test your contracts freely without incurring any expenses.
+- Controlled environment: Local testing allows you to create a controlled environment where you can manipulate various parameters, such as block time and gas prices, to test your smart contracts' function as expected under different conditions.
+- Isolated testing: You can focus on testing individual parts of your contract, ensuring they work as intended before integrating them with other components.
+- Easier debugging: Because local tests run on your machine, you have better control over the debugging process. You can set breakpoints, inspect variables, and step through your code to identify and fix issues.
+- Comprehensive test coverage: You can create test cases to cover all possible scenarios and edge cases.
 
 ## Testing logic
 
