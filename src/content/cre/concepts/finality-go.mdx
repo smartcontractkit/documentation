@@ -64,6 +64,17 @@ For most read operations, use the standard confidence levels by passing `-2` (la
 
 **Note:** The `SAFE` confidence level is not available for chain reads—only `LATEST` and `FINALIZED` are supported.
 
+{/* prettier-ignore */}
+<Aside type="caution" title="Finalized and safe reads can fail on some chains">
+  While RPC nodes are not archival nodes, they should keep sufficient blocks in memory to include `finalized` and `safe`
+  tags. However, periodically some chains experience situations where `finalized` and `safe` is not in memory because the
+  gap exceeds the normal environment. When this happens, calls to `finalized` and/or `safe` blocks will return an error.
+
+The following chains have exhibited this behavior and safe and finalized reads may periodically return errors.
+**Mainnet:** Polygon, Mantle, Scroll. **Testnet:** Polygon Amoy, Linea Sepolia.
+
+</Aside>
+
 ### Custom block depths
 
 For use cases requiring fixed confirmation thresholds or historical state verification, you can specify **any explicit block number** instead of using the predefined confidence levels. This enables you to:
