@@ -1,0 +1,356 @@
+---
+section: cre
+title: "Solana Log Trigger"
+sdkLang: "go"
+pageId: "guides-workflow-solana-log-trigger"
+date: Last Modified
+metadata:
+  description: "Trigger a CRE workflow when a Solana program emits an event, in Go: step-by-step guide using generated Anchor bindings."
+  datePublished: "2026-09-03"
+  lastModified: "2026-09-04"
+---
+
+import { Aside } from "@components"
+
+The Solana Log trigger fires when a specific event is emitted by a program on Solana (via Anchor's `emit!` or
+`emit_cpi!`). This guide walks through triggering a workflow whenever a price feed program publishes an update for
+an asset you care about, using the same generated-bindings pattern as [Writing to
+Solana](/cre/guides/workflow/using-solana-client/onchain-write-go).
+
+A `solana.FilterLogTriggerRequest` watches a single program address, not a list, so you register one trigger per
+program you want to watch.
+
+## Prerequisites
+
+- A CRE Go project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-go) if you are starting from scratch.
+- The latest version of the CRE CLI (`cre version` / `cre update`); **v1.33.0 or later** is required for Solana log trigger binding generation.
+- A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required for every Solana simulation, including a trigger-only dry run). See [Step 4](#step-4-run-the-simulation).
+- A Devnet transaction signature that already emitted a `PriceUpdated` event. Use the signature provided in [Step
+  4](#step-4-run-the-simulation), or [publish your own](#producing-a-test-event).
+
+## What you need: an event to trigger on
+
+This guide uses a minimal example program deployed to Solana Devnet at
+[`67qyQ7aDLwamUFCbz6xzB5dayveVStif9tkis9rK1jNY`](https://explorer.solana.com/address/67qyQ7aDLwamUFCbz6xzB5dayveVStif9tkis9rK1jNY?cluster=devnet).
+It has one permissionless instruction, `publish_price`, which anyone can call directly. There are no accounts, no
+state, and no CRE involvement in publishing. Calling it emits a `PriceUpdated` event with the data at the **top
+level** of the event, which matters for filtering (see [Step 3](#step-3-write-the-workflow)):
+
+```rust
+// cre_docs_log_trigger_example (abridged)
+pub fn publish_price(ctx: Context<Publish>, asset: String, price: u64) -> Result<()> {
+    emit!(PriceUpdated { asset, price });
+    Ok(())
+}
+
+#[event]
+pub struct PriceUpdated {
+    pub asset: String,
+    pub price: u64,
+}
+```
+
+Because this program is already deployed, you do not need to deploy anything to follow this guide. You only need
+one Devnet transaction that already called `publish_price`.
+
+## Step 1: Add the IDL and generate bindings
+
+1. Save the following as `contracts/solana/src/idl/cre_docs_log_trigger_example.json`.
+
+   ```json
+   {
+     "address": "67qyQ7aDLwamUFCbz6xzB5dayveVStif9tkis9rK1jNY",
+     "metadata": {
+       "name": "cre_docs_log_trigger_example",
+       "version": "0.1.0",
+       "spec": "0.1.0",
+       "description": "Minimal permissionless price-feed example for the CRE Solana Log Trigger docs guide"
+     },
+     "instructions": [
+       {
+         "name": "publish_price",
+         "discriminator": [117, 13, 6, 171, 29, 204, 11, 1],
+         "accounts": [],
+         "args": [
+           { "name": "asset", "type": "string" },
+           { "name": "price", "type": "u64" }
+         ]
+       }
+     ],
+     "accounts": [],
+     "events": [
+       {
+         "name": "PriceUpdated",
+         "discriminator": [154, 72, 87, 150, 246, 230, 23, 217]
+       }
+     ],
+     "errors": [],
+     "types": [
+       {
+         "name": "PriceUpdated",
+         "type": {
+           "kind": "struct",
+           "fields": [
+             { "name": "asset", "type": "string" },
+             { "name": "price", "type": "u64" }
+           ]
+         }
+       }
+     ]
+   }
+   ```
+
+1. From your project root, generate the bindings:
+
+   ```bash
+   cre generate-bindings solana --language go
+   ```
+
+   This creates `contracts/solana/src/generated/cre_docs_log_trigger_example/` with a `LogTriggerPriceUpdatedLog(...)`
+   method and a `PriceUpdatedFilters` struct for filtering, in `triggers.go`.
+
+1. Sync dependencies.
+
+   ```bash
+   go mod tidy
+   ```
+
+<Aside type="caution" title="If the build fails with undefined: solana.FilterLogTriggerRequest">
+  Solana log trigger support has not shipped in a tagged `cre-sdk-go` release yet, so `go mod tidy` alone may leave you
+  on an older version that predates it. If you see `undefined: solana.FilterLogTriggerRequest`, `undefined:
+  bindings.DecodedLog`, or similar, explicitly upgrade the Solana capability module with `go get
+  github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana@main`. You may need to repeat this after every
+  `cre generate-bindings solana` run until a tagged release is available, since regenerating bindings can reset `go.mod`
+  back to the last tagged version.
+</Aside>
+
+## Step 2: Configure the workflow
+
+Open (or create) `config.staging.json`. Every log trigger needs the chain to watch, which comes from the IDL baked
+into the generated bindings. The `asset` field is specific to this example: it is not a general CRE or Solana
+concept, just a config value this guide uses to demonstrate filtering on one of `PriceUpdated`'s fields. Your own
+program's events will have their own fields to filter on instead.
+
+```json
+{
+  "chainSelector": "16423721717087811551",
+  "asset": "SOL/USD"
+}
+```
+
+| Field           | Description                                                                               |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| `chainSelector` | Solana Devnet (`"16423721717087811551"`). Store as a string to avoid JSON precision loss. |
+| `asset`         | Specific to this example: the `PriceUpdated.asset` value to filter on.                    |
+
+## Step 3: Write the workflow
+
+This step is a complete, pasteable workflow that logs the decoded `PriceUpdated` event whenever the price feed
+publishes an update for the configured asset, using the generated `LogTriggerPriceUpdatedLog` binding helper.
+
+1. Save the following as `my-workflow/workflow.go`. Replace `<project-name>` with your Go module name from `go.mod`.
+
+   ```go
+   // my-workflow/workflow.go
+   package main
+
+   import (
+       "fmt"
+       "log/slog"
+
+       solanago "github.com/gagliardetto/solana-go"
+       solana "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana"
+       "github.com/smartcontractkit/cre-sdk-go/capabilities/blockchain/solana/bindings"
+       "github.com/smartcontractkit/cre-sdk-go/cre"
+
+       "<project-name>/contracts/solana/src/generated/cre_docs_log_trigger_example"
+   )
+
+   type Config struct {
+       ChainSelector uint64 `json:"chainSelector,string"`
+       Asset         string `json:"asset"`
+   }
+
+   func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+       client := &solana.Client{ChainSelector: config.ChainSelector}
+
+       // NewCreDocsLogTriggerExample uses the program ID baked into the IDL (regenerate bindings when it changes).
+       feed, err := cre_docs_log_trigger_example.NewCreDocsLogTriggerExample(client)
+       if err != nil {
+           return nil, err
+       }
+
+       // Only fire for updates to this asset; ignore PriceUpdated events for every other asset
+       // published through the same program.
+       logTrigger, err := feed.LogTriggerPriceUpdatedLog(
+           config.ChainSelector,
+           "price-updated-"+config.Asset,
+           []cre_docs_log_trigger_example.PriceUpdatedFilters{
+               {Asset: &config.Asset},
+           },
+           nil, // opts: PriceUpdated is emitted with Anchor's emit!, not emit_cpi!.
+       )
+       if err != nil {
+           return nil, fmt.Errorf("failed to create log trigger: %w", err)
+       }
+
+       return cre.Workflow[*Config]{
+           cre.Handler(logTrigger, onPriceUpdated),
+       }, nil
+   }
+
+   func onPriceUpdated(config *Config, runtime cre.Runtime, payload *bindings.DecodedLog[cre_docs_log_trigger_example.PriceUpdated]) (string, error) {
+       logger := runtime.Logger()
+
+       // payload.Data is the decoded PriceUpdated event; payload.Log is the raw log metadata.
+       var txSig solanago.Signature
+       copy(txSig[:], payload.Log.GetTxHash())
+
+       logger.Info("PriceUpdated event",
+           "asset", payload.Data.Asset,
+           "price", payload.Data.Price,
+           "blockNumber", payload.Log.GetBlockNumber(),
+           "txHash", txSig.String(),
+       )
+
+       return "Success", nil
+   }
+   ```
+
+<Aside type="note" title="Filtering by event fields">
+  The third argument to `LogTrigger<EventName>Log` filters on the event's top-level scalar fields. Both `Asset` and
+  `Price` are top-level here, so both are filterable. `PriceUpdatedFilters{Asset: &config.Asset}` only fires for
+  updates to that asset. Nested structs, vecs, arrays, `bool`, `u128`, and `i128` are not auto-filterable; if your
+  own program needs to filter on a field like that, emit it as a top-level scalar instead. See the [SDK
+  reference](/cre/reference/sdk/triggers/solana-log-trigger-go) for the full filtering model.
+</Aside>
+
+## Producing a test event
+
+The transaction signature used in [Step 4](#step-4-run-the-simulation) already works, so you can skip this section
+on a first read. To test with your own data, you need a fresh transaction. This script sends a real Solana
+transaction that calls `publish_price` directly, entirely outside of CRE. That call is the action that emits the
+`PriceUpdated` event your workflow reacts to. The instruction is permissionless, so any funded Devnet keypair can
+call it. For example, using `@solana/web3.js` in a short script:
+
+```javascript
+const {
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+  TransactionInstruction,
+  sendAndConfirmTransaction,
+} = require("@solana/web3.js")
+
+const PROGRAM_ID = new PublicKey("67qyQ7aDLwamUFCbz6xzB5dayveVStif9tkis9rK1jNY")
+const DISCRIMINATOR = Buffer.from([117, 13, 6, 171, 29, 204, 11, 1]) // sha256("global:publish_price")[:8]
+
+function encodeArgs(asset, price) {
+  const assetBytes = Buffer.from(asset, "utf8")
+  const lenBuf = Buffer.alloc(4)
+  lenBuf.writeUInt32LE(assetBytes.length, 0)
+  const priceBuf = Buffer.alloc(8)
+  priceBuf.writeBigUInt64LE(BigInt(price), 0)
+  return Buffer.concat([DISCRIMINATOR, lenBuf, assetBytes, priceBuf])
+}
+
+async function main() {
+  const payer = Keypair.fromSecretKey(/* your funded Devnet keypair bytes */)
+  const connection = new Connection("https://api.devnet.solana.com", "confirmed")
+  const ix = new TransactionInstruction({ programId: PROGRAM_ID, keys: [], data: encodeArgs("SOL/USD", 15000) })
+  const sig = await sendAndConfirmTransaction(connection, new Transaction().add(ix), [payer])
+  console.log("Signature:", sig)
+}
+
+main()
+```
+
+## Step 4: Run the simulation
+
+Solana log trigger simulation replays a real onchain event: you give the simulator a transaction signature and an
+event index, and it fetches that event from Devnet.
+
+<Aside type="note" title="Two separate YAML files">
+  CRE uses two configuration files that live in different directories:
+
+- **`workflow.yaml`** lives inside your workflow folder (`my-workflow/workflow.yaml`). It defines workflow metadata
+  (name, registry) and points to your `main.go` and config JSON.
+- **`project.yaml`** lives at your **project root** (the directory you ran `cre init` in, one level above
+  `my-workflow/`). It defines RPC endpoints and other project-level settings per target.
+
+Both files use the same target names (e.g. `staging-settings`) to link a workflow to its RPCs.
+
+</Aside>
+
+1. Create a `workflow.yaml` in your workflow folder so the CLI can find your staging target.
+
+   ```yaml
+   staging-settings:
+     user-workflow:
+       workflow-name: "my-solana-log-trigger"
+     workflow-artifacts:
+       workflow-path: "./main.go"
+       config-path: "./config.staging.json"
+       secrets-path: ""
+   ```
+
+1. Add a Solana RPC endpoint to your `project.yaml` (at your project root, **not** inside `my-workflow/`) under your
+   simulation target.
+
+   ```yaml
+   staging-settings:
+     rpcs:
+       - chain-name: solana-devnet
+         url: https://api.devnet.solana.com
+   ```
+
+1. Set `CRE_SOLANA_PRIVATE_KEY` in your project `.env`. Solana simulation requires a funded 64-byte base58 keypair for
+   every run, even a trigger-only dry run that never submits a transaction. See [Writing to Solana: Step
+   4](/cre/guides/workflow/using-solana-client/onchain-write-go#step-4-run-the-simulation) for how to generate and
+   fund one. `CRE_ETH_PRIVATE_KEY` is required too, for the same workflow-owner-derivation reason described there.
+
+1. Run the simulation, passing the transaction signature and event index non-interactively. `publish_price` emits
+   exactly one event with nothing else in the transaction, so the event index is always `0`.
+
+   ```bash
+   cre workflow simulate my-workflow \
+     --non-interactive \
+     --trigger-index 0 \
+     --solana-tx-sig Ub8Xo7QMik6eLewpecdZCANc7CLmsJP7vd7bCLhDoe7fNXmRM7fL4qEx3drMGkMbE4Sh8W7nL49EV3tijziTy4z \
+     --solana-event-index 0 \
+     --target staging-settings
+   ```
+
+   The simulator fetches the transaction, extracts the `PriceUpdated` event, decodes it, and runs your handler:
+
+   ```
+   ✓ Workflow compiled
+   [SIMULATION] Simulator Initialized
+   [SIMULATION] Running trigger trigger=solana:ChainSelector:16423721717087811551@1.0.0
+   [USER LOG] msg="PriceUpdated event" asset=SOL/USD price=15000 blockNumber=493117543 txHash=Ub8Xo7QMik6eLewpecdZCANc7CLmsJP7vd7bCLhDoe7fNXmRM7fL4qEx3drMGkMbE4Sh8W7nL49EV3tijziTy4z
+
+   ✓ Workflow Simulation Result:
+   "Success"
+   ```
+
+   Omit interactive mode (drop `--non-interactive` and its accompanying flags) to be prompted for the transaction
+   signature and event index instead. See [Simulating Workflows: Solana log
+   trigger](/cre/guides/operations/simulating-workflows#solana-log-trigger) for both modes.
+
+## Deploying the workflow
+
+Once your handler behaves as expected in simulation, deploy it the same way as any other CRE workflow. See [Deploying
+to the Private Registry](/cre/guides/operations/deploying-to-private-registry-go). A deployed log trigger runs
+continuously: the DON watches for new `PriceUpdated` events onchain and runs your handler each time one occurs for
+your configured asset, without you needing to supply a transaction signature.
+
+To verify a deployed workflow, emit a fresh `PriceUpdated` event after deployment (see [Producing a test
+event](#producing-a-test-event)) and check the workflow's executions with `cre execution list`. A deployed log
+trigger only reacts to events emitted **after** it is deployed — it does not replay events that happened before.
+
+## Next steps
+
+- **[Solana Log Trigger SDK Reference](/cre/reference/sdk/triggers/solana-log-trigger-go)**: Full filter configuration and payload reference
+- **[Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-go)**: Submit CRE workflow results to a Solana program
+- **[The Trigger Capability](/cre/capabilities/triggers)**: Conceptual overview of all CRE trigger types
