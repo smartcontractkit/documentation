@@ -3,6 +3,7 @@ import os from "node:os"
 import path from "node:path"
 import { describe, expect, test } from "@jest/globals"
 import { buildMarkdownArtifact } from "@lib/markdown/buildMarkdownArtifact.js"
+import { transformMarkdown } from "@lib/markdown/transformMarkdown.js"
 import type { MarkdownArtifact } from "@lib/markdown/types.js"
 import {
   analyzeSourceMarkdown,
@@ -457,6 +458,8 @@ describe("content-bearing component fidelity", () => {
     ["AnyApiCallout", '<AnyApiCallout callout="not-a-callout" />'],
     ["CcipCommon", '<CcipCommon callout="not-a-callout" />'],
     ["SchemaFieldsTable", '<SchemaFieldsTable schema="unknown" />'],
+    ["CCIPSendError", '<CCIPSendError type="unknown" version="v1_6_2" />'],
+    ["CCIPEvent", '<CCIPEvent type="onramp-send" version="v9_9_9" />'],
     ["Billing", "<Billing />"],
   ])("%s unresolved content is blocking with component, path, and line", (name, component) => {
     const source = `Visible\n\n${component}`
@@ -485,6 +488,10 @@ describe("content-bearing component fidelity", () => {
   test.each([
     ['<AnyApiCallout callout="usefunctions" />', "Use CRE"],
     ['<CcipCommon callout="senderContractCallout" />', "Best Practices"],
+    ['<AceCallout callout="privateBeta" />', "Private Beta"],
+    ['<TokenizedEquityFeeds section="tokenizedEquityNote" />', "Tokenized equity feeds"],
+    ['<CCIPSendError type="router" version="v1_6_2" />', "0xae236d9c"],
+    ['<CCIPEvent type="onramp-send" version="v1_6_3" />', "Internal.EVM2AnyRampMessage"],
   ])("static selector content is independently inventoried: %s", (component, expectedFragment) => {
     const analysis = analyzeSourceMarkdown(component, "src/content/fixture.mdx")
 
@@ -495,6 +502,27 @@ describe("content-bearing component fidelity", () => {
         (candidate) => candidate.status === "missing"
       )
     ).toBe(true)
+  })
+
+  test.each([
+    [
+      '<CCIPEvent type="onramp-send" version="v1_6_3" />',
+      "`uint64 indexed destChainSelector`",
+      "`uint64 destChainSelector`",
+      "uint64 indexed destChainSelector, uint64 indexed sequenceNumber,",
+    ],
+    ['<CCIPEvent type="onramp-send" version="v1_6_3" />', "`message`", "`payload`", "message"],
+    ['<CCIPSendError type="router" version="v1_6_2" />', "`uint64 destChainSelector`", "-", "uint64 destChainSelector"],
+  ])("CCIP reference parameters are verified in %s", async (component, rendered, changed, expected) => {
+    const markdown = await transformMarkdown(component, path.resolve("src/content/fixture.mdx"))
+    const missing = (body: string) =>
+      compareSourceToArtifact("fixture", "src/content/fixture.mdx", component, artifact(body)).filter(
+        (candidate) => candidate.status === "missing"
+      )
+
+    expect(markdown).toContain(rendered)
+    expect(missing(markdown)).toEqual([])
+    expect(missing(markdown.replace(rendered, changed))).toEqual([expect.objectContaining({ expected })])
   })
 })
 

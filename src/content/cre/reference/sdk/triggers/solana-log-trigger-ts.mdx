@@ -1,0 +1,157 @@
+---
+section: cre
+title: "SDK Reference: Solana Log Trigger"
+date: Last Modified
+sdkLang: "ts"
+pageId: "reference-sdk-solana-log-trigger"
+metadata:
+  description: "Reference for TypeScript Solana Log Trigger: filter configuration and payload fields for event-driven Solana workflows."
+  datePublished: "2026-09-03"
+  lastModified: "2026-09-04"
+---
+
+import { Aside } from "@components"
+
+The Solana Log Trigger fires when a specific event is emitted by an onchain Solana program.
+
+<Aside type="note" title="Recommended usage">
+  While this section documents the low-level trigger configuration, the recommended best practice is to use the
+  **type-safe helper functions** created by the `cre generate-bindings solana` command.
+  <br />
+  For a complete guide on how to use these helpers, see the [Solana Log Trigger
+  Guide](/cre/guides/workflow/using-triggers/solana-log-trigger-ts).
+</Aside>
+
+### `SolanaClient.logTrigger()`
+
+Creates the Solana log trigger instance. Unlike EVM's log trigger, this is the low-level primitive generated binding
+helpers call internally — you rarely call it directly.
+
+```typescript
+logTrigger(config: SolanaFilterLogTriggerRequestJson): Trigger<SolanaLog, SolanaLog>
+```
+
+### `SolanaFilterLogTriggerRequestJson`
+
+The configuration form for the Solana log trigger. Unlike the EVM log trigger, which filters on a list of contract
+addresses and up to four topics, a Solana log trigger watches a **single program address** and matches events by
+name and subkey values.
+
+| Field             | Type                        | Required | Description                                                                                   |
+| ----------------- | --------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `name`            | `string`                    | Yes      | A name you choose to identify this trigger registration.                                      |
+| `address`         | `string`                    | Yes      | Base64-encoded 32-byte program public key to watch. Generated bindings set this from the IDL. |
+| `eventName`       | `string`                    | Yes      | The Anchor event name to match, e.g. `"PriceUpdated"`.                                        |
+| `contractIdlJson` | `string`                    | Yes      | Base64-encoded Anchor IDL, used to decode subkey field paths. Generated bindings embed this.  |
+| `subkeys`         | `SolanaSubkeyConfigJson[]`  | No       | Optional filters on the event's top-level scalar fields.                                      |
+| `cpiFilterConfig` | `SolanaCPIFilterConfigJson` | No       | Set when the event is emitted via Anchor's `emit_cpi!` instead of `emit!`.                    |
+
+### `SolanaSubkeyConfigJson`
+
+One filter condition on a named event field.
+
+| Field       | Type                          | Description                                                                  |
+| ----------- | ----------------------------- | ---------------------------------------------------------------------------- |
+| `path`      | `string[]`                    | The field name to filter on (e.g. `["ForwarderState"]`).                     |
+| `comparers` | `SolanaValueComparatorJson[]` | Values to compare against. Multiple comparers on one path are OR conditions. |
+
+Generated bindings produce one `SolanaSubkeyConfigJson` per filtered field from an `<EventName>Filters` object — see
+the [guide](/cre/guides/workflow/using-triggers/solana-log-trigger-ts). Only top-level
+scalar fields are auto-filterable: nested objects, arrays, `boolean`, and 128-bit integers are excluded and require a
+manually built `SolanaSubkeyConfigJson`.
+
+### `SolanaValueComparatorJson`
+
+| Field      | Type     | Description                                                               |
+| ---------- | -------- | ------------------------------------------------------------------------- |
+| `value`    | `string` | Base64-encoded comparison value. Use `prepareSubkeyValue()` to encode it. |
+| `operator` | `string` | One of the operators below.                                               |
+
+**`operator` values:** `"COMPARISON_OPERATOR_EQ"`, `"COMPARISON_OPERATOR_NEQ"`, `"COMPARISON_OPERATOR_GT"`,
+`"COMPARISON_OPERATOR_LT"`, `"COMPARISON_OPERATOR_GTE"`, `"COMPARISON_OPERATOR_LTE"`. Generated binding filters
+always use `"COMPARISON_OPERATOR_EQ"`; the other operators are available for manually built
+`SolanaSubkeyConfigJson` values.
+
+### `SolanaCPIFilterConfigJson`
+
+Identifies a cross-program-invoked event for programs that emit events via Anchor's `emit_cpi!` instead of `emit!`.
+
+| Field         | Type     | Description                                                                              |
+| ------------- | -------- | ---------------------------------------------------------------------------------------- |
+| `destAddress` | `string` | Base64-encoded program address the CPI event was emitted to.                             |
+| `methodName`  | `string` | Base64-encoded CPI method name. Always `"anchor:event"` for Anchor's `emit_cpi!` events. |
+
+`anchorCPILogTriggerConfig(programId: Uint8Array): SolanaCPIFilterConfigJson` builds this for you — generated
+bindings call it automatically when you pass `{ cpi: true }` as the trigger options.
+
+### `SolanaLogTriggerOptions`
+
+Passed as the last argument to a generated `logTrigger<EventName>Log` method.
+
+| Field | Type      | Required | Description                                                                                 |
+| ----- | --------- | -------- | ------------------------------------------------------------------------------------------- |
+| `cpi` | `boolean` | No       | Set `true` if the event is emitted via Anchor's `emit_cpi!`. Defaults to `false` (`emit!`). |
+
+### `SolanaLog`
+
+The payload passed to the callback function for a matching Solana log.
+
+| Field            | Type         | Description                                             |
+| ---------------- | ------------ | ------------------------------------------------------- |
+| `chainId`        | `string`     | Chain identifier.                                       |
+| `logIndex`       | `bigint`     | Index of the log within the block.                      |
+| `blockHash`      | `Uint8Array` | 32-byte block hash.                                     |
+| `blockNumber`    | `bigint`     | Block/slot number.                                      |
+| `blockTimestamp` | `bigint`     | Unix timestamp of the block.                            |
+| `address`        | `Uint8Array` | 32-byte program public key that emitted the event.      |
+| `eventSig`       | `Uint8Array` | 8-byte Anchor event discriminator.                      |
+| `txHash`         | `Uint8Array` | 64-byte transaction signature.                          |
+| `data`           | `Uint8Array` | Raw (Borsh-encoded, discriminator-prefixed) event data. |
+| `sequenceNum`    | `bigint`     | Sequence number for ordering.                           |
+| `error`          | `string`     | Error message if log processing failed (optional).      |
+
+### `SolanaDecodedLog<T>`
+
+Wraps a `SolanaLog` with its decoded event data. Generated `logTrigger<EventName>Log` methods adapt the raw trigger
+to this type automatically.
+
+```typescript
+type SolanaDecodedLog<T> = {
+  log: SolanaLog
+  data: T
+}
+```
+
+### Generated binding method
+
+For each event in your IDL, `cre generate-bindings solana` generates a method on the program's class:
+
+```typescript
+logTrigger<EventName>Log(
+  filterName: string,
+  filters?: <EventName>Filters[],
+  opts?: SolanaLogTriggerOptions,
+): Trigger<SolanaLog, SolanaDecodedLog<EventName>>
+```
+
+`<EventName>Filters` has one optional field per filterable top-level scalar field on the event (omitted or `null`
+means no filter on that field). Passing more than one filter row throws — only a single row (an AND of its set
+fields) is currently supported.
+
+### Callback function
+
+Your callback function for Solana log triggers must conform to this signature:
+
+```typescript
+;(runtime: Runtime<Config>, payload: SolanaDecodedLog<EventType>) => YourReturnType
+```
+
+**Parameters:**
+
+- `runtime`: The runtime object, typed with your workflow's config.
+- `payload`: The decoded event data (`payload.data`) alongside the raw log metadata (`payload.log`).
+
+## Learn more
+
+- **[Solana Log Trigger Guide](/cre/guides/workflow/using-triggers/solana-log-trigger-ts)**: Step-by-step guide to configuring and using the Solana Log trigger
+- **[The Trigger Capability](/cre/capabilities/triggers)**: Conceptual overview of all CRE trigger types

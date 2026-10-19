@@ -17,6 +17,7 @@ import {
   handleCopyText,
   handleDiv,
   handleAside,
+  handleInlineAsideParagraph,
   handleClickToZoom,
   handleCodeSample,
   handleBilling,
@@ -37,7 +38,11 @@ import {
   handleResourcesCallout,
   handleDataStreams,
   handleVrfDeprecation,
+  handleSelectorComponent,
+  isSelectorComponent,
   handleSchemaFieldsTable,
+  handleCcipSendErrors,
+  handleCcipEvents,
   handleFeedPage,
   loadCcipCommonMapping,
   replaceNode,
@@ -180,6 +185,11 @@ export async function transformMarkdown(
           return handleAside(node as MdxJsxNode, parent, index, context)
         }
 
+        if (node.type === "paragraph") {
+          const projected = handleInlineAsideParagraph(node as Parent, parent, index, context)
+          if (typeof projected === "number") return projected
+        }
+
         // Handle ClickToZoom
         if (
           (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
@@ -252,8 +262,20 @@ export async function transformMarkdown(
           return handleVrfDeprecation(node as MdxJsxNode, parent, index, context)
         }
 
+        if (node.type === "mdxJsxFlowElement" && isSelectorComponent((node as MdxJsxNode).name)) {
+          return handleSelectorComponent(node as MdxJsxNode, parent, index, context)
+        }
+
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "SchemaFieldsTable") {
           return handleSchemaFieldsTable(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "CCIPSendError") {
+          return handleCcipSendErrors(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "CCIPEvent") {
+          return handleCcipEvents(node as MdxJsxNode, parent, index, context)
         }
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "FeedPage") {
