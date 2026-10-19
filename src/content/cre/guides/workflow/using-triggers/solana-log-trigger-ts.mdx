@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Trigger a CRE workflow when a Solana program emits an event, in TypeScript: step-by-step guide using generated Anchor bindings."
   datePublished: "2026-09-03"
-  lastModified: "2026-09-04"
+  lastModified: "2026-10-19"
 ---
 
 import { Aside } from "@components"
@@ -133,6 +133,11 @@ program's events will have their own fields to filter on instead.
 
 This step is a complete, pasteable workflow that logs the decoded `PriceUpdated` event whenever the price feed
 publishes an update for the configured asset, using the generated `logTriggerPriceUpdatedLog` binding helper.
+
+The generated bindings import from `@solana/codecs` and `@solana/addresses`, and this workflow also imports
+`@solana/codecs-strings` (to base58-encode the transaction signature). If you run `tsc --noEmit` outside of
+`cre workflow simulate`, install them in your workflow folder:
+`npm install @solana/codecs @solana/addresses @solana/codecs-strings`.
 
 1. Save the following as `my-workflow/main.ts`.
 
@@ -299,8 +304,8 @@ Both files use the same target names (e.g. `staging-settings`) to link a workflo
    ✓ Workflow Simulation Result: "Success"
    ```
 
-   Omit interactive mode (drop `--non-interactive` and its accompanying flags) to be prompted for the transaction
-   signature and event index instead. See [Simulating Workflows: Solana log
+   To use interactive mode instead, drop `--non-interactive` and its accompanying flags and you will be prompted for the
+   transaction signature and event index. See [Simulating Workflows: Solana log
    trigger](/cre/guides/operations/simulating-workflows#solana-log-trigger) for both modes.
 
 ## Deploying the workflow
