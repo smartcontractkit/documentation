@@ -5,9 +5,9 @@ sdkLang: "go"
 pageId: "guides-workflow-solana-generating-bindings"
 date: Last Modified
 metadata:
-  description: "Generate typed Go structs from Anchor IDL files to write data to Solana programs from CRE workflows."
+  description: "Generate typed Go structs from Anchor IDL files to read from and write to Solana programs from CRE workflows."
   datePublished: "2026-07-06"
-  lastModified: "2026-09-03"
+  lastModified: "2026-10-19"
 ---
 
 import { Aside } from "@components"
@@ -18,8 +18,8 @@ For each Anchor struct in your IDL, the generator creates a `WriteReportFrom<Str
 trigger](/cre/guides/workflow/using-triggers/solana-log-trigger-go). Your workflow calls these methods with the struct data (or filters) and the required accounts; the generated code handles everything else.
 
 <Aside type="note" title="CLI version requirements">
-  Solana binding generation and write simulation require **CRE CLI v1.24.0 or later**. Log trigger binding generation
-  requires **v1.32.0 or later**. Run `cre version` to check, then `cre update` if needed.
+  Solana binding generation, read, write, and log trigger support require **CRE CLI v1.33.0 or later**. Run `cre
+  version` to check, then `cre update` if needed.
 </Aside>
 
 <Aside type="note" title="TypeScript support">
@@ -204,6 +204,8 @@ What's inside depends on your IDL:
 - **For all programs**:
   - A `<ProgramName>` struct and `New<ProgramName>(client)` constructor (program ID from the IDL).
   - Codec helpers for encoding structs.
+- **For onchain reads** (each account in `accounts`):
+  - A `Codec.Decode<AccountName>(data []byte) (*<AccountName>, error)` method that decodes raw account bytes returned by a read.
 - **For onchain writes** (each struct in `types`):
   - A `WriteReportFrom<StructName>(runtime, input, remainingAccounts, computeConfig)` method that returns a `cre.Promise[*solana.WriteReportReply]` you `.Await()`.
   - A `WriteReportFrom<StructName>s(...)` variant for Borsh `Vec` payloads.
