@@ -16,3 +16,22 @@ metadata:
 ---
 
 Chainlink Data Feeds provide data that is aggregated from many data sources by a decentralized set of independent node operators. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) describes this in detail. However, there are some exceptions where data for a feed can come only from a single data source or where data values are calculated. Read the [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) to learn about the different data feed categories and how to identify them.
+
+## Decimal precision
+
+Feed answers are returned as integers without a decimal point. To convert an answer into a human-readable value, divide it by `10^decimals`. For example, an answer of `3030914000000` from a feed with `8` decimals represents `30309.14`.
+
+Chainlink generally uses the following decimal standards for new feeds:
+
+| Asset class          | Decimals      |
+| -------------------- | ------------- |
+| Crypto / USD         | 8             |
+| Crypto / ETH         | 18            |
+| Forex                | 8             |
+| Precious metals      | 8             |
+| Commodities / Energy | 8             |
+| All others           | Feed-specific |
+
+These standards are subject to change, individual feeds can differ, and some networks use a single precision for all feeds. For example, feeds on [Stellar](/data-feeds/stellar) and [Aptos](/data-feeds/aptos) use 18 decimals. This applies to every network, EVM and non-EVM: always read the precision of each feed you use from the feed contract instead of hardcoding a value based on the table above. On EVM chains, call the [`decimals()`](/data-feeds/api-reference#decimals) function on the feed's proxy contract. On other networks, use the equivalent function described in that network's guide. You can also verify the decimals for a feed on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by selecting **More Details**.
+
+Decimal precision is not changed on live feeds. If an asset's price moves to a level where the feed's precision is no longer sufficient for your use case, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) about launching a new feed.
