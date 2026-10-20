@@ -476,6 +476,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               ],
             },
             {
+              title: "Solana Log Trigger",
+              url: "cre/guides/workflow/using-triggers/solana-log-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/solana-log-trigger-ts",
+                "cre/guides/workflow/using-triggers/solana-log-trigger-go",
+              ],
+            },
+            {
               title: "HTTP Trigger",
               url: "cre/guides/workflow/using-triggers/http-trigger/overview",
               highlightAsCurrent: [
@@ -589,6 +597,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               highlightAsCurrent: [
                 "cre/guides/workflow/using-solana-client/generating-bindings-ts",
                 "cre/guides/workflow/using-solana-client/generating-bindings-go",
+              ],
+            },
+            {
+              title: "Onchain Read",
+              url: "cre/guides/workflow/using-solana-client/onchain-read",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/onchain-read-ts",
+                "cre/guides/workflow/using-solana-client/onchain-read-go",
               ],
             },
             {
@@ -843,7 +859,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         { title: "Overview", url: "cre/capabilities" },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
         { title: "HTTP", url: "cre/capabilities/http" },
-        { title: "Solana Write", url: "cre/capabilities/solana-write" },
+        { title: "Solana Read & Write", url: "cre/capabilities/solana-read-write" },
         { title: "Triggers", url: "cre/capabilities/triggers" },
       ],
     },
@@ -972,6 +988,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
                   highlightAsCurrent: [
                     "cre/reference/sdk/triggers/evm-log-trigger-ts",
                     "cre/reference/sdk/triggers/evm-log-trigger-go",
+                  ],
+                },
+                {
+                  title: "Solana Log Trigger",
+                  url: "cre/reference/sdk/triggers/solana-log-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/solana-log-trigger-ts",
+                    "cre/reference/sdk/triggers/solana-log-trigger-go",
                   ],
                 },
               ],

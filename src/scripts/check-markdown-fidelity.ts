@@ -142,6 +142,16 @@ const selectorComponents = {
   DataStreams: { astro: "src/features/data-streams/common/DataStreams.astro", attribute: "section" },
   VrfDeprecation: { astro: "src/features/vrf/VrfDeprecation.astro", attribute: "version" },
   CcipCommon: { astro: "src/features/ccip/CcipCommon.astro", attribute: "callout" },
+  Common: { astro: "src/features/chainlink-local/Common.astro", attribute: "callout" },
+  AceCallout: { astro: "src/features/ace/callouts/AceCallout.astro", attribute: "callout" },
+  CrecCommon: { astro: "src/features/crec/common/CrecCommon.astro", attribute: "callout" },
+  Vrf2_5Common: { astro: "src/features/vrf/v2-5/Vrf2_5Common.astro", attribute: "callout" },
+  Dta: { astro: "src/features/dta/common/Dta.astro", attribute: "section" },
+  TokenizedEquityFeeds: {
+    astro: "src/features/tokenized-equity-feeds/common/TokenizedEquityFeeds.astro",
+    attribute: "section",
+  },
+  ContentCommon: { astro: "src/features/common/ContentCommon.astro", attribute: "section" },
 } as const
 
 function normalizeText(value: string): string {
@@ -510,6 +520,95 @@ function schemaFields(schema: string): SchemaField[] | null {
     return null
   }
   return values
+}
+
+type CcipReferenceEntry = {
+  name: string
+  parameters: { kind: "text" | "link"; value: string; url?: string }[]
+  errorSelector?: string
+  description: string
+}
+
+/**
+ * Parameters are expected in Solidity syntax ("type indexed name"), comma-separated. A linked type is its own
+ * link fact and splits the surrounding cell text, as in the observed Markdown.
+ */
+function ccipParameterFacts(parameters: AstRecord[]): CcipReferenceEntry["parameters"] | null {
+  const facts: CcipReferenceEntry["parameters"] = []
+  let text = ""
+  for (const [index, parameter] of parameters.entries()) {
+    if (typeof parameter?.type !== "string" || typeof parameter.name !== "string") return null
+    const name = `${parameter.indexed === true ? "indexed " : ""}${parameter.name}`
+    text += index > 0 ? ", " : ""
+    if (typeof parameter.typeLink === "string") {
+      facts.push({ kind: "text", value: text }, { kind: "link", value: parameter.type, url: parameter.typeLink })
+      text = ` ${name}`
+    } else {
+      text += `${parameter.type} ${name}`
+    }
+  }
+  facts.push({ kind: "text", value: text })
+  return facts
+}
+
+const ccipReferenceData: Record<
+  "CCIPSendError" | "CCIPEvent",
+  { kind: string; nameKey: string; files: Record<string, string> }
+> = {
+  CCIPSendError: {
+    kind: "errors",
+    nameKey: "error",
+    files: {
+      erc20: "erc20.json",
+      router: "router.json",
+      onramp: "onramp.json",
+      "rate-limiter": "ratelimiter.json",
+      "price-registry": "priceregistry.json",
+      pool: "pool.json",
+      burnMintERC20: "burnMintERC20.json",
+      feequoter: "feequoter.json",
+    },
+  },
+  CCIPEvent: {
+    kind: "events",
+    nameKey: "event",
+    files: {
+      "onramp-send": "onramp-send.json",
+      "pool-send": "pool-send.json",
+      "offramp-receive": "offramp-receive.json",
+      "router-receive": "router-receive.json",
+      "pool-receive": "pool-receive.json",
+    },
+  },
+}
+
+/** Reads the static JSON behind CCIPSendError and CCIPEvent, independently of the converter. */
+function ccipReferenceEntries(
+  component: keyof typeof ccipReferenceData,
+  type: unknown,
+  version: unknown
+): CcipReferenceEntry[] | null {
+  const config = ccipReferenceData[component]
+  const file = typeof type === "string" && Object.hasOwn(config.files, type) ? config.files[type] : undefined
+  if (!file || typeof version !== "string" || !/^v\d+_\d+_\d+$/.test(version)) return null
+  const data = resolveProjectFile(`src/config/data/ccip/${config.kind}/${version}/${file}`)
+  if (!data) return null
+  const entries: unknown = JSON.parse(fsSync.readFileSync(data.absolute, "utf8"))
+  if (!Array.isArray(entries) || entries.length === 0) return null
+  const result: CcipReferenceEntry[] = []
+  for (const entry of entries as AstRecord[]) {
+    const name = entry?.[config.nameKey]
+    const parameters = ccipParameterFacts(Array.isArray(entry?.parameters) ? (entry.parameters as AstRecord[]) : [])
+    if (typeof name !== "string" || typeof entry.description !== "string" || !parameters) return null
+    result.push({
+      name,
+      parameters,
+      ...(typeof entry.errorSelector === "string" && entry.errorSelector ? { errorSelector: entry.errorSelector } : {}),
+      // Descriptions are Markdown; the expectation is their visible text.
+      description: normalizeText(nodeVisibleText(processor.parse(entry.description))),
+    })
+  }
+  return result
 }
 
 export function analyzeSourceMarkdown(
@@ -969,6 +1068,29 @@ export function analyzeSourceMarkdown(
           addFact("text", field.type, node)
           addFact("text", field.link ? `${field.description} —` : field.description, node)
           if (field.link) addFact("link", field.link.label, node, field.link.href)
+        }
+        return SKIP
+      }
+      if (name === "CCIPSendError" || name === "CCIPEvent") {
+        const type = staticAttribute(node, "type")
+        const version = staticAttribute(node, "version")
+        const entries = ccipReferenceEntries(name, type.value, version.value)
+        if (!entries) {
+          addDiagnostic(
+            "unverifiable",
+            name,
+            node,
+            `${name} data could not be read for type "${String(type.value ?? type.syntax)}" and version "${String(version.value ?? version.syntax)}"`
+          )
+          return SKIP
+        }
+        addFact("text", name === "CCIPSendError" ? "Error" : "Event", node)
+        addFact("text", "Description", node)
+        for (const entry of entries) {
+          addFact("text", entry.name, node)
+          for (const parameter of entry.parameters) addFact(parameter.kind, parameter.value, node, parameter.url)
+          if (entry.errorSelector) addFact("text", entry.errorSelector, node)
+          addFact("text", entry.description, node)
         }
         return SKIP
       }
