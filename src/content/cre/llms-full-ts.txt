@@ -152,7 +152,7 @@ Jump to what you need:
 
 # Key Terms and Concepts
 Source: https://docs.chain.link/cre/key-terms
-Last Updated: 2026-05-20
+Last Updated: 2026-10-19
 
 This page defines the fundamental terms and concepts for the Chainlink Runtime Environment (CRE).
 
@@ -240,14 +240,14 @@ A cryptographically signed package your workflow [DON](/cre/key-terms#decentrali
 
 Deliver onchain with [`writeReport()`](/cre/reference/sdk/evm-client-ts#writereport) / [`WriteReport()`](/cre/reference/sdk/evm-client-go#writereport), or offchain with [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport) / [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport). Receivers verify with [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) or [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport). See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http) and [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
 
-### SDK Clients: `EVMClient` & `HTTPClient`
+### SDK Clients: `EVMClient`, `SolanaClient` & `HTTPClient`
 
-The primary SDK clients you use inside a callback to interact with capabilities. For example, you use an EVM client to read from a smart contract and an HTTP client to make offchain API requests.
+The primary SDK clients you use inside a callback to interact with capabilities. For example, you use an EVM client to read from a smart contract, a Solana client to read from or write to a Solana program, and an HTTP client to make offchain API requests.
 
 **Language-specific implementations:**
 
-- **Go SDK**: `evm.Client` and `http.Client`
-- **TypeScript SDK**: `EVMClient` and `HTTPClient` classes
+- **Go SDK**: `evm.Client`, `solana.Client`, and `http.Client`
+- **TypeScript SDK**: `EVMClient`, `SolanaClient`, and `HTTPClient` classes
 
 ### `Bindings`
 
@@ -849,7 +849,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 - **Execution observability from the CLI**: New [`cre execution`](/cre/reference/cli/execution) commands let you inspect deployed workflow runs without opening the UI — `list` for recent executions (filter by status and time range), `status` for a single run, `events` for the capability timeline, and `logs` for emitted log lines. All support `--output json` for scripting.
 - **Enhanced `cre workflow get`**: [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) now resolves the workflow from your `workflow.yaml` settings and shows deployment health plus the most recent execution, not just registry metadata.
-- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. See the [Solana Write capability](/cre/capabilities/solana-write), [Solana chain interactions](/cre/guides/workflow/using-solana-client/overview), [generating Solana bindings](/cre/guides/workflow/using-solana-client/generating-bindings) (`cre generate-bindings solana`), and [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write). Local write simulation uses `cre workflow simulate` with `CRE_SOLANA_PRIVATE_KEY`; chain selectors are listed under [Supported Networks](/cre/supported-networks).
+- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. See the [Solana Read & Write capability](/cre/capabilities/solana-read-write), [Solana chain interactions](/cre/guides/workflow/using-solana-client/overview), [generating Solana bindings](/cre/guides/workflow/using-solana-client/generating-bindings) (`cre generate-bindings solana`), and [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write). Local write simulation uses `cre workflow simulate` with `CRE_SOLANA_PRIVATE_KEY`; chain selectors are listed under [Supported Networks](/cre/supported-networks).
 
 **How to update:**
 
@@ -1970,7 +1970,7 @@ Once you're authenticated, you're ready to build your first workflow:
 
 # Workflow Guides: Overview
 Source: https://docs.chain.link/cre/guides/workflow/overview
-Last Updated: 2026-07-30
+Last Updated: 2026-10-19
 
 These guides cover the building blocks you'll combine to build a CRE workflow: how to start one with a trigger, how to read and write onchain data, how to call external APIs, and how to handle supporting concerns like secrets, time, and randomness. Guides are written for both Go and TypeScript; switch languages with the selector at the top of each page.
 
@@ -1989,16 +1989,16 @@ The guides below all run your workflow's logic on Workflow DON nodes, the defaul
 
 | Guide                                                                                | What you'll learn                                                                                        |
 | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| [Triggers](/cre/guides/workflow/using-triggers/overview)                             | Choose and configure a Cron, EVM Log, or HTTP trigger to start your workflow.                            |
+| [Triggers](/cre/guides/workflow/using-triggers/overview)                             | Choose and configure a Cron, EVM Log, Solana Log, or HTTP trigger to start your workflow.                |
 | [API Interactions](/cre/guides/workflow/using-http-client)                           | Make GET and POST requests to external APIs, submit reports over HTTP, and verify them offchain.         |
 | [Confidential API Interactions](/cre/guides/workflow/using-confidential-http-client) | Make a single outbound API call with secrets injected and the request processed inside a secure enclave. |
 
 ## Onchain interactions
 
-| Guide                                                                          | What you'll learn                                                                                   |
-| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| [EVM Chain Interactions](/cre/guides/workflow/using-evm-client/overview)       | Generate contract bindings, read onchain state, and write consensus-verified reports to EVM chains. |
-| [Solana Chain Interactions](/cre/guides/workflow/using-solana-client/overview) | Generate Anchor bindings and write consensus-verified workflow results to Solana programs.          |
+| Guide                                                                          | What you'll learn                                                                                      |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| [EVM Chain Interactions](/cre/guides/workflow/using-evm-client/overview)       | Generate contract bindings, read onchain state, and write consensus-verified reports to EVM chains.    |
+| [Solana Chain Interactions](/cre/guides/workflow/using-solana-client/overview) | Generate Anchor bindings, read onchain state, and write consensus-verified reports to Solana programs. |
 
 ## Workflow mechanics
 
@@ -2012,7 +2012,7 @@ The guides below all run your workflow's logic on Workflow DON nodes, the defaul
 
 # Using Triggers
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/overview
-Last Updated: 2025-11-04
+Last Updated: 2026-10-19
 
 Triggers are a special type of capability that start your workflows. They are event-driven services that watch for a specific condition to be met. When the condition occurs, the trigger fires and instructs CRE to run the callback function you have registered for that event.
 
@@ -2023,6 +2023,7 @@ This section provides detailed guides for each available trigger type:
 - **[Cron Trigger](/cre/guides/workflow/using-triggers/cron-trigger)**: Run workflows on a time-based schedule.
 - **[HTTP Trigger](/cre/guides/workflow/using-triggers/http-trigger/overview)**: Start workflows in response to an HTTP request from an external system.
 - **[EVM Log Trigger](/cre/guides/workflow/using-triggers/evm-log-trigger)**: Initiate workflows in response to a specific event being emitted by a smart contract.
+- **[Solana Log Trigger](/cre/guides/workflow/using-triggers/solana-log-trigger)**: Initiate workflows in response to a specific event being emitted by a Solana program.
 
 ---
 
@@ -5149,7 +5150,7 @@ By following this pattern, you can manage your secrets securely without ever exp
 
 # Simulating Workflows
 Source: https://docs.chain.link/cre/guides/operations/simulating-workflows
-Last Updated: 2026-09-03
+Last Updated: 2026-10-19
 
 Workflow simulation is a local execution environment that **compiles your workflow to [WebAssembly (WASM)](https://webassembly.org)** and runs it on **your machine**. It allows you to test and debug your workflow logic before deploying it. The simulator makes real calls to public testnets and live HTTP endpoints, giving you high confidence that your code will work as expected when deployed.
 
@@ -5159,7 +5160,7 @@ Use workflow simulation to:
 
 - **Test workflow logic during development**: Validate that your code behaves correctly before deploying.
 - **Debug errors in a controlled environment**: Catch and fix issues locally without deploying to a live network.
-- **Test different trigger types**: Manually select and test how your workflow responds to [cron](/cre/guides/workflow/using-triggers/cron-trigger), [HTTP](/cre/guides/workflow/using-triggers/http-trigger/overview), or [EVM log](/cre/guides/workflow/using-triggers/evm-log-trigger) triggers.
+- **Test different trigger types**: Manually select and test how your workflow responds to [cron](/cre/guides/workflow/using-triggers/cron-trigger), [HTTP](/cre/guides/workflow/using-triggers/http-trigger/overview), [EVM log](/cre/guides/workflow/using-triggers/evm-log-trigger), or [Solana log](/cre/guides/workflow/using-triggers/solana-log-trigger) triggers.
 - **Verify onchain interactions**: Test [read](/cre/guides/workflow/using-evm-client/onchain-read) and [write](/cre/guides/workflow/using-evm-client/onchain-write/overview) operations against real testnets.
 
 ## Basic usage
@@ -5181,7 +5182,7 @@ cre workflow simulate my-workflow --target staging-settings
 ### What happens during simulation
 
 1. **Compilation**: The CLI compiles your workflow to WebAssembly (WASM).
-2. **Trigger selection**: You're prompted to select which trigger to test (cron, HTTP, or EVM log).
+2. **Trigger selection**: You're prompted to select which trigger to test (cron, HTTP, EVM log, or Solana log).
 3. **Execution**: The workflow runs locally, making real calls to configured RPCs and HTTP endpoints.
 4. **Output**: The simulator displays logs from your workflow and the final execution result.
 
@@ -8151,7 +8152,7 @@ After you send invitations:
 
 # Capabilities Overview
 Source: https://docs.chain.link/cre/capabilities
-Last Updated: 2025-11-04
+Last Updated: 2026-10-19
 
 At the core of the Chainlink Runtime Environment (CRE) is the concept of **Capabilities**. A capability is a modular, decentralized service that performs a specific task. Think of them as the individual "bricks" that you can use to build custom workflows.
 
@@ -8271,7 +8272,7 @@ This provides cryptographically verified, tamper-proof execution for your offcha
 
 # The Solana Read & Write Capabilities
 Source: https://docs.chain.link/cre/capabilities/solana-read-write
-Last Updated: 2026-09-04
+Last Updated: 2026-10-19
 
 The **Solana Read & Write** capabilities provide a secure and reliable service for your workflow to interact with programs on Solana.
 
@@ -8322,14 +8323,15 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 
 > **NOTE: CLI and simulation**
 >
-> Solana read, write, and log trigger binding generation require **CRE CLI v1.33.0 or later**. Local simulation dry-runs
-> reads and writes against the Devnet forwarder and a fake `ContractReader` built into the CLI. Deployed workflows use
-> the live Keystone Forwarder and DON-run `ContractReader` on your target network.
+> Solana read, write, and log trigger binding generation require **CRE CLI v1.33.0 or later**. Local simulation reads
+> live account and program data from your configured Solana RPC, and dry-runs writes against a Devnet stand-in of the
+> Keystone Forwarder built into the CLI. Deployed workflows use the live Keystone Forwarder and a DON-run
+> `ContractReader` on your target network.
 
 ## Learn more
 
 - **[Solana Chain Interactions Guide](/cre/guides/workflow/using-solana-client/overview)**: Learn how to read from and write to Solana programs using the `SolanaClient`
-- **[Solana Log Trigger](/cre/capabilities/triggers)**: Start a workflow when a Solana program emits a matching event
+- **[Solana Log Trigger](/cre/guides/workflow/using-triggers/solana-log-trigger)**: Start a workflow when a Solana program emits a matching event
 - **[Solana Client SDK Reference](/cre/reference/sdk/solana-client)**: Detailed API reference for `SolanaClient` and helper functions
 - **[Supported Networks](/cre/supported-networks)**: Chain selector values and minimum SDK versions for Solana networks
 
@@ -8337,7 +8339,7 @@ The public keys of all accounts in this list are concatenated and SHA-256 hashed
 
 # The Trigger Capability
 Source: https://docs.chain.link/cre/capabilities/triggers
-Last Updated: 2025-11-04
+Last Updated: 2026-10-19
 
 **Triggers** are a special type of capability that initiate the execution of your workflow. They are event-driven services that constantly watch for a specific condition to be met. When the condition occurs, the trigger fires and instructs CRE to run the callback function you have registered for that event. Learn more about the [trigger-and-callback model](/cre/overview#the-trigger-and-callback-model).
 
@@ -8353,7 +8355,7 @@ CRE provides several types of triggers to start your workflows:
 >
 > **In simulation** (`cre workflow simulate`), triggers are manually selected and executed immediately to test your workflow logic without waiting for real events. This allows rapid iteration during development.
 >
-> **In deployed workflows**, the Workflow DON continuously monitors for trigger events and automatically executes your callback when conditions are met. Time-based triggers run on schedule, HTTP triggers respond to incoming requests, and EVM log triggers fire when smart contract events occur.
+> **In deployed workflows**, the Workflow DON continuously monitors for trigger events and automatically executes your callback when conditions are met. Time-based triggers run on schedule, HTTP triggers respond to incoming requests, and EVM and Solana log triggers fire when smart contract or program events occur.
 >
 > See the [Simulating Workflows guide](/cre/guides/operations/simulating-workflows) for details on testing triggers locally.
 
@@ -9325,7 +9327,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-10-09
+Last Updated: 2026-10-19
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -9397,19 +9399,21 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                               | Description                                                                                                                                                                                                                                                                                                      |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--broadcast`                      | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                                                               |
-| `-g, --engine-logs`                | Enable non-fatal engine logging                                                                                                                                                                                                                                                                                  |
-| `--listen`                         | Keep the simulator alive and re-run it for each incoming trigger event. For HTTP triggers, listens for POST requests on port `2000`. For EVM log triggers, watches the chain and re-runs on each matching event. Useful when iterating on trigger-driven workflows without restarting the simulator between runs |
-| `--non-interactive`                | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                                                    |
-| `--trigger-index <int>`            | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                                                             |
-| `--http-payload <string>`          | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                                                  |
-| `--evm-tx-hash <string>`           | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                                                          |
-| `--evm-event-index <int>`          | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                                                |
-| `--evm-receipt-timeout <duration>` | How long to wait for an EVM transaction receipt before timing out (e.g. `30s`, `2m`). For EVM log triggers only (default: `1m`)                                                                                                                                                                                  |
-| `--limits <string>`                | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`)                                 |
-| `--skip-type-checks`               | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                                      |
+| Flag                               | Description                                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`                      | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                                                                                                      |
+| `-g, --engine-logs`                | Enable non-fatal engine logging                                                                                                                                                                                                                                                                                                                         |
+| `--listen`                         | Keep the simulator alive and re-run it for each incoming trigger event. For HTTP triggers, listens for POST requests on port `2000`. For EVM log triggers, watches the chain and re-runs on each matching event. Not supported for Solana log triggers. Useful when iterating on trigger-driven workflows without restarting the simulator between runs |
+| `--non-interactive`                | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                                                                                           |
+| `--trigger-index <int>`            | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                                                                                                    |
+| `--http-payload <string>`          | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                                                                                         |
+| `--evm-tx-hash <string>`           | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                                                                                                 |
+| `--evm-event-index <int>`          | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                                                                                       |
+| `--evm-receipt-timeout <duration>` | How long to wait for an EVM transaction receipt before timing out (e.g. `30s`, `2m`). For EVM log triggers only (default: `1m`)                                                                                                                                                                                                                         |
+| `--solana-tx-sig <string>`         | Base58 transaction signature containing the event that triggered your workflow. For Solana log triggers only                                                                                                                                                                                                                                            |
+| `--solana-event-index <int>`       | Which event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For Solana log triggers only                                                                                                                                                                        |
+| `--limits <string>`                | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`)                                                                        |
+| `--skip-type-checks`               | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                                                                             |
 
 **Examples:**
 
@@ -9451,6 +9455,18 @@ cre workflow simulate <workflow-name-or-path> [flags]
   ```bash
   cre workflow simulate ./my-workflow --listen --trigger-index 1 --target staging-settings
   ```
+
+- Non-interactive mode with Solana log trigger
+
+  ```bash
+  # If your Solana log trigger handler is the first handler in your workflow, use --trigger-index 0
+  # --solana-event-index 0 means you want the first event from that transaction
+  cre workflow simulate my-workflow --non-interactive --trigger-index 0 --solana-tx-sig c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn --solana-event-index 0 --target staging-settings
+  ```
+
+> **NOTE: Listen mode is not supported for Solana log triggers**
+>
+> Unlike EVM log triggers, Solana log triggers do not support `--listen`. You always provide a transaction signature for a transaction that already emitted the event, using `--solana-tx-sig` and `--solana-event-index`.
 
 > **NOTE: Dry run by default**
 >
@@ -13758,7 +13774,7 @@ Confidential HTTP takes a different approach: by design, only one request is mad
 
 # Finality and Confidence Levels
 Source: https://docs.chain.link/cre/concepts/finality-ts
-Last Updated: 2025-12-10
+Last Updated: 2026-10-19
 
 Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
 
@@ -13872,6 +13888,18 @@ If a block containing your transaction is reorganized:
 EVM Log Triggers must use the three confidence levels (`LATEST`, `SAFE`, or `FINALIZED`). Custom block depths are not supported for triggers.
 
 By default, triggers use `SAFE` if no confidence level is specified. For details on configuring trigger confidence levels, see [EVM Log Trigger](/cre/reference/sdk/triggers/evm-log-trigger-ts#configuration).
+
+## Finality on Solana
+
+Solana does not use the EVM confidence-level model. Instead, Solana reads specify a **commitment** level, which describes how much confirmation a node requires before it reports a result:
+
+| Commitment  | Description                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------- |
+| `PROCESSED` | The node has processed the block but it is not yet confirmed. Fastest, but the result can still change. |
+| `CONFIRMED` | The block has been confirmed by a supermajority of stake. The default for most reads.                   |
+| `FINALIZED` | The block is finalized and cannot be rolled back. Slowest, but the strongest guarantee.                 |
+
+Set the commitment on a Solana read through the options object passed to `getAccountInfoWithOpts`. See [`getAccountInfoWithOpts`](/cre/reference/sdk/solana-client-ts#solanaclientgetaccountinfowithopts) for the full option set, and [Reading from Solana](/cre/guides/workflow/using-solana-client/onchain-read) for a worked example.
 
 ---
 
@@ -14104,7 +14132,7 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 # Before You Build
 Source: https://docs.chain.link/cre/getting-started/before-you-build-ts
-Last Updated: 2026-02-04
+Last Updated: 2026-10-19
 
 You've completed the Getting Started guide and built a workflow that fetches offchain data, reads from a smart contract, performs calculations, and writes results onchain. You're ready to build your own workflows.
 
@@ -14226,7 +14254,8 @@ Here are resources to help you go from simulation to production.
 You used a Cron trigger. Most production workflows react to events:
 
 - **[HTTP Trigger](/cre/guides/workflow/using-triggers/http-trigger/overview)** — Trigger via API calls
-- **[EVM Log Trigger](/cre/guides/workflow/using-triggers/evm-log-trigger)** — React to onchain events
+- **[EVM Log Trigger](/cre/guides/workflow/using-triggers/evm-log-trigger)** — React to onchain EVM events
+- **[Solana Log Trigger](/cre/guides/workflow/using-triggers/solana-log-trigger)** — React to onchain Solana events
 
 ### Add secrets
 
@@ -21289,7 +21318,7 @@ The workflow derives `forwarderAuthority` at runtime from `["forwarder", forward
 
 # Generating Solana Bindings
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/generating-bindings-ts
-Last Updated: 2026-09-03
+Last Updated: 2026-10-19
 
 To interact with a Solana program from your TypeScript workflow, you generate **bindings** from the program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). Bindings are typed TypeScript classes that handle Borsh encoding, account hashing, and report submission automatically.
 
@@ -21297,8 +21326,8 @@ For each Anchor struct in your IDL, the generator creates a `writeReportFrom<Str
 
 > **NOTE: CLI version requirements**
 >
-> TypeScript Solana binding generation and write simulation require **CRE CLI v1.24.0 or later**. Log trigger binding
-> generation requires **v1.32.0 or later**. Run `cre version` to check, then `cre update` if needed.
+> TypeScript Solana binding generation, read, write, and log trigger support require **CRE CLI v1.33.0 or later**. Run
+> `cre version` to check, then `cre update` if needed.
 
 ## The generation process
 
@@ -21470,6 +21499,8 @@ What's inside depends on your IDL:
 - **For all programs**:
   - A typed `<PROGRAM>_IDL` constant and `<PROGRAM>_PROGRAM_ID` from the IDL address.
   - A `<ProgramName>` class with a `writeReport(runtime, payload, remainingAccounts, computeConfig?)` base method.
+- **For onchain reads** (each account in `accounts`):
+  - A `decode<AccountName>Account(data)` method that decodes raw account bytes returned by a read.
 - **For onchain writes** (each struct in `types`):
   - A `writeReportFrom<StructName>(runtime, input, remainingAccounts, computeConfig?)` method.
   - A `writeReportFrom<StructName>s(...)` variant for Borsh `Vec` payloads.
@@ -21528,7 +21559,7 @@ const [forwarderAuthority] = await getProgramDerivedAddress({
 
 # Onchain Read
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/onchain-read-ts
-Last Updated: 2026-09-04
+Last Updated: 2026-10-19
 
 This guide explains how to read data from a Solana account from within your CRE workflow. Reading is deliberately
 split into two steps: fetch the raw account bytes with `SolanaClient`'s
@@ -21540,7 +21571,7 @@ them separate is what lets one fetch call work for every account type you read.
 ## Prerequisites
 
 - A CRE project initialized with `cre init`. See [Part 1: Project Setup](/cre/getting-started/part-1-project-setup-ts) if you are starting from scratch.
-- The latest version of the CRE CLI (`cre version` / `cre update`); **v1.32.0 or later** is required for TypeScript Solana read binding generation.
+- The latest version of the CRE CLI (`cre version` / `cre update`); **v1.33.0 or later** is required for TypeScript Solana read binding generation.
 - A funded Solana Devnet keypair for `CRE_SOLANA_PRIVATE_KEY` (required for every Solana simulation, including a read-only workflow). See [Step 4](#step-4-run-the-simulation).
 
 ## What you need: an account to read
@@ -21816,7 +21847,7 @@ workflow runs on the schedule you configured, with the DON reaching consensus on
 
 # Writing to Solana
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/onchain-write-ts
-Last Updated: 2026-08-20
+Last Updated: 2026-10-19
 
 This guide walks through your first Solana write from a CRE workflow using the TypeScript SDK. The preferred path is
 **generated bindings**: you place your Anchor IDL in the project, run `cre generate-bindings solana`, and call a typed
@@ -21826,7 +21857,7 @@ do not hand-roll encoding.
 Onchain, the DON does not call your program directly. It submits a signed report to the **Keystone Forwarder** — a
 Chainlink-managed Solana program that verifies DON signatures, then cross-program invokes (CPI) your receiver's
 `on_report`. That is the same forwarder model as [EVM Write](/cre/capabilities/evm-read-write); see
-[Solana Write](/cre/capabilities/solana-read-write) for the full flow. Local simulation uses a Devnet stand-in of that
+[Solana Read & Write](/cre/capabilities/solana-read-write) for the full flow. Local simulation uses a Devnet stand-in of that
 forwarder so you can dry-run without deploying. After you deploy, the live forwarder addresses apply.
 
 For IDL layout, generator output, and what each `writeReportFrom...` method does under the hood, see
@@ -22423,7 +22454,7 @@ The transaction on Solana Explorer will show the forwarder program as the initia
 
 # Solana Chain Interactions
 Source: https://docs.chain.link/cre/guides/workflow/using-solana-client/overview-ts
-Last Updated: 2026-09-03
+Last Updated: 2026-10-19
 
 `SolanaClient` is the TypeScript SDK's interface for Solana chain interactions from CRE workflows. Reads fetch consensus-verified account and program data. Writes submit cryptographically signed reports through the Keystone Forwarder program, which verifies DON signatures and CPIs into your receiver program. A separate [Solana Log trigger](/cre/guides/workflow/using-triggers/solana-log-trigger) starts a workflow when a Solana program emits a matching event.
 
@@ -23382,7 +23413,7 @@ Or explore the SDK reference for detailed API documentation:
 
 # Solana Log Trigger
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/solana-log-trigger-ts
-Last Updated: 2026-09-04
+Last Updated: 2026-10-19
 
 The Solana Log trigger fires when a specific event is emitted by a program on Solana (via Anchor's `emit!` or
 `emit_cpi!`). This guide walks through triggering a workflow whenever a price feed program publishes an update for
@@ -23484,10 +23515,10 @@ one Devnet transaction that already called `publish_price`.
 
 ## Step 2: Configure the workflow
 
-Open (or create) `config.staging.json`. Every log trigger needs the chain to watch, which comes from the IDL baked
-into the generated bindings. The `asset` field is specific to this example: it is not a general CRE or Solana
-concept, just a config value this guide uses to demonstrate filtering on one of `PriceUpdated`'s fields. Your own
-program's events will have their own fields to filter on instead.
+Open (or create) `config.staging.json`. Every log trigger needs the chain to watch, which you set with `chainSelector`;
+the IDL baked into the generated bindings supplies the program address. The `asset` field is specific to this example:
+it is not a general CRE or Solana concept, just a config value this guide uses to demonstrate filtering on one of
+`PriceUpdated`'s fields. Your own program's events will have their own fields to filter on instead.
 
 ```json
 {
@@ -23505,6 +23536,11 @@ program's events will have their own fields to filter on instead.
 
 This step is a complete, pasteable workflow that logs the decoded `PriceUpdated` event whenever the price feed
 publishes an update for the configured asset, using the generated `logTriggerPriceUpdatedLog` binding helper.
+
+The generated bindings import from `@solana/codecs` and `@solana/addresses`, and this workflow also imports
+`@solana/codecs-strings` (to base58-encode the transaction signature). If you run `tsc --noEmit` outside of
+`cre workflow simulate`, install them in your workflow folder:
+`npm install @solana/codecs @solana/addresses @solana/codecs-strings`.
 
 1. Save the following as `my-workflow/main.ts`.
 
@@ -23670,8 +23706,8 @@ event index, and it fetches that event from Devnet.
    ✓ Workflow Simulation Result: "Success"
    ```
 
-   Omit interactive mode (drop `--non-interactive` and its accompanying flags) to be prompted for the transaction
-   signature and event index instead. See [Simulating Workflows: Solana log
+   To use interactive mode instead, drop `--non-interactive` and its accompanying flags and you will be prompted for the
+   transaction signature and event index. See [Simulating Workflows: Solana log
    trigger](/cre/guides/operations/simulating-workflows#solana-log-trigger) for both modes.
 
 ## Deploying the workflow
@@ -23695,7 +23731,7 @@ trigger only reacts to events emitted **after** it is deployed — it does not r
 
 # Chainlink Runtime Environment (CRE)
 Source: https://docs.chain.link/cre
-Last Updated: 2026-09-16
+Last Updated: 2026-10-19
 
 
 
@@ -27883,7 +27919,7 @@ const reserveInfo = httpClient
 
 # SDK Reference
 Source: https://docs.chain.link/cre/reference/sdk/overview-ts
-Last Updated: 2026-02-03
+Last Updated: 2026-10-19
 
 This section provides a detailed technical reference for the public interfaces of the CRE TypeScript SDK. Use this reference for quick lookups of specific functions, types, and method signatures.
 
@@ -27892,8 +27928,9 @@ This section provides a detailed technical reference for the public interfaces o
 The SDK Reference is broken down into several pages, each corresponding to a core part of the SDK's functionality:
 
 - **[Core SDK](/cre/reference/sdk/core-ts)**: Covers the fundamental building blocks of any workflow, including `handler`, `Runtime`, report verification (`Report.parse`), and the `.result()` pattern for promise resolution.
-- **[Triggers](/cre/reference/sdk/triggers/overview-ts)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`).
+- **[Triggers](/cre/reference/sdk/triggers/overview-ts)**: Details the configuration and payload structures for all available trigger types (`Cron`, `HTTP`, `EVM Log`, `Solana Log`).
 - **[EVM Client](/cre/reference/sdk/evm-client-ts)**: Provides a reference for the `EVMClient`, the primary tool for all EVM interactions, including reads and writes.
+- **[Solana Client](/cre/reference/sdk/solana-client-ts)**: Provides a reference for the `SolanaClient`, used for reading from and writing to Solana programs.
 - **[HTTP Client](/cre/reference/sdk/http-client-ts)**: Provides a reference for the `HTTPClient`, used for making offchain API requests from individual nodes.
 - **[Confidential HTTP Client](/cre/reference/sdk/confidential-http-client-ts)**: Provides a reference for the `ConfidentialHTTPClient`, used for privacy-preserving API requests with enclave execution and optional response encryption.
 - **[Consensus & Aggregation](/cre/reference/sdk/consensus-ts)**: Describes how to use aggregators like `consensusMedianAggregation` and `ConsensusAggregationByFields` with `runtime.runInNodeMode()` to process and consolidate data from multiple nodes.
@@ -27910,6 +27947,7 @@ import {
   HTTPCapability,
   HTTPClient,
   EVMClient,
+  SolanaClient,
   // Core functions
   handler, // Register handlers
   Runner, // Workflow runner
@@ -27978,7 +28016,7 @@ TypeScript workflows are compiled to WebAssembly (WASM) using Javy and QuickJS. 
 
 # SDK Reference: Solana Client
 Source: https://docs.chain.link/cre/reference/sdk/solana-client-ts
-Last Updated: 2026-09-04
+Last Updated: 2026-10-19
 
 This page provides a reference for `SolanaClient`, the TypeScript SDK interface for reading from and writing to Solana programs. It covers the client class, all exported helper functions, and the chain selector reference for Solana networks.
 
@@ -29028,19 +29066,20 @@ The input you provide will be converted to bytes and passed to your callback fun
 
 # SDK Reference: Triggers
 Source: https://docs.chain.link/cre/reference/sdk/triggers/overview-ts
-Last Updated: 2025-11-04
+Last Updated: 2026-10-19
 
 This section provides a reference for the built-in trigger capabilities of the CRE TypeScript SDK. Each trigger type has its own configuration, payload structure, and required callback signature.
 
 - **[Cron Trigger](/cre/reference/sdk/triggers/cron-trigger)**: Fires at a specified schedule using standard cron expressions.
 - **[HTTP Trigger](/cre/reference/sdk/triggers/http-trigger)**: Fires when an HTTP request is made to the workflow's designated endpoint.
 - **[EVM Log Trigger](/cre/reference/sdk/triggers/evm-log-trigger)**: Fires when a specific log (event) is emitted by an onchain smart contract.
+- **[Solana Log Trigger](/cre/reference/sdk/triggers/solana-log-trigger)**: Fires when a specific event is emitted by an onchain Solana program.
 
 ---
 
 # SDK Reference: Solana Log Trigger
 Source: https://docs.chain.link/cre/reference/sdk/triggers/solana-log-trigger-ts
-Last Updated: 2026-09-04
+Last Updated: 2026-10-19
 
 The Solana Log Trigger fires when a specific event is emitted by an onchain Solana program.
 
@@ -29082,7 +29121,7 @@ One filter condition on a named event field.
 
 | Field       | Type                          | Description                                                                  |
 | ----------- | ----------------------------- | ---------------------------------------------------------------------------- |
-| `path`      | `string[]`                    | The field name to filter on (e.g. `["ForwarderState"]`).                     |
+| `path`      | `string[]`                    | The field name to filter on (e.g. `["asset"]`).                              |
 | `comparers` | `SolanaValueComparatorJson[]` | Values to compare against. Multiple comparers on one path are OR conditions. |
 
 Generated bindings produce one `SolanaSubkeyConfigJson` per filtered field from an `<EventName>Filters` object — see

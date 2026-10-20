@@ -7,7 +7,7 @@ pageId: "concepts-finality"
 metadata:
   description: "Understand how CRE handles blockchain finality across different chains, including confidence levels, finality tags, and block depth configurations."
   datePublished: "2025-12-10"
-  lastModified: "2025-12-10"
+  lastModified: "2026-10-19"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -126,3 +126,15 @@ If a block containing your transaction is reorganized:
 EVM Log Triggers must use the three confidence levels (`LATEST`, `SAFE`, or `FINALIZED`). Custom block depths are not supported for triggers.
 
 By default, triggers use `SAFE` if no confidence level is specified. For details on configuring trigger confidence levels, see [EVM Log Trigger](/cre/reference/sdk/triggers/evm-log-trigger-go#evmfilterlogtriggerrequest).
+
+## Finality on Solana
+
+Solana does not use the EVM confidence-level model. Instead, Solana reads specify a **commitment** level, which describes how much confirmation a node requires before it reports a result:
+
+| Commitment  | Description                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------- |
+| `PROCESSED` | The node has processed the block but it is not yet confirmed. Fastest, but the result can still change. |
+| `CONFIRMED` | The block has been confirmed by a supermajority of stake. The default for most reads.                   |
+| `FINALIZED` | The block is finalized and cannot be rolled back. Slowest, but the strongest guarantee.                 |
+
+Set the commitment on a Solana read through the `Commitment` field of `GetAccountInfoOpts` (Go) or the equivalent options object in TypeScript. See [`GetAccountInfoWithOpts`](/cre/reference/sdk/solana-client-go#clientgetaccountinfowithopts) for the full option set, and [Reading from Solana](/cre/guides/workflow/using-solana-client/onchain-read) for a worked example.
