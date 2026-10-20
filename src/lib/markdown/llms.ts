@@ -1,6 +1,6 @@
 import { transformPageBodyToMarkdown } from "./buildMarkdownArtifact.js"
 import { unescapeMarkdown } from "./formatters.js"
-import type { MarkdownArtifact } from "./types.js"
+import type { MarkdownArtifact, TransformConfig } from "./types.js"
 import {
   extractFrontmatter,
   getIsoStringOrUndefined,
@@ -17,7 +17,8 @@ export async function renderLlmsPageMarkdown(
   raw: string,
   absFile: string,
   section: string,
-  targetLanguage?: string
+  targetLanguage?: string,
+  options: Pick<Partial<TransformConfig>, "onDropComponent"> = {}
 ): Promise<{ markdown: string; transformMode: MarkdownArtifact["transformMode"] }> {
   const { body, fmTitle, fmLastModified } = extractFrontmatter(raw)
   const relFromContent = toContentRelative(absFile)
@@ -27,6 +28,7 @@ export async function renderLlmsPageMarkdown(
   const transformed = await transformPageBodyToMarkdown(body, absFile, {
     siteBase: SITE_BASE,
     targetLanguage,
+    onDropComponent: options.onDropComponent,
   })
   const cleanedPlain = unescapeMarkdown(transformed.markdown)
   const headerLines = [
