@@ -14,12 +14,16 @@ export const CHAINLINK_PLATFORM_CONTENTS: SectionContent[] = [
     url: "chainlink-platform/creating-an-account",
   },
   {
+    title: "Understanding Organizations",
+    url: "chainlink-platform/understanding-organizations",
+  },
+  {
     title: "Inviting Team Members",
     url: "chainlink-platform/inviting-team-members",
   },
   {
-    title: "Understanding Organizations",
-    url: "chainlink-platform/understanding-organizations",
+    title: "Assigning and Modifying Roles",
+    url: "chainlink-platform/assigning-and-modifying-roles",
   },
   {
     title: "RBAC (Role-Based Access Control)",

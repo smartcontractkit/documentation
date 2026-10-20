@@ -178,6 +178,32 @@ const desktopSubProductsNav = [
   },
 ]
 
+/*
+  Shared pages rendered inside a product's sidebar carry `?parent=<section>` (see
+  src/config/sidebar/parent-query.ts). The docs picker uses that param to keep showing the product
+  the reader is browsing instead of the section that owns the shared page. Sections without an entry
+  here (e.g. automation, chainlinkFunctions) fall back to path-based matching.
+*/
+const parentSectionToHref: Partial<Record<Sections, string>> = {
+  ace: "/ace",
+  cre: "/cre",
+  crec: "/crec",
+  dataFeeds: "/data-feeds",
+  dataStreams: "/data-streams",
+  dataLink: "/datalink",
+  ccip: "/ccip",
+  vrf: "/vrf",
+  chainlinkLocal: "/chainlink-local",
+  nodeOperator: "/chainlink-nodes",
+  "dta-technical-standard": "/dta-technical-standard",
+  chainlinkPlatform: "/chainlink-platform",
+}
+
+export const getSubProductByParentParam = (parent: string | null | undefined) => {
+  const href = parent ? parentSectionToHref[parent as Sections] : undefined
+  return href ? desktopSubProductsNav.find((item) => item.href === href) : undefined
+}
+
 const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
   {
     label: "Documentation",

@@ -17,8 +17,7 @@ An organization serves as a container for:
 
 - **Multiple team members** with roles assigned per product
 - **Linked wallet addresses** from all team members
-- **Deployed workflows** visible to all organization members
-- **Shared monitoring** of workflow executions and activity
+- **Product resources** such as CRE workflows, ACE policies, and CRE Connect channels, visible to members according to their roles
 - **API keys** for programmatic access to products
 
 Organizations enable teams to collaborate on workflows while maintaining individual control over their own wallet addresses and secrets.
@@ -42,19 +41,21 @@ Members are users invited to join the organization. Each member:
 - Has a role for each product, such as CRE, ACE, or CRE Connect
 - Can link their own wallet addresses to the organization
 - Can deploy and manage their own workflows, depending on their roles
-- Views all organization workflows in the shared dashboard
+- Views product resources, such as CRE workflows, when their role for that product includes view access
 
 ### Shared visibility
 
-All organization members can:
+Organization resources are shared across the whole organization, but each member sees only what their roles permit:
 
-1. **View linked wallet keys** - Use `cre account list-key` to see all addresses linked to the organization by any member
-1. **Monitor all workflows** - Access <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a> to view:
-   - All deployed workflows across the organization
+1. **Linked wallet addresses** - Members whose role includes `platform:owner_address:read`, which every Platform role (Admin, User, Viewer) includes, can see all addresses linked to the organization by any member. The `cre account list-key` CLI command lists the same addresses.
+1. **CRE workflows** - Members with any CRE role (Admin, Developer, Viewer) can view all CRE workflows in the organization at <a href="https://app.chain.link/cre/workflows" target="_blank" rel="noopener noreferrer">app.chain.link/cre/workflows</a>, including:
    - Recent execution history
    - Workflow status (Active, Paused, Pending)
-   - Execution success/failure metrics
+   - Execution success and failure metrics
    - Activity graphs and trends
+1. **Other products** - ACE, CRE Connect, Data Streams, and Agent Gateway resources follow the same model: a member with a role for the product can view its resources, and a member without a role for a product cannot access it.
+
+See [RBAC](/chainlink-platform/rbac) for the permissions each role includes.
 
 ## Organization roles
 

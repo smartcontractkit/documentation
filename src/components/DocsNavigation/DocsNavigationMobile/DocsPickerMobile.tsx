@@ -9,7 +9,7 @@ import { BottomBar } from "./BottomBar.tsx"
 import { ProductContent } from "./ProductContent.tsx"
 import { SubProductContent } from "./SubProductContent.tsx"
 import styles from "./productNavigation.module.css"
-import { getNavigationProps, getSubProducts } from "../../Header/getNavigationProps.ts"
+import { getNavigationProps, getSubProducts, getSubProductByParentParam } from "../../Header/getNavigationProps.ts"
 import defaultLogo from "../../../assets/product-logos/default-logo.svg"
 import { useStore } from "@nanostores/react"
 import { selectedCcipVersion } from "~/stores/ccipVersion.js"
@@ -24,6 +24,7 @@ declare global {
 
 type Props = {
   path: string
+  parentSection?: string | null
 }
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
@@ -72,7 +73,7 @@ const buildSubProducts = (product: ProductItem | undefined, ccipVersion: CcipVer
   }
 }
 
-export function ProductNavigation({ path }: Props) {
+export function ProductNavigation({ path, parentSection = null }: Props) {
   const [open, setOpen] = React.useState(false)
   // Which product's sub-nav is open. The tree itself is DERIVED from this (+ the CCIP version) in the
   // `subProducts` memo below, so there is exactly one source of truth and the tree can never diverge
@@ -89,9 +90,12 @@ export function ProductNavigation({ path }: Props) {
   const ccipVersion = useStore(selectedCcipVersion)
 
   const subProductTrigger = subProductsNav?.find(({ href }) => isMatchedPath(path, href))
+  // A shared page viewed through a product sidebar keeps that product in the trigger.
+  const parentProduct = getSubProductByParentParam(parentSection)
+  const activeProduct = parentProduct || subProductTrigger
 
-  const label = subProductTrigger?.label || "Resources"
-  const icon = subProductTrigger?.label ? subProductTrigger.icon : defaultLogo.src
+  const label = activeProduct?.label || "Resources"
+  const icon = activeProduct?.label ? activeProduct.icon : defaultLogo.src
 
   // Single source of truth for the open product's tree. Rebuilds when the active product OR the CCIP
   // version changes — so re-entering CCIP always shows the correct, versioned, chain-filterable tree
@@ -103,18 +107,22 @@ export function ProductNavigation({ path }: Props) {
   )
 
   // On page (path) change, select the product whose section owns this URL and show its sub-nav.
+  // A shared page viewed through a product sidebar (`?parent=`) selects that product instead.
   // Version is handled by the memo above, so it is intentionally NOT a dependency here.
   useEffect(() => {
-    const match = productsNav.categories
-      .flatMap((category) => category.items)
-      .find((item) => item.subProducts && isMatchedPath(path, item.href))
+    const parentItem = parentProduct ? findProduct(productsNav, parentProduct.href) : undefined
+    const match = parentItem?.subProducts
+      ? parentItem
+      : productsNav.categories
+          .flatMap((category) => category.items)
+          .find((item) => item.subProducts && isMatchedPath(path, item.href))
     if (match) {
       setActiveProductHref(match.href)
       setProductsSlidePosition("submenu")
     } else {
       setActiveProductHref(null)
     }
-  }, [path, productsNav])
+  }, [path, productsNav, parentProduct])
 
   const onProductClick = React.useCallback((product: ProductItem) => {
     setActiveProductHref(product.href)
