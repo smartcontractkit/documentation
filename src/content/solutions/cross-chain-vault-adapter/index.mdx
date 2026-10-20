@@ -8,11 +8,27 @@ import VaultAdapterComparison from "@components/Solutions/VaultAdapterComparison
 
 ## What the adapter does
 
-With the Cross-Chain Vault Adapter, a vault team can accept deposits and redemptions from users on other chains. The vault is the product, CCIP is the bridge, and the adapter is how users on other chains reach the vault. The hub chain is the chain where the vault and the adapter are deployed. A source chain is any other chain that users send deposits and redemptions from. The vault holds one asset and earns yield. The adapter is a contract on the hub chain that receives tokens and instructions through CCIP and calls the vault for the user.
+<Aside type="note" title="ERC-4626?">
+  These docs assume familiarity with the ERC-4626 standard. Please refer to
+  [ethereum.org](https://ethereum.org/developers/docs/standards/tokens/erc-4626/) for more details.
+</Aside>
 
-The asset is the token users deposit and receive when they redeem. Shares represent their position in the vault.
+Right now, without the adapter, users of a De-Fi protocol backed by an ERC-4626 have to go through a multi-step process to deposit funds into, or redeem funds from, a vault deployed on a different chain from the one they currently have funds on.
+With Chainlink's Cross-Chain Vault Adapter, a team can accept deposits and redemptions from users on other chains in a single transaction.
 
-Without the adapter, a user on a source chain bridges the asset to the hub chain themselves, switches their wallet network, holds the hub chain's gas token, approves and calls the vault, and bridges the shares back. With the adapter, they approve the source-chain CCIP Router, unless an allowance already exists, and send one CCIP message from the chain they are on. The adapter does the hub-chain work in one transaction, then delivers the shares on the hub chain or returns them to the user on the source chain. Returning the shares completes the one-message experience: the user never has to touch the hub chain. A return requires the vault's share token to be a CCIP cross-chain token on both chains, as [Requirements](#requirements) lists. Redemptions work the same way, in the reverse direction.
+<Aside type="note" title="Key Terms You Need to Know">
+  1. **Hub Chain:** The chain where the vault and the adapter are deployed. 2. **Source Chain:** Any other chain that
+  users send deposits and redemptions from. 3. **Vault:** An ERC-4626 contract. Holds the assets and earns yield for the
+  user. 4. **Adapter:** A Chainlink contract, deployed on the hub chain, that receives tokens and instructions through
+  CCIP and calls the vault for the user. 5. **Asset:** The token users deposit and receive back when they redeem. 6.
+  **Shares**: Represent a user's position in the vault.
+</Aside>
+
+Without the adapter, a user on a source chain bridges the asset to the hub chain themselves, switches their wallet network, holds the hub chain's gas token, approves and calls the vault, and bridges the shares back.
+With the adapter, they approve the source-chain CCIP Router, unless an allowance already exists, and send one CCIP message from the chain they are on.
+
+A return requires the vault's share token to be a CCIP cross-chain token on both chains, as [Requirements](#requirements) lists.
+Redemptions work the same way, in the reverse direction.
 
 <Aside type="note" title="Message payload">
 
@@ -30,56 +46,27 @@ A single message carries:
 
 ## Deposit or redeem from another chain
 
-Both routes below are drawn against the same three chains, and the text version carries the same facts. Redemptions take the same route with shares in and the asset out.
+This diagram illustrates the flow of deposits and redemptions with and without the adapter.
+
+In a nutshell:
+
+1. When you deposit into a 4626 vault, you put in an ERC-20 asset compliant with the vault, and in return, you receive shares, sometimes referred to as vault tokens, or synthetic tokens, that represent your position in the vault.
+2. When you redeem those shares, you get back an equivalent amount of the underlying asset back.
 
 <VaultAdapterComparison>
 
 The counts assume a successful request from an EVM wallet that uses CCIP directly, pays CCIP fees in the native gas token, and sends each transaction separately. Wallet network switches and CCIP execution are not transactions. A wallet whose allowance already covers the amount skips the approval steps.
 
-**Deposit without the adapter.** The user:
-
-1. Approves the source-chain Router to spend the asset.
-2. Sends the asset through CCIP to their own wallet on the hub chain and pays the CCIP fee.
-3. Switches the wallet to the hub chain and holds its gas token.
-4. Approves the vault to spend the asset.
-5. Deposits into the vault and receives shares. Hub-chain delivery ends here.
-6. To return the shares, approves the hub-chain Router to spend them.
-7. Sends the shares through CCIP to the source chain and pays a second CCIP fee.
-
-**Deposit with the adapter.** The user:
-
-1. Approves the source-chain Router to spend the asset.
-2. Sends the asset and a 128-byte payload to the adapter through CCIP and pays the CCIP fee.
-
-CCIP delivers the asset to the adapter and calls it. In that one hub-chain transaction, the adapter validates the request, deducts any configured adapter fee when the shares return to the source chain, approves the vault and deposits, and checks that the output is nonzero and at least the minimum. It then transfers the shares to the beneficiary on the hub chain, or approves the hub-chain Router and sends them back in a second CCIP message, paying that message's CCIP fee from its own native balance. The user signs nothing on the hub chain.
-
-**Redeem.** The same routes with shares in and the asset out. Without the adapter, the user redeems their own shares, so there is no vault approval. With the adapter, the adapter redeems as owner and receiver, then deducts any configured adapter fee from the redeemed asset before returning it.
-
-**Transactions the user's wallet signs.** Approvals are included; a wallet with existing allowances signs the number in parentheses fewer times.
-
-| Action  | Result delivered         | Without the adapter | With the adapter | Chains signed on | Network switches | CCIP messages |
-| ------- | ------------------------ | ------------------- | ---------------- | ---------------- | ---------------- | ------------- |
-| Deposit | Back on the source chain | 6 (3 approvals)     | 2 (1 approval)   | 2 vs 1           | 1 vs 0           | 2             |
-| Deposit | On the hub chain         | 4 (2 approvals)     | 2 (1 approval)   | 2 vs 1           | 1 vs 0           | 1             |
-| Redeem  | Back on the source chain | 5 (2 approvals)     | 2 (1 approval)   | 2 vs 1           | 1 vs 0           | 2             |
-| Redeem  | On the hub chain         | 3 (1 approval)      | 2 (1 approval)   | 2 vs 1           | 1 vs 0           | 1             |
-
-Fees the user pays directly: without the adapter, one CCIP fee per message they send, so two when the output returns. With the adapter, one CCIP fee, plus any configured adapter fee when the output returns to the source chain; the adapter pays the return message's CCIP fee.
-
 </VaultAdapterComparison>
 
-With the adapter, a request that fails after delivery is not reverted: the adapter keeps the tokens as a refundable failed message, and the refund or local recovery is a hub-chain action. [How it works](/solutions/cross-chain-vault-adapter/overview/how-it-works) explains the payload, processing, both delivery options, and fees.
-
-The repository also contains a separate [multibridge implementation](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/docs/multibridge/README.md) for vaults whose asset or share token moves over other cross-chain protocols. These docs cover the CCIP implementation.
+> The repository also contains a separate [multibridge implementation](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/docs/multibridge/README.md) for vaults whose asset or share token moves over other cross-chain protocols. These docs cover the CCIP implementation.
 
 ## Who it's for
 
-- **Vault teams**, such as issuers, protocols, and curators, that run an [ERC-4626](https://eips.ethereum.org/EIPS/eip-4626) vault on one chain and want deposits and redemptions from users on other chains connected by CCIP.
+- **Vault teams**, such as issuers, protocols, and curators, that run an [ERC-4626](https://eips.ethereum.org/EIPS/eip-4626) vault on one chain and want deposits and redemptions from users on other chains connected by CCIP to become seamless.
 - **Integrators** who build deposit and redeem interfaces on source chains. They encode the payload and send the CCIP message, and deploy no contracts.
 
-The contract also supports Solana source chains. These docs cover EVM source chains.
-
-Asynchronous vaults, multi-asset vaults, and targets that are not ERC-4626 vaults need a fork; see [Use it as-is or customize it](#use-it-as-is-or-customize-it). An asynchronous vault that accepts synchronous ERC-4626 deposits needs the fork only for redemptions: deposits work with the adapter as-is.
+Asynchronous vaults, multi-asset vaults, and targets that are not ERC-4626 vaults need a fork; see [Use it as-is or customize it](#use-it-as-is-or-customize-it).
 
 ## Requirements
 
@@ -96,7 +83,9 @@ Each token that crosses chains must be configured as a [CCIP cross-chain token (
 
 **If your vault's asset is not CCIP-enabled, you can still offer redemptions from another chain with delivery on the hub chain.** Users send their CCIP-enabled shares to the adapter, and the adapter redeems them and delivers the asset locally. The asset does not cross chains in this flow.
 
-To enable cross-chain transfers of shares, the share token typically uses Lock & Release on the hub chain, because only the vault may mint shares, and Burn & Mint on source chains. See the [Lock & Mint tutorial](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry).
+To enable cross-chain transfers of shares, the share token typically uses Lock & Release on the hub chain, because only the vault may mint shares, and Burn & Mint on source chains.
+
+> See the [Lock & Mint tutorial](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry) for more details.
 
 Your vault and deployment must also meet these requirements:
 
@@ -121,7 +110,11 @@ Your vault and deployment must also meet these requirements:
 
 ## What you deploy and operate
 
-You deploy one adapter on the hub chain with one call to `deploy` on the `CrossChainERC4626AdapterFactory`. That transaction sets the accepted source chains, allowlists your vault when you pass its address and enable it, sets the deposit and redeem switches and the adapter fees, and grants the admin, fee setter, and fee collector roles to your accounts. The factory then renounces all of its own roles. The [Factory contract](/solutions/cross-chain-vault-adapter/reference/factory-contract) reference lists the factory's deployed addresses and its inputs. One adapter can allowlist several vaults on the same chain, and each payload names the vault it targets.
+> You deploy one adapter on the hub chain with one call to `deploy` on the `CrossChainERC4626AdapterFactory`, and that's it.
+
+That transaction sets the accepted source chains, allowlists your vault when you pass its address and enable it, sets the deposit and redeem switches and the adapter fees, and grants the admin, fee setter, and fee collector roles to your accounts.
+The factory then renounces all of its own roles. The [Factory contract](/solutions/cross-chain-vault-adapter/reference/factory-contract) reference lists the factory's deployed addresses and its inputs.
+One adapter can allowlist several vaults on the same chain, and each payload names the vault it targets.
 
 A lane's version is defined as the version of the CCIP OnRamp and OffRamp contracts that serve it, and the [CCIP Directory](/ccip/directory) shows it. The factory does not apply CCIP 2.0 lane settings or fund the adapter, so after deployment you:
 
