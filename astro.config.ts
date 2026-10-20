@@ -13,7 +13,8 @@ import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 import redirectsJson from "./src/features/redirects/redirects.json"
-import tailwind from "@astrojs/tailwind"
+import tailwindcss from "tailwindcss"
+import autoprefixer from "autoprefixer"
 import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
 import { isSunsetDocsPath, SUNSET_PAGES_STAY_IN_SITEMAP } from "./src/config/sunset"
 import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
@@ -52,7 +53,6 @@ export default defineConfig({
     ...ccipRedirects,
   },
   integrations: [
-    tailwind(),
     trailingSlashMiddleware(),
     preact({
       include: ["**/preact/*"],
@@ -170,6 +170,10 @@ export default defineConfig({
     },
     css: {
       devSourcemap: false,
+      // Tailwind 3 runs through PostCSS directly (formerly wired by the deprecated @astrojs/tailwind integration)
+      postcss: {
+        plugins: [tailwindcss(), autoprefixer()],
+      },
     },
   },
   legacy: {
