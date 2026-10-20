@@ -151,7 +151,26 @@ export default defineConfig({
   output: "static",
   adapter: vercel(),
   vite: {
-    plugins: [yaml()],
+    plugins: [
+      yaml(),
+      // Dev-only workaround for slow `astro dev`: @chainlink/blocks ships raw TS whose root entry
+      // re-exports ~3,700 icon modules, and Astro's dev server crawls the whole module graph on every request.
+      // Pre-bundling blocks for SSR collapses it into a single module. Remove once blocks ships a built package.
+      {
+        name: "dev-prebundle-chainlink-blocks",
+        apply: "serve",
+        config: () => ({
+          ssr: {
+            noExternal: ["@chainlink/blocks"],
+            optimizeDeps: {
+              include: ["@chainlink/blocks"],
+              exclude: ["react", "react-dom"], // keep a single React instance (react-dom/server stays external)
+              esbuildOptions: { jsx: "automatic" }, // blocks relies on the automatic JSX runtime
+            },
+          },
+        }),
+      },
+    ],
     build: {
       target: "esnext", // Use latest ES features, no transpilation for modern browsers
       // Optimize CSS delivery
