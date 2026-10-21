@@ -39,27 +39,27 @@ Each product defines its own set of roles. The following tables list every permi
 
 Chainlink Platform roles control access to organization-level features such as members, API keys, addresses, billing, and limits.
 
-| Permission                                           | Permission ID                            | Admin | User |
-| ---------------------------------------------------- | ---------------------------------------- | ----- | ---- |
-| Organization (Read)                                  | `platform:organization:read`             | ✓     | ✓    |
-| Organization (Write)                                 | `platform:organization:write`            | ✓     |      |
-| View all Billing data                                | `platform:billing:read/*`                | ✓     | ✓    |
-| Adjust all Billing plans                             | `platform:billing:write/*`               | ✓     |      |
-| View Payments activity                               | `platform:payments:read`                 | ✓     | ✓    |
-| Initiate payments                                    | `platform:payments:write`                | ✓     |      |
-| View Organization Members                            | `platform:member:read`                   | ✓     | ✓    |
-| Invite Organization Members                          | `platform:member_invite:write`           | ✓     |      |
-| Remove Organization Members                          | `platform:member:write`                  | ✓     |      |
-| Manage Member Roles for all Products                 | `platform:member_role:write/*`           | ✓     |      |
-| Owner address (Read)                                 | `platform:owner_address:read`            | ✓     | ✓    |
-| Owner address (Write)                                | `platform:owner_address:write`           | ✓     |      |
-| View all API Keys                                    | `platform:api_key:read`                  | ✓     | ✓    |
-| Create & Edit API Keys                               | `platform:api_key:write`                 | ✓     | ✓    |
-| Read Platform limits                                 | `platform:limits:read/platform`          | ✓     | ✓    |
-| Manage Platform limits                               | `platform:limits:write/platform`         | ✓     |      |
-| Link / Unlink Organization Addresses to all products | `platform:owner_address:linking:write/*` |       |      |
-| Read all limits                                      | `platform:limits:read/*`                 |       |      |
-| Manage all limits                                    | `platform:limits:write/*`                |       |      |
+| Name                  | Action | Permission ID                            | Admin | User |
+| --------------------- | ------ | ---------------------------------------- | ----- | ---- |
+| Organization          | Read   | `platform:organization:read`             | ✓     | ✓    |
+| Organization          | Write  | `platform:organization:write`            | ✓     |      |
+| Billing               | Read   | `platform:billing:read/*`                | ✓     | ✓    |
+| Billing               | Write  | `platform:billing:write/*`               | ✓     |      |
+| Payments              | Read   | `platform:payments:read`                 | ✓     | ✓    |
+| Payments              | Write  | `platform:payments:write`                | ✓     |      |
+| Member                | Read   | `platform:member:read`                   | ✓     | ✓    |
+| Member invite         | Write  | `platform:member_invite:write`           | ✓     |      |
+| Member                | Write  | `platform:member:write`                  | ✓     |      |
+| Member role           | Write  | `platform:member_role:write/*`           | ✓     |      |
+| Owner address         | Read   | `platform:owner_address:read`            | ✓     | ✓    |
+| Owner address         | Write  | `platform:owner_address:write`           | ✓     |      |
+| API key               | Read   | `platform:api_key:read`                  | ✓     | ✓    |
+| API key               | Write  | `platform:api_key:write`                 | ✓     | ✓    |
+| Limits                | Read   | `platform:limits:read/platform`          | ✓     | ✓    |
+| Limits                | Write  | `platform:limits:write/platform`         | ✓     |      |
+| Owner address linking | Write  | `platform:owner_address:linking:write/*` |       |      |
+| Limits                | Read   | `platform:limits:read/*`                 |       |      |
+| Limits                | Write  | `platform:limits:write/*`                |       |      |
 
 The last three permissions in the table are cross-product permissions that no Platform role includes. Product roles grant their product-scoped versions instead: for example, the CRE Admin role includes `platform:owner_address:linking:write/cre` and `platform:limits:write/cre`.
 
@@ -67,19 +67,19 @@ The last three permissions in the table are cross-product permissions that no Pl
 
 CRE roles control access to workflows, secrets, limits, and workflow owner addresses. CRE roles can only be assigned to organizations with full access status.
 
-| Permission                         | Permission ID                              | Admin | Developer | Viewer |
-| ---------------------------------- | ------------------------------------------ | ----- | --------- | ------ |
-| Full CRE access                    | `cre:*`                                    | ✓     |           |        |
-| Workflow (Read)                    | `cre:workflow:read`                        | ✓     | ✓         | ✓      |
-| Workflow artifact (Read)           | `cre:workflow:artifact:read`               | ✓     | ✓         | ✓      |
-| Workflow artifact (Write)          | `cre:workflow:artifact:write`              | ✓     | ✓         |        |
-| Workflow (Write, Private Registry) | `cre:workflow:write/private_registry`      | ✓     | ✓         |        |
-| List CRE Secrets                   | `cre:secret:read`                          | ✓     | ✓         | ✓      |
-| Manage CRE Secrets                 | `cre:secret:write`                         | ✓     | ✓         |        |
-| Member role (Write)                | `platform:member_role:write/cre`           | ✓     |           |        |
-| Owner address linking (Write)      | `platform:owner_address:linking:write/cre` | ✓     |           |        |
-| Read CRE limits                    | `platform:limits:read/cre`                 | ✓     | ✓         | ✓      |
-| Manage CRE limits                  | `platform:limits:write/cre`                | ✓     |           |        |
+| Name                  | Action | Permission ID                              | Admin | Developer | Viewer |
+| --------------------- | ------ | ------------------------------------------ | ----- | --------- | ------ |
+| Full CRE access       |        | `cre:*`                                    | ✓     |           |        |
+| Workflow              | Read   | `cre:workflow:read`                        | ✓     | ✓         | ✓      |
+| Workflow artifact     | Read   | `cre:workflow:artifact:read`               | ✓     | ✓         | ✓      |
+| Workflow artifact     | Write  | `cre:workflow:artifact:write`              | ✓     | ✓         |        |
+| Workflow              | Write  | `cre:workflow:write/private_registry`      | ✓     | ✓         |        |
+| Secret                | Read   | `cre:secret:read`                          | ✓     | ✓         | ✓      |
+| Secret                | Write  | `cre:secret:write`                         | ✓     | ✓         |        |
+| Member role           | Write  | `platform:member_role:write/cre`           | ✓     |           |        |
+| Owner address linking | Write  | `platform:owner_address:linking:write/cre` | ✓     |           |        |
+| Limits                | Read   | `platform:limits:read/cre`                 | ✓     | ✓         | ✓      |
+| Limits                | Write  | `platform:limits:write/cre`                | ✓     |           |        |
 
 ### ACE
 
@@ -87,127 +87,116 @@ ACE roles control access to policy engines, policies, targets, identities, evalu
 
 **Policy manager**
 
-| Permission                                    | Permission ID                                     | Admin | Operator | Viewer |
-| --------------------------------------------- | ------------------------------------------------- | ----- | -------- | ------ |
-| Policy manager policy engine (Read)           | `ace:policy_manager:policy_engine:read`           | ✓     | ✓        | ✓      |
-| Policy manager policy engine (Write)          | `ace:policy_manager:policy_engine:write`          | ✓     | ✓        |        |
-| Policy manager policy engine archive (Write)  | `ace:policy_manager:policy_engine:archive:write`  | ✓     |          |        |
-| Policy manager policy (Read)                  | `ace:policy_manager:policy:read`                  | ✓     | ✓        | ✓      |
-| Policy manager policy (Write)                 | `ace:policy_manager:policy:write`                 | ✓     | ✓        |        |
-| Policy manager policy archive (Write)         | `ace:policy_manager:policy:archive:write`         | ✓     | ✓        |        |
-| Policy manager target (Read)                  | `ace:policy_manager:target:read`                  | ✓     | ✓        | ✓      |
-| Policy manager target (Write)                 | `ace:policy_manager:target:write`                 | ✓     | ✓        |        |
-| Policy manager target archive (Write)         | `ace:policy_manager:target:archive:write`         | ✓     | ✓        |        |
-| Policy manager target access (Read)           | `ace:policy_manager:target_access:read`           | ✓     |          |        |
-| Policy manager target access (Write)          | `ace:policy_manager:target_access:write`          | ✓     |          |        |
-| Policy manager implementation (Read)          | `ace:policy_manager:implementation:read`          | ✓     | ✓        | ✓      |
-| Policy manager implementation (Write)         | `ace:policy_manager:implementation:write`         | ✓     | ✓        |        |
-| Policy manager implementation archive (Write) | `ace:policy_manager:implementation:archive:write` | ✓     |          |        |
+| Name                                  | Action | Permission ID                                     | Admin | Operator | Viewer |
+| ------------------------------------- | ------ | ------------------------------------------------- | ----- | -------- | ------ |
+| Policy manager policy engine          | Read   | `ace:policy_manager:policy_engine:read`           | ✓     | ✓        | ✓      |
+| Policy manager policy engine          | Write  | `ace:policy_manager:policy_engine:write`          | ✓     | ✓        |        |
+| Policy manager policy engine archive  | Write  | `ace:policy_manager:policy_engine:archive:write`  | ✓     |          |        |
+| Policy manager policy                 | Read   | `ace:policy_manager:policy:read`                  | ✓     | ✓        | ✓      |
+| Policy manager policy                 | Write  | `ace:policy_manager:policy:write`                 | ✓     | ✓        |        |
+| Policy manager policy archive         | Write  | `ace:policy_manager:policy:archive:write`         | ✓     | ✓        |        |
+| Policy manager target                 | Read   | `ace:policy_manager:target:read`                  | ✓     | ✓        | ✓      |
+| Policy manager target                 | Write  | `ace:policy_manager:target:write`                 | ✓     | ✓        |        |
+| Policy manager target archive         | Write  | `ace:policy_manager:target:archive:write`         | ✓     | ✓        |        |
+| Policy manager target access          | Read   | `ace:policy_manager:target_access:read`           | ✓     |          |        |
+| Policy manager target access          | Write  | `ace:policy_manager:target_access:write`          | ✓     |          |        |
+| Policy manager implementation         | Read   | `ace:policy_manager:implementation:read`          | ✓     | ✓        | ✓      |
+| Policy manager implementation         | Write  | `ace:policy_manager:implementation:write`         | ✓     | ✓        |        |
+| Policy manager implementation archive | Write  | `ace:policy_manager:implementation:archive:write` | ✓     |          |        |
 
 **Identity manager**
 
-| Permission                                | Permission ID                                 | Admin | Operator | Viewer |
-| ----------------------------------------- | --------------------------------------------- | ----- | -------- | ------ |
-| Identity manager registry (Read)          | `ace:identity_manager:registry:read`          | ✓     | ✓        | ✓      |
-| Identity manager registry (Write)         | `ace:identity_manager:registry:write`         | ✓     | ✓        |        |
-| Identity manager registry archive (Write) | `ace:identity_manager:registry:archive:write` | ✓     |          |        |
-| Identity manager registry access (Read)   | `ace:identity_manager:registry_access:read`   | ✓     |          |        |
-| Identity manager registry access (Write)  | `ace:identity_manager:registry_access:write`  | ✓     |          |        |
-| Identity manager identity (Read)          | `ace:identity_manager:identity:read`          | ✓     | ✓        | ✓      |
-| Identity manager identity (Write)         | `ace:identity_manager:identity:write`         | ✓     | ✓        |        |
-| Identity manager identity archive (Write) | `ace:identity_manager:identity:archive:write` | ✓     | ✓        |        |
+| Name                              | Action | Permission ID                                 | Admin | Operator | Viewer |
+| --------------------------------- | ------ | --------------------------------------------- | ----- | -------- | ------ |
+| Identity manager registry         | Read   | `ace:identity_manager:registry:read`          | ✓     | ✓        | ✓      |
+| Identity manager registry         | Write  | `ace:identity_manager:registry:write`         | ✓     | ✓        |        |
+| Identity manager registry archive | Write  | `ace:identity_manager:registry:archive:write` | ✓     |          |        |
+| Identity manager registry access  | Read   | `ace:identity_manager:registry_access:read`   | ✓     |          |        |
+| Identity manager registry access  | Write  | `ace:identity_manager:registry_access:write`  | ✓     |          |        |
+| Identity manager identity         | Read   | `ace:identity_manager:identity:read`          | ✓     | ✓        | ✓      |
+| Identity manager identity         | Write  | `ace:identity_manager:identity:write`         | ✓     | ✓        |        |
+| Identity manager identity archive | Write  | `ace:identity_manager:identity:archive:write` | ✓     | ✓        |        |
 
 **Reporting and evaluation**
 
-| Permission                   | Permission ID                    | Admin | Operator | Viewer |
-| ---------------------------- | -------------------------------- | ----- | -------- | ------ |
-| Reporting policy (Read)      | `ace:reporting:policy:read`      | ✓     | ✓        | ✓      |
-| Reporting identity (Read)    | `ace:reporting:identity:read`    | ✓     | ✓        | ✓      |
-| Reporting target (Read)      | `ace:reporting:target:read`      | ✓     | ✓        | ✓      |
-| Reporting transaction (Read) | `ace:reporting:transaction:read` | ✓     | ✓        | ✓      |
-| Reporting permit (Read)      | `ace:reporting:permit:read`      | ✓     | ✓        | ✓      |
-| Reporting registry (Read)    | `ace:reporting:registry:read`    | ✓     | ✓        | ✓      |
-| Evaluation permit (Read)     | `ace:evaluation:permit:read`     | ✓     | ✓        | ✓      |
-| Evaluation permit (Write)    | `ace:evaluation:permit:write`    | ✓     | ✓        |        |
+| Name                  | Action | Permission ID                    | Admin | Operator | Viewer |
+| --------------------- | ------ | -------------------------------- | ----- | -------- | ------ |
+| Reporting policy      | Read   | `ace:reporting:policy:read`      | ✓     | ✓        | ✓      |
+| Reporting identity    | Read   | `ace:reporting:identity:read`    | ✓     | ✓        | ✓      |
+| Reporting target      | Read   | `ace:reporting:target:read`      | ✓     | ✓        | ✓      |
+| Reporting transaction | Read   | `ace:reporting:transaction:read` | ✓     | ✓        | ✓      |
+| Reporting permit      | Read   | `ace:reporting:permit:read`      | ✓     | ✓        | ✓      |
+| Reporting registry    | Read   | `ace:reporting:registry:read`    | ✓     | ✓        | ✓      |
+| Evaluation permit     | Read   | `ace:evaluation:permit:read`     | ✓     | ✓        | ✓      |
+| Evaluation permit     | Write  | `ace:evaluation:permit:write`    | ✓     | ✓        |        |
 
 **Core**
 
-| Permission             | Permission ID              | Admin | Operator | Viewer |
-| ---------------------- | -------------------------- | ----- | -------- | ------ |
-| Core org config (Read) | `ace:core:org_config:read` | ✓     | ✓        | ✓      |
-| Core network (Read)    | `ace:core:network:read`    | ✓     | ✓        | ✓      |
-| Core wallet (Read)     | `ace:core:wallet:read`     | ✓     | ✓        | ✓      |
-| Core wallet (Write)    | `ace:core:wallet:write`    | ✓     |          |        |
+| Name            | Action | Permission ID              | Admin | Operator | Viewer |
+| --------------- | ------ | -------------------------- | ----- | -------- | ------ |
+| Core org config | Read   | `ace:core:org_config:read` | ✓     | ✓        | ✓      |
+| Core network    | Read   | `ace:core:network:read`    | ✓     | ✓        | ✓      |
+| Core wallet     | Read   | `ace:core:wallet:read`     | ✓     | ✓        | ✓      |
+| Core wallet     | Write  | `ace:core:wallet:write`    | ✓     |          |        |
 
 **Active monitoring**
 
-| Permission                                   | Permission ID                                    | Admin | Operator | Viewer |
-| -------------------------------------------- | ------------------------------------------------ | ----- | -------- | ------ |
-| Active monitoring action variable (Read)     | `ace:active_monitoring:action_variable:read`     | ✓     | ✓        | ✓      |
-| Active monitoring contract group (Read)      | `ace:active_monitoring:contract_group:read`      | ✓     | ✓        | ✓      |
-| Active monitoring contract group (Write)     | `ace:active_monitoring:contract_group:write`     | ✓     | ✓        |        |
-| Active monitoring rule group (Read)          | `ace:active_monitoring:rule_group:read`          | ✓     | ✓        | ✓      |
-| Active monitoring rule group (Write)         | `ace:active_monitoring:rule_group:write`         | ✓     | ✓        |        |
-| Active monitoring monitored address (Read)   | `ace:active_monitoring:monitored_address:read`   | ✓     | ✓        | ✓      |
-| Active monitoring monitored address (Write)  | `ace:active_monitoring:monitored_address:write`  | ✓     | ✓        |        |
-| Active monitoring screening interval (Read)  | `ace:active_monitoring:screening_interval:read`  | ✓     | ✓        | ✓      |
-| Active monitoring screening interval (Write) | `ace:active_monitoring:screening_interval:write` | ✓     | ✓        |        |
-| Active monitoring decision log (Read)        | `ace:active_monitoring:decision_log:read`        | ✓     | ✓        | ✓      |
-| Active monitoring decision log (Write)       | `ace:active_monitoring:decision_log:write`       | ✓     | ✓        |        |
-| Active monitoring provider api key (Read)    | `ace:active_monitoring:provider_api_key:read`    | ✓     | ✓        | ✓      |
-| Active monitoring provider api key (Write)   | `ace:active_monitoring:provider_api_key:write`   | ✓     |          |        |
+| Name                                 | Action | Permission ID                                    | Admin | Operator | Viewer |
+| ------------------------------------ | ------ | ------------------------------------------------ | ----- | -------- | ------ |
+| Active monitoring action variable    | Read   | `ace:active_monitoring:action_variable:read`     | ✓     | ✓        | ✓      |
+| Active monitoring contract group     | Read   | `ace:active_monitoring:contract_group:read`      | ✓     | ✓        | ✓      |
+| Active monitoring contract group     | Write  | `ace:active_monitoring:contract_group:write`     | ✓     | ✓        |        |
+| Active monitoring rule group         | Read   | `ace:active_monitoring:rule_group:read`          | ✓     | ✓        | ✓      |
+| Active monitoring rule group         | Write  | `ace:active_monitoring:rule_group:write`         | ✓     | ✓        |        |
+| Active monitoring monitored address  | Read   | `ace:active_monitoring:monitored_address:read`   | ✓     | ✓        | ✓      |
+| Active monitoring monitored address  | Write  | `ace:active_monitoring:monitored_address:write`  | ✓     | ✓        |        |
+| Active monitoring screening interval | Read   | `ace:active_monitoring:screening_interval:read`  | ✓     | ✓        | ✓      |
+| Active monitoring screening interval | Write  | `ace:active_monitoring:screening_interval:write` | ✓     | ✓        |        |
+| Active monitoring decision log       | Read   | `ace:active_monitoring:decision_log:read`        | ✓     | ✓        | ✓      |
+| Active monitoring decision log       | Write  | `ace:active_monitoring:decision_log:write`       | ✓     | ✓        |        |
+| Active monitoring provider api key   | Read   | `ace:active_monitoring:provider_api_key:read`    | ✓     | ✓        | ✓      |
+| Active monitoring provider api key   | Write  | `ace:active_monitoring:provider_api_key:write`   | ✓     |          |        |
 
 **Administration**
 
-| Permission          | Permission ID                    | Admin | Operator | Viewer |
-| ------------------- | -------------------------------- | ----- | -------- | ------ |
-| Full ACE access     | `ace:*`                          | ✓     |          |        |
-| Member role (Write) | `platform:member_role:write/ace` | ✓     |          |        |
+| Name            | Action | Permission ID                    | Admin | Operator | Viewer |
+| --------------- | ------ | -------------------------------- | ----- | -------- | ------ |
+| Full ACE access |        | `ace:*`                          | ✓     |          |        |
+| Member role     | Write  | `platform:member_role:write/ace` | ✓     |          |        |
 
 ### CRE Connect
 
 CRE Connect roles control access to operations, wallets, channels, watchers, queries, and events.
 
-| Permission                  | Permission ID                     | Admin | Operator | Viewer |
-| --------------------------- | --------------------------------- | ----- | -------- | ------ |
-| Network (Read)              | `crec:network:read`               | ✓     | ✓        | ✓      |
-| Operation (Read)            | `crec:operation:read`             | ✓     | ✓        | ✓      |
-| Operation (Write)           | `crec:operation:write`            | ✓     | ✓        |        |
-| Operation signature (Write) | `crec:operation:signature:write`  | ✓     | ✓        |        |
-| Wallet (Read)               | `crec:wallet:read`                | ✓     | ✓        | ✓      |
-| Wallet (Write)              | `crec:wallet:write`               | ✓     | ✓        |        |
-| Wallet archive (Write)      | `crec:wallet:archive:write`       | ✓     |          |        |
-| Channel (Read)              | `crec:channel:read`               | ✓     | ✓        | ✓      |
-| Channel (Write)             | `crec:channel:write`              | ✓     | ✓        |        |
-| Channel archive (Write)     | `crec:channel:archive:write`      | ✓     |          |        |
-| Watcher (Read)              | `crec:watcher:read`               | ✓     | ✓        | ✓      |
-| Watcher (Write)             | `crec:watcher:write`              | ✓     | ✓        |        |
-| Watcher archive (Write)     | `crec:watcher:archive:write`      | ✓     |          |        |
-| Query (Read)                | `crec:query:read`                 | ✓     | ✓        | ✓      |
-| Query (Write)               | `crec:query:write`                | ✓     | ✓        |        |
-| Event (Read)                | `crec:event:read`                 | ✓     | ✓        | ✓      |
-| Full CRE Connect access     | `crec:*`                          | ✓     |          |        |
-| Member role (Write)         | `platform:member_role:write/crec` | ✓     |          |        |
+| Name                    | Action | Permission ID                     | Admin | Operator | Viewer |
+| ----------------------- | ------ | --------------------------------- | ----- | -------- | ------ |
+| Network                 | Read   | `crec:network:read`               | ✓     | ✓        | ✓      |
+| Operation               | Read   | `crec:operation:read`             | ✓     | ✓        | ✓      |
+| Operation               | Write  | `crec:operation:write`            | ✓     | ✓        |        |
+| Operation signature     | Write  | `crec:operation:signature:write`  | ✓     | ✓        |        |
+| Wallet                  | Read   | `crec:wallet:read`                | ✓     | ✓        | ✓      |
+| Wallet                  | Write  | `crec:wallet:write`               | ✓     | ✓        |        |
+| Wallet archive          | Write  | `crec:wallet:archive:write`       | ✓     |          |        |
+| Channel                 | Read   | `crec:channel:read`               | ✓     | ✓        | ✓      |
+| Channel                 | Write  | `crec:channel:write`              | ✓     | ✓        |        |
+| Channel archive         | Write  | `crec:channel:archive:write`      | ✓     |          |        |
+| Watcher                 | Read   | `crec:watcher:read`               | ✓     | ✓        | ✓      |
+| Watcher                 | Write  | `crec:watcher:write`              | ✓     | ✓        |        |
+| Watcher archive         | Write  | `crec:watcher:archive:write`      | ✓     |          |        |
+| Query                   | Read   | `crec:query:read`                 | ✓     | ✓        | ✓      |
+| Query                   | Write  | `crec:query:write`                | ✓     | ✓        |        |
+| Event                   | Read   | `crec:event:read`                 | ✓     | ✓        | ✓      |
+| Full CRE Connect access |        | `crec:*`                          | ✓     |          |        |
+| Member role             | Write  | `platform:member_role:write/crec` | ✓     |          |        |
 
 ### Data Streams
 
 Data Streams has a single role.
 
-| Permission                          | Permission ID                            | Admin |
-| ----------------------------------- | ---------------------------------------- | ----- |
-| Full Data Streams self-serve access | `datastreams:*`                          | ✓     |
-| Member role (Write)                 | `platform:member_role:write/datastreams` | ✓     |
-
-### Agent Gateway
-
-Agent Gateway has a single role.
-
-| Permission                   | Permission ID                             | Admin |
-| ---------------------------- | ----------------------------------------- | ----- |
-| Full Agent Gateway access    | `agentgateway:*`                          | ✓     |
-| Agent Gateway limits (Read)  | `platform:limits:read/agentgateway`       | ✓     |
-| Agent Gateway limits (Write) | `platform:limits:write/agentgateway`      | ✓     |
-| Member role (Write)          | `platform:member_role:write/agentgateway` | ✓     |
+| Name                                | Action | Permission ID                            | Admin |
+| ----------------------------------- | ------ | ---------------------------------------- | ----- |
+| Full Data Streams self-serve access |        | `datastreams:*`                          | ✓     |
+| Member role                         | Write  | `platform:member_role:write/datastreams` | ✓     |
 
 {/* prettier-ignore */}
 <Aside type="note" title="Product availability">
