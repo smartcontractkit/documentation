@@ -32,15 +32,15 @@ The **CCTPVerifier** integrates Circle's Cross-Chain Transfer Protocol (CCTP) at
 
 Instead of DON quorum signatures, the offchain verifier polls Circle's external attestation API, matches the response to the message using data from the `CCIPMessageSent` receipt, and serves the result via API for executors to retrieve.
 
-Use this model when USDC transfers should carry Circle's native cross-chain attestation in addition to, or as part of, CCIP's verification stack.
+This model is used when USDC transfers should carry Circle's native cross-chain attestation in addition to, or as part of, CCIP's verification stack.
 
 ## LombardVerifier
 
-The **LombardVerifier** supports token-specific verification through Lombard's bridge and an external attestation service.
+The **LombardVerifier** supports token-specific verification through Lombard's bridge for Lombard assets (LBTC, BTC.b) and an external attestation service.
 
-As with the CCTPVerifier, the offchain component polls an external API, matches attestations to messages, and publishes VerifierResults for execution. Configuration includes supported tokens, per-chain paths, and remote adapters.
+The offchain component polls an external API, matches attestations to messages, and publishes VerifierResults for execution. Configuration includes supported tokens, per-chain paths, and remote adapters.
 
-Use this model for transfers of tokens that Lombard's bridge supports.
+This model is used for transfers of tokens that Lombard's bridge supports (LBTC, BTC.b).
 
 ## Custom CCVs
 
@@ -56,12 +56,12 @@ Custom operators must implement both onchain contracts (outbound `forwardToVerif
 
 ## Comparing Models
 
-| Aspect             | CommitteeVerifier   | CCTP / Lombard     | Custom CCV         |
-| :----------------- | :------------------ | :----------------- | :----------------- |
-| Attestation source | DON node signatures | External API       | Operator-defined   |
-| Aggregation        | Aggregator quorum   | Direct API serve   | Operator-defined   |
-| Default for CCIP   | Yes                 | No                 | No                 |
-| Reorg quarantine   | Built-in (FTF)      | Operator-dependent | Operator-dependent |
+| Aspect             | CommitteeVerifier   | CCTP / Lombard          | Custom CCV         |
+| :----------------- | :------------------ | :---------------------- | :----------------- |
+| Attestation source | DON node signatures | External API            | Operator-defined   |
+| Aggregation        | Aggregator quorum   | Direct API serve        | Operator-defined   |
+| Default for CCIP   | Yes                 | Yes for USDC/LBTC/BTC.b | No                 |
+| Reorg quarantine   | Built-in (FTF)      | Operator-dependent      | Operator-dependent |
 
 ## Learn More
 

@@ -926,8 +926,7 @@ For more information about evaluating data quality, assessing liquidity and dist
 
 > **NOTE: Need more details?**
 >
-> For additional information about data sourcing, please&#x20;
-> [contact us](https://chain.link/contact?ref_id=pricefeeds).
+> For additional information about data sourcing, please [contact us](https://chain.link/contact?ref_id=pricefeeds).
 
 ---
 
@@ -1130,7 +1129,7 @@ Source: https://docs.chain.link/data-feeds/getting-started
 
 You can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/feeds/ethereum/mainnet/eth-usd). These data feeds use data aggregated from many independent Chainlink node operators. Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
-This guide shows you how to read Data Feeds and store the value onchain using Solidity. To learn how to read feeds offchain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana) or [StarkNet](/data-feeds/starknet).
+This guide shows you how to read Data Feeds and store the value onchain using Solidity. To learn how to read feeds offchain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana), [StarkNet](/data-feeds/starknet), or [Stellar](/data-feeds/stellar).
 
 The code for reading Data Feeds on Ethereum or other EVM-compatible blockchains is the same for each chain and each Data Feed types. You choose different types of feeds for different uses, but the request and response format are the same. The answer decimal length and expected value ranges might change depending on what feed you use.
 
@@ -1147,7 +1146,7 @@ If you are new to smart contract development, learn how to [Deploy Your First Sm
 
 ## Examine the sample contract
 
-This example contract obtains the latest price answer from the [BTC / USD feed](/data-feeds/price-feeds/addresses) on the Sepolia testnet, but you can modify it to read any of the different [Types of Data Feeds](/data-feeds#types-of-data-feeds).
+This example contract obtains the latest price answer from the [BTC / USD feed](/data-feeds/price-feeds/addresses) on the Sepolia testnet, but you can modify it to read any of the different [Types of Data Feeds](/data-feeds/overview#types-of-data-feeds).
 
 ```sol
 // SPDX-License-Identifier: MIT
@@ -3713,7 +3712,7 @@ If a feed does not display one of these categories, it has not yet been evaluate
 >
 > For important updates regarding the use of Chainlink Data Feeds, users should join the official Chainlink Discord and
 > subscribe to the [#data-feeds channel](https://discord.gg/Dqy5N9UbsR) and regularly check the [Chainlink
-> Changelog](https://dev.chain.link/changelog?product=Data+Feeds).
+> Changelog](https://docs.chain.link/changelog?product=Data+Feeds).
 
 ## Market pricing risk by category
 
@@ -3838,7 +3837,7 @@ To help you prepare for unforeseen market events, you should take additional ste
 - **Soak testing:** Users are strongly advised to thoroughly test price feed integrations and incorporate a [soak period](https://en.wikipedia.org/wiki/Soak_testing) prior to providing access to end users or securing value.
 - **Provider/source dependency controls:** For single-source feeds, implement controls that detect stale, delayed, missing, or unexpected values from the underlying provider. Where possible, compare the feed against independent references, enforce value bounds or caps, and define fallback or pause behavior before securing value with the feed.
 
-For more detailed information about some of these examples, see the [Monitoring data feeds](/data-feeds/#monitoring-data-feeds) documentation.
+For more detailed information about some of these examples, see the [Monitoring data feeds](/data-feeds/overview#monitoring-data-feeds) documentation.
 
 For important updates regarding the use of Chainlink Price Feeds, users should join the official Chainlink Discord and subscribe to the [data-feeds-user-notifications channel](https://discord.gg/Dqy5N9UbsR).
 
@@ -3960,7 +3959,7 @@ Bounded Market Price Feeds are a specific category of Market Price Feeds that in
 
 For example, a Bounded Market Price Feed for a stablecoin would include an upper bound that caps the on-chain reported price at a pre-defined maximum (e.g., $1.05), even during edge cases like market dislocations where the stablecoin trades higher than the cap. In such cases, the price will not be reported on-chain. Instead, the most recently written on-chain price will be the value returned by calling [latestRoundData](https://docs.chain.link/data-feeds/api-reference#latestrounddata) on the feed's [proxy address](https://docs.chain.link/data-feeds#single-value-feed-components). This helps prevent extreme or sustained premium pricing from being reported. These bounds are designed to provide guardrails for assets where structural deviations may introduce elevated risk for feed consumers. Note that a Bounded Market Price Feed for a stablecoin would not include a lower bound for the on-chain reported price.
 
-In rare circumstances, the fundamental value of an asset underlying a Bounded Market Price Feed, such as a stablecoin, may materially change. In such a case, the predefined bound(s) associated with a Bounded Market Price Feed may be adjusted or removed following an update to Chainlink's [Changelog](https://dev.chain.link/changelog).
+In rare circumstances, the fundamental value of an asset underlying a Bounded Market Price Feed, such as a stablecoin, may materially change. In such a case, the predefined bound(s) associated with a Bounded Market Price Feed may be adjusted or removed following an update to Chainlink's [Changelog](https://docs.chain.link/changelog).
 
 Users must be aware that Bounded Market Price Feeds have unique risk considerations. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and that the operation and performance of Bounded Market Price Feeds matches expectations. If your use case requires the use of a non-Bounded Market Price Feed and one does not exist, contact us at [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 
@@ -4081,7 +4080,7 @@ Reserves are available for both offchain assets and cross-chain assets. This cat
 
 ##### Offchain reserves
 
-Offchain reserves are sourced from APIs through an [external adapter](/chainlink-nodes/external-adapters/external-adapters).
+Offchain reserves are sourced from APIs through an [external adapter](https://github.com/smartcontractkit/external-adapters-js).
 
 ![Image](/images/data-feed/off-chain-reserves.webp)
 
@@ -4093,7 +4092,7 @@ Offchain reserves provide their data using the following methods:
 
 ##### Cross-chain reserves
 
-Cross-chain reserves are sourced from the network where the reserves are held. Chainlink node operators can report cross-chain reserves by running an [external adapter](/chainlink-nodes/external-adapters/external-adapters) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
+Cross-chain reserves are sourced from the network where the reserves are held. Chainlink node operators can report cross-chain reserves by running an [external adapter](https://github.com/smartcontractkit/external-adapters-js) and querying the source-chain client directly. In some instances, the reserves are composed of a dynamic list of IDs or addresses using a composite adapter.
 
 ![Image](/images/data-feed/cross-chain-reserves.webp)
 
@@ -5774,6 +5773,407 @@ make ma-set-latest-round NETWORK=devnet && make ac-set-answer NETWORK=devnet && 
 
 ---
 
+# Using Data Feeds on Stellar
+Source: https://docs.chain.link/data-feeds/stellar
+
+[Stellar](https://stellar.org/) is a Layer 1 blockchain that uses [Soroban](https://soroban.stellar.org/) smart contracts written in [Rust](https://www.rust-lang.org/). Chainlink Data Feeds on Stellar use a single proxy contract that serves every feed. Instead of a per-feed contract address, you select a feed by its 32-byte `data_id`.
+
+A `data_id` is a 32-byte identifier for a feed, similar to how a contract address identifies a feed on EVM chains. It is the same value as the **Feed ID** shown in the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) table. You pass the `data_id` to the proxy contract to read that feed's data.
+
+## How Stellar Data Feeds work
+
+Data Feeds on Stellar use a single proxy contract that serves every feed. Consumers read feeds from the proxy by passing a 32-byte `data_id`:
+
+- **Proxy contract**: A single proxy contract serves every feed. Consumers read feed data from the proxy by passing the `data_id` for the feed they need.
+
+Consumers select a feed by passing its 32-byte `data_id` to the proxy. You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Supported networks
+
+Chainlink Data Feeds are available on the following Stellar networks:
+
+- Stellar Testnet
+- Stellar Mainnet (Pubnet)
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
+
+## Proxy contract addresses
+
+The proxy contract address is the same for every feed on a given network. You only ever interact with the proxy.
+
+- **Stellar Testnet**: CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4
+- **Stellar Mainnet (Pubnet)**: CDQBHEUGLDHMSUHG4IH33RJBUTMNCZOT4JIAQR4WZFRDZW6DR6S32ZLZ
+
+## Reader interface
+
+Consumers call the following functions on the proxy contract. The interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository.
+
+| Function                                 | Returns                                                          |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `latest_round(data_id, decimals)`        | The most recent round for that feed, at the requested `decimals` |
+| `get_round(data_id, round_id, decimals)` | A specific historical round, at the requested `decimals`         |
+| `decimals(data_id)`                      | Decimal places for the answer                                    |
+| `description(data_id)`                   | Human-readable pair name                                         |
+| `get_min_decimals(data_id)`              | The minimum decimal places the feed can be served at             |
+
+### Round structure
+
+A round returned by the proxy carries the following fields:
+
+| Field       | Description                                                            |
+| ----------- | ---------------------------------------------------------------------- |
+| `round_id`  | The unique identifier of the round                                     |
+| `answer`    | The answer for the feed, represented as an `I256`                      |
+| `timestamp` | The observation timestamp in Unix seconds when the answer was produced |
+
+## Error handling
+
+When you call the proxy, the contract can return a `ProxyReadError`. The following cases describe what each error means for a consumer:
+
+| Error             | Meaning                                                                                                                                         |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NoDataPresent`   | No round is available for the requested `data_id` or `round_id`. This can happen if the feed has not been written yet or the round has expired. |
+| `InvalidDecimals` | The `decimals` you requested is outside the supported range for the feed.                                                                       |
+| `RoundsToZero`    | A non-zero answer would truncate to zero at the requested `decimals`. Request fewer decimal places.                                             |
+| `FeedFrozen`      | The feed is frozen and cannot be read.                                                                                                          |
+
+## How long a round is available
+
+A round is available for a retention period of `3,110,400` ledgers. After this period, a round can no longer be read from the proxy.
+
+## Getting started
+
+You can read Chainlink Data Feeds on Stellar either offchain or onchain. Both methods read the same data from the proxy contract, differing only in where the read happens.
+
+- **[Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain)**: Read a feed via Soroban RPC simulation using `stellar-cli` and the Stellar JavaScript SDK. This method is for applications that need to read feed data without deploying a contract.
+
+- **[Using Data Feeds Onchain](/data-feeds/stellar/using-data-feeds-on-chain)**: Deploy a Soroban contract in Rust that calls the proxy and reads a price. This method is for applications that need to read feed data directly within a smart contract.
+
+Each guide lists the tools and requirements you need to complete it.
+
+## Answer precision
+
+All feeds are stored at `18` decimal places and are typically returned at `18` decimal places. The `decimals` parameter is required when you call `latest_round` or `get_round` on the proxy. You should pass `18` unless a feed is explicitly served at a reduced precision.
+
+In some instances, Chainlink approves the serving of a reduced precision for certain feeds. In this case, you can pass that reduced precision as the `decimals` parameter when requesting a feed from the proxy.
+
+The precision is truncated, so if an `18`-decimal feed is requested at `8` decimal places, the answer is truncated (rounded down). Factor this into your calculations. If you need to control the precision yourself, request the feed at `18` decimal places and override the precision in your application.
+
+> **DANGER: Select quality data feeds**
+>
+> Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
+
+---
+
+# Using Data Feeds Offchain (Stellar)
+Source: https://docs.chain.link/data-feeds/stellar/using-data-feeds-off-chain
+
+Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Stellar Testnet offchain using a [Soroban RPC simulation](https://soroban.stellar.org/docs/reference/rpc) with the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli) and the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk). To learn how to use Data Feeds in your onchain Soroban contracts, see the [Using Data Feeds Onchain](/data-feeds/stellar/using-data-feeds-on-chain) guide.
+
+To get the full list of Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
+
+> **DANGER: Select quality data feeds**
+>
+> Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
+
+## Prerequisites
+
+Before you begin, you should have:
+
+- Familiarity with [Stellar](https://stellar.org/) and [Soroban](https://soroban.stellar.org/) smart contracts
+- Understanding of how [Chainlink Data Feeds on Stellar](/data-feeds/stellar) work, including the `data_id` addressing scheme
+
+## Requirements
+
+To complete this guide, you'll need:
+
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation.
+
+- **Node.js 18 or higher**: Install [Node.js](https://nodejs.org/en/download/). Run node --version to verify your installation.
+
+## Read a feed with the Stellar CLI
+
+You can read a Chainlink Data Feed offchain without deploying a contract by simulating a call to the proxy contract using the `stellar contract invoke` command with the `--send=no` flag. This does not submit a transaction and requires no XLM.
+
+The proxy contract exposes a `latest_round` function that takes a `data_id` and a `decimals` parameter, and returns the most recent round for that feed. You pass the `data_id` as raw hex (without the `0x` prefix), and `18` for the `decimals` parameter unless the feed is served at a reduced precision.
+
+1. Run the following command, replacing `<SOURCE_ACCOUNT>` with any Stellar account public key. The proxy contract on Stellar Testnet is `CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`:
+
+   ```bash
+   stellar contract invoke \
+   --id CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4 \
+   --source-account <SOURCE_ACCOUNT> \
+   --network testnet \
+   --send=no \
+   -- latest_round \
+   --data_id "01a0b4d920000332000000000000000000000000000000000000000000000000" \
+   --decimals 18
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   {"answer":"84421629086034400000000","round_id":96,"timestamp":1790274329}
+   ```
+
+   Where:
+
+   - `answer` is the latest BTC/USD price with 18 decimal places (`84421629086034400000000` = 84421.63).
+   - `round_id` is the unique identifier of the round.
+   - `timestamp` is the observation timestamp in Unix seconds when the answer was produced.
+
+   You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Read a feed with the Stellar JavaScript SDK
+
+You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC query. This example uses the `contract.Client` API available in SDK v17 and later.
+
+1. Create a new directory for your project and initialize it:
+
+   ```bash
+   mkdir stellar-offchain && cd stellar-offchain && npm init -y
+   ```
+
+2. Install the Stellar JavaScript SDK:
+
+   ```bash
+   npm install @stellar/stellar-sdk
+   ```
+
+3. Create a `read-feed.js` file with the following contents. This script queries the proxy contract's `latest_round` function for a given `data_id`:
+
+   ```javascript
+   const { contract } = require("@stellar/stellar-sdk")
+
+   const proxy = "CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4"
+   const dataId = "01a0b4d920000332000000000000000000000000000000000000000000000000"
+
+   async function readLatestRound() {
+     const client = await contract.Client.from({
+       contractId: proxy,
+       rpcUrl: "https://soroban-testnet.stellar.org",
+       networkPassphrase: "Test SDF Network ; September 2015",
+     })
+     const result = await client.latest_round({ data_id: Buffer.from(dataId, "hex"), decimals: 18 })
+     const round = result.result.value
+     console.log("Latest round:", {
+       round_id: round.round_id.toString(),
+       answer: round.answer.toString(),
+       timestamp: round.timestamp.toString(),
+     })
+   }
+
+   readLatestRound().catch(console.error)
+   ```
+
+   The `data_id` argument is a 32-byte value, passed as a `Buffer` object. The `decimals` argument is required and requests the precision at which the answer is returned; pass `18` unless the feed is served at a reduced precision. The `latest_round` function returns a `Round` object wrapped in an `Ok` value, so you access it with `result.result.value`.
+
+4. Run the script:
+
+   ```bash
+   node read-feed.js
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Latest round: {
+     round_id: '96',
+     answer: '84421629086034400000000',
+     timestamp: '1790274329'
+   }
+   ```
+
+   Where `answer` is the latest BTC/USD price with 18 decimal places (`84421629086034400000000` = 84421.63).
+
+---
+
+# Using Data Feeds Onchain (Stellar)
+Source: https://docs.chain.link/data-feeds/stellar/using-data-feeds-on-chain
+
+Chainlink Data Feeds are the quickest way to connect your smart contracts to the real-world market prices of assets. This guide demonstrates how to deploy a [Soroban](https://soroban.stellar.org/) contract in Rust to the Stellar Testnet and read a price onchain by calling the Chainlink Data Feeds proxy contract. To learn how to read price feed data using offchain applications, see the [Using Data Feeds Offchain](/data-feeds/stellar/using-data-feeds-off-chain) guide.
+
+To get the full list of available Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
+
+> **DANGER: Select quality data feeds**
+>
+> Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
+
+## Prerequisites
+
+Before you begin, you should have:
+
+- Familiarity with [Rust](https://www.rust-lang.org/learn) programming
+- Understanding of [Stellar](https://stellar.org/) and [Soroban](https://soroban.stellar.org/) smart contracts
+- Understanding of how [Chainlink Data Feeds on Stellar](/data-feeds/stellar) work, including the `data_id` addressing scheme
+
+## Requirements
+
+To complete this guide, you'll need:
+
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation. This guide uses Stellar CLI v25 or later.
+
+- **Rust toolchain**: Install [Rust](https://www.rust-lang.org/tools/install) using [rustup](https://rustup.rs/). Run cargo --version to verify your installation.
+
+- **soroban-sdk**: The `stellar contract init` command scaffolds a project that depends on the latest `soroban-sdk` (v25 or later). The contract in this guide compiles against `soroban-sdk` v21 and later. If you pin an older version, use v21 or later.
+
+- **Testnet XLM**: You'll need testnet XLM to deploy your contract. Fund a Stellar Testnet account using the friendbot faucet. Testnet XLM has no real value.
+
+## Set up your Stellar testnet account
+
+1. Create a new directory for your project and navigate to it in your terminal:
+
+   ```bash
+   mkdir stellar-data-feeds && cd stellar-data-feeds
+   ```
+
+2. Generate a keypair for your testnet account:
+
+   ```bash
+   stellar keys generate --network testnet my-account
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Secret key already exists for key my-account
+   ```
+
+3. Fund your account with testnet XLM using the friendbot faucet:
+
+   ```bash
+   stellar keys fund my-account --network testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Funded account <YOUR_PUBLIC_KEY> with 10000.0000000 XLM
+   ```
+
+## Create the Soroban contract
+
+1. Initialize a Soroban contract project:
+
+   ```bash
+   stellar contract init consumer --name consumer
+   ```
+
+   This creates a `consumer` directory with a default Soroban contract scaffold.
+
+2. Open the `consumer/contracts/consumer/src/lib.rs` file and replace its contents with the following contract. This contract calls the Chainlink Data Feeds proxy contract to read the latest price for a given `data_id` and returns the answer. The proxy interface is defined in the [chainlink-stellar](https://github.com/smartcontractkit/chainlink-stellar/tree/main/contracts/common/interfaces/src/data_feeds_proxy.rs) repository:
+
+   ```rust
+   #![no_std]
+   use soroban_sdk::{contract, contractimpl, contractclient, contracterror, contracttype, Address, BytesN, Env, I256};
+
+   #[contractclient(name = "DataFeedsProxyClient")]
+   pub trait DataFeedsProxy {
+       fn latest_round(env: Env, data_id: BytesN<32>, decimals: u32) -> Result<Round, ProxyReadError>;
+   }
+
+   #[contracttype]
+   #[derive(Clone, Debug)]
+   pub struct Round {
+       pub round_id: u64,
+       pub answer: I256,
+       pub timestamp: u64,
+   }
+
+   #[contracterror]
+   #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
+   #[repr(u32)]
+   pub enum ProxyReadError {
+       NoDataPresent = 50,
+       InvalidDecimals = 51,
+       RoundsToZero = 52,
+   }
+
+   #[contract]
+   pub struct Consumer;
+
+   #[contractimpl]
+   impl Consumer {
+       /// Read the latest round for a feed and return its answer.
+       pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
+           let client = DataFeedsProxyClient::new(&env, &proxy);
+           let round = client.latest_round(&data_id, &18);
+           round.answer
+       }
+   }
+   ```
+
+   This contract calls the proxy's `latest_round` function with a single `data_id` and requests the answer at `18` decimal places. The returned `Round` contains the `round_id`, `answer`, and `timestamp` fields for the feed.
+
+## Build and deploy the contract
+
+1. Build the contract:
+
+   ```bash
+   stellar contract build
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Compiling consumer...
+   Finished `release` profile [optimized] target(s) in 5.00s
+   ```
+
+2. Deploy the contract to the Stellar Testnet:
+
+   ```bash
+   stellar contract deploy \
+   --wasm target/wasm32v1-none/release/consumer.wasm \
+   --source my-account \
+   --network testnet
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   <YOUR_CONTRACT_ADDRESS>
+   ```
+
+   Note the contract address that is printed. You use it to invoke the contract in the next step.
+
+## Invoke the contract
+
+1. Invoke the `read_latest_price` function on your deployed contract, passing the proxy contract address and the `data_id` for the feed you want to read. The proxy contract on Stellar Testnet is `CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`. You can find the `data_id` for other assets on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+   Because `read_latest_price` is a read-only function, use the `--send=no` flag to simulate the call without submitting a transaction:
+
+   ```bash
+   stellar contract invoke \
+   --id <YOUR_CONTRACT_ADDRESS> \
+   --source my-account \
+   --network testnet \
+   --send=no \
+   -- read_latest_price \
+   --proxy CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4 \
+   --data_id 01a0b4d920000332000000000000000000000000000000000000000000000000
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   "86400288421531180000000"
+   ```
+
+   Where the value is the latest BTC/USD price for the feed, stored at 18 decimal places. For example, `86400288421531180000000` represents a price of `86400.29`.
+
+---
+
 # Smart Value Recapture (SVR) Feeds
 Source: https://docs.chain.link/data-feeds/svr-feeds
 
@@ -5790,8 +6190,7 @@ Source: https://docs.chain.link/data-feeds/svr-feeds
 > **TIP: SVR Now Available on Base, Arbitrum, and BNB Chain**
 >
 > Chainlink SVR has expanded beyond Ethereum Mainnet and is now available on Base, Arbitrum, and BNB Chain via the
-> Atlas auction system. See the&#x20;
-> [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas) for integration
+> Atlas auction system. See the [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas) for integration
 > details.
 
 [Chainlink Smart Value Recapture](https://blog.chain.link/chainlink-smart-value-recapture-svr/) (SVR) Feeds introduce a novel and secure way to recapture Oracle Extractable Value (OEV)—a subset of non-toxic Maximal Extractable Value (MEV) associated with oracle updates that is most commonly observed during the liquidation process of lending protocols. The value recaptured by SVR provides DeFi protocols with an additional revenue stream while also supporting the economic sustainability of Chainlink oracle. SVR Feeds are read in the same manner as standard Chainlink Data Feeds (see [Using Data Feeds](/data-feeds/using-data-feeds)), and simply require that users specify an SVR-enabled feed address.
@@ -6054,28 +6453,20 @@ Instead of relying on block builders to bundle together the oracle update and th
 
 > **CAUTION: Important**
 >
-> The final bundled transaction is **not submitted by the searcher**. It is submitted by the Chainlink oracle
-> network.
->
-> Searchers must have **bonded native tokens** with the Atlas smart contracts in order to reimburse the Chainlink
-> oracle for the gas costs of both the **searcher operation** and the **oracle update**.
->
-> Gas prices for these transactions are chosen by the Chainlink oracle. The selected gas price is provided to the
-> searcher at the start of the auction.
->
-> Searchers must sign for a `gasPrice` that is **exactly equal** to the gas price specified by the
-> Chainlink oracle.
->
-> Searchers must not attempt to use a gas limit for their operation that is greater than the allowed&#x20;
-> `SolverGasLimit`. Query this value by calling `getSolverGasLimit` on the&#x20;
-> `DappControl`
-> contract. Sending `SolverOps` with a higher gas limit will not work.
->
-> Since auction and `auctionSolution` payloads can exceed default read/write buffer sizes in popular
-> WebSocket libraries, explicitly configure read and write buffers to greater than **10 KB**.
->
-> Solvers should expect that their long-lived connections to the SVR endpoint will be disconnected, and should
-> implement **auto-reconnect** functionality.
+> - The final bundled transaction is **not submitted by the searcher**. It is submitted by the Chainlink oracle
+>   network.
+> - Searchers must have **bonded native tokens** with the Atlas smart contracts in order to reimburse the Chainlink
+>   oracle for the gas costs of both the **searcher operation** and the **oracle update**.
+> - Gas prices for these transactions are chosen by the Chainlink oracle. The selected gas price is provided to the
+>   searcher at the start of the auction.
+> - Searchers must sign for a `gasPrice` that is **exactly equal** to the gas price specified by the
+>   Chainlink oracle.
+> - Searchers must not attempt to use a gas limit for their operation that is greater than the allowed `SolverGasLimit`. Query this value by calling `getSolverGasLimit` on the `DappControl`
+>   contract. Sending `SolverOps` with a higher gas limit will not work.
+> - Since auction and `auctionSolution` payloads can exceed default read/write buffer sizes in popular
+>   WebSocket libraries, explicitly configure read and write buffers to greater than **10 KB**.
+> - Solvers should expect that their long-lived connections to the SVR endpoint will be disconnected, and should
+>   implement **auto-reconnect** functionality.
 
 ### Endpoints
 
@@ -6380,10 +6771,9 @@ If you only bid on one auction, you have roughly a 50% chance of winning even if
 
 > **CAUTION: Required: Bid on Both Parallel Auctions**
 >
-> Always submit bids to **both** auctions when two are created for the same liquidation opportunity.
->
-> Avoid logic that limits bidding to a single auction per price update.
-> Latency and timing differences between parallel auctions are expected and unavoidable.
+> - Always submit bids to **both** auctions when two are created for the same liquidation opportunity.
+> - Avoid logic that limits bidding to a single auction per price update.
+> - Latency and timing differences between parallel auctions are expected and unavoidable.
 
 Duplicate auctions were introduced to improve landing guarantees by increasing the probability that at least one auction succeeds onchain.
 
@@ -7277,6 +7667,16 @@ Bidding for bundle events is very similar to single transaction events. As a sea
 # Base Tokenized Equities (Coinbase B20)
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/coinbase
 
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
+
 Chainlink provides tokenized equity feeds for Coinbase tokenized stocks on Base. Each tokenized stock is a B20 token, Base's native token standard for real-world assets, an extension of ERC-20, identified by its contract address rather than its ticker. The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read from Coinbase's on-chain oracle registry.
 
 These feeds use the standard Chainlink V3 aggregator interface (`latestRoundData()`), so any consumer reads the published price through the proxy in the same way as a crypto price feed. They are push-based oracles intended for compliance reference pricing, protocol integration, and similar use cases.
@@ -7399,6 +7799,16 @@ See [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds) for the shared 
 # Tokenized Equity Feeds
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds
 
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
+
 ## What are tokenized equities?
 
 Tokenized equities are blockchain tokens that represent ownership or economic exposure to traditional stocks and ETFs. These tokens are distinct financial instruments issued by token issuers, not the underlying equities themselves. Tokenized equity feeds deliver the **primary market price representing the intrinsic value of the equity token** – this is the calculated theoretical token value and may account for long-term total return adjustments such as dividends or corporate actions.
@@ -7421,7 +7831,7 @@ Chainlink Tokenized Equity Feeds help bridge this gap between TradFi and DeFi ma
 
 - **Providing continuous 24/5 pricing**: A single feed that spans regular, pre-market, post-market, and overnight sessions
 - **Simplifying integration**: Consume one feed across trading sessions instead of managing multiple session-specific data sources
-- **Applying session-aware smoothing**: Intelligent pricing algorithms that aim to reduce certain price anomalies during session transitions
+- **Applying session-aware smoothing**: Intelligent pricing algorithms that aim to reduce certain price anomalies during session transitions and lower-liquidity sessions
 - **Maintaining benchmark accuracy**: Optimized algorithms that are designed to track consolidated tape benchmarks with high fidelity
 - **Performing tokenized price calculations**: Returning real-time calculated primary market valuations of tokenized equities based on the issuer's multiplier values.
 
@@ -7447,13 +7857,15 @@ US equity markets exhibit distinct liquidity regimes throughout the 24-hour cycl
 
 ### Session-aware smoothing
 
-To enable reliable, 24/5 continuous pricing, tokenized equity feeds apply intelligent smoothing during session transitions to target pricing integrity under different liquidity conditions. The smoothing methodology:
+To enable reliable, 24/5 continuous pricing, tokenized equity feeds apply intelligent smoothing during session transitions and throughout the overnight session to target pricing integrity under different liquidity conditions. The smoothing methodology:
 
 1. **Tracks benchmark prices accurately** during liquid regular sessions
-2. **Filters microstructure noise** during illiquid session transitions
+2. **Filters microstructure noise** during illiquid session transitions and overnight sessions
 3. **Reduces the risk of phantom liquidations** from transient price spikes in thin markets
 4. **Converges quickly** after legitimate large price movements
 5. **Minimizes tracking lag** to reduce mispricing during active trading
+
+During the overnight session, where liquidity is thinnest, the published price is an exponential moving average (EMA) of the underlying session price rather than the latest observation.
 
 Please note that while intelligent smoothing is designed to mitigate these issues, tokenized equities' structural connections with underlying traditional equity markets, liquidity, and pricing considerations require protocols to ensure performance of Chainlink Tokenized Equity Feeds matches expectations and is appropriate for the intended use case.
 
@@ -7462,10 +7874,10 @@ Please note that while intelligent smoothing is designed to mitigate these issue
 Tokenized equity feeds combine multiple input sources:
 
 - **Regular hours data**: Multi-sourced from consolidated tape data with deep liquidity
-- **Extended hours data**: Pre-market and post-market venue data
+- **Extended hours data**: Multi-sourced from pre-market and post-market venue data
 - **Overnight data**: Data from overnight trading venues
 
-*Extended and overnight session data may be sourced from fewer providers than regular hours data, reflecting the reduced number of venues operating during these periods. See the [Limited Provider Coverage](#limited-provider-coverage-during-extended-and-overnight-sessions) risk section for details.*
+*Overnight session data may be sourced from fewer providers than regular and extended hours data, reflecting the reduced number of venues operating during this period. See the [Limited Provider Coverage](#limited-provider-coverage-during-overnight-sessions) risk section for details.*
 
 ## Key differences from standard feeds
 
@@ -7473,15 +7885,15 @@ While tokenized equity feeds use the same Chainlink infrastructure as standard c
 
 ### Continuous vs. point-in-time pricing
 
-Standard crypto price feeds reflect a single aggregated market price at a point in time from 24/7 markets. Tokenized equity feeds combine data from multiple trading sessions that have different operating hours, update frequencies, liquidity profiles, and data sources. The feed value represents a calculated return using the best mid-price for continuous 24/5 coverage of underlying equity markets.
+Standard crypto price feeds reflect a single aggregated market price at a point in time from 24/7 markets. Tokenized equity feeds combine data from multiple trading sessions that have different operating hours, update frequencies, liquidity profiles, and data sources. The feed value represents a calculated return using the best mid-price for continuous 24/5 coverage of underlying equity markets, smoothed during the overnight session.
 
-### Smoothing during transitions
+### Smoothing
 
-Standard feeds report raw aggregated prices. Tokenized equity feeds apply smoothing algorithms during session transitions in an effort to filter out microstructure noise and mitigate artificial volatility. This means:
+Standard feeds report raw aggregated prices. Tokenized equity feeds apply smoothing algorithms during session transitions and across the overnight session in an effort to filter out microstructure noise and mitigate artificial volatility. This means:
 
 - Brief price spikes in illiquid sessions are dampened
 - Convergence to new price levels after gaps is gradual rather than instantaneous
-- The reported price may temporarily lag during rapid price movements
+- The reported price may temporarily lag during rapid price movements, and that lag is largest overnight
 
 For more information about this risk, see [Smoothing-induced Tracking Lag](#smoothing-induced-tracking-lag) below.
 
@@ -7492,7 +7904,7 @@ The reliability and accuracy of tokenized equity feeds varies by trading session
 | Session   | Data Quality | Provider Coverage      | Update Frequency |
 | :-------- | :----------- | :--------------------- | :--------------- |
 | Regular   | Highest      | Multiple providers     | Highest          |
-| Extended  | Moderate     | Limited providers      | Moderate         |
+| Extended  | Moderate     | Multiple providers     | Moderate         |
 | Overnight | Lower        | Very limited           | Lower            |
 | Weekend   | N/A          | No traditional trading | Stale            |
 
@@ -7506,13 +7918,13 @@ Tokenized equity feeds for assets from different issuers may differ in terms of 
 
 Tokenized equity feeds introduce specific risks related to the nature of traditional equity markets, multi-session data aggregation, smoothing algorithms, and data sourcing. Users must understand these factors and implement appropriate safeguards.
 
-### Limited provider coverage during extended and overnight sessions
+### Limited provider coverage during overnight sessions
 
-Extended and overnight session price data is sourced from a more limited number of data providers compared to regular hours, making these sessions less reliable than regular hours feeds, which are aggregated from a broader set of providers.
+Overnight session price data is sourced from a more limited number of data providers compared to regular and extended hours, making this session less reliable than regular and extended hours feeds, which are aggregated from a broader set of providers.
 
 If providers experience downtime, technical failures, or connectivity disruption, the feed may flatline or report stale values. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
 
-**Overnight and extended sessions** carry additional nuance: liquidity is thinner and fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
+**Overnight and extended sessions** carry additional nuance: liquidity is thinner than during regular hours, and overnight fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
 
 #### Mitigation
 
@@ -7556,20 +7968,20 @@ These are expected market microstructure effects, not data quality issues. Typic
 - Implement transition-aware logic that expects and handles price gaps
 - Consider pausing or restricting operations during transition windows
 - Apply additional smoothing or price change limits during transitions
-- Use time-weighted averages (TWAP) or exponential moving averages (EMA) for risk-sensitive calculations
+- Use time-weighted averages (TWAP) or exponential moving averages (EMA) for risk-sensitive calculations. Note that the feed already smooths the overnight session, and layering additional smoothing increases tracking lag.
 
 ### Smoothing-induced tracking lag
 
 The session-aware smoothing that mitigates phantom liquidations also introduces tracking lag: a delay between market price movements and the reported feed price. During rapid legitimate price moves:
 
 - The smoothed price will temporarily trail the true market price
-- Convergence typically occurs within seconds to tens of seconds
+- Convergence typically occurs within seconds to tens of seconds during regular and extended sessions, and over a longer window during the overnight session
 - In extreme cases, this may result in delayed liquidations or arbitrage opportunities
 
 #### Mitigation
 
 - Understand the trade-off: smoothing protects against false liquidations but delays real ones
-- Configure your protocol's risk parameters to account for potential tracking lag
+- Configure your protocol's risk parameters to account for potential tracking lag, including the larger overnight tracking lag
 - Consider the tracking lag characteristics when setting liquidation thresholds
 - Monitor for persistent deviation between tokenized equity feeds and other market data sources
 
@@ -7690,6 +8102,16 @@ These values are sourced from the asset issuer. Learn more in the [Provider Cata
 
 # Ondo Finance Global Markets (GM)
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/ondo
+
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
 
 Chainlink provides tokenized equity feeds for Ondo Finance Global Markets (GM) tokenized equities. These feeds differ from standard market-rate feeds in that they report **Total Return Values** rather than raw equity prices.
 
@@ -7814,6 +8236,16 @@ For Oracle Extractable Value (OEV) and how SVR relates to standard feeds, use [S
 # Asset Issuer Catalog
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/providers
 
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
+
 Tokenized equity feeds have issuer-specific implementations that affect pricing methodology, data handling, and operational behavior. This page catalogs the available issuers and their key characteristics.
 
 ## Available providers
@@ -7832,6 +8264,16 @@ Each provider may implement tokenized equity feeds differently based on their to
 
 # Robinhood Tokenized Equities
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/robinhood
+
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
 
 Chainlink provides tokenized equity feeds for Robinhood tokenized stocks. Each Robinhood tokenized stock is represented by its own ERC-20 token contract, deployed on Robinhood Chain (one contract per ticker). The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read directly from the Robinhood token contract, rather than the raw equity price.
 

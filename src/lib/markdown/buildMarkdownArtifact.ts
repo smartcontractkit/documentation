@@ -1,8 +1,10 @@
 import fs from "node:fs/promises"
 import path from "node:path"
 import { transformPageToMarkdown } from "./transformMarkdown.js"
-import type { MarkdownArtifact } from "./types.js"
+import type { MarkdownArtifact, TransformConfig } from "./types.js"
 import { extractFrontmatter, getIsoStringOrUndefined, toCanonicalUrl, toContentRelative } from "./utils.js"
+import { isSunsetDocsPath } from "../../config/sunset.js"
+import { withSolutionLayoutContent } from "./solutionContent.js"
 
 const SITE_BASE = "https://docs.chain.link"
 const CONTENT_ROOT = path.resolve("src/content")
@@ -57,10 +59,11 @@ export function normalizeMarkdownPath(pathParam: string | undefined): string | n
 
 export async function buildMarkdownArtifact(
   requestPath: string,
-  options: { lang?: string } = {}
+  options: { lang?: string; onDropComponent?: TransformConfig["onDropComponent"] } = {}
 ): Promise<MarkdownArtifact | null> {
   const cleanPath = normalizeMarkdownPath(requestPath)
   if (!cleanPath) return null
+  if (isSunsetDocsPath(cleanPath)) return null
 
   const specialResolution = await resolveSpecialCanonicalMarkdownPath(cleanPath)
   if (specialResolution) {
@@ -107,7 +110,7 @@ export async function buildMarkdownArtifact(
 export async function transformPageBodyToMarkdown(
   body: string,
   mdxAbsPath: string,
-  options: { siteBase?: string; targetLanguage?: string } = {}
+  options: Pick<Partial<TransformConfig>, "siteBase" | "targetLanguage" | "onDropComponent"> = {}
 ): Promise<TransformOutcome> {
   if (mdxAbsPath.includes("data-feeds/deprecating-feeds")) {
     return {
@@ -126,15 +129,17 @@ https://docs.chain.link/data-feeds/deprecating-feeds
   const transformOptions = {
     siteBase: options.siteBase ?? SITE_BASE,
     targetLanguage: options.targetLanguage,
+    onDropComponent: options.onDropComponent,
   }
+  const completeBody = withSolutionLayoutContent(body, mdxAbsPath)
 
   try {
     return {
       transformMode: "normal",
-      markdown: await transformPageToMarkdown(body, mdxAbsPath, transformOptions),
+      markdown: await transformPageToMarkdown(completeBody, mdxAbsPath, transformOptions),
     }
   } catch {
-    const sanitizedBody = stripRuntimeMdxSyntax(body)
+    const sanitizedBody = stripRuntimeMdxSyntax(completeBody)
 
     try {
       return {
@@ -201,7 +206,7 @@ async function buildMarkdownArtifactFromPath(
   requestPath: string,
   resolvedPath: string,
   routeKind: "normal" | "special",
-  options: { lang?: string },
+  options: { lang?: string; onDropComponent?: TransformConfig["onDropComponent"] },
   knownSourcePath?: string,
   sourceCanonicalPathOverride?: string
 ): Promise<MarkdownArtifact | null> {
@@ -213,6 +218,7 @@ async function buildMarkdownArtifactFromPath(
   const transformed = await transformPageBodyToMarkdown(body, sourcePath, {
     siteBase: SITE_BASE,
     targetLanguage: options.lang,
+    onDropComponent: options.onDropComponent,
   })
 
   const section = resolvedPath.split("/")[0]

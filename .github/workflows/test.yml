@@ -8,7 +8,7 @@ concurrency:
 
 env:
   FOUNDRY_PROFILE: ci
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
 
 # Set default permissions as restrictive as possible
 permissions:
@@ -25,6 +25,7 @@ jobs:
       solidity: ${{ steps.filter.outputs.solidity }}
       typescript: ${{ steps.filter.outputs.typescript }}
       content: ${{ steps.filter.outputs.content }}
+      llms: ${{ steps.filter.outputs.llms }}
       any_non_solidity: ${{ steps.filter.outputs.any_non_solidity }}
     steps:
       - uses: actions/checkout@v6
@@ -50,6 +51,23 @@ jobs:
               - 'src/scripts/markdown-fidelity-exceptions.ts'
               - 'src/scripts/markdown-fidelity-baseline.json'
               - 'astro.config.*'
+              - 'lychee.toml'
+              - 'vercel.json'
+              - 'src/scripts/link-check/**'
+            llms:
+              - 'src/features/**'
+              - 'src/config/sidebar*'
+              - 'src/config/sidebar/**'
+              - 'src/config/llms.ts'
+              - 'src/config/sunset.ts'
+              - 'src/config/solutions/**'
+              - 'src/utils/solutionPages.ts'
+              - 'src/scripts/generate-llms.ts'
+              - 'src/scripts/validate-llms.ts'
+              - '.husky/pre-commit'
+              - 'package.json'
+              - 'package-lock.json'
+              - '.github/workflows/test.yml'
             any_non_solidity:
               - '**'
               - '!public/samples/**/*.sol'
@@ -203,14 +221,25 @@ jobs:
             npm ci --prefer-offline --no-audit
           fi
 
+      - name: Check CCIP v2 Remap Fixture
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          lycheeVersion: v0.24.2
+          args: >-
+            --root-dir $GITHUB_WORKSPACE/src/scripts/link-check/fixtures/ccip-v2-remap/static
+            --config lychee.toml
+            src/scripts/link-check/fixtures/ccip-v2-remap/should-pass.html
+          fail: true
+
       - name: Build Site
         run: npm run build
         env:
           NODE_OPTIONS: '--max-old-space-size=8192'
       
       - name: Check Internal Links
-        uses: lycheeverse/lychee-action@8646ba30535128ac92d33dfc9133794bfdd9b411 # v2.8.0
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
+          lycheeVersion: v0.24.2
           args: >-
             --root-dir $GITHUB_WORKSPACE/.vercel/output/static
             --config lychee.toml
@@ -304,7 +333,7 @@ jobs:
   # Job 6: Validate LLM files are present and well-formed
   validate-llms:
     needs: [setup, changes]
-    if: needs.changes.outputs.content == 'true'
+    if: needs.changes.outputs.content == 'true' || needs.changes.outputs.llms == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
@@ -335,6 +364,7 @@ jobs:
         run: npm run generate:llms
 
       - name: Check LLM files are up-to-date
+        if: ${{ !cancelled() }}
         run: |
           if ! git diff --exit-code 'src/content/**/llms-full*.txt'; then
             echo "LLM files are out of date. Run 'npm run generate:llms' and commit the result."
@@ -342,10 +372,12 @@ jobs:
           fi
 
       - name: Validate LLM files
+        if: ${{ !cancelled() }}
         run: npm run check:llms
 
       - name: Check Markdown fidelity
-        run: npm run check:markdown-fidelity -- --warn-only
+        if: ${{ !cancelled() }}
+        run: npm run check:markdown-fidelity -- --warn-only --omit-present
 
       - name: Upload Markdown fidelity report
         if: always()

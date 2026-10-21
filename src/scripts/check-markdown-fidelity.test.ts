@@ -3,6 +3,7 @@ import os from "node:os"
 import path from "node:path"
 import { describe, expect, test } from "@jest/globals"
 import { buildMarkdownArtifact } from "@lib/markdown/buildMarkdownArtifact.js"
+import { transformMarkdown } from "@lib/markdown/transformMarkdown.js"
 import type { MarkdownArtifact } from "@lib/markdown/types.js"
 import {
   analyzeSourceMarkdown,
@@ -182,7 +183,7 @@ describe("Markdown fidelity execution modes", () => {
     const exception: FidelityException = {
       path: first.path,
       occurrence: first.occurrence,
-      status: "unsupported",
+      status: first.status as FidelityException["status"],
       reason: "Known projection gap",
       owner: "docs-platform",
       removalCondition: "Remove when UnknownWidget has a static projection",
@@ -203,7 +204,7 @@ describe("Markdown fidelity execution modes", () => {
 })
 
 describe("raw source analysis", () => {
-  test("unsupported findings preserve component name, repository path, and original line", () => {
+  test("unknown source expectations preserve component name, repository path, and original line", () => {
     const source = [
       "---",
       "title: Fixture",
@@ -218,7 +219,7 @@ describe("raw source analysis", () => {
       "src/content/fixture.mdx",
       source,
       artifact("Visible text")
-    ).filter((candidate) => candidate.status === "unsupported")
+    ).filter((candidate) => candidate.status === "unverifiable")
 
     expect(unsupported).toMatchObject({
       name: "UnknownWidget",
@@ -457,6 +458,8 @@ describe("content-bearing component fidelity", () => {
     ["AnyApiCallout", '<AnyApiCallout callout="not-a-callout" />'],
     ["CcipCommon", '<CcipCommon callout="not-a-callout" />'],
     ["SchemaFieldsTable", '<SchemaFieldsTable schema="unknown" />'],
+    ["CCIPSendError", '<CCIPSendError type="unknown" version="v1_6_2" />'],
+    ["CCIPEvent", '<CCIPEvent type="onramp-send" version="v9_9_9" />'],
     ["Billing", "<Billing />"],
   ])("%s unresolved content is blocking with component, path, and line", (name, component) => {
     const source = `Visible\n\n${component}`
@@ -483,8 +486,12 @@ describe("content-bearing component fidelity", () => {
   })
 
   test.each([
-    ['<AnyApiCallout callout="usefunctions" />', "Use Chainlink Functions"],
+    ['<AnyApiCallout callout="usefunctions" />', "Use CRE"],
     ['<CcipCommon callout="senderContractCallout" />', "Best Practices"],
+    ['<AceCallout callout="privateBeta" />', "Private Beta"],
+    ['<TokenizedEquityFeeds section="tokenizedEquityNote" />', "Tokenized equity feeds"],
+    ['<CCIPSendError type="router" version="v1_6_2" />', "0xae236d9c"],
+    ['<CCIPEvent type="onramp-send" version="v1_6_3" />', "Internal.EVM2AnyRampMessage"],
   ])("static selector content is independently inventoried: %s", (component, expectedFragment) => {
     const analysis = analyzeSourceMarkdown(component, "src/content/fixture.mdx")
 
@@ -495,6 +502,27 @@ describe("content-bearing component fidelity", () => {
         (candidate) => candidate.status === "missing"
       )
     ).toBe(true)
+  })
+
+  test.each([
+    [
+      '<CCIPEvent type="onramp-send" version="v1_6_3" />',
+      "`uint64 indexed destChainSelector`",
+      "`uint64 destChainSelector`",
+      "uint64 indexed destChainSelector, uint64 indexed sequenceNumber,",
+    ],
+    ['<CCIPEvent type="onramp-send" version="v1_6_3" />', "`message`", "`payload`", "message"],
+    ['<CCIPSendError type="router" version="v1_6_2" />', "`uint64 destChainSelector`", "-", "uint64 destChainSelector"],
+  ])("CCIP reference parameters are verified in %s", async (component, rendered, changed, expected) => {
+    const markdown = await transformMarkdown(component, path.resolve("src/content/fixture.mdx"))
+    const missing = (body: string) =>
+      compareSourceToArtifact("fixture", "src/content/fixture.mdx", component, artifact(body)).filter(
+        (candidate) => candidate.status === "missing"
+      )
+
+    expect(markdown).toContain(rendered)
+    expect(missing(markdown)).toEqual([])
+    expect(missing(markdown.replace(rendered, changed))).toEqual([expect.objectContaining({ expected })])
   })
 })
 
@@ -655,19 +683,20 @@ describe("final projection and envelope regressions", () => {
         candidate.occurrence.includes('"kind":"code"')
     )
 
-    expect(findings.length).toBe(4)
+    expect(findings.filter((candidate) => !candidate.output)).toHaveLength(4)
+    expect(findings.filter((candidate) => candidate.outputs?.includes("txt"))).toHaveLength(2)
     expect(findings.every((candidate) => candidate.status === "present")).toBe(true)
     expect(new Set(findings.map((candidate) => candidate.lang ?? "default"))).toEqual(new Set(["default", "go", "ts"]))
   })
 
-  test("reports DownloadButton as an unsupported visible component", () => {
+  test("reports an unknown DownloadButton expectation as unverifiable", () => {
     const source = 'Visible\n\n<DownloadButton href="/download">Download the toolkit</DownloadButton>'
     const [unsupported] = compareSourceToArtifact(
       "fixture",
       "src/content/fixture.mdx",
       source,
       artifact("Visible")
-    ).filter((candidate) => candidate.status === "unsupported")
+    ).filter((candidate) => candidate.status === "unverifiable")
 
     expect(unsupported).toMatchObject({
       name: "DownloadButton",
@@ -713,6 +742,56 @@ describe("final projection and envelope regressions", () => {
     }
   })
 
+  test("expects the published CCIP URL, without the latest content directory, in the Source line", async () => {
+    const requestPath = "ccip/v2/canton/concepts/key-concepts"
+    const sourcePath = "src/content/ccip/v2/canton/concepts/key-concepts.mdx"
+    const source = await fs.readFile(sourcePath, "utf8")
+    const production = await buildMarkdownArtifact(requestPath)
+    if (!production) throw new Error(`Expected production Markdown artifact for ${requestPath}`)
+    const sourceFinding = (markdown: string) =>
+      compareSourceToArtifact(requestPath, sourcePath, source, { ...production, markdown }).find(
+        (candidate) => candidate.name === "Envelope.source"
+      )
+
+    expect(production.markdown).toContain("Source: https://docs.chain.link/ccip/canton/concepts/key-concepts")
+    expect(sourceFinding(production.markdown)).toMatchObject({ status: "present" })
+    expect(
+      sourceFinding(production.markdown.replace("docs.chain.link/ccip/canton", "docs.chain.link/ccip/v2/canton"))
+    ).toMatchObject({ status: "missing" })
+  })
+
+  test("reads one-line tab slots that MDX wraps in a paragraph", async () => {
+    const source = [
+      "<Tabs>",
+      '  <Fragment slot="tab.1">npm</Fragment>',
+      '  <Fragment slot="tab.2">yarn</Fragment>',
+      '  <Fragment slot="panel.1">',
+      "",
+      "Run `npm install example`.",
+      "",
+      "  </Fragment>",
+      '  <Fragment slot="panel.2">',
+      "",
+      "Run `yarn add example`.",
+      "",
+      "  </Fragment>",
+      "</Tabs>",
+    ].join("\n")
+    const markdown = await transformMarkdown(source, path.resolve("src/content/fixture.mdx"))
+    const findings = compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(markdown))
+
+    expect(analyzeSourceMarkdown(source, "src/content/fixture.mdx").diagnostics).toEqual([])
+    expect(findings.filter((candidate) => candidate.status !== "present")).toEqual([])
+    expect(findings.map((candidate) => candidate.expected)).toEqual(
+      expect.arrayContaining(["npm", "yarn", "Run npm install example.", "Run yarn add example."])
+    )
+    expect(
+      compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(markdown.replace("yarn add", "")))
+        .filter((candidate) => candidate.status === "missing")
+        .map((candidate) => candidate.expected)
+    ).toEqual(["Run yarn add example."])
+  })
+
   test("numbers unchanged missing duplicates independently from identical present copies", () => {
     const original = compareSourceToArtifact(
       "fixture",
@@ -751,4 +830,307 @@ describe("stable report JSON", () => {
       counts: { present: 0, missing: 1, unsupported: 1, unverifiable: 0, degraded: 0 },
     })
   })
+})
+
+describe("card container fidelity", () => {
+  const source = (wrapper: string) => `<${wrapper}>
+  <GitHubCard title="First repository" href="https://example.com/first" badge="New">
+    First repository description.
+  </GitHubCard>
+  <GitHubCard title="Second repository" href="https://example.com/second">
+    Second repository description.
+  </GitHubCard>
+</${wrapper}>`
+  const firstCard = "[First repository](https://example.com/first) New\n\nFirst repository description."
+  const secondCard = "[Second repository](https://example.com/second)\n\nSecond repository description."
+
+  test.each(["GitHubCards", "OverviewWrapper"])("inventories cards inside %s", (wrapper) => {
+    const findings = compareSourceToArtifact(
+      "fixture",
+      "src/content/fixture.mdx",
+      source(wrapper),
+      artifact(`${firstCard}\n\n${secondCard}`)
+    )
+
+    expect(blockingFindings("focused", findings)).toEqual([])
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ status: "present", expected: "First repository -> https://example.com/first" }),
+        expect.objectContaining({ status: "present", expected: "New" }),
+        expect.objectContaining({ status: "present", expected: "First repository description." }),
+        expect.objectContaining({ status: "present", expected: "Second repository -> https://example.com/second" }),
+        expect.objectContaining({ status: "present", expected: "Second repository description." }),
+      ])
+    )
+  })
+
+  test.each(["GitHubCards", "OverviewWrapper"])("detects a missing card inside %s", (wrapper) => {
+    const findings = compareSourceToArtifact(
+      "fixture",
+      "src/content/fixture.mdx",
+      source(wrapper),
+      artifact(secondCard)
+    )
+
+    expect(findings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ status: "missing", expected: "First repository -> https://example.com/first" }),
+        expect.objectContaining({ status: "missing", expected: "First repository description." }),
+        expect.objectContaining({ status: "present", expected: "Second repository -> https://example.com/second" }),
+      ])
+    )
+  })
+
+  test("reads nested overview and card containers", () => {
+    const nested = `<OverviewWrapper>${source("GitHubCards")}</OverviewWrapper>`
+    const findings = compareSourceToArtifact(
+      "fixture",
+      "src/content/fixture.mdx",
+      nested,
+      artifact(`${firstCard}\n\n${secondCard}`)
+    )
+
+    expect(blockingFindings("focused", findings)).toEqual([])
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "present", expected: "First repository -> https://example.com/first" })
+    )
+  })
+})
+
+describe("solution component fidelity", () => {
+  const source = `<ol><li>First item.</li><li>Second item.</li></ol>
+
+<AnchoredAccordion title="Deploy" number={2} depth={3}>
+
+\`\`\`bash
+forge create ExampleVault
+\`\`\`
+
+<GitHubCard title="Repository" href="https://example.com/repo">
+Repository description.
+</GitHubCard>
+
+</AnchoredAccordion>`
+  const complete =
+    "1. First item.\n2. Second item.\n\n### 2. Deploy\n\n```bash\nforge create ExampleVault\n```\n\n[Repository](https://example.com/repo)\n\nRepository description."
+
+  test("checks ordered lists, anchored accordion bodies, and GitHub cards independently", () => {
+    const findings = compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(complete))
+    expect(findings.length).toBeGreaterThan(5)
+    expect(blockingFindings("focused", findings)).toEqual([])
+  })
+
+  test("detects missing commands inside an anchored accordion", () => {
+    const missing = complete.replace("```bash\nforge create ExampleVault\n```", "")
+    const findings = compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(missing))
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "missing", expected: "forge create ExampleVault" })
+    )
+  })
+})
+
+describe("explicit anchored accordion IDs", () => {
+  const title = "4. Set the return format and fund the adapter"
+  const source = (attribute = 'anchorId="fund-the-adapter"', component = "AnchoredAccordion") =>
+    `<${component} title="Set the return format and fund the adapter" number={4} depth={3} ${attribute}>
+
+Fund the adapter. [Return to this step](#fund-the-adapter).
+
+</${component}>`
+  const output = (anchor = '<a id="fund-the-adapter"></a>') =>
+    `### ${title}${anchor ? ` ${anchor}` : ""}\n\nFund the adapter. [Return to this step](#fund-the-adapter).`
+  const compare = (input: string, markdown: string) =>
+    compareSourceToArtifact("fixture", "src/content/fixture.mdx", input, artifact(markdown))
+
+  test("inventories the exact anchor together with its heading and depth", () => {
+    const analysis = analyzeSourceMarkdown(source())
+    expect(analysis.facts).toContainEqual(
+      expect.objectContaining({ kind: "anchor", value: "fund-the-adapter", heading: title, depth: 3 })
+    )
+    const findings = compare(source(), output())
+    expect(blockingFindings("focused", findings)).toEqual([])
+    expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: "fund-the-adapter" }))
+  })
+
+  test.each(['anchorId={"fund-the-adapter"}', "anchorId={`fund-the-adapter`}"])(
+    "reads a static expression ID: %s",
+    (attribute) => {
+      expect(blockingFindings("focused", compare(source(attribute), output()))).toEqual([])
+    }
+  )
+
+  test.each(["", '<a id="wrong-step"></a>'])("detects a missing or changed ID: %s", (anchor) => {
+    const findings = compare(source(), output(anchor))
+    expect(findings).toContainEqual(expect.objectContaining({ status: "missing", expected: "fund-the-adapter" }))
+    expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: title }))
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "present", expected: "Return to this step -> #fund-the-adapter" })
+    )
+  })
+
+  test.each([
+    `${output("")}\n\n### Another step <a id="fund-the-adapter"></a>`,
+    `${output("")}\n\n## ${title} <a id="fund-the-adapter"></a>`,
+    `${output("")}\n\n<a id="fund-the-adapter"></a>`,
+  ])("rejects an ID placed on another heading or outside a heading", (markdown) => {
+    const findings = compare(source(), markdown)
+    expect(findings).toContainEqual(expect.objectContaining({ status: "missing", expected: "fund-the-adapter" }))
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "unverifiable", reason: "Served Markdown contains residual runtime syntax" })
+    )
+  })
+
+  test("decodes escaped attribute characters without changing the ID", () => {
+    const id = 'deploy&"quoted"<adapter>\\_safe'
+    const input = source(`anchorId={${JSON.stringify(id)}}`)
+    const markdown = output('<a id="deploy&amp;&quot;quoted&quot;&lt;adapter&gt;&#92;_safe"></a>')
+    const findings = compare(input, markdown)
+    expect(blockingFindings("focused", findings)).toEqual([])
+    expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: id }))
+  })
+
+  test.each(["anchorId={runtimeId}", "anchorId={getId()}", "anchorId={42}", "anchorId={null}", "anchorId"])(
+    "reports an unverifiable ID without losing the heading or body: %s",
+    (attribute) => {
+      const findings = compare(source(attribute), output(""))
+      expect(findings).toContainEqual(
+        expect.objectContaining({ status: "unverifiable", name: "AnchoredAccordion.anchorId" })
+      )
+      expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: title }))
+      expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: "Fund the adapter." }))
+      expect(analyzeSourceMarkdown(source(attribute)).facts.some((fact) => fact.kind === "anchor")).toBe(false)
+    }
+  )
+
+  test.each(["", 'anchorId=""', 'anchorId={""}'])("does not invent an ID for %s", (attribute) => {
+    expect(blockingFindings("focused", compare(source(attribute), output("")))).toEqual([])
+    expect(analyzeSourceMarkdown(source(attribute)).facts.some((fact) => fact.kind === "anchor")).toBe(false)
+  })
+
+  test("keeps ordinary Accordion behavior unchanged", () => {
+    expect(
+      blockingFindings("focused", compare(source('anchorId="fund-the-adapter"', "Accordion"), output("")))
+    ).toEqual([])
+    expect(
+      analyzeSourceMarkdown(source('anchorId="fund-the-adapter"', "Accordion")).facts.some(
+        (fact) => fact.kind === "anchor"
+      )
+    ).toBe(false)
+  })
+
+  test.each([
+    '<a id="fund-the-adapter" href="https://example.com"></a>',
+    '<a id="fund-the-adapter" onClick={runtimeHandler}></a>',
+    '<a id="fund-the-adapter">Visible runtime content</a>',
+    '<a id={"fund-the-adapter"}></a>',
+    '<a id="fund-the-adapter" {...runtimeProps}></a>',
+  ])("does not exempt unsafe or unrelated anchor HTML: %s", (anchor) => {
+    const findings = compare(source(), output(anchor))
+    expect(findings).toContainEqual(expect.objectContaining({ status: "missing", expected: "fund-the-adapter" }))
+    expect(findings).toContainEqual(
+      expect.objectContaining({ status: "unverifiable", reason: "Served Markdown contains residual runtime syntax" })
+    )
+  })
+
+  test.each(['<a id="unrelated"></a>', "<UnknownWidget />", "{runtimeValue}"])(
+    "reports unexpected runtime syntax inside an ordinary heading: %s",
+    (runtime) => {
+      const findings = compare("## Visible heading", `## Visible heading ${runtime}`)
+      expect(findings).toContainEqual(
+        expect.objectContaining({ status: "unverifiable", reason: "Served Markdown contains residual runtime syntax" })
+      )
+    }
+  )
+})
+
+test("checks unordered lists inside callouts without requiring artificial separators", () => {
+  const source = `<Aside type="caution" title="Important">
+<ul>
+<li>
+First requirement.
+</li>
+<li>
+Second requirement.
+</li>
+</ul>
+</Aside>`
+  const output = "> **CAUTION: Important**\n>\n> - First requirement.\n> - Second requirement."
+  expect(
+    blockingFindings("focused", compareSourceToArtifact("fixture", "fixture.mdx", source, artifact(output)))
+  ).toEqual([])
+})
+
+test.each(["ol", "ul"])("coalesces projected inline HTML in %s items before a repeated later value", (list) => {
+  const source = `<Aside type="note">
+<${list}>
+<li>Foundry scripts default to <strong>400,000</strong> gas unless you set{" "}
+  <code>GAS_LIMIT</code><br /> (and fall back if estimation fails).</li>
+<li>Test all scenarios before deployment.</li>
+</${list}>
+</Aside>
+
+## Before you begin
+
+Follow the <b>required</b> steps and keep <span>all</span> values in <nobr>one place</nobr> for chain<sub>1</sub>.
+
+## Later reference
+
+\`GAS_LIMIT\``
+  const marker = list === "ol" ? "1." : "-"
+  const nextMarker = list === "ol" ? "2." : "-"
+  const output = `> **NOTE**
+>
+> ${marker} Foundry scripts default to **400,000** gas unless you set \`GAS_LIMIT\` (and fall back if estimation fails).
+> ${nextMarker} Test all scenarios before deployment.
+
+## Before you begin
+
+Follow the **required** steps and keep all values in one place for chain1.
+
+## Later reference
+
+\`GAS_LIMIT\``
+
+  const findings = compareSourceToArtifact("fixture", "fixture.mdx", source, artifact(output))
+  expect(blockingFindings("focused", findings)).toEqual([])
+  expect(findings).toContainEqual(expect.objectContaining({ status: "present", expected: "Before you begin" }))
+  const missing = compareSourceToArtifact(
+    "fixture",
+    "fixture.mdx",
+    source,
+    artifact(output.replace("Test all scenarios before deployment.", ""))
+  )
+  expect(missing).toContainEqual(
+    expect.objectContaining({ status: "missing", expected: "Test all scenarios before deployment." })
+  )
+})
+
+test("checks the Data Feeds JSX-space callout and detects a missing inline code value", () => {
+  const source = `<Aside type="caution" title="Important">
+<ul>
+<li>Searchers must not exceed the allowed{" "}
+  <code>SolverGasLimit</code>. Query <code>getSolverGasLimit</code> on the{" "}
+  <code>DappControl</code> contract.</li>
+</ul>
+</Aside>`
+  const output =
+    "> **CAUTION: Important**\n>\n> - Searchers must not exceed the allowed `SolverGasLimit`. Query `getSolverGasLimit` on the `DappControl` contract."
+
+  expect(
+    blockingFindings("focused", compareSourceToArtifact("fixture", "fixture.mdx", source, artifact(output)))
+  ).toEqual([])
+  const incomplete = output.replace("`SolverGasLimit`", "")
+  expect(
+    compareSourceToArtifact("fixture", "fixture.mdx", source, artifact(incomplete)).some(
+      (finding) => finding.status === "missing" && finding.expected?.includes("SolverGasLimit")
+    )
+  ).toBe(true)
+})
+
+test("keeps dynamic inline HTML attributes unverifiable while checking emphasis text", () => {
+  const source = "Keep <strong title={runtimeTitle}>this fact</strong> and <em>unprojected emphasis</em>."
+  const analysis = analyzeSourceMarkdown(source, "fixture.mdx")
+  expect(analysis.diagnostics).toEqual(
+    expect.arrayContaining([expect.objectContaining({ status: "unverifiable", name: "strong.title" })])
+  )
 })

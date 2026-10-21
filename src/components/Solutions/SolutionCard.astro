@@ -1,0 +1,174 @@
+---
+import { SOLUTION_PRODUCTS } from "~/config/solutions/index.ts"
+import type { Solution } from "~/config/solutions/index.ts"
+
+interface Props {
+  solution: Solution
+}
+const { solution } = Astro.props
+
+const products = solution.products.map((p) => SOLUTION_PRODUCTS[p]).filter(Boolean)
+const displayCategories = solution.categories.slice(0, 3)
+---
+
+<a
+  href={`/solutions/${solution.slug}`}
+  class="solution-card"
+  data-solution
+  data-products={solution.products.join(",")}
+  data-categories={solution.categories.join(",")}
+>
+  <!-- Decorative left strip, same as TemplateCard.astro -->
+  <div class="card-strip"></div>
+
+  <!-- Card Content -->
+  <div class="card-content">
+    <div class="badges">
+      {products.map((p) => <span class="product-badge">{p.label}</span>)}
+    </div>
+
+    <h3 class="card-title">{solution.title}</h3>
+    <p class="card-description">{solution.description}</p>
+
+    <div class="card-footer">
+      <div class="categories">
+        {displayCategories.map((c) => <span class="category-chip">{c}</span>)}
+      </div>
+      <svg
+        class="arrow-icon"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M7 17L17 7M17 7H7M17 7V17"></path>
+      </svg>
+    </div>
+  </div>
+</a>
+
+<style>
+  .solution-card {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    background: white;
+    border-radius: 0;
+    border-right: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+    padding-left: 20px;
+  }
+
+  /* REQUIRED, same reason as .empty-state[hidden] on the hub page: the filter script sets
+     `card.hidden = true` and the UA [hidden] rule loses to `display: flex`. */
+  .solution-card[hidden] {
+    display: none;
+  }
+
+  .solution-card:hover {
+    background: #f8f9fb;
+  }
+
+  .card-strip {
+    width: 20px;
+    flex-shrink: 0;
+    align-self: stretch;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 20px 0;
+    background-image: url("/images/cre-templates/card-strip.png");
+    background-size: cover;
+    background-position: center 100%;
+    background-repeat: no-repeat;
+  }
+
+  .solution-card:hover .arrow-icon {
+    opacity: 1;
+    color: var(--blue-600, #0847f7);
+  }
+
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    padding: 24px;
+  }
+
+  .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .product-badge {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    background: #f5f7fa;
+    color: #5a6175;
+    border: 1px solid #e5e7eb;
+  }
+
+  .card-title {
+    margin: 0 0 10px 0;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #0b101c;
+  }
+
+  .card-description {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #5a6175;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 24px;
+  }
+
+  .categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .category-chip {
+    font-size: 11px;
+    font-weight: 500;
+    color: #5a6175;
+  }
+
+  .category-chip::before {
+    content: "#";
+    opacity: 0.6;
+  }
+
+  .arrow-icon {
+    opacity: 0;
+    color: #c4c9d4;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+  }
+</style>

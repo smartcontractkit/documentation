@@ -13,6 +13,8 @@ interface ChainSelectorProps {
   dataFeedType?: string
   availableNetworkTypes?: { mainnet: boolean; testnet: boolean }
   selectedNetworkType?: "mainnet" | "testnet"
+  /** When true, the chain dropdown is disabled (grayed out) but the mainnet/testnet toggle still works. */
+  disabled?: boolean
 }
 
 export function ChainSelector({
@@ -23,6 +25,7 @@ export function ChainSelector({
   dataFeedType = "default",
   availableNetworkTypes = { mainnet: true, testnet: true },
   selectedNetworkType = "mainnet",
+  disabled = false,
 }: ChainSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
@@ -191,12 +194,13 @@ export function ChainSelector({
       <div className={styles.controls}>
         <button
           id="chain-selector-trigger"
-          className={styles.trigger}
+          className={clsx(styles.trigger, disabled && styles.triggerDisabled)}
           onClick={toggleDropdown}
           onKeyDown={handleTriggerKeyDown}
           aria-expanded={isOpen}
           aria-haspopup="listbox"
           type="button"
+          disabled={disabled}
         >
           <div className={styles.selectedChain}>
             <img

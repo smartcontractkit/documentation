@@ -144,7 +144,7 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 
        // API connection details
        let method = "GET";
-       let host = "api.testnet-dataengine.chain.link";
+       let host = "api.dataengine.chain.link";
        let path = "/api/v1/reports/latest";
        let full_path = format!("{}?feedID={}", path, feed_id);
 
@@ -175,7 +175,7 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
    #[tokio::main]
    async fn main() -> Result<(), Box<dyn Error>> {
        // Example feed ID (ETH/USD)
-       let feed_id = "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782";
+       let feed_id = "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9";
 
        println!("Fetching latest report for feed ID: {}", feed_id);
 
@@ -200,19 +200,19 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
    }
    ```
 
-1. Set your API credentials as environment variables:
+1. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 1. Run with <CopyText text="cargo run" code/>
 
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747933113
   Observations Timestamp: 1747933113
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -345,7 +345,7 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
        }
 
        // WebSocket connection details
-       let host = "ws.testnet-dataengine.chain.link";
+       let host = "ws.dataengine.chain.link";
        let path = "/api/v1/ws";
        let feed_ids_joined = feed_ids.join(",");
        let full_path = format!("{}?feedIDs={}", path, feed_ids_joined);
@@ -468,7 +468,7 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
            )?;
 
        // Example feed IDs (ETH/USD)
-       let feed_ids = vec!["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"];
+       let feed_ids = vec!["0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"];
 
        // Set up WebSocket connection
        let ws_stream = setup_websocket_connection(&api_key, &api_secret, &feed_ids).await?;
@@ -487,29 +487,29 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
    }
    ```
 
-1. Set your API credentials as environment variables:
+1. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 1. Run with <CopyText text="cargo run" code/>
 
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
 Waiting for incoming messages... (press Ctrl+C to exit)
 Received ping, sending pong response
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747934358
   Observations Timestamp: 1747934358
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747934359
   Observations Timestamp: 1747934359
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...

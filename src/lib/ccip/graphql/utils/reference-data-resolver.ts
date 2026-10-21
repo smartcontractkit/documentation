@@ -16,12 +16,22 @@ import { Environment, Version } from "~/config/data/ccip/types.ts"
 import { loadReferenceData } from "~/config/data/ccip/index.ts"
 import { directoryToSupportedChain, getChainTypeAndFamily } from "~/features/utils/index.ts"
 import type { ChainFamily } from "~/lib/ccip/graphql/utils/address-display.ts"
+import { extractRawType, extractVersion } from "~/lib/ccip/graphql/utils/type-version-parser.ts"
+
+// Curated per-chain token entry from tokens.json (fields used by the resolvers below)
+type CuratedTokenEntry = {
+  tokenAddress?: string
+  poolAddress?: string
+  poolType?: string
+  typeAndVersion?: string
+  symbol?: string
+}
 
 // Cache loaded reference data and chain services per environment
 const refDataCache = new Map<
   string,
   {
-    tokensReferenceData: Record<string, Record<string, { tokenAddress?: string; poolType?: string; symbol?: string }>>
+    tokensReferenceData: Record<string, Record<string, CuratedTokenEntry>>
     chainIdService: ChainIdentifierService
   }
 >()
@@ -34,10 +44,7 @@ function getRefData(environment: Environment) {
   const chainIdService = new ChainIdentifierService(environment)
 
   const entry = {
-    tokensReferenceData: tokensReferenceData as Record<
-      string,
-      Record<string, { tokenAddress?: string; poolType?: string; symbol?: string }>
-    >,
+    tokensReferenceData: tokensReferenceData as Record<string, Record<string, CuratedTokenEntry>>,
     chainIdService,
   }
   refDataCache.set(environment, entry)
@@ -70,6 +77,48 @@ export function resolveTokenAddress(
 export function resolvePoolType(environment: Environment, tokenSymbol: string, directoryKey: string): string | null {
   const { tokensReferenceData } = getRefData(environment)
   return tokensReferenceData[tokenSymbol]?.[directoryKey]?.poolType || null
+}
+
+/**
+ * Curated pool info derived from the tokens.json entry for a token on a chain.
+ *
+ * Used as a fallback when Atlas has no pool data for a token on a chain —
+ * e.g. operator-hardcoded entries such as USD1 on canton-mainnet, or pools
+ * Atlas has not indexed yet — so the directory still resolves the correct
+ * pool type, pool version, and transfer mechanism.
+ */
+export interface CuratedPoolInfo {
+  /** Token pool address from tokens.json */
+  address: string
+  /** Raw pool class parsed from `typeAndVersion` (e.g. "BurnMintTokenPool") */
+  rawType: string
+  /** Curated semantic pool type (e.g. "burnMint") */
+  type: string
+  /** Pool version parsed from `typeAndVersion` (e.g. "2.0.0") */
+  version: string
+}
+
+/**
+ * Resolves the curated pool info for a token on a specific chain from tokens.json.
+ * @returns Curated pool info, or null if the entry has no pool address
+ */
+export function resolveCuratedPoolInfo(
+  environment: Environment,
+  tokenSymbol: string,
+  directoryKey: string
+): CuratedPoolInfo | null {
+  const { tokensReferenceData } = getRefData(environment)
+  const entry = tokensReferenceData[tokenSymbol]?.[directoryKey]
+  if (!entry?.poolAddress) return null
+
+  const typeAndVersion = entry.typeAndVersion ?? ""
+  const rawType = extractRawType(typeAndVersion)
+  return {
+    address: entry.poolAddress,
+    rawType,
+    type: entry.poolType || rawType,
+    version: extractVersion(typeAndVersion) ?? "",
+  }
 }
 
 /**

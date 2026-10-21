@@ -5,7 +5,7 @@ title: "Execution Commands"
 metadata:
   description: "Inspect deployed workflow executions from the CLI: list runs, view status, events, and logs."
   datePublished: "2026-07-09"
-  lastModified: "2026-07-09"
+  lastModified: "2026-10-01"
 ---
 
 import { Aside } from "@components"
@@ -23,6 +23,17 @@ The `cre execution` commands query workflow execution history from the CRE platf
 </Aside>
 
 For a quick health check on the workflow configured in your project, see [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get), which shows deployment health and the most recent execution.
+
+## Execution statuses
+
+`cre execution list`, `cre execution status`, and [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) report a top-level status of `TRIGGERED`, `IN_PROGRESS`, `SUCCESS`, or `FAILURE`. When the platform provides additional detail, the CLI refines this into a more descriptive label:
+
+| Label                                 | Meaning                                                                                                                    |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `SUCCESS (completed with errors)`     | The workflow finished, but one or more capability calls returned an error. The failing capability events are listed below. |
+| `FAILURE (no error details reported)` | The execution failed without reporting a reason. Check `cre execution logs` for clues.                                     |
+
+When the platform classifies a failure as a system error rather than a workflow error, the CLI prints a hint explaining that the failure was not caused by your workflow. In JSON output, these refinements appear as the `detailedStatus`, `classifiedStatus`, and `hint` fields.
 
 ## `cre execution list`
 

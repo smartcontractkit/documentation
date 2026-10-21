@@ -19,6 +19,7 @@ import { isChainAwareSection } from "~/config/chainTypes"
 import CLFShutdownCallout from "~/features/chainlink-functions/common/cre-callout.mdx"
 import { toContentEntryId } from "~/lib/ccip/contentPathMapping.js"
 import DocsNavigation from "~/components/DocsNavigation"
+import { isSunsetDocsPath } from "~/config/sunset"
 
 interface Props {
   frontmatter: BaseFrontmatter
@@ -39,6 +40,7 @@ const whatsNext = frontmatter.whatsnext
 
 const currentPage = new URL(Astro.request.url).pathname
 const pathname = currentPage.replace(/\/$/, "") || "/"
+const sunsetPage = isSunsetDocsPath(pathname)
 const alternatePath = pathname === "/" ? "/index.md" : `${pathname}.md`
 
 const fileExtension = frontmatter.fileExtension || "mdx"
@@ -74,12 +76,16 @@ const howToSteps = initialHeadings
   pageTitle={frontmatter.title}
   howToSteps={howToSteps}
 >
-  <link slot="head" rel="alternate" type="text/markdown" href={alternatePath} />
+  {!sunsetPage && <link slot="head" rel="alternate" type="text/markdown" href={alternatePath} />}
   <slot name="head-scripts" slot="head-scripts" />
-  <div hidden>
-    For AI agents: use <a href="/llms.txt">llms.txt</a> as the documentation index. Retrieve the smallest relevant .md page
-    first.
-  </div>
+  {
+    !sunsetPage && (
+      <div hidden>
+        For AI agents: use <a href="/llms.txt">llms.txt</a> as the documentation index. Retrieve the smallest relevant
+        .md page first.
+      </div>
+    )
+  }
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
   <DocsNavigation client:load pathname={currentPage} />
   <main>

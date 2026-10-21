@@ -1,0 +1,141 @@
+---
+section: dataFeeds
+date: Last Modified
+title: "Using Data Feeds Offchain (Stellar)"
+whatsnext:
+  {
+    "Use Data Feeds Onchain": "/data-feeds/stellar/using-data-feeds-on-chain",
+    "See the available data feeds on Stellar": "/data-feeds/price-feeds/addresses?network=stellar",
+  }
+metadata:
+  title: "Using Data Feeds Offchain (Stellar)"
+  description: "How to use Chainlink Data Feeds in your offchain applications on Stellar."
+---
+
+import { Aside, CopyText } from "@components"
+import { FeedList } from "@features/feeds"
+
+Chainlink Data Feeds are the quickest way to access market prices for real-world assets. This guide demonstrates how to read Chainlink Data Feeds on the Stellar Testnet offchain using a [Soroban RPC simulation](https://soroban.stellar.org/docs/reference/rpc) with the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli) and the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk). To learn how to use Data Feeds in your onchain Soroban contracts, see the [Using Data Feeds Onchain](/data-feeds/stellar/using-data-feeds-on-chain) guide.
+
+To get the full list of Chainlink Data Feeds on Stellar, see the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Available data feeds on Stellar
+
+The following table shows all available data feeds on Stellar. Each feed is identified by its `data_id` (the Feed ID), which you pass to the proxy contract to read that feed's data.
+
+<FeedList client:idle initialNetwork="stellar" lockedNetwork="stellar" />
+
+<Aside type="danger" title="Select quality data feeds">
+
+Be aware of the quality of the data that you use. [Learn more about making responsible data quality decisions](/data-feeds/selecting-data-feeds).
+
+</Aside>
+
+## Prerequisites
+
+Before you begin, you should have:
+
+- Familiarity with [Stellar](https://stellar.org/) and [Soroban](https://soroban.stellar.org/) smart contracts
+- Understanding of how [Chainlink Data Feeds on Stellar](/data-feeds/stellar) work, including the `data_id` addressing scheme
+
+## Requirements
+
+To complete this guide, you'll need:
+
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run <CopyText text="stellar --version" code /> to verify your installation.
+
+- **Node.js 18 or higher**: Install [Node.js](https://nodejs.org/en/download/). Run <CopyText text="node --version" code /> to verify your installation.
+
+## Read a feed with the Stellar CLI
+
+You can read a Chainlink Data Feed offchain without deploying a contract by simulating a call to the proxy contract using the `stellar contract invoke` command with the `--send=no` flag. This does not submit a transaction and requires no XLM.
+
+The proxy contract exposes a `latest_round` function that takes a `data_id` and a `decimals` parameter, and returns the most recent round for that feed. You pass the `data_id` as raw hex (without the `0x` prefix), and `18` for the `decimals` parameter unless the feed is served at a reduced precision.
+
+1. Run the following command, replacing `<SOURCE_ACCOUNT>` with any Stellar account public key. The proxy contract on Stellar Testnet is `CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4`, and the BTC/USD `data_id` is `01a0b4d920000332000000000000000000000000000000000000000000000000`:
+
+   ```bash
+   stellar contract invoke \
+   --id CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4 \
+   --source-account <SOURCE_ACCOUNT> \
+   --network testnet \
+   --send=no \
+   -- latest_round \
+   --data_id "01a0b4d920000332000000000000000000000000000000000000000000000000" \
+   --decimals 18
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   {"answer":"84421629086034400000000","round_id":96,"timestamp":1790274329}
+   ```
+
+   Where:
+   - `answer` is the latest BTC/USD price with 18 decimal places (`84421629086034400000000` = 84421.63).
+   - `round_id` is the unique identifier of the round.
+   - `timestamp` is the observation timestamp in Unix seconds when the answer was produced.
+
+   You can find the `data_id` for each feed on the [Price Feed Contract Addresses](/data-feeds/price-feeds/addresses?network=stellar) page with Stellar selected.
+
+## Read a feed with the Stellar JavaScript SDK
+
+You can also read a Chainlink Data Feed offchain using the [Stellar JavaScript SDK](https://github.com/stellar/js-stellar-sdk) with a Soroban RPC query. This example uses the `contract.Client` API available in SDK v17 and later.
+
+1. Create a new directory for your project and initialize it:
+
+   ```bash
+   mkdir stellar-offchain && cd stellar-offchain && npm init -y
+   ```
+
+1. Install the Stellar JavaScript SDK:
+
+   ```bash
+   npm install @stellar/stellar-sdk
+   ```
+
+1. Create a `read-feed.js` file with the following contents. This script queries the proxy contract's `latest_round` function for a given `data_id`:
+
+   ```javascript
+   const { contract } = require("@stellar/stellar-sdk")
+
+   const proxy = "CBUF6IADAWPWIDWRTHJNINKXHG2UTIQ6TU2F2HRAXWAI7OT3KJPKK6O4"
+   const dataId = "01a0b4d920000332000000000000000000000000000000000000000000000000"
+
+   async function readLatestRound() {
+     const client = await contract.Client.from({
+       contractId: proxy,
+       rpcUrl: "https://soroban-testnet.stellar.org",
+       networkPassphrase: "Test SDF Network ; September 2015",
+     })
+     const result = await client.latest_round({ data_id: Buffer.from(dataId, "hex"), decimals: 18 })
+     const round = result.result.value
+     console.log("Latest round:", {
+       round_id: round.round_id.toString(),
+       answer: round.answer.toString(),
+       timestamp: round.timestamp.toString(),
+     })
+   }
+
+   readLatestRound().catch(console.error)
+   ```
+
+   The `data_id` argument is a 32-byte value, passed as a `Buffer` object. The `decimals` argument is required and requests the precision at which the answer is returned; pass `18` unless the feed is served at a reduced precision. The `latest_round` function returns a `Round` object wrapped in an `Ok` value, so you access it with `result.result.value`.
+
+1. Run the script:
+
+   ```bash
+   node read-feed.js
+   ```
+
+   Expect an output similar to the following:
+
+   ```bash
+   Latest round: {
+     round_id: '96',
+     answer: '84421629086034400000000',
+     timestamp: '1790274329'
+   }
+   ```
+
+   Where `answer` is the latest BTC/USD price with 18 decimal places (`84421629086034400000000` = 84421.63).

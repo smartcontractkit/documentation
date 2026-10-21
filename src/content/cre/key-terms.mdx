@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Learn essential CRE concepts: workflows, handlers, triggers, callbacks, Runtime, capabilities, DONs, and consensus."
   datePublished: "2025-11-04"
-  lastModified: "2026-05-20"
+  lastModified: "2026-10-19"
 ---
 
 import { Aside } from "@components"
@@ -96,28 +96,26 @@ A cryptographically signed package your workflow [DON](/cre/key-terms#decentrali
 
 Deliver onchain with [`writeReport()`](/cre/reference/sdk/evm-client-ts#writereport) / [`WriteReport()`](/cre/reference/sdk/evm-client-go#writereport), or offchain with [`sendReport()`](/cre/reference/sdk/http-client-ts#using-sendreport) / [`SendReport()`](/cre/reference/sdk/http-client-go#sendrequestersendreport). Receivers verify with [`Report.parse()`](/cre/reference/sdk/core-ts#report-verification) or [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparsereport). See [Submitting Reports via HTTP](/cre/guides/workflow/using-http-client/submitting-reports-http) and [Verifying CRE Reports Offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
 
-### SDK Clients: `EVMClient` & `HTTPClient`
+### SDK Clients: `EVMClient`, `SolanaClient` & `HTTPClient`
 
-The primary SDK clients you use inside a callback to interact with capabilities. For example, you use an EVM client to read from a smart contract and an HTTP client to make offchain API requests.
+The primary SDK clients you use inside a callback to interact with capabilities. For example, you use an EVM client to read from a smart contract, a Solana client to read from or write to a Solana program, and an HTTP client to make offchain API requests.
 
 **Language-specific implementations:**
 
-- **Go SDK**: `evm.Client` and `http.Client`
-- **TypeScript SDK**: `EVMClient` and `HTTPClient` classes
+- **Go SDK**: `evm.Client`, `solana.Client`, and `http.Client`
+- **TypeScript SDK**: `EVMClient`, `SolanaClient`, and `HTTPClient` classes
 
-### `Bindings` (Go SDK only)
+### `Bindings`
 
-A Go package generated from a smart contract's ABI using the `cre generate-bindings` CLI command. Bindings create a type-safe Go interface for a specific smart contract, abstracting away the low-level complexity of ABI encoding and decoding.
+A type-safe interface generated from a smart contract's ABI using the `cre generate-bindings` CLI command. Bindings are available in both Go (a generated package) and TypeScript (a generated class), and they abstract away the low-level complexity of ABI encoding and decoding.
 
-Using generated bindings is the recommended best practice for Go workflows, as they provide helper methods for:
+Using generated bindings is the recommended best practice for workflows that interact with contracts, as they provide helper methods for:
 
 - Reading from `view`/`pure` functions.
 - Encoding data structures for onchain writes.
 - Creating triggers for and decoding event logs.
 
 This makes your workflow code cleaner, safer, and easier to maintain. Learn more in the [Generating Contract Bindings](/cre/guides/workflow/using-evm-client/generating-bindings) guide.
-
-**Note for TypeScript**: The TypeScript SDK uses [Viem](https://viem.sh/) for type-safe contract interactions with manual ABI definitions instead of generated bindings.
 
 ### Async Patterns
 

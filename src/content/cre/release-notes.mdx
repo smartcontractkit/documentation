@@ -5,12 +5,66 @@ date: Last Modified
 metadata:
   description: "Discover what's new in CRE: latest features, changes, and improvements in each release of the Chainlink Runtime Environment."
   datePublished: "2025-11-04"
-  lastModified: "2026-09-18"
+  lastModified: "2026-10-19"
 ---
 
 import { Aside } from "@components"
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Ethereum Glamsterdam upgrade">
+  Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Sepolia upgrades on 6 October 2026 at 13:53:36 UTC; Ethereum Hoodi and Mainnet follow in Q4 2026. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
+</Aside>
+
+## Solana Onchain Read and Log Trigger - October 19, 2026
+
+**Solana is now fully supported in CRE.** In addition to onchain writes, workflows can now read consensus-verified account and program state from Solana, and start on Solana log triggers when a program emits a matching event.
+
+- **Solana Read**: Fetch account and program data through a DON-run `ContractReader`, then decode the result with generated bindings. See [Reading from Solana](/cre/guides/workflow/using-solana-client/onchain-read).
+- **Solana Log Trigger**: Fire a workflow when a Solana program emits a matching Anchor event, with optional filtering on the event's top-level scalar fields. See the [Solana Log Trigger guide](/cre/guides/workflow/using-triggers/solana-log-trigger).
+- **CLI requirements**: Solana requires **CRE CLI v1.33.0 or later**. See [Supported Networks](/cre/supported-networks).
+
+## CLI v1.38.0 - October 8, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.38.0" target="_blank">CRE CLI version 1.38.0</a> is now available.**
+
+- **Permanent link warning for workflow owner addresses**: `cre account link-key` now warns that linking a workflow owner address is permanent and asks you to confirm before linking. Once an address is linked to an organization, it can never be transferred to or reused in another organization. In non-interactive mode, `cre account link-key --non-interactive` and `cre workflow deploy --non-interactive` now require `--yes` when linking an unlinked owner. See [Linking Wallet Keys](/cre/organization/linking-keys).
+- **Refreshed user context cache**: The CLI now refreshes your cached user context when it was written by a different CLI version or is older than 24 hours, so new environments and server-side configuration changes appear without a manual `cre login`. If a refresh fails (for example, while offline), the CLI falls back to the cached copy.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.37.0...v1.38.0)
+
+## CLI v1.37.0 - October 5, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.37.0" target="_blank">CRE CLI version 1.37.0</a> is now available.**
+
+- **Deployment type in access requests**: When you request deploy access with `cre account access`, the CLI now asks you the purpose of your request. See [Requesting Deploy Access](/cre/account/deploy-access).
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.36.0...v1.37.0)
+
+## CLI v1.36.0 - October 1, 2026
+
+**<a href="https://github.com/smartcontractkit/cre-cli/releases/tag/v1.36.0" target="_blank">CRE CLI version 1.36.0</a> is now available.**
+
+- **Clearer execution statuses**: `cre execution status`, `cre execution list`, and `cre workflow get` now surface detailed and classified execution statuses. Runs that finish with capability errors are labeled `SUCCESS (completed with errors)`, and failures caused by the platform rather than your workflow are flagged with a hint so you know whether to retry or debug. Capability errors are now shown even when the top-level execution status is `SUCCESS`. See [`cre execution`](/cre/reference/cli/execution).
+- **Telemetry fix for commands that don't require login**: Commands such as `cre generate-bindings`, `cre workflow build`, and `cre workflow hash` now attach existing credentials silently so their usage events are recorded. These commands remain fully usable while logged out.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.35.0...v1.36.0)
 
 ## CLI v1.35.0 - September 18, 2026
 
@@ -232,7 +286,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 - **Execution observability from the CLI**: New [`cre execution`](/cre/reference/cli/execution) commands let you inspect deployed workflow runs without opening the UI — `list` for recent executions (filter by status and time range), `status` for a single run, `events` for the capability timeline, and `logs` for emitted log lines. All support `--output json` for scripting.
 - **Enhanced `cre workflow get`**: [`cre workflow get`](/cre/reference/cli/workflow#cre-workflow-get) now resolves the workflow from your `workflow.yaml` settings and shows deployment health plus the most recent execution, not just registry metadata.
-- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. See the [Solana Write capability](/cre/capabilities/solana-write), [Solana chain interactions](/cre/guides/workflow/using-solana-client/overview), [generating Solana bindings](/cre/guides/workflow/using-solana-client/generating-bindings) (`cre generate-bindings solana`), and [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write). Local write simulation uses `cre workflow simulate` with `CRE_SOLANA_PRIVATE_KEY`; chain selectors are listed under [Supported Networks](/cre/supported-networks).
+- **Solana Write capability**: Workflows can now submit DON-consensus signed reports to Solana programs on Mainnet and Devnet via the Keystone Forwarder — the same secure write model as EVM. See the [Solana Read & Write capability](/cre/capabilities/solana-read-write), [Solana chain interactions](/cre/guides/workflow/using-solana-client/overview), [generating Solana bindings](/cre/guides/workflow/using-solana-client/generating-bindings) (`cre generate-bindings solana`), and [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write). Local write simulation uses `cre workflow simulate` with `CRE_SOLANA_PRIVATE_KEY`; chain selectors are listed under [Supported Networks](/cre/supported-networks).
 
 **How to update:**
 

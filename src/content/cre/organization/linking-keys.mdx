@@ -5,7 +5,7 @@ title: "Linking Wallet Keys"
 metadata:
   description: "Link your wallet to CRE: connect your address for public onchain registry workflows, set up multi-sig wallets, and manage your organization's keys."
   datePublished: "2025-11-04"
-  lastModified: "2026-06-24"
+  lastModified: "2026-10-09"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -84,9 +84,15 @@ The easiest way to link a key is to let the deployment process handle it automat
    ```
 
 1. Enter a descriptive label for your address
+1. Review the permanence warning and confirm that you want to link the address permanently
 1. Review the transaction details and confirm
 
 The CLI will submit the transaction and continue with the deployment once the key is linked.
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Linking is permanent">
+  Linking a workflow owner address is permanent. Once linked, the address cannot be transferred to or reused in another organization. The CLI prints a warning and asks for confirmation before linking. In non-interactive mode, `cre workflow deploy --non-interactive` requires `--yes` when linking an unlinked owner.
+</Aside>
 
 ### Manual linking
 
@@ -101,6 +107,7 @@ cre account link-key --target production-settings
 1. The CLI derives your public address from the private key in `.env`
 1. You're prompted to provide a label
 1. The CLI checks if the address is already linked
+1. A permanence warning is displayed and you confirm that you want to link the address permanently
 1. Transaction details are displayed (chain, contract address, estimated gas cost)
 1. You confirm to execute the transaction
 1. The transaction is submitted and you receive a block explorer link
@@ -116,6 +123,8 @@ Provide a label for your owner address: <your_owner_label>
 
 Checking existing registrations...
 ✓ No existing link found for this address
+! Linking this address is permanent. Once linked, it cannot be transferred to or reused in another organization.
+? Do you want to link this address permanently?: Yes
 Starting linking: owner=<your_owner_address>, label=<your_owner_label>
 Contract address validation passed
 Transaction details:

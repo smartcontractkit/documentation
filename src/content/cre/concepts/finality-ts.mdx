@@ -7,7 +7,7 @@ pageId: "concepts-finality"
 metadata:
   description: "Understand how CRE handles blockchain finality across different chains, including confidence levels, finality tags, and block depth configurations."
   datePublished: "2025-12-10"
-  lastModified: "2025-12-10"
+  lastModified: "2026-10-19"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -64,6 +64,17 @@ For most read operations, use the standard confidence levels by passing [`LATEST
 
 **Note:** The `SAFE` confidence level is not available for chain reads—only `LATEST` and `FINALIZED` are supported.
 
+{/* prettier-ignore */}
+<Aside type="caution" title="Finalized and safe reads can fail on some chains">
+  While RPC nodes are not archival nodes, they should keep sufficient blocks in memory to include `finalized` and `safe`
+  tags. However, periodically some chains experience situations where `finalized` and `safe` is not in memory because the
+  gap exceeds the normal environment. When this happens, calls to `finalized` and/or `safe` blocks will return an error.
+
+The following chains have exhibited this behavior and safe and finalized reads may periodically return errors.
+**Mainnet:** Polygon, Mantle, Scroll. **Testnet:** Polygon Amoy, Linea Sepolia.
+
+</Aside>
+
 ### Custom block depths
 
 For use cases requiring fixed confirmation thresholds or historical state verification, you can specify **any explicit block number** instead of using the predefined confidence levels. This enables you to:
@@ -115,3 +126,15 @@ If a block containing your transaction is reorganized:
 EVM Log Triggers must use the three confidence levels (`LATEST`, `SAFE`, or `FINALIZED`). Custom block depths are not supported for triggers.
 
 By default, triggers use `SAFE` if no confidence level is specified. For details on configuring trigger confidence levels, see [EVM Log Trigger](/cre/reference/sdk/triggers/evm-log-trigger-ts#configuration).
+
+## Finality on Solana
+
+Solana does not use the EVM confidence-level model. Instead, Solana reads specify a **commitment** level, which describes how much confirmation a node requires before it reports a result:
+
+| Commitment  | Description                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------- |
+| `PROCESSED` | The node has processed the block but it is not yet confirmed. Fastest, but the result can still change. |
+| `CONFIRMED` | The block has been confirmed by a supermajority of stake. The default for most reads.                   |
+| `FINALIZED` | The block is finalized and cannot be rolled back. Slowest, but the strongest guarantee.                 |
+
+Set the commitment on a Solana read through the options object passed to `getAccountInfoWithOpts`. See [`getAccountInfoWithOpts`](/cre/reference/sdk/solana-client-ts#solanaclientgetaccountinfowithopts) for the full option set, and [Reading from Solana](/cre/guides/workflow/using-solana-client/onchain-read) for a worked example.

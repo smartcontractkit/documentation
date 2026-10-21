@@ -1,0 +1,187 @@
+---
+section: ace
+title: "Active Monitoring Quick Start"
+date: Last Modified
+metadata:
+  description: "Set up Chainlink ACE Active Monitoring end to end: grant the onchain role, store your TRM API key, register a token, create a monitoring rule, add a watchlist, start screening, and read your first decision."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-07"
+---
+
+import { Aside, MethodTabs } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+By the end of this guide, Active Monitoring screens a watchlist for a token you already run, applies a monitoring rule to each risk change, and shows its first decisions in the Decisions log. Each step links to the full guide for options.
+
+**Active Monitoring** screens wallet addresses with TRM on a schedule and acts onchain on tokens you already run, without changing their contracts. For the model, see [How Active Monitoring Works](/ace/active-monitoring/concepts/how-it-works). If you are choosing between Active Monitoring and Policy Manager, see [Preventive and Continuous Compliance](/ace/concepts/preventive-vs-continuous).
+
+The examples use a token called Example Treasury Fund (EXTF) on Ethereum Sepolia and Arbitrum Sepolia, with a separate blocklist contract. The blocklist only shows that an action can run on a second contract: a token that has the functions you need does not require one.
+
+## Prerequisites
+
+- An organization with ACE enabled, and Active Monitoring available to it. Complete [Account Setup](/ace/getting-started/account-setup) first: steps 1 and 2 (organization and enablement), and for the API, step 3 (API key).
+- A TRM Labs account with access to the [Wallet Screening API](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening), and its API key.
+- A token that has admin functions you can call to restrict an address, such as a freeze or a blocklist function, and the account that can grant roles on it.
+- The JSON ABI of the token, and of any associated contract you want to enforce on.
+- One or more wallet addresses to screen.
+
+## 1. Create your CRE Connect Wallets
+
+Active Monitoring executes enforcement operations through your CRE Connect Wallet, one per network. If you do not have one on every network where your token runs, create it. See [Set up CRE Connect Wallets](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets).
+
+Only networks with a created wallet are offered when you register a token.
+
+## 2. Grant the onchain role
+
+An enforcement operation reverts unless your CRE Connect Wallet is allowed to call the function. Copy the wallet address of each network, then allow it on your token and on each associated contract. For a standard ERC-3643 token, call `addAgent(address)` from the owner account. The following example uses [Foundry's `cast`](https://book.getfoundry.sh/cast/), but any tool that sends transactions works:
+
+```bash
+cast send <TOKEN_ADDRESS> "addAgent(address)" <CRE_CONNECT_WALLET_ADDRESS> \
+  --rpc-url <RPC_URL> \
+  --private-key <TOKEN_OWNER_PRIVATE_KEY>
+```
+
+Repeat on every network. Other contracts use other mechanisms, such as an `AccessControl` role or a policy. See [Prepare Your Token](/ace/active-monitoring/guides/prepare-your-token), which also explains how to revoke the role and prepare the ABI.
+
+To try Active Monitoring without any onchain action, skip this step and map every risk level to Silently log or Flag in step 5.
+
+## 3. Store your TRM API key
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In the [Chainlink Platform](https://app.chain.link), open the general settings (**Compliance > Home**, then **View settings**) and go to the **API access** tab.
+    1. Click **Add API key**, paste your TRM API key, and select how often to screen: **6 hours**, **12 hours**, or **24 hours**.
+    1. Click **Add API key**.
+
+  </Fragment>
+  <Fragment slot="api">
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/provider-api-keys \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{ "provider": "trm", "api_key": "<TRM_API_KEY>" }'
+
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{ "interval_hours": 6 }'
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+Saving the key does not start screening. See [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
+
+## 4. Register your token
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. Go to **Compliance > Active Monitoring**, open **Monitoring configuration**, and click **Add token**.
+    1. In **Primary token**, enter the name, the address on each network, the ABI file, the enforcement functions, and the decimals.
+    1. In **Associated contract**, add your blocklist contract with its addresses, ABI, and enforcement function. Skip this step if all enforcement runs on the token.
+    1. Review the details and click **Add token**.
+
+  </Fragment>
+  <Fragment slot="api">
+    Send `POST /active-monitoring/contract-groups` with the token and its associated contract. See the full request in [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens#register-a-monitored-token). Keep the `group_id` and the `id` and `func_id` values from the response.
+
+  </Fragment>
+</MethodTabs>
+
+The token appears with the tag **Missing rule**. You cannot edit a registered token, so check the addresses and the ABI before you submit. See [Monitored Tokens and Associated Contracts](/ace/active-monitoring/concepts/monitored-tokens).
+
+## 5. Create the monitoring rule
+
+A rule maps each TRM risk level to a response. This example enforces on Severe, flags High, and logs the rest. In the table, **Screened address** is the address that TRM flagged, and **Balance** is that address's balance of the token:
+
+| Risk level                       | Response                                                                                                                                                                               |
+| :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 15 - Severe                      | Enforce: `freezePartialTokens` with **Screened address** and **Balance**, only if the address holds a balance; `addBlacklist` with **Screened address** and the constant `Severe risk` |
+| 10 - High                        | Flag                                                                                                                                                                                   |
+| 5 - Medium, 1 - Low, 0 - Unknown | Silently log                                                                                                                                                                           |
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. Open the token and click **Configure rule**.
+    1. Create one **Decision logic** card for each response, select its risk levels, and complete the **Enforced action** fields for **Enforce**.
+    1. Click **Next**, review the rule, and click **Add rule**.
+
+  </Fragment>
+  <Fragment slot="api">
+    Send `POST /active-monitoring/rule-groups` with one rule for each response. See the full request in [Configure
+    Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules#create-a-monitoring-rule).
+
+  </Fragment>
+</MethodTabs>
+
+The token tag changes to **Active rule**. A rule cannot be edited: to change it, delete it and create a new one. See [Monitoring Rules and Responses](/ace/active-monitoring/concepts/monitoring-rules).
+
+Enforce acts without review. For a first run, you can map Severe to Flag instead, review what the rule catches, and move levels to Enforce later.
+
+## 6. Add the watchlist
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. In **Monitoring configuration**, open the **Watchlist** tab and click **Add address**.
+    1. Click **Upload a CSV** and drop a file of up to 100 rows with the columns `address` and `chain_selector`, or click **Reference an identity registry**.
+    1. Click **Save**.
+
+  </Fragment>
+  <Fragment slot="api">
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/monitored-addresses \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Apikey <API_KEY>" \
+      -d '{
+        "source": "list",
+        "addresses": [
+          { "address": "0x5555555555555555555555555555555555555555", "chain_selectors": ["16015286601757825753"] }
+        ]
+      }'
+    ```
+
+  </Fragment>
+</MethodTabs>
+
+You cannot remove an address after you add it. See [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist).
+
+## 7. Start screening
+
+<MethodTabs>
+  <Fragment slot="ui">
+    1. Open the **Decisions log** tab.
+    1. Click **Start screening**. The button is enabled when the TRM API key, a token with a rule, and a watchlist address exist.
+
+  </Fragment>
+  <Fragment slot="api">
+    ```bash
+    curl -X POST https://ace.api.chain.link/v1/active-monitoring/screening-interval/start \
+      -H "Authorization: Apikey <API_KEY>"
+    ```
+
+    The response is `202` with `"result": "enqueued"`.
+
+  </Fragment>
+</MethodTabs>
+
+The first run starts immediately and repeats at the interval you chose.
+
+## 8. Read your first decisions
+
+When the first run completes, the **Decisions log** lists a decision for each rule that matched a risk event. Every address creates a risk event at its first screening, so each address appears for each rule it matches.
+
+1. Click a decision to see the TRM result, the rule that matched, the action, and the operation status.
+1. For an enforced decision, watch the **Operation status** move to **Success**. A status of **Failed** usually means the onchain role is missing.
+1. For a flagged decision, click **Resolve** or **Enforce action**.
+
+With the API, call `GET /active-monitoring/decision-logs`. See [Review Decisions and Track Operations](/ace/active-monitoring/guides/review-decisions).
+
+If nothing appears, see [Troubleshoot Active Monitoring](/ace/active-monitoring/guides/troubleshooting).
+
+## Next steps
+
+- [Enforcement and Security Model](/ace/active-monitoring/concepts/enforcement-and-security): what Active Monitoring can do with the role you granted.
+- [Decisions, Review, and Audit Trail](/ace/active-monitoring/concepts/decisions-and-audit): the evidence each decision keeps.
+- [Active Monitoring API](/ace/active-monitoring/reference/api): every endpoint by task.

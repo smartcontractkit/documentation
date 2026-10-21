@@ -65,8 +65,6 @@ For example:
 Ethereum is integrated with the following Chainlink services:
 - [Data Feeds](https://docs.chain.link/data-feeds/price-feeds/addresses?network=ethereum)
 - [CCIP](https://docs.chain.link/ccip/directory/mainnet/chain/mainnet)
-- [Functions](https://docs.chain.link/chainlink-functions/supported-networks#ethereum)
-- [Automation](https://docs.chain.link/chainlink-automation/overview/supported-networks#ethereum)
 - [VRF](https://docs.chain.link/vrf/v2-5/supported-networks#ethereum-mainnet)
 
 Additionally, you may need to refer to the [LINK Token Contracts for Ethereum](https://docs.chain.link/resources/link-token-contracts#ethereum).

@@ -110,7 +110,7 @@ export const CCIP_V16_SIDEBAR_CONTENT: SectionEntry[] = [
       },
       {
         title: "Release Notes",
-        url: "https://dev.chain.link/changelog?product=CCIP",
+        url: "https://docs.chain.link/changelog?product=CCIP",
       },
     ],
   },

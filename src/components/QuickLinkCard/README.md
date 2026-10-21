@@ -119,7 +119,7 @@ const quickLinks = [
   {
     icon: SvgBulletList,
     label: "View the Changelog",
-    link: "https://dev.chain.link/changelog?product=CCIP",
+    link: "https://docs.chain.link/changelog?product=CCIP",
   },
 ]
 ---

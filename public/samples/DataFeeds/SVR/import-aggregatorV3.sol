@@ -13,7 +13,8 @@ contract SVRConsumer {
     (, /* uint80 roundID */
       int256 price, /* uint256 startedAt */
       /* uint256 timeStamp */
-      /* uint80 answeredInRound */,,
+      /* uint80 answeredInRound */
+      ,,
     ) = svrFeed.latestRoundData();
     return price;
   }

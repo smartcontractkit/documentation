@@ -1,5 +1,8 @@
 import fs from "node:fs"
 import path from "node:path"
+import { SUNSET_DOC_ROOTS } from "../config/sunset.js"
+
+const sunsetDocRoots = new Set<string>(SUNSET_DOC_ROOTS)
 
 const root = process.cwd()
 const contentDir = path.join(root, "src", "content")
@@ -18,6 +21,8 @@ function syncProductLlms() {
     if (!entry.isDirectory()) continue
 
     const product = entry.name
+    if (sunsetDocRoots.has(product)) continue
+
     const source = path.join(contentDir, product, "llms.txt")
 
     if (!fs.existsSync(source)) continue

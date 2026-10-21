@@ -5,6 +5,7 @@ import fs from "node:fs/promises"
 import path from "node:path"
 
 import { getLanguageIconSrc, languageBadge } from "../../lib/codeSample/language.js"
+import { registerPrismTolk } from "../../lib/markdown/prismTolk.js"
 
 export type Props = {
   src: string
@@ -21,6 +22,7 @@ const data = (await fs.readFile(path.join(process.cwd(), "public", src), "utf-8"
 
 const prismLang = lang ?? "solidity"
 const headerFilename = filename?.trim() || undefined
+if (prismLang === "tolk") registerPrismTolk()
 const { classLanguage, html } = runHighlighterWithAstro(prismLang, data)
 const languageKey = prismLang.toLowerCase()
 const languageIconSrc = getLanguageIconSrc(languageKey)

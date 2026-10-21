@@ -4,6 +4,7 @@ export type LlmsSectionConfig = {
   excludeGlobs?: string[]
   order?: string[]
   languages?: string[] // Supported languages for this section (if applicable)
+  maxBytes?: number // Optional size ceiling for larger complete corpora; other sections use the validator default.
 }
 
 // Central list of sections that expose llms-full.txt or llms-full-[lang].txt
@@ -17,8 +18,6 @@ export const SUPPORTED_LLM_SECTIONS = [
   "data-streams",
   "dta-technical-standard",
   "datalink",
-  "chainlink-functions",
-  "chainlink-automation",
   "resources",
   "architecture-overview",
   "getting-started",
@@ -50,6 +49,8 @@ export const LLM_SECTIONS_CONFIG: Record<SupportedSection, LlmsSectionConfig> = 
   ccip: {
     root: "src/content/ccip",
     includeGlobs: ["**/*.mdx"],
+    // Preserving all ordered-list and accordion content in the v1/v2 corpus exceeds the default 5 MB limit.
+    maxBytes: 8_000_000,
   },
   "data-feeds": {
     root: "src/content/data-feeds",
@@ -65,14 +66,6 @@ export const LLM_SECTIONS_CONFIG: Record<SupportedSection, LlmsSectionConfig> = 
   },
   datalink: {
     root: "src/content/datalink",
-    includeGlobs: ["**/*.mdx"],
-  },
-  "chainlink-functions": {
-    root: "src/content/chainlink-functions",
-    includeGlobs: ["**/*.mdx"],
-  },
-  "chainlink-automation": {
-    root: "src/content/chainlink-automation",
     includeGlobs: ["**/*.mdx"],
   },
   resources: {

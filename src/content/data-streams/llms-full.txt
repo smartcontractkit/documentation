@@ -155,8 +155,7 @@ Chainlink Data Streams uses a subscription-based billing option.
 
 > **CAUTION: [Deprecated] Pay-per-verification model**
 >
-> The pay-per-verification billing model has been deprecated.  To learn more about the subscription model, please&#x20;
-> [contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs).
+> The pay-per-verification billing model has been deprecated.  To learn more about the subscription model, please [contact us](https://chainlinkcommunity.typeform.com/datastreams?#ref_id=docs).
 
 ---
 
@@ -446,8 +445,7 @@ Instead of aggregating only raw market data, calculated streams compute derived 
 > **CAUTION: Important Considerations**
 >
 > Calculated streams behave differently from standard streams in important ways. Before integrating a calculated stream,
-> review the [key differences](#key-differences-from-standard-streams) and&#x20;
-> [risks and mitigation](#risks-and-mitigation) sections to understand how these differences may affect your
+> review the [key differences](#key-differences-from-standard-streams) and [risks and mitigation](#risks-and-mitigation) sections to understand how these differences may affect your
 > application.
 
 ## Why use calculated streams?
@@ -573,8 +571,7 @@ Temporary differences between the calculated stream and other data sources are e
 > **NOTE: Developer Responsibilities**
 >
 > When using calculated streams, you inherit all responsibilities associated with the underlying inputs plus additional
-> responsibilities for monitoring calculation health and managing time-sensitivity requirements. Review the&#x20;
-> [Developer Responsibilities](/data-streams/developer-responsibilities) page for comprehensive guidance on
+> responsibilities for monitoring calculation health and managing time-sensitivity requirements. Review the [Developer Responsibilities](/data-streams/developer-responsibilities) page for comprehensive guidance on
 > risk assessment and mitigation techniques.
 
 ***
@@ -921,7 +918,7 @@ Some Data Streams reflect assets that trade only during specific market windows 
 - Other assets may have specific market hours defined by their respective exchanges or liquidity providers.
 - **Determining stream applicability:** Do not rely on the last-seen timestamp (e.g., `observationsTimestamp` or similar report-level timestamps) to determine which price stream to use or whether a stream is currently valid. Timestamps indicate when an observation was last recorded, not whether the market is currently open or the stream is actively priced. Use the **market status flag** included in price reports to programmatically determine market availability and decide which stream to consume.
 
-For more information, see the [Market Hours Best Practices](/data-streams/concepts/best-practices#market-hours); developers remain solely responsible for how they use this guidance and for any risks or liabilities resulting from their integrations.
+For more information, see the [Market Hours](/data-streams/market-hours) page; developers remain solely responsible for how they use this guidance and for any risks or liabilities resulting from their integrations.
 
 #### DEX-based Assets
 
@@ -1250,7 +1247,7 @@ Used by 24/5 US Equities streams with extended and overnight sessions.
 
 ## Best practices
 
-For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices#market-hours) page.
+For comprehensive guidance on managing risks related to market hours, market gaps, volatility, and corporate actions, see the [Best Practices](/data-streams/concepts/best-practices) page.
 
 ---
 
@@ -1768,13 +1765,21 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 
 > **CAUTION: Disclaimer**
 >
-> This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
-> interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
-> "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
-> error handling to make the usage of the product more clear. Do not use the code in this example in a production
-> environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
-> Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
-> errors in code.
+> Please note, this page contains community examples only — these are not Chainlink products or services and are not
+> supported or maintained by Chainlink. This code represents an example of using a Chainlink product or service, and is
+> intended for demonstration and educational purposes only. It is provided "AS IS" and "AS AVAILABLE" without warranties
+> of any kind, may not have been audited, and may omit checks or error handling. Each party intending to use this
+> example code does so entirely at their own risk and must perform its own audits, security and code review, key
+> management, and testing before any production deployment and ensure the operation and performance of such code matches
+> expectations. Neither Chainlink Labs nor the Chainlink Foundation deploys, operates, monitors, maintains or endorses
+> any deployment of this code. Note that this is not a Chainlink product, feature or service, and there are no
+> commitments made with respect to the code, including compatibility with future Chainlink releases. You should not rely
+> on this code without first conducting your own technical, engineering, and security review. This code is also outside
+> the scope of any Chainlink bug bounty programs. Neither Chainlink Labs, the Chainlink Foundation, nor Chainlink node
+> operators are responsible for outcomes due to errors in this example or how it is deployed or operated, or liable for
+> any resulting claims or damages. Use of the Chainlink Network is subject to the Chainlink Foundation [Terms of
+> Service](https://chain.link/terms), which provides important information and disclosures. By using this code, you
+> acknowledge and agree to these terms.
 
 ### Requirements
 
@@ -1784,10 +1789,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 ### Running the Example
 
 1. Create a file named auth-example.go with the example code shown below
-2. Set your API credentials as environment variables:
+2. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run with go run auth-example.go
 
@@ -1875,7 +1880,7 @@ func FetchSingleReport(ctx context.Context, feedID string) (*SingleReport, error
     }
 
     // API connection details
-    host := "api.testnet-dataengine.chain.link"
+    host := "api.dataengine.chain.link"
     path := "/api/v1/reports/latest"
 
     // Build query parameters
@@ -1934,7 +1939,7 @@ func main() {
     defer cancel()
 
     // Example feed ID (ETH/USD)
-    feedID := "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+    feedID := "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"
 
     fmt.Printf("Fetching latest report for feed ID: %s\n", feedID)
 
@@ -1956,9 +1961,9 @@ func main() {
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747921357
   Observations Timestamp: 1747921357
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c[...]bffd8feddabf120e14bf
@@ -2001,10 +2006,10 @@ For production use, consider using the [Go SDK](/data-streams/reference/data-str
 
 3. Create a file named ws-auth-example.go with the example code shown below
 
-4. Set your API credentials as environment variables:
+4. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 
 5. Install the required dependencies:
@@ -2114,9 +2119,9 @@ func main() {
     }
 
     // WebSocket connection details
-    host := "ws.testnet-dataengine.chain.link"
+    host := "ws.dataengine.chain.link"
     path := "/api/v1/ws"
-    feedIDs := []string{"0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"} // ETH/USD
+    feedIDs := []string{"0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"} // ETH/USD
 
     // Validate feed IDs
     if len(feedIDs) == 0 {
@@ -2233,18 +2238,18 @@ func main() {
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 2025/05/22 08:34:20 Sending ping to keep connection alive...
 2025/05/22 08:34:20 Received pong from server
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
-Received report for Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
+Received report for Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 ```
 
 ### Production Considerations
@@ -2295,13 +2300,13 @@ These headers authenticate your request and ensure data integrity.
 
 ### Authorization Header
 
-The `Authorization` header contains your API key, which is provided to you when you sign up for Chainlink Data Streams access. It follows this format:
+The `Authorization` header contains your **Data Streams Username**, which is provided to you when you sign up for Chainlink Data Streams access. It follows this format:
 
 ```
-Authorization: YOUR_API_KEY
+Authorization: YOUR_DATA_STREAMS_USERNAME
 ```
 
-Your API key is a UUID string that identifies your account. Keep it secure and do not share it publicly.
+Your username is a UUID string that identifies your account. It is the same value used as the API key in the examples below. Keep it secure and do not share it publicly.
 
 ### X-Authorization-Timestamp Header
 
@@ -2363,6 +2368,23 @@ Even for GET requests and WebSocket connections, you need to include a body hash
 ## Authentication Examples
 
 Below are complete examples for authenticating with the Data Streams API in various languages. Each example shows how to properly generate the required headers and make a request.
+
+> **NOTE: Testnet vs. mainnet endpoints**
+>
+> The examples use the mainnet endpoints (`api.dataengine.chain.link` and `ws.dataengine.chain.link`). If you are using
+> testnet credentials, change the host to the testnet endpoints (`api.testnet-dataengine.chain.link` and
+> `ws.testnet-dataengine.chain.link`). Credentials are environment-specific: mainnet credentials only work against the
+> mainnet endpoints, and testnet credentials only work against the testnet endpoints. See the [REST
+> API](/data-streams/reference/data-streams-api/interface-api#domains) and [WebSocket
+> API](/data-streams/reference/data-streams-api/interface-ws#domains) references for the full endpoint list.
+
+> **NOTE: Feed IDs and subscriptions**
+>
+> The examples use the mainnet ETH/USD feed ID (`0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9`).
+> Your account must be subscribed to a feed to retrieve its reports; otherwise the API returns `401 feeds not
+>   authorized`. Replace the feed ID with one your account is subscribed to. You can list the feeds you are entitled to
+> with the authenticated [Discovery
+> endpoint](/data-streams/reference/data-streams-api/discovery-endpoint#hidden-streams).
 
 - [JavaScript examples](/data-streams/reference/data-streams-api/authentication/javascript-examples)
 - [TypeScript examples](/data-streams/reference/data-streams-api/authentication/typescript-examples)
@@ -2431,10 +2453,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 ### Running the Example
 
 1. Create a file named auth-example.js with the example code shown below
-2. Set your API credentials as environment variables:
+2. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run the example:
    ```bash
@@ -2557,7 +2579,7 @@ async function fetchSingleReport(feedID) {
 
   // API connection details
   const method = "GET"
-  const host = "api.testnet-dataengine.chain.link"
+  const host = "api.dataengine.chain.link"
   const path = "/api/v1/reports/latest"
   const queryString = `?feedID=${feedID}`
   const fullPath = path + queryString
@@ -2587,7 +2609,7 @@ async function fetchSingleReport(feedID) {
 async function main() {
   try {
     // Example feed ID (ETH/USD)
-    const feedID = "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+    const feedID = "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"
 
     console.log(`Fetching latest report for feed ID: ${feedID}`)
 
@@ -2613,9 +2635,9 @@ main()
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747922906
   Observations Timestamp: 1747922906
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de70cf179baa632f183[...]31208430b586890eff87d12750
@@ -2658,10 +2680,10 @@ While this example demonstrates the authentication mechanism, production applica
 ### Running the Example
 
 1. Create a file named ws-auth-example.js with the example code shown below
-2. Set your API credentials as environment variables:
+2. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run the example:
    ```bash
@@ -2730,7 +2752,7 @@ function setupWebSocketConnection(apiKey, apiSecret, feedIDs) {
     }
 
     // WebSocket connection details
-    const host = "ws.testnet-dataengine.chain.link"
+    const host = "ws.dataengine.chain.link"
     const path = "/api/v1/ws"
     const queryString = `?feedIDs=${feedIDs.join(",")}`
     const fullPath = path + queryString
@@ -2855,7 +2877,7 @@ async function main() {
     }
 
     // Example feed ID (ETH/USD)
-    const feedIDs = ["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"]
+    const feedIDs = ["0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"]
 
     // Set up WebSocket connection
     const ws = await setupWebSocketConnection(apiKey, apiSecret, feedIDs)
@@ -2894,17 +2916,17 @@ main()
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747929684
   Observations Timestamp: 1747929684
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747929685
   Observations Timestamp: 1747929685
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -3068,7 +3090,7 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 
        // API connection details
        let method = "GET";
-       let host = "api.testnet-dataengine.chain.link";
+       let host = "api.dataengine.chain.link";
        let path = "/api/v1/reports/latest";
        let full_path = format!("{}?feedID={}", path, feed_id);
 
@@ -3099,7 +3121,7 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
    #[tokio::main]
    async fn main() -> Result<(), Box<dyn Error>> {
        // Example feed ID (ETH/USD)
-       let feed_id = "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782";
+       let feed_id = "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9";
 
        println!("Fetching latest report for feed ID: {}", feed_id);
 
@@ -3124,10 +3146,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
    }
    ```
 
-3. Set your API credentials as environment variables:
+3. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 
 4. Run with cargo run
@@ -3135,9 +3157,9 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747933113
   Observations Timestamp: 1747933113
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -3268,7 +3290,7 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
        }
 
        // WebSocket connection details
-       let host = "ws.testnet-dataengine.chain.link";
+       let host = "ws.dataengine.chain.link";
        let path = "/api/v1/ws";
        let feed_ids_joined = feed_ids.join(",");
        let full_path = format!("{}?feedIDs={}", path, feed_ids_joined);
@@ -3391,7 +3413,7 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
            )?;
 
        // Example feed IDs (ETH/USD)
-       let feed_ids = vec!["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"];
+       let feed_ids = vec!["0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"];
 
        // Set up WebSocket connection
        let ws_stream = setup_websocket_connection(&api_key, &api_secret, &feed_ids).await?;
@@ -3410,10 +3432,10 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
    }
    ```
 
-3. Set your API credentials as environment variables:
+3. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 
 4. Run with cargo run
@@ -3421,19 +3443,19 @@ For production use, consider using the [Rust SDK](/data-streams/reference/data-s
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
 Waiting for incoming messages... (press Ctrl+C to exit)
 Received ping, sending pong response
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747934358
   Observations Timestamp: 1747934358
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747934359
   Observations Timestamp: 1747934359
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -3511,10 +3533,10 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 ### Running the Example
 
 1. Create a file named auth-example.ts with the example code shown below
-2. Set your API credentials as environment variables:
+2. Set your API credentials as environment variables. Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run the example:
    ```bash
@@ -3524,8 +3546,7 @@ To learn more about the Data Streams API authentication, see the [Data Streams A
 > **NOTE: Type Stripping Warning**
 >
 > When running the example, you might see a warning about "Type Stripping is an experimental feature". This is normal
-> with Node.js v20+ and doesn't affect the functionality of the code. You can suppress this warning by running with&#x20;
-> NODE_NO_WARNINGS=1 ts-node auth-example.ts instead.
+> with Node.js v20+ and doesn't affect the functionality of the code. You can suppress this warning by running with NODE_NO_WARNINGS=1 ts-node auth-example.ts instead.
 
 **Example code**:
 
@@ -3651,7 +3672,7 @@ async function fetchSingleReport(feedID: string): Promise<SingleReport> {
 
   // API connection details
   const method = "GET"
-  const host = "api.testnet-dataengine.chain.link"
+  const host = "api.dataengine.chain.link"
   const path = "/api/v1/reports/latest"
   const queryString = `?feedID=${feedID}`
   const fullPath = path + queryString
@@ -3683,7 +3704,7 @@ async function fetchSingleReport(feedID: string): Promise<SingleReport> {
 async function main(): Promise<void> {
   try {
     // Example feed ID (ETH/USD)
-    const feedID = "0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"
+    const feedID = "0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"
 
     console.log(`Fetching latest report for feed ID: ${feedID}`)
 
@@ -3709,9 +3730,9 @@ main()
 **Expected output**:
 
 ```bash
-Fetching latest report for feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Fetching latest report for feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 Successfully retrieved report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747929367
   Observations Timestamp: 1747929367
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8d69000000[...]79dd065e3f83ca7c0ca4aaa
@@ -3775,10 +3796,10 @@ While this example demonstrates the authentication mechanism, production applica
 ### Running the Example
 
 1. Create a file named ws-auth-example.ts with the example code shown below
-2. Set your API credentials as environment variables (if not already set):
+2. Set your API credentials as environment variables (if not already set). Use the **Data Streams Username** (UUID) as the API key and the **HMAC Secret** as the API secret (see [Sign Up for Data Streams](/data-streams/sign-up#step-3-generate-api-credentials)):
    ```bash
-   export STREAMS_API_KEY="your-api-key"
-   export STREAMS_API_SECRET="your-api-secret"
+   export STREAMS_API_KEY="your-username-uuid"
+   export STREAMS_API_SECRET="your-hmac-secret"
    ```
 3. Run the example:
    ```bash
@@ -3788,8 +3809,7 @@ While this example demonstrates the authentication mechanism, production applica
 > **NOTE: Type Stripping Warning**
 >
 > When running the example, you might see a warning about "Type Stripping is an experimental feature". This is normal
-> with Node.js v20+ and doesn't affect the functionality of the code. You can suppress this warning by running with&#x20;
-> NODE_NO_WARNINGS=1 ts-node ws-auth-example.ts instead.
+> with Node.js v20+ and doesn't affect the functionality of the code. You can suppress this warning by running with NODE_NO_WARNINGS=1 ts-node ws-auth-example.ts instead.
 
 **Example code**:
 
@@ -3866,7 +3886,7 @@ function setupWebSocketConnection(apiKey: string, apiSecret: string, feedIDs: st
     }
 
     // WebSocket connection details
-    const host = "ws.testnet-dataengine.chain.link"
+    const host = "ws.dataengine.chain.link"
     const path = "/api/v1/ws"
     const queryString = `?feedIDs=${feedIDs.join(",")}`
     const fullPath = path + queryString
@@ -3991,7 +4011,7 @@ async function main(): Promise<void> {
     }
 
     // Example feed ID (ETH/USD)
-    const feedIDs = ["0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782"]
+    const feedIDs = ["0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9"]
 
     // Set up WebSocket connection
     const ws = await setupWebSocketConnection(apiKey, apiSecret, feedIDs)
@@ -4030,11 +4050,11 @@ main()
 **Expected output**:
 
 ```bash
-Connecting to: wss://ws.testnet-dataengine.chain.link/api/v1/ws?feedIDs=0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+Connecting to: wss://ws.dataengine.chain.link/api/v1/ws?feedIDs=0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
 WebSocket connection established
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747930054
   Observations Timestamp: 1747930054
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -4042,7 +4062,7 @@ Received new report:
 [...]
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747930059
   Observations Timestamp: 1747930059
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -4050,7 +4070,7 @@ Sending ping to keep connection alive...
 Received pong from server
 
 Received new report:
-  Feed ID: 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
+  Feed ID: 0x000362205e10b3a147d02792eccee483dca6c7b44ecce7012cb8c6e0b68b3ae9
   Valid From: 1747930060
   Observations Timestamp: 1747930060
   Full Report: 0x00090d9e8d96765a0c49e03a6ae05c82e8f8de...
@@ -6444,8 +6464,7 @@ Standard crypto prices
 
 DEX state crypto prices
 
-`price`, `bid`, `ask` (identical fields;&#x20;
-[details](/data-streams/concepts/dex-state-price-streams#how-to-use-dex-state-price-streams))
+`price`, `bid`, `ask` (identical fields; [details](/data-streams/concepts/dex-state-price-streams#how-to-use-dex-state-price-streams))
 
 [Exchange Rate](/data-streams/exchange-rate-streams)
 
@@ -6467,8 +6486,7 @@ Real-world asset prices (single price point)
 
 Real-world asset prices (multiple price points and enhanced market data)
 
-`mid`, `bid`, `ask`, `bidVolume`, `askVolume`,&#x20;
-`lastTradedPrice`, `marketStatus`
+`mid`, `bid`, `ask`, `bidVolume`, `askVolume`, `lastTradedPrice`, `marketStatus`
 
 [Futures (v14)](/data-streams/reference/report-schema-v14)
 
@@ -6491,8 +6509,7 @@ Net Asset Value (NAV), Proof of Reserve (POR)
 
 Tokenized equities
 
-`price`, `tokenizedPrice`, `marketStatus`, `currentMultiplier`,&#x20;
-`newMultiplier`
+`price`, `tokenizedPrice`, `marketStatus`, `currentMultiplier`, `newMultiplier`
 
 ## Cryptocurrency
 
@@ -6651,8 +6668,7 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 
 > **CAUTION: Use marketStatus, not timestamps**
 >
-> Always use `marketStatus` to determine whether a market is open. Do **not** use&#x20;
-> `observationsTimestamp`, `lastSeenTimestampNs`, or other timestamp fields — timestamps indicate
+> Always use `marketStatus` to determine whether a market is open. Do **not** use `observationsTimestamp`, `lastSeenTimestampNs`, or other timestamp fields — timestamps indicate
 > when data was last recorded, not whether the market is currently active.
 
 The v11 schema defines six numeric values (`0`–`5`), but **the values that appear on a given feed depend on its trading-hours model**. Check which mapping applies to your stream before implementing logic. For full trading schedules, see [Market Hours](/data-streams/market-hours).
@@ -6696,7 +6712,7 @@ Used by [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide
 | `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                               |
 | `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; \~8:00pm Fri–8:00pm Sun ET) |
 
-Implement appropriate safeguards based on market status — such as pausing trading, adjusting risk parameters, or adding staleness checks during non-regular or closed periods. See [Best Practices](/data-streams/concepts/best-practices#market-hours) for guidance.
+Implement appropriate safeguards based on market status — such as pausing trading, adjusting risk parameters, or adding staleness checks during non-regular or closed periods. See [Market Hours](/data-streams/market-hours) for guidance.
 
 ### Notes
 
@@ -7222,7 +7238,7 @@ Once the overnight venue starts publishing its own quotes, the data will update 
 
 Users relying on bid/ask data during early overnight hours should be aware of this carryover behavior and implement appropriate safeguards, such as checking `lastSeenTimestampNs` for staleness or widening risk parameters during overnight session transitions.
 
-Separately, the overnight stream can occasionally surface **atypical `mid` values**—including **zero**—while timestamps still update. Treat unexpected zeros or discontinuities as unsafe inputs unless confirmed against your reference logic; see [Single Provider for Extended & Overnight Data](#single-provider-for-extended--overnight-data).
+Separately, the overnight stream can occasionally surface **atypical `mid` values**—including **zero**—while timestamps still update. Treat unexpected zeros or discontinuities as unsafe inputs unless confirmed against your reference logic; see [Single Provider for Overnight Data](#single-provider-for-overnight-data).
 
 ##### Mitigation
 
@@ -7383,17 +7399,27 @@ async fn get_price() -> Result<i128, Box<dyn std::error::Error>> {
 }
 ```
 
+> **CAUTION: Disclaimer**
+>
+> This guide represents an example of using a Chainlink product or service and is provided to help you understand how to
+> interact with Chainlink's systems and services so that you can integrate them into your own. This template is provided
+> "AS IS" and "AS AVAILABLE" without warranties of any kind, has not been audited, and may be missing key checks or
+> error handling to make the usage of the product more clear. Do not use the code in this example in a production
+> environment without completing your own audits and application of best practices. Neither Chainlink Labs, the
+> Chainlink Foundation, nor Chainlink node operators are responsible for unintended outputs that are generated due to
+> errors in code.
+
 ## Risks
 
 While 24/5 streams provide extended market coverage, they introduce specific risks related to liquidity, volatility, and data sourcing. Users must understand these factors and implement appropriate safeguards.
 
 In the following sections, we outline key risks and recommended mitigation strategies.
 
-### Single Provider for Extended & Overnight Data
+### Single Provider for Overnight Data
 
-Extended and overnight session price feeds are currently sourced from a single data provider, making these sessions less reliable than the regular hours price feed which is multi-sourced.
+Overnight session price feeds are currently sourced from a single data provider, making this session less reliable than the regular and extended hours price feeds, which are multi-sourced.
 
-Unlike regular hours where multiple independent sources cross-validate each other, a single provider means there is no redundant check on individual quote quality. The following risks are closely related:
+Unlike regular and extended hours, where multiple independent sources cross-validate each other, a single provider means there is no redundant check on individual quote quality. The following risks are closely related:
 
 - **Provider outage or disruption:** If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, which can prevent users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
 - **Erroneous individual quotes:** Even when the provider is operational, it may publish a single bid or ask quote that is significantly off from the prevailing market price — for example, a bid price printing far below the previous in-session price. Because there is no second source to cross-validate against, this outlier quote directly distorts the mid-price calculation, creating a large artificial price move.
@@ -7405,7 +7431,7 @@ Unlike regular hours where multiple independent sources cross-validate each othe
 Consumers should not rely on the staleness indicator alone. A feed can be actively updating with a technically fresh timestamp while still publishing an incorrect mid price derived from a single outlier quote. Recommended safeguards include:
 
 - **Monitor bid/ask spread:** A sudden, significant widening of the spread between `bid` and `ask` is a strong indicator that a single outlier quote has distorted the mid-price. Implement a maximum spread threshold — for example, if `(ask - bid) / mid` exceeds a percentage beyond a configured threshold, treat the price as unreliable and restrict or pause exposure accordingly.
-- **Implement value-level checks on `mid`:** Reject or treat as invalid **zero** and other out-of-range answers; compare against your previous accepted tick and configured bands. Apply these checks especially to **Overnight Hours** (and extended-hours) reports, where single-provider risk is highest.
+- **Implement value-level checks on `mid`:** Reject or treat as invalid **zero** and other out-of-range answers; compare against your previous accepted tick and configured bands. Apply these checks to all sessions, and especially to **Overnight Hours** reports, where single-provider risk applies.
 - **Implement price deviation checks:** Compare the current mid-price against a reference (e.g., the previous valid price or a short-term moving average) and trigger a circuit breaker if the move exceeds a configured threshold.
 - **Do not use data when `marketStatus` is `closed`:** When the market is closed, data providers may perform maintenance, which can result in stale or incorrect prices being published. Consuming or acting on feed data during a closed market status is not recommended — pause or restrict all activity until the market reopens and a valid `open` status is confirmed.
 - **Check staleness via `lastSeenTimestampNs`:** Detect when data stops updating entirely, which is a separate but complementary signal to the above.
@@ -8458,7 +8484,7 @@ For a summary of data sourcing models by asset type, see [Data Sources](/data-st
 > **NOTE**
 >
 > For important updates regarding the use of Chainlink Data Streams, subscribe to the [Chainlink
-> Changelog](https://dev.chain.link/changelog?product=Data+Streams).
+> Changelog](https://docs.chain.link/changelog?product=Data+Streams).
 
 ---
 
@@ -8523,8 +8549,7 @@ After the key is generated, the **Credentials** tab displays a **one-time privat
 
 > **CAUTION: Credentials are shown only once**
 >
-> The Password and API Key are not stored in the portal. Copy both values and store them securely before clicking&#x20;
-> **Dismiss**. If you lose them, you must rotate your credentials to generate new ones.
+> The Password and API Key are not stored in the portal. Copy both values and store them securely before clicking **Dismiss**. If you lose them, you must rotate your credentials to generate new ones.
 
 #### Two services, one username, two passwords
 
@@ -8625,8 +8650,7 @@ Click **Manage Subscription** to open the Stripe customer portal for invoice his
 > **NOTE: Manual review**
 >
 > Cancellations are reviewed and confirmed manually. Once confirmed, your subscription will not renew at the end of the
-> current billing period and you will not be charged again. Feed access remains active through the&#x20;
-> **Period End** date shown in your subscription.
+> current billing period and you will not be charged again. Feed access remains active through the **Period End** date shown in your subscription.
 
 Cancelled subscriptions move to the **Inactive** tab once the period ends.
 
@@ -9764,7 +9788,7 @@ You'll start with the set up of your Go project, installing the SDK and pasting 
 
    See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk#config-struct) page for more configuration options.
 
-5. Read from a [testnet crypto stream](/data-streams/crypto-streams#testnet-crypto-streams). The below example executes the application, reading from the `ETH/USD` crypto stream:
+5. Read from a [testnet crypto stream](/data-streams/crypto-streams?networkType=testnet). The below example executes the application, reading from the `ETH/USD` crypto stream:
 
    ```bash
    go run single-stream.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
@@ -9942,7 +9966,7 @@ You'll start with the set up of your Go project, installing the SDK and pasting 
    export API_SECRET="<YOUR_API_SECRET>"
    ```
 
-4. Read from two [testnet crypto streams](/data-streams/crypto-streams#testnet-crypto-streams). For this example, you will read from the ETH/USD and LINK/USD Data Streams crypto streams. Run your application:
+4. Read from two [testnet crypto streams](/data-streams/crypto-streams?networkType=testnet). For this example, you will read from the ETH/USD and LINK/USD Data Streams crypto streams. Run your application:
 
    ```bash
    go run multiple-streams.go 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782 0x00036fe43f87884450b4c7e093cd5ed99cac6640d8c2000e6afc02c8838d0265
@@ -10414,7 +10438,7 @@ First, you'll set up a basic Go project, installing the SDK and pasting example 
 
    See the [SDK Reference](/data-streams/reference/data-streams-api/go-sdk#config-struct) page for more configuration options.
 
-5. Subscribe to a [testnet crypto stream](/data-streams/crypto-streams#testnet-crypto-streams). The below example executes the application, subscribing to the `ETH/USD` crypto stream:
+5. Subscribe to a [testnet crypto stream](/data-streams/crypto-streams?networkType=testnet). The below example executes the application, subscribing to the `ETH/USD` crypto stream:
 
    Execute your application:
 
@@ -10838,7 +10862,7 @@ You'll start with the set up of your Rust project, installing the SDK and pastin
 
    See the [Rust SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#configuration-reference) page for more configuration options.
 
-3. Read from a [testnet crypto stream](/data-streams/crypto-streams#testnet-crypto-streams). The below example executes the application, reading from the `ETH/USD` crypto stream:
+3. Read from a [testnet crypto stream](/data-streams/crypto-streams?networkType=testnet). The below example executes the application, reading from the `ETH/USD` crypto stream:
 
    ```bash
    cargo run -- 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
@@ -11216,7 +11240,7 @@ In this tutorial, you'll learn how to use the [Data Streams SDK](/data-streams/r
 
    See the [Rust SDK Reference](/data-streams/reference/data-streams-api/rust-sdk#configuration-reference) page for more configuration options.
 
-3. Subscribe to a [testnet crypto stream](/data-streams/crypto-streams#testnet-crypto-streams). The below example executes the application, subscribing to the `ETH/USD` crypto stream:
+3. Subscribe to a [testnet crypto stream](/data-streams/crypto-streams?networkType=testnet). The below example executes the application, subscribing to the `ETH/USD` crypto stream:
 
    ```bash
    cargo run -- 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
@@ -11497,7 +11521,6 @@ Before you begin, you should have:
   - [RPC Clients](https://solana.com/docs/rpc) and network interaction
   - [Transactions](https://solana.com/docs/core/transactions) and signing
   - [Keypairs](https://solana.com/docs/intro/wallets#keypair) and account management
-- An allowlisted account in the Data Streams Access Controller ([contact us](https://chain.link/contact?ref_id=datastreams) to get started)
 
 ### Requirements
 
@@ -11858,7 +11881,6 @@ Before you begin, you should have:
   - [Instructions](https://solana.com/docs/core/transactions#instruction)
   - [Program Derived Addresses (PDAs)](https://solana.com/docs/core/pda)
 - Knowledge of the [Anchor](https://www.anchor-lang.com/) framework
-- An allowlisted account in the Data Streams Access Controller. ([contact us](https://chain.link/contact?ref_id=datastreams) to get started).
 
 ### Requirements
 
@@ -14151,7 +14173,7 @@ You'll start with the set up of your TypeScript project, installing the SDK and 
    >
    > The TypeScript SDK automatically detects the report version based on the provided feed ID.
 
-3. Read from a [testnet crypto stream](/data-streams/crypto-streams#testnet-crypto-streams). The below example executes the application, reading from the `ETH/USD` crypto stream:
+3. Read from a [testnet crypto stream](/data-streams/crypto-streams?networkType=testnet). The below example executes the application, reading from the `ETH/USD` crypto stream:
 
    ```bash
    npx tsx singleStream.ts 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
@@ -14710,7 +14732,7 @@ First, you'll set up a basic TypeScript project, installing the SDK and pasting 
    > The TypeScript SDK automatically detects the report version based on the provided feed ID and handles decoding
    > accordingly.
 
-3. Subscribe to a [testnet crypto stream](/data-streams/crypto-streams#testnet-crypto-streams). The below example executes the application, subscribing to the `ETH/USD` crypto stream:
+3. Subscribe to a [testnet crypto stream](/data-streams/crypto-streams?networkType=testnet). The below example executes the application, subscribing to the `ETH/USD` crypto stream:
 
    ```bash
    npx tsx stream.ts 0x000359843a543ee2fe414dc14c7e7920ef10f4372990b79d6361cdc0dd1ba782
