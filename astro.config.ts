@@ -9,6 +9,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import rehypeWrapAll from "rehype-wrap-all"
 import sitemap from "@astrojs/sitemap"
 import type { RehypePlugins } from "astro"
+import { unified } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
 import { fileURLToPath } from "node:url"
 import { ccipRedirects } from "./src/config/redirects/ccip"
@@ -131,28 +132,31 @@ export default defineConfig({
         return item
       },
     }),
-    // Ensure our fence-meta parser runs for `.mdx` pages (in addition to `markdown.remarkPlugins`).
-    mdx({
-      remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
-    }),
+    // Inherits the remark/rehype plugins of `markdown.processor`
+    mdx(),
   ],
   markdown: {
-    remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
-    rehypePlugins: [
-      rehypeSlug, // Required for autolink to work properly
-      [
-        rehypeAutolinkHeadings,
-        {
-          behavior: "wrap",
-        },
-      ],
-      // Wrap tables in div with overflow supported
-      [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
-      rehypeCodeSampleFences,
-    ] as RehypePlugins,
+    // Unified (remark/rehype) pipeline for `.md` and `.mdx`: Astro 7's default Sätteri processor doesn't run these plugins
+    processor: unified({
+      remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
+      rehypePlugins: [
+        rehypeSlug, // Required for autolink to work properly
+        [
+          rehypeAutolinkHeadings,
+          {
+            behavior: "wrap",
+          },
+        ],
+        // Wrap tables in div with overflow supported
+        [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
+        rehypeCodeSampleFences,
+      ] as RehypePlugins,
+      smartypants: false,
+    }),
     syntaxHighlight: "prism",
-    smartypants: false,
   },
+  // HTML whitespace rules, as before Astro 7 (its 'jsx' default drops whitespace between inline elements)
+  compressHTML: true,
   // output: 'static' (fully static or partial SSR with `prerender = false` ==> export const prerender = false;)
   output: "static",
   adapter: vercel(),
@@ -171,7 +175,7 @@ export default defineConfig({
       //   }
       // },
     },
-    esbuild: {
+    oxc: {
       target: "esnext", // Match build target for consistency
     },
     css: {
