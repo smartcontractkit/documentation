@@ -7,10 +7,10 @@
  *   import VaultAdapterComparison from "@components/Solutions/VaultAdapterComparison/VaultAdapterComparison.astro"
  *   <VaultAdapterComparison>…literal Markdown fallback…</VaultAdapterComparison>
  *
- * Two native radio groups (Deposit | Redeem, where the result is delivered) reshape both rows at
- * once. Numbered stops are buttons that write an inspector line. "Trace the route" walks one row
- * on demand; nothing autoplays and the two rows never race. Step 1 of each row is selected on the
- * server-rendered first paint, so the explanation panel and the selected stop are visible at once.
+ * A native radio group (Deposit | Redeem) reshapes both rows at once. Numbered stops are buttons
+ * that write an inspector line, and the arrows beside the explanation walk the route in order.
+ * Step 1 of each row is selected on the server-rendered first paint, so the explanation panel
+ * and the selected stop are visible at once.
  *
  * Styles are global on purpose: the element re-renders badges at runtime. Every class is `vac-`.
  * Several rules carry three class names so they outrank the article's global list and
@@ -24,13 +24,7 @@ const scenario = DEFAULT_SCENARIO
 const interactive = renderRouteRows(uid, scenario)
 ---
 
-<vault-adapter-comparison
-  class="vac"
-  data-flow={scenario.flow}
-  data-delivery={scenario.delivery}
-  role="group"
-  aria-labelledby={uid + "-title"}
->
+<vault-adapter-comparison class="vac" data-flow={scenario.flow} role="group" aria-labelledby={uid + "-title"}>
   <Fragment set:html={interactive} />
   {/* The literal Markdown children: not shown on screen, but kept for print, Copy page and the TXT export. */}
   <div class="vac-text" hidden><slot /></div>
@@ -144,11 +138,6 @@ const interactive = renderRouteRows(uid, scenario)
     border-radius: 4px;
     background: var(--background, #ffffff);
   }
-  .vac-seg-delivery {
-    flex: 1 1 100%;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-  }
   .vac .vac-option {
     position: relative;
     display: inline-flex;
@@ -245,7 +234,6 @@ const interactive = renderRouteRows(uid, scenario)
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
-    justify-content: space-between;
     gap: 8px 12px;
     padding: 10px 12px 8px;
     border-bottom: 1px solid var(--border, #e4e8ed);
@@ -283,40 +271,6 @@ const interactive = renderRouteRows(uid, scenario)
     line-height: 16px;
     text-wrap: pretty;
   }
-  .vac .vac-trace {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 32px;
-    padding: 5px 10px;
-    border: 1px solid var(--border, #e4e8ed);
-    border-radius: 4px;
-    background: var(--background, #ffffff);
-    color: var(--foreground, #141921);
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 18px;
-    cursor: pointer;
-  }
-  .vac .vac-trace:hover:not(:disabled) {
-    background: var(--muted, #f5f7fa);
-  }
-  .vac .vac-trace:disabled {
-    color: var(--color-text-primary, #4e5560);
-    cursor: default;
-  }
-  .vac .vac-trace[data-running="true"] {
-    border-color: var(--brand, #0847f7);
-    background: var(--blue-50, #eff6ff);
-    color: var(--brand, #0847f7);
-  }
-  .vac .vac-trace-icon svg {
-    width: 14px;
-    height: 14px;
-    fill: currentColor;
-    stroke: none;
-  }
-  .vac .vac-trace:focus-visible,
   .vac .vac-reset:focus-visible,
   .vac .vac-step-btn:focus-visible {
     outline: 2px solid var(--brand, #0847f7);
@@ -572,9 +526,6 @@ const interactive = renderRouteRows(uid, scenario)
     line-height: 14px;
     text-align: center;
   }
-  .vac[data-delivery="hub"] .vac-leg-back {
-    display: none;
-  }
 
   /* Hub cell contents */
   .vac .vac-link {
@@ -591,11 +542,6 @@ const interactive = renderRouteRows(uid, scenario)
     font-size: 11px;
     line-height: 14px;
   }
-  .vac[data-delivery="source"] .vac-node-receiver,
-  .vac[data-delivery="source"] .vac-link-receiver {
-    display: none;
-  }
-
   /* Explanation row: step arrows beside the selected step's text */
   .vac-inspector-row {
     display: flex;
@@ -711,7 +657,7 @@ const interactive = renderRouteRows(uid, scenario)
     display: none;
   }
 
-  /* Wider containers: three real columns, captions and subtitles, the button pinned top-right */
+  /* Wider containers: three real columns, captions and subtitles */
   @container vac (min-width: 600px) {
     .vac-columns,
     .vac-track {
@@ -725,19 +671,8 @@ const interactive = renderRouteRows(uid, scenario)
       font-size: 12px;
       letter-spacing: 0.04em;
     }
-    .vac-seg-delivery {
-      flex: 0 1 auto;
-      display: inline-flex;
-    }
     .vac-row-head {
       flex-wrap: nowrap;
-    }
-    .vac-row-titles {
-      flex: 1 1 auto;
-    }
-    .vac .vac-trace {
-      flex: none;
-      align-self: flex-start;
     }
     .vac-cell {
       padding: 20px 12px 12px;
@@ -777,14 +712,6 @@ const interactive = renderRouteRows(uid, scenario)
       grid-column: 3;
       grid-row: 1;
     }
-    .vac-cell-hub .vac-link-receiver {
-      grid-column: 1;
-      grid-row: 2;
-    }
-    .vac-cell-hub .vac-node-receiver {
-      grid-column: 1;
-      grid-row: 3;
-    }
   }
 
   @media (prefers-reduced-motion: no-preference) {
@@ -792,7 +719,6 @@ const interactive = renderRouteRows(uid, scenario)
     .vac[data-ready="true"] .vac-badge,
     .vac[data-ready="true"] .vac-step-btn,
     .vac[data-ready="true"] .vac-leg-line,
-    .vac[data-ready="true"] .vac-trace,
     .vac[data-ready="true"] .vac-option-text {
       transition:
         background-color 210ms ease,
@@ -819,8 +745,7 @@ const interactive = renderRouteRows(uid, scenario)
   @media (forced-colors: active) {
     .vac .vac-option input:checked + .vac-option-text,
     .vac .vac-node[data-active="true"],
-    .vac .vac-badge[data-active="true"],
-    .vac .vac-trace[data-running="true"] {
+    .vac .vac-badge[data-active="true"] {
       outline: 2px solid Highlight;
     }
     .vac .vac-badge {

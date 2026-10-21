@@ -1,51 +1,42 @@
-import { DEFAULT_SCENARIO, describeComparison, getRoute, isDelivery, isFlow } from "./vaultAdapterComparisonModel.ts"
+import { DEFAULT_SCENARIO, getRoute, isFlow } from "./vaultAdapterComparisonModel.ts"
 import type { Mode, Scenario, Step } from "./vaultAdapterComparisonModel.ts"
-import { ICONS, ROW_MODES, computeParts, escapeHtml, renderInspector } from "./vaultAdapterComparisonView.ts"
+import { ROW_MODES, computeParts, renderInspector } from "./vaultAdapterComparisonView.ts"
 
 const TAG = "vault-adapter-comparison"
-const TRACE_STEP_MS = 1300
 const SETTLE_MS = 210
 const P = "vac"
 
 /**
- * Both routes drawn at once. Two native radio groups reshape both rows. Each row keeps one
- * selected step: the numbered stops are buttons that select their step, the arrows beside the
- * explanation move through the route in order, and "Trace the route" walks it on a timer.
- * Nothing autoplays, nothing races: only one row traces at a time.
+ * Both routes drawn at once. A native radio group (Deposit | Redeem) reshapes both rows. Each
+ * row keeps one selected step: the numbered stops are buttons that select their step, and the
+ * arrows beside the explanation move through the route in order.
  *
  * The server renders the default state (step 1 selected in both rows) from the same pure
  * functions this element calls, so connectedCallback only binds controls and seeds the memo.
  */
 export class VaultAdapterComparisonElement extends HTMLElement {
-  private scenario: Scenario = { flow: DEFAULT_SCENARIO.flow, mode: "manual", delivery: DEFAULT_SCENARIO.delivery }
+  private scenario: Scenario = { flow: DEFAULT_SCENARIO.flow, mode: "manual" }
   private selected: Record<Mode, number> = { manual: 0, adapter: 0 }
   private initialized = false
   private rendered = new Map<string, string>()
-  private trace: { mode: Mode; index: number; timer: number } | null = null
   private listeners = new AbortController()
 
   connectedCallback() {
     if (this.initialized) return
     this.initialized = true
-    const { flow, delivery } = this.dataset
+    const { flow } = this.dataset
     this.scenario = {
       flow: isFlow(flow) ? flow : DEFAULT_SCENARIO.flow,
       mode: "manual",
-      delivery: isDelivery(delivery) ? delivery : DEFAULT_SCENARIO.delivery,
     }
     const { signal } = this.listeners
 
-    this.querySelectorAll<HTMLInputElement>('input[data-part="flow"], input[data-part="delivery"]').forEach((input) => {
+    this.querySelectorAll<HTMLInputElement>('input[data-part="flow"]').forEach((input) => {
       input.addEventListener(
         "change",
         () => {
           if (!input.checked) return
-          if (input.dataset.part === "flow" && isFlow(input.value))
-            this.scenario = { ...this.scenario, flow: input.value }
-          if (input.dataset.part === "delivery" && isDelivery(input.value)) {
-            this.scenario = { ...this.scenario, delivery: input.value }
-          }
-          this.stopTrace()
+          if (isFlow(input.value)) this.scenario = { ...this.scenario, flow: input.value }
           this.render()
         },
         { signal }
@@ -54,25 +45,15 @@ export class VaultAdapterComparisonElement extends HTMLElement {
     this.getPart<HTMLButtonElement>("reset").addEventListener(
       "click",
       () => {
-        this.scenario = { ...this.scenario, flow: DEFAULT_SCENARIO.flow, delivery: DEFAULT_SCENARIO.delivery }
-        this.stopTrace()
+        this.scenario = { ...this.scenario, flow: DEFAULT_SCENARIO.flow }
         this.render()
       },
       { signal }
     )
     for (const mode of ROW_MODES) {
-      this.getPart<HTMLButtonElement>(`trace-${mode}`).addEventListener(
-        "click",
-        () => {
-          if (this.trace?.mode === mode) this.stopTrace()
-          else this.startTrace(mode)
-        },
-        { signal }
-      )
       this.getPart<HTMLButtonElement>(`prev-${mode}`).addEventListener(
         "click",
         () => {
-          this.stopTrace()
           this.select(mode, this.selected[mode] - 1)
         },
         { signal }
@@ -80,7 +61,6 @@ export class VaultAdapterComparisonElement extends HTMLElement {
       this.getPart<HTMLButtonElement>(`next-${mode}`).addEventListener(
         "click",
         () => {
-          this.stopTrace()
           this.select(mode, this.selected[mode] + 1)
         },
         { signal }
@@ -90,7 +70,6 @@ export class VaultAdapterComparisonElement extends HTMLElement {
         (event) => {
           const badge = (event.target as HTMLElement).closest<HTMLButtonElement>("button[data-step]")
           if (!badge) return
-          this.stopTrace()
           const index = this.rowSteps(mode).findIndex((item) => item.id === badge.dataset.step)
           if (index >= 0) this.select(mode, index)
         },
@@ -110,7 +89,6 @@ export class VaultAdapterComparisonElement extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.stopTrace()
     this.listeners.abort()
     this.listeners = new AbortController()
     this.initialized = false
@@ -141,12 +119,10 @@ export class VaultAdapterComparisonElement extends HTMLElement {
   }
 
   private syncControls() {
-    const { flow, delivery } = this.scenario
+    const { flow } = this.scenario
     this.dataset.flow = flow
-    this.dataset.delivery = delivery
     this.querySelectorAll<HTMLInputElement>("input[type=radio][data-part]").forEach((input) => {
-      const current = input.dataset.part === "flow" ? flow : input.dataset.part === "delivery" ? delivery : ""
-      input.checked = input.value === current
+      input.checked = input.value === flow
     })
   }
 
@@ -220,54 +196,6 @@ export class VaultAdapterComparisonElement extends HTMLElement {
     }
     this.setInspector(mode, renderInspector(P, step, clamped + 1, steps.length))
     this.syncSteppers(mode)
-  }
-
-  private startTrace(mode: Mode) {
-    this.stopTrace()
-    const steps = this.rowSteps(mode)
-    const inspector = this.getPart<HTMLElement>(`inspector-${mode}`)
-    // One polite announcement at the start and one at the end; the per-step text is visual only.
-    this.setInspector(mode, `<strong>Tracing ${steps.length} steps.</strong>`)
-    const advance = () => {
-      if (!this.trace || this.trace.mode !== mode) return
-      if (inspector.getAttribute("aria-live") !== "off") inspector.setAttribute("aria-live", "off")
-      if (this.trace.index >= steps.length) {
-        this.finishTrace(mode)
-        return
-      }
-      this.select(mode, this.trace.index)
-      this.trace.index += 1
-      this.trace.timer = window.setTimeout(advance, TRACE_STEP_MS)
-    }
-    this.trace = { mode, index: 0, timer: 0 }
-    this.setTraceButton(mode, true)
-    this.trace.timer = window.setTimeout(advance, 0)
-  }
-
-  private finishTrace(mode: Mode) {
-    const row: Scenario = { ...this.scenario, mode }
-    const inspector = this.getPart<HTMLElement>(`inspector-${mode}`)
-    inspector.setAttribute("aria-live", "polite")
-    this.setInspector(mode, `<strong>Done.</strong> ${escapeHtml(describeComparison(row))}`)
-    this.trace = null
-    this.setTraceButton(mode, false)
-  }
-
-  private stopTrace() {
-    if (!this.trace) return
-    window.clearTimeout(this.trace.timer)
-    const { mode } = this.trace
-    this.trace = null
-    this.getPart<HTMLElement>(`inspector-${mode}`).setAttribute("aria-live", "polite")
-    this.setTraceButton(mode, false)
-    this.select(mode, this.selected[mode])
-  }
-
-  private setTraceButton(mode: Mode, running: boolean) {
-    const button = this.getPart<HTMLButtonElement>(`trace-${mode}`)
-    button.dataset.running = String(running)
-    this.getPart(`trace-label-${mode}`).textContent = running ? "Stop" : "Trace the route"
-    this.getPart(`trace-icon-${mode}`).innerHTML = running ? ICONS.stop : ICONS.play
   }
 }
 

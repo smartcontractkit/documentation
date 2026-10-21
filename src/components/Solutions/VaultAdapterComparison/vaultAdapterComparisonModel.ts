@@ -7,7 +7,7 @@
  *   pays CCIP fees in the native gas token. The user already holds the input token
  *   and gas on every chain their wallet signs on, and is the beneficiary.
  * - "Manual" is the baseline without the adapter: the user bridges the token to
- *   their own hub-chain wallet, calls the vault, and optionally bridges the output back.
+ *   their own hub-chain wallet, calls the vault, and bridges the output back.
  * - Every approval is drawn and counted (a hollow stop). Router.ccipSend pulls tokens with
  *   safeTransferFrom, so each sender approves the Router it sends through. A wallet whose
  *   allowance already covers the amount skips the hollow stops.
@@ -20,17 +20,15 @@
 
 export type Flow = "deposit" | "redeem"
 export type Mode = "manual" | "adapter"
-export type Delivery = "source" | "hub"
 export type Token = "asset" | "shares"
 
 export interface Scenario {
   flow: Flow
   mode: Mode
-  delivery: Delivery
 }
 
 /** Where a step happens on the drawing. */
-export type RouteNode = "source-wallet" | "ccip-out" | "hub-wallet" | "adapter" | "vault" | "ccip-back" | "receiver"
+export type RouteNode = "source-wallet" | "ccip-out" | "hub-wallet" | "adapter" | "vault" | "ccip-back"
 
 export type StepKind = "approval" | "send" | "switch" | "automatic" | "hub-transaction" | "complete"
 
@@ -78,7 +76,7 @@ export interface Summary {
   messages: number
   /** CCIP fees the user pays directly. */
   ccipFeesPaid: number
-  /** Any configured adapter fee applies (adapter route, output returned to the source chain). */
+  /** Any configured adapter fee applies (adapter route). */
   adapterFeeApplies: boolean
 }
 
@@ -91,16 +89,11 @@ export interface StopBadge {
 
 export const FLOWS: Flow[] = ["deposit", "redeem"]
 export const MODES: Mode[] = ["manual", "adapter"]
-export const DELIVERIES: Delivery[] = ["source", "hub"]
 
-export const DEFAULT_SCENARIO: Scenario = { flow: "deposit", mode: "manual", delivery: "source" }
+export const DEFAULT_SCENARIO: Scenario = { flow: "deposit", mode: "manual" }
 
 export function isFlow(value: unknown): value is Flow {
   return value === "deposit" || value === "redeem"
-}
-
-export function isDelivery(value: unknown): value is Delivery {
-  return value === "source" || value === "hub"
 }
 
 export function inputToken(flow: Flow): Token {
@@ -117,7 +110,7 @@ export function tokenLabel(token: Token): string {
 
 /** Ordered steps of one route. Signed steps are numbered from 1 in route order. */
 export function getRoute(scenario: Scenario): Step[] {
-  const { flow, mode, delivery } = scenario
+  const { flow, mode } = scenario
   const input = inputToken(flow)
   const output = outputToken(flow)
   const inputWord = tokenLabel(input)
@@ -205,28 +198,26 @@ export function getRoute(scenario: Scenario): Step[] {
             call: `redeem(shares, you, you)`,
           }
     )
-    if (delivery === "source") {
-      add({
-        id: "approve-hub-router",
-        kind: "approval",
-        chain: "hub",
-        node: "hub-wallet",
-        token: output,
-        title: "Approve the hub Router",
-        caption: `Approve the hub-chain Router to spend your ${outputWord}. Skipped when your allowance already covers the amount.`,
-        call: `approve(hubRouter, amount)`,
-      })
-      add({
-        id: "send-back",
-        kind: "send",
-        chain: "hub",
-        node: "hub-wallet",
-        token: output,
-        title: `Send the ${outputWord} back`,
-        caption: `Send the ${outputWord} through CCIP to your wallet on the source chain. You pay this second CCIP fee.`,
-        call: `ccipSend(sourceChain, { receiver: you, tokenAmounts: [${outputWord}] })`,
-      })
-    }
+    add({
+      id: "approve-hub-router",
+      kind: "approval",
+      chain: "hub",
+      node: "hub-wallet",
+      token: output,
+      title: "Approve the hub Router",
+      caption: `Approve the hub-chain Router to spend your ${outputWord}. Skipped when your allowance already covers the amount.`,
+      call: `approve(hubRouter, amount)`,
+    })
+    add({
+      id: "send-back",
+      kind: "send",
+      chain: "hub",
+      node: "hub-wallet",
+      token: output,
+      title: `Send the ${outputWord} back`,
+      caption: `Send the ${outputWord} through CCIP to your wallet on the source chain. You pay this second CCIP fee.`,
+      call: `ccipSend(sourceChain, { receiver: you, tokenAmounts: [${outputWord}] })`,
+    })
   } else {
     add({
       id: "send-request",
@@ -261,59 +252,37 @@ export function getRoute(scenario: Scenario): Step[] {
     })
   }
 
-  if (delivery === "source") {
-    add({
-      id: "ccip-back",
-      kind: "automatic",
-      chain: "transit",
-      node: "ccip-back",
-      token: output,
-      title: "Crossing back to the source chain",
-      caption:
-        mode === "adapter"
-          ? `CCIP verifies the return message and delivers the ${outputWord} to your source-chain wallet. No wallet transaction needed.`
-          : `CCIP verifies the return message and delivers the ${outputWord} to your wallet on the source chain.`,
-    })
-    add({
-      id: "complete",
-      kind: "complete",
-      chain: "source",
-      node: "source-wallet",
-      token: output,
-      title: `Done: ${outputWord} on the source chain`,
-      caption:
-        mode === "adapter"
-          ? `You hold the ${outputWord} in your wallet on the source chain. Your wallet never left it.`
-          : `You hold the ${outputWord} in your wallet on the source chain, the chain you started on.`,
-    })
-  } else if (mode === "manual") {
-    add({
-      id: "complete",
-      kind: "complete",
-      chain: "hub",
-      node: "hub-wallet",
-      token: output,
-      title: `Done: ${outputWord} on the hub chain`,
-      caption: `You hold the ${outputWord} in the hub-chain wallet that called the vault.`,
-    })
-  } else {
-    add({
-      id: "complete",
-      kind: "complete",
-      chain: "hub",
-      node: "receiver",
-      token: output,
-      title: `Done: ${outputWord} on the hub chain`,
-      caption: `The beneficiary named in your payload holds the ${outputWord} on the hub chain. No adapter fee applies.`,
-    })
-  }
+  add({
+    id: "ccip-back",
+    kind: "automatic",
+    chain: "transit",
+    node: "ccip-back",
+    token: output,
+    title: "Crossing back to the source chain",
+    caption:
+      mode === "adapter"
+        ? `CCIP verifies the return message and delivers the ${outputWord} to your source-chain wallet. No wallet transaction needed.`
+        : `CCIP verifies the return message and delivers the ${outputWord} to your wallet on the source chain.`,
+  })
+  add({
+    id: "complete",
+    kind: "complete",
+    chain: "source",
+    node: "source-wallet",
+    token: output,
+    title: `Done: ${outputWord} on the source chain`,
+    caption:
+      mode === "adapter"
+        ? `You hold the ${outputWord} in your wallet on the source chain. Your wallet never left it.`
+        : `You hold the ${outputWord} in your wallet on the source chain, the chain you started on.`,
+  })
 
   return steps
 }
 
 /** What the adapter does inside the one hub-chain transaction, in contract order. */
 export function getHubSubsteps(scenario: Scenario): HubSubstep[] {
-  const { flow, delivery } = scenario
+  const { flow } = scenario
   const outputWord = tokenLabel(outputToken(flow))
   const list: Omit<HubSubstep, "letter">[] = []
 
@@ -327,14 +296,11 @@ export function getHubSubsteps(scenario: Scenario): HubSubstep[] {
   })
 
   if (flow === "deposit") {
-    if (delivery === "source") {
-      list.push({
-        title: "Adapter fee",
-        detail:
-          "Deducts any configured adapter fee from the asset before depositing. Charged only when the output returns to the source chain.",
-        call: "_processTarget",
-      })
-    }
+    list.push({
+      title: "Adapter fee",
+      detail: "Deducts any configured adapter fee from the asset before depositing.",
+      call: "_processTarget",
+    })
     list.push({
       title: "Deposit",
       detail: "Approves the vault and calls deposit. The vault mints the shares to the adapter.",
@@ -346,14 +312,11 @@ export function getHubSubsteps(scenario: Scenario): HubSubstep[] {
       detail: "Calls redeem as owner and receiver. The vault sends the asset to the adapter.",
       call: "redeem(shares, adapter, adapter)",
     })
-    if (delivery === "source") {
-      list.push({
-        title: "Adapter fee",
-        detail:
-          "Deducts any configured adapter fee from the redeemed asset. Charged only when the output returns to the source chain.",
-        call: "_processTarget",
-      })
-    }
+    list.push({
+      title: "Adapter fee",
+      detail: "Deducts any configured adapter fee from the redeemed asset.",
+      call: "_processTarget",
+    })
   }
 
   list.push({
@@ -362,19 +325,11 @@ export function getHubSubsteps(scenario: Scenario): HubSubstep[] {
     call: "_processTarget",
   })
 
-  if (delivery === "source") {
-    list.push({
-      title: "Send back",
-      detail: `Approves the hub-chain Router and sends the ${outputWord} to the beneficiary named in your payload, on the source chain. The adapter pays this CCIP fee from its native balance.`,
-      call: "sendToken",
-    })
-  } else {
-    list.push({
-      title: "Deliver",
-      detail: `Transfers the ${outputWord} to the beneficiary named in your payload, on the hub chain.`,
-      call: "safeTransfer",
-    })
-  }
+  list.push({
+    title: "Send back",
+    detail: `Approves the hub-chain Router and sends the ${outputWord} to the beneficiary named in your payload, on the source chain. The adapter pays this CCIP fee from its native balance.`,
+    call: "sendToken",
+  })
 
   return list.map((item, index) => ({ ...item, letter: String.fromCharCode(97 + index) }))
 }
@@ -385,8 +340,8 @@ export function summarize(scenario: Scenario): Summary {
   const approvals = signed.filter((step) => step.kind === "approval").length
   const chainsSigned = new Set(signed.map((step) => step.chain)).size
   const switches = steps.filter((step) => step.kind === "switch").length
-  const messages = scenario.delivery === "source" ? 2 : 1
-  const ccipFeesPaid = scenario.mode === "manual" ? messages : 1
+  const messages = 2
+  const ccipFeesPaid = scenario.mode === "manual" ? 2 : 1
   return {
     signatures: signed.length,
     approvals,
@@ -396,7 +351,7 @@ export function summarize(scenario: Scenario): Summary {
     gasChains: chainsSigned,
     messages,
     ccipFeesPaid,
-    adapterFeeApplies: scenario.mode === "adapter" && scenario.delivery === "source",
+    adapterFeeApplies: scenario.mode === "adapter",
   }
 }
 
@@ -443,18 +398,8 @@ export function cardLines(summary: Summary): string[] {
   ]
 }
 
-/** One sentence that states the comparison for the live region. */
-export function describeComparison(scenario: Scenario): string {
-  const mine = summarize(scenario)
-  const other = summarize({ ...scenario, mode: scenario.mode === "manual" ? "adapter" : "manual" })
-  const subject = scenario.mode === "manual" ? "Without the adapter" : "With the adapter"
-  const otherSubject = scenario.mode === "manual" ? "with the adapter" : "without it"
-  return `${subject}, your wallet signs ${plural(mine.signatures, "time")} on ${plural(mine.chainsSigned, "chain")}; ${otherSubject}, ${plural(other.signatures, "time")} on ${plural(other.chainsSigned, "chain")}.`
-}
-
 export function allScenarios(): Scenario[] {
   const list: Scenario[] = []
-  for (const flow of FLOWS)
-    for (const mode of MODES) for (const delivery of DELIVERIES) list.push({ flow, mode, delivery })
+  for (const flow of FLOWS) for (const mode of MODES) list.push({ flow, mode })
   return list
 }
