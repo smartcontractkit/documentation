@@ -25,165 +25,163 @@ To create and manage API keys, you need a role that includes API key permissions
 
 ## Available permissions
 
-The following tables list the permissions you can assign to an API key for each product. A check mark indicates that the permission is included in that product role. The Owner role includes every permission for every product.
+The following tables list the permissions you can assign to an API key for each product. Each row matches a permission group in the **API Scope** section of the creation form: the **Setting** column is what to select for that group, and the **Permission IDs** column lists the permission IDs that the setting grants. A check mark indicates that the role includes the permissions the setting grants. The Owner role includes every permission for every product.
 
 ### Chainlink Platform
 
-| Permission                                  | Admin | User | Viewer |
-| ------------------------------------------- | ----- | ---- | ------ |
-| Read Organization information               | ✓     | ✓    | ✓      |
-| View Organization Addresses in Address Book | ✓     | ✓    | ✓      |
+| Permission    | Setting | Permission IDs                | Admin | User |
+| ------------- | ------- | ----------------------------- | ----- | ---- |
+| Organization  | Read    | `platform:organization:read`  | ✓     | ✓    |
+| Owner address | Read    | `platform:owner_address:read` | ✓     | ✓    |
 
 ### CRE
 
-| Permission                              | Admin | Developer | Viewer |
-| --------------------------------------- | ----- | --------- | ------ |
-| View CRE workflows                      | ✓     | ✓         | ✓      |
-| Download CRE workflow artifacts         | ✓     | ✓         | ✓      |
-| Deploy CRE workflow artifacts           | ✓     | ✓         |        |
-| Manage CRE workflows (Private Registry) | ✓     | ✓         |        |
-| Link / unlink Workflow Owner Addresses  | ✓     |           |        |
+| Permission            | Setting | Permission IDs                                              | Admin | Developer | Viewer |
+| --------------------- | ------- | ----------------------------------------------------------- | ----- | --------- | ------ |
+| Workflow              | Read    | `cre:workflow:read`                                         | ✓     | ✓         | ✓      |
+| Workflow              | All     | `cre:workflow:read`, `cre:workflow:write/private_registry`  | ✓     | ✓         |        |
+| Workflow artifact     | Read    | `cre:workflow:artifact:read`                                | ✓     | ✓         | ✓      |
+| Workflow artifact     | All     | `cre:workflow:artifact:read`, `cre:workflow:artifact:write` | ✓     | ✓         |        |
+| Owner address linking | All     | `platform:owner_address:linking:write/cre`                  | ✓     |           |        |
 
 ### ACE
 
 #### Administration
 
-| Permission       | Admin | Operator | Viewer |
-| ---------------- | ----- | -------- | ------ |
-| Full ACE access  | ✓     |          |        |
-| Manage ACE Roles | ✓     |          |        |
+| Permission  | Setting | Permission IDs                   | Admin | Operator | Viewer |
+| ----------- | ------- | -------------------------------- | ----- | -------- | ------ |
+| Member role | All     | `platform:member_role:write/ace` | ✓     |          |        |
 
 #### Policy Manager
 
-| Permission                                                                             | Admin | Operator | Viewer |
-| -------------------------------------------------------------------------------------- | ----- | -------- | ------ |
-| Read policy engines                                                                    | ✓     | ✓        | ✓      |
-| Create and update policy engine                                                        | ✓     | ✓        |        |
-| Archive policy engine (affects everything deployed under it)                           | ✓     |          |        |
-| Read policies and data validator instances                                             | ✓     | ✓        | ✓      |
-| Create and update policy and data validator instances                                  | ✓     | ✓        |        |
-| Archive policy and data validator instances                                            | ✓     | ✓        |        |
-| Read targets and their protections                                                     | ✓     | ✓        | ✓      |
-| Create and update target and its protections                                           | ✓     | ✓        |        |
-| Archive target and its protections                                                     | ✓     | ✓        |        |
-| Read a target's cross-org evaluation access grants                                     | ✓     |          |        |
-| Grant and revoke cross-org evaluation access to a target                               | ✓     |          |        |
-| Read extractors and policy types                                                       | ✓     | ✓        | ✓      |
-| Create and update extractor or policy type (updates affect every instance built on it) | ✓     | ✓        |        |
-| Archive extractor or policy type (affects every instance built on it)                  | ✓     |          |        |
+| Permission                                                                  | Setting | Permission IDs                                                                      | Admin | Operator | Viewer |
+| --------------------------------------------------------------------------- | ------- | ----------------------------------------------------------------------------------- | ----- | -------- | ------ |
+| Policy manager policy engine                                                | Read    | `ace:policy_manager:policy_engine:read`                                             | ✓     | ✓        | ✓      |
+| Policy manager policy engine                                                | All     | `ace:policy_manager:policy_engine:read`, `ace:policy_manager:policy_engine:write`   | ✓     | ✓        |        |
+| Policy manager policy engine archive (affects everything deployed under it) | All     | `ace:policy_manager:policy_engine:archive:write`                                    | ✓     |          |        |
+| Policy manager policy                                                       | Read    | `ace:policy_manager:policy:read`                                                    | ✓     | ✓        | ✓      |
+| Policy manager policy                                                       | All     | `ace:policy_manager:policy:read`, `ace:policy_manager:policy:write`                 | ✓     | ✓        |        |
+| Policy manager policy archive                                               | All     | `ace:policy_manager:policy:archive:write`                                           | ✓     | ✓        |        |
+| Policy manager target                                                       | Read    | `ace:policy_manager:target:read`                                                    | ✓     | ✓        | ✓      |
+| Policy manager target                                                       | All     | `ace:policy_manager:target:read`, `ace:policy_manager:target:write`                 | ✓     | ✓        |        |
+| Policy manager target archive                                               | All     | `ace:policy_manager:target:archive:write`                                           | ✓     | ✓        |        |
+| Policy manager target access                                                | Read    | `ace:policy_manager:target_access:read`                                             | ✓     |          |        |
+| Policy manager target access                                                | All     | `ace:policy_manager:target_access:read`, `ace:policy_manager:target_access:write`   | ✓     |          |        |
+| Policy manager implementation                                               | Read    | `ace:policy_manager:implementation:read`                                            | ✓     | ✓        | ✓      |
+| Policy manager implementation                                               | All     | `ace:policy_manager:implementation:read`, `ace:policy_manager:implementation:write` | ✓     | ✓        |        |
+| Policy manager implementation archive (affects every instance built on it)  | All     | `ace:policy_manager:implementation:archive:write`                                   | ✓     |          |        |
 
 #### Identity Manager
 
-| Permission                                                                     | Admin | Operator | Viewer |
-| ------------------------------------------------------------------------------ | ----- | -------- | ------ |
-| Read identity/credential registries and credential types                       | ✓     | ✓        | ✓      |
-| Create and update identity or credential registry, and credential types        | ✓     | ✓        |        |
-| Archive identity or credential registry (affects everything deployed under it) | ✓     |          |        |
-| Read a registry's cross-org access grants                                      | ✓     |          |        |
-| Grant and revoke cross-org read access to a registry                           | ✓     |          |        |
-| Read identities and credentials                                                | ✓     | ✓        | ✓      |
-| Create and update identity, and assign credentials                             | ✓     | ✓        |        |
-| Archive identity and credentials                                               | ✓     | ✓        |        |
+| Permission                                                               | Setting | Permission IDs                                                                            | Admin | Operator | Viewer |
+| ------------------------------------------------------------------------ | ------- | ----------------------------------------------------------------------------------------- | ----- | -------- | ------ |
+| Identity manager registry                                                | Read    | `ace:identity_manager:registry:read`                                                      | ✓     | ✓        | ✓      |
+| Identity manager registry                                                | All     | `ace:identity_manager:registry:read`, `ace:identity_manager:registry:write`               | ✓     | ✓        |        |
+| Identity manager registry archive (affects everything deployed under it) | All     | `ace:identity_manager:registry:archive:write`                                             | ✓     |          |        |
+| Identity manager registry access                                         | Read    | `ace:identity_manager:registry_access:read`                                               | ✓     |          |        |
+| Identity manager registry access                                         | All     | `ace:identity_manager:registry_access:read`, `ace:identity_manager:registry_access:write` | ✓     |          |        |
+| Identity manager identity                                                | Read    | `ace:identity_manager:identity:read`                                                      | ✓     | ✓        | ✓      |
+| Identity manager identity                                                | All     | `ace:identity_manager:identity:read`, `ace:identity_manager:identity:write`               | ✓     | ✓        |        |
+| Identity manager identity archive                                        | All     | `ace:identity_manager:identity:archive:write`                                             | ✓     | ✓        |        |
 
 #### Reporting
 
-| Permission                                       | Admin | Operator | Viewer |
-| ------------------------------------------------ | ----- | -------- | ------ |
-| Read the reporting service's policy view         | ✓     | ✓        | ✓      |
-| Read the reporting service's identity view       | ✓     | ✓        | ✓      |
-| Read the reporting service's target view         | ✓     | ✓        | ✓      |
-| Read the reporting service's transaction view    | ✓     | ✓        | ✓      |
-| Read the reporting service's permit view         | ✓     | ✓        | ✓      |
-| Read the reporting service's registry usage view | ✓     | ✓        | ✓      |
+| Permission            | Setting | Permission IDs                   | Admin | Operator | Viewer |
+| --------------------- | ------- | -------------------------------- | ----- | -------- | ------ |
+| Reporting policy      | Read    | `ace:reporting:policy:read`      | ✓     | ✓        | ✓      |
+| Reporting identity    | Read    | `ace:reporting:identity:read`    | ✓     | ✓        | ✓      |
+| Reporting target      | Read    | `ace:reporting:target:read`      | ✓     | ✓        | ✓      |
+| Reporting transaction | Read    | `ace:reporting:transaction:read` | ✓     | ✓        | ✓      |
+| Reporting permit      | Read    | `ace:reporting:permit:read`      | ✓     | ✓        | ✓      |
+| Reporting registry    | Read    | `ace:reporting:registry:read`    | ✓     | ✓        | ✓      |
 
 #### Evaluation
 
-| Permission               | Admin | Operator | Viewer |
-| ------------------------ | ----- | -------- | ------ |
-| Read evaluation permits  | ✓     | ✓        | ✓      |
-| Create evaluation permit | ✓     | ✓        |        |
+| Permission        | Setting | Permission IDs                                              | Admin | Operator | Viewer |
+| ----------------- | ------- | ----------------------------------------------------------- | ----- | -------- | ------ |
+| Evaluation permit | Read    | `ace:evaluation:permit:read`                                | ✓     | ✓        | ✓      |
+| Evaluation permit | All     | `ace:evaluation:permit:read`, `ace:evaluation:permit:write` | ✓     | ✓        |        |
 
 #### Core
 
-| Permission                | Admin | Operator | Viewer |
-| ------------------------- | ----- | -------- | ------ |
-| Read organization details | ✓     | ✓        | ✓      |
-| Read supported networks   | ✓     | ✓        | ✓      |
-| Read wallets              | ✓     | ✓        | ✓      |
-| Create wallet             | ✓     |          |        |
+| Permission      | Setting | Permission IDs                                  | Admin | Operator | Viewer |
+| --------------- | ------- | ----------------------------------------------- | ----- | -------- | ------ |
+| Core org config | Read    | `ace:core:org_config:read`                      | ✓     | ✓        | ✓      |
+| Core network    | Read    | `ace:core:network:read`                         | ✓     | ✓        | ✓      |
+| Core wallet     | Read    | `ace:core:wallet:read`                          | ✓     | ✓        | ✓      |
+| Core wallet     | All     | `ace:core:wallet:read`, `ace:core:wallet:write` | ✓     |          |        |
 
 #### Active Monitoring
 
-| Permission                                         | Admin | Operator | Viewer |
-| -------------------------------------------------- | ----- | -------- | ------ |
-| Read action variables                              | ✓     | ✓        | ✓      |
-| Read contract groups                               | ✓     | ✓        | ✓      |
-| Create contract groups                             | ✓     | ✓        |        |
-| Read rule groups                                   | ✓     | ✓        | ✓      |
-| Create and update rule groups                      | ✓     | ✓        |        |
-| Read monitored addresses                           | ✓     | ✓        | ✓      |
-| Add addresses to the screening watch list          | ✓     | ✓        |        |
-| Read the screening interval                        | ✓     | ✓        | ✓      |
-| Set, remove, start and stop the screening interval | ✓     | ✓        |        |
-| Read decision logs                                 | ✓     | ✓        | ✓      |
-| Dismiss and enforce decision logs                  | ✓     | ✓        |        |
-| Read screening-provider API key metadata           | ✓     | ✓        | ✓      |
-| Set and remove screening-provider API keys         | ✓     |          |        |
+| Permission                           | Setting | Permission IDs                                                                                    | Admin | Operator | Viewer |
+| ------------------------------------ | ------- | ------------------------------------------------------------------------------------------------- | ----- | -------- | ------ |
+| Active monitoring action variable    | Read    | `ace:active_monitoring:action_variable:read`                                                      | ✓     | ✓        | ✓      |
+| Active monitoring contract group     | Read    | `ace:active_monitoring:contract_group:read`                                                       | ✓     | ✓        | ✓      |
+| Active monitoring contract group     | All     | `ace:active_monitoring:contract_group:read`, `ace:active_monitoring:contract_group:write`         | ✓     | ✓        |        |
+| Active monitoring rule group         | Read    | `ace:active_monitoring:rule_group:read`                                                           | ✓     | ✓        | ✓      |
+| Active monitoring rule group         | All     | `ace:active_monitoring:rule_group:read`, `ace:active_monitoring:rule_group:write`                 | ✓     | ✓        |        |
+| Active monitoring monitored address  | Read    | `ace:active_monitoring:monitored_address:read`                                                    | ✓     | ✓        | ✓      |
+| Active monitoring monitored address  | All     | `ace:active_monitoring:monitored_address:read`, `ace:active_monitoring:monitored_address:write`   | ✓     | ✓        |        |
+| Active monitoring screening interval | Read    | `ace:active_monitoring:screening_interval:read`                                                   | ✓     | ✓        | ✓      |
+| Active monitoring screening interval | All     | `ace:active_monitoring:screening_interval:read`, `ace:active_monitoring:screening_interval:write` | ✓     | ✓        |        |
+| Active monitoring decision log       | Read    | `ace:active_monitoring:decision_log:read`                                                         | ✓     | ✓        | ✓      |
+| Active monitoring decision log       | All     | `ace:active_monitoring:decision_log:read`, `ace:active_monitoring:decision_log:write`             | ✓     | ✓        |        |
+| Active monitoring provider api key   | Read    | `ace:active_monitoring:provider_api_key:read`                                                     | ✓     | ✓        | ✓      |
+| Active monitoring provider api key   | All     | `ace:active_monitoring:provider_api_key:read`, `ace:active_monitoring:provider_api_key:write`     | ✓     |          |        |
 
 ### CRE Connect
 
 #### Core
 
-| Permission                         | Admin | Operator | Viewer |
-| ---------------------------------- | ----- | -------- | ------ |
-| Read available blockchain networks | ✓     | ✓        | ✓      |
-| Read wallets                       | ✓     | ✓        | ✓      |
-| Create or update wallet            | ✓     | ✓        |        |
-| Archive wallet                     | ✓     |          |        |
+| Permission     | Setting | Permission IDs                          | Admin | Operator | Viewer |
+| -------------- | ------- | --------------------------------------- | ----- | -------- | ------ |
+| Network        | Read    | `crec:network:read`                     | ✓     | ✓        | ✓      |
+| Wallet         | Read    | `crec:wallet:read`                      | ✓     | ✓        | ✓      |
+| Wallet         | All     | `crec:wallet:read`, `crec:wallet:write` | ✓     | ✓        |        |
+| Wallet archive | All     | `crec:wallet:archive:write`             | ✓     |          |        |
 
 #### Operations
 
-| Permission                                               | Admin | Operator | Viewer |
-| -------------------------------------------------------- | ----- | -------- | ------ |
-| Read operations and search by initiator/signer/canceller | ✓     | ✓        | ✓      |
-| Create operation (draft or pre-signed)                   | ✓     | ✓        |        |
-| Sign (finalize) or cancel operation                      | ✓     | ✓        |        |
+| Permission          | Setting | Permission IDs                                | Admin | Operator | Viewer |
+| ------------------- | ------- | --------------------------------------------- | ----- | -------- | ------ |
+| Operation           | Read    | `crec:operation:read`                         | ✓     | ✓        | ✓      |
+| Operation           | All     | `crec:operation:read`, `crec:operation:write` | ✓     | ✓        |        |
+| Operation signature | All     | `crec:operation:signature:write`              | ✓     | ✓        |        |
 
 #### Channels
 
-| Permission               | Admin | Operator | Viewer |
-| ------------------------ | ----- | -------- | ------ |
-| Read channels            | ✓     | ✓        | ✓      |
-| Create or update channel | ✓     | ✓        |        |
-| Archive channel          | ✓     |          |        |
+| Permission      | Setting | Permission IDs                            | Admin | Operator | Viewer |
+| --------------- | ------- | ----------------------------------------- | ----- | -------- | ------ |
+| Channel         | Read    | `crec:channel:read`                       | ✓     | ✓        | ✓      |
+| Channel         | All     | `crec:channel:read`, `crec:channel:write` | ✓     | ✓        |        |
+| Channel archive | All     | `crec:channel:archive:write`              | ✓     |          |        |
 
 #### Watchers
 
-| Permission               | Admin | Operator | Viewer |
-| ------------------------ | ----- | -------- | ------ |
-| Read watchers            | ✓     | ✓        | ✓      |
-| Create or update watcher | ✓     | ✓        |        |
-| Archive watcher          | ✓     |          |        |
+| Permission      | Setting | Permission IDs                            | Admin | Operator | Viewer |
+| --------------- | ------- | ----------------------------------------- | ----- | -------- | ------ |
+| Watcher         | Read    | `crec:watcher:read`                       | ✓     | ✓        | ✓      |
+| Watcher         | All     | `crec:watcher:read`, `crec:watcher:write` | ✓     | ✓        |        |
+| Watcher archive | All     | `crec:watcher:archive:write`              | ✓     |          |        |
 
 #### Queries
 
-| Permission   | Admin | Operator | Viewer |
-| ------------ | ----- | -------- | ------ |
-| Read queries | ✓     | ✓        | ✓      |
-| Create query | ✓     | ✓        |        |
+| Permission | Setting | Permission IDs                        | Admin | Operator | Viewer |
+| ---------- | ------- | ------------------------------------- | ----- | -------- | ------ |
+| Query      | Read    | `crec:query:read`                     | ✓     | ✓        | ✓      |
+| Query      | All     | `crec:query:read`, `crec:query:write` | ✓     | ✓        |        |
 
 #### Events
 
-| Permission                                  | Admin | Operator | Viewer |
-| ------------------------------------------- | ----- | -------- | ------ |
-| Read events, run history, and search events | ✓     | ✓        | ✓      |
+| Permission | Setting | Permission IDs    | Admin | Operator | Viewer |
+| ---------- | ------- | ----------------- | ----- | -------- | ------ |
+| Event      | Read    | `crec:event:read` | ✓     | ✓        | ✓      |
 
 #### Administration
 
-| Permission               | Admin | Operator | Viewer |
-| ------------------------ | ----- | -------- | ------ |
-| Manage CRE Connect Roles | ✓     |          |        |
-| Full CRE Connect access  | ✓     |          |        |
+| Permission  | Setting | Permission IDs                    | Admin | Operator | Viewer |
+| ----------- | ------- | --------------------------------- | ----- | -------- | ------ |
+| Member role | All     | `platform:member_role:write/crec` | ✓     |          |        |
 
 ### Data Streams and Agent Gateway
 
@@ -191,7 +189,7 @@ API keys cannot be scoped to Data Streams or Agent Gateway. Data Streams uses it
 
 {/* prettier-ignore */}
 <Aside type="caution" title="Full access permissions">
-  Some permissions, such as _Full ACE access_ and _Full CRE Connect access_, grant an API key complete access to a product, including role management. Assign these permissions to an API key only when the key needs them.
+  Selecting **All** for every permission group in a product's accordion grants the API key complete access to that product, including role management. Assign that level of access to an API key only when the key needs it.
 </Aside>
 
 ## Creating an API key
@@ -204,7 +202,7 @@ To create an API key:
 1. Enter a name for the key.
 1. In the **API Scope** section, select the permissions for the key:
    - Each product (Platform, ACE, CRE, and CRE Connect) has its own accordion. Expand the products the key needs access to.
-   - Each product has a preset: **None**, **Read**, **All**, or **Custom**. **Read** grants the product's read permissions, **All** grants every permission available for that product, and **Custom** is applied automatically when you change any individual permission.
+   - Each product has a preset: **None**, **Read**, **All**, or **Custom**. **Read** grants the product's read permissions, **All** grants every permission available for that product, and **Custom** is applied automatically when you change any individual permission. The Chainlink Platform accordion offers only **None**, **Read**, and **Custom**.
    - To grant individual permissions instead of a preset, set each permission group to **None**, **Read**, or **All**. Some groups offer only a subset of these options.
 1. Click **Create API Key**, then copy the key and click **Done**.
 
