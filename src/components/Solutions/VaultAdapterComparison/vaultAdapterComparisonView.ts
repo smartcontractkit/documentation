@@ -31,13 +31,9 @@ export const ICONS = {
   adapter: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m8 5-6 7 6 7M16 5l6 7-6 7M14 3l-4 18"/></svg>',
   vault:
     '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m2 7 10-5 10 5M3 8h18M5 8v11M10 8v11M14 8v11M19 8v11M2 22h20M3 19h18"/></svg>',
-  receiver:
-    '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7V5a2 2 0 0 1 2-2h13v4M4 7h16v14H4zM20 11h-6v6h6M17 14h.01"/></svg>',
   switch: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>',
   arrowRight: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h17M14 6l6 6-6 6"/></svg>',
   arrowLeft: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12H4M10 6l-6 6 6 6"/></svg>',
-  play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>',
-  stop: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6h12v12H6z"/></svg>',
 }
 
 /**
@@ -96,7 +92,7 @@ export function routeLabels(scenario: Scenario) {
   return {
     input,
     output,
-    sourceWalletSub: scenario.delivery === "source" ? `${input} out · ${output} back` : `${input} out`,
+    sourceWalletSub: `${input} out · ${output} back`,
     outChip: input,
     backChip: output,
     backCaption:
@@ -148,7 +144,6 @@ export function computeParts(scenario: Scenario): ComparisonParts {
     text[`back-caption-${mode}`] = labels.backCaption
     text[`vault-out-${mode}`] = `${labels.input} ▸`
     text[`vault-back-${mode}`] = `◂ ${labels.output}`
-    if (mode === "adapter") text["receiver-link-adapter"] = `▾ ${labels.output}`
     const first = getRoute(row)[0]
     html[`stops-source-${mode}`] = renderStops(P, stopsFor(row, "source-wallet"), first.id)
     if (mode === "manual") html["stops-hub-manual"] = renderStops(P, stopsFor(row, "hub-wallet"))
@@ -214,12 +209,6 @@ function hubCell(mode: Mode, parts: ComparisonParts): string {
   </div>
   ${link}
   ${vault}
-  <div class="${P}-link ${P}-link-receiver" aria-hidden="true"><span data-part="receiver-link-adapter">${escapeHtml(t["receiver-link-adapter"])}</span></div>
-  <div class="${P}-node ${P}-node-receiver" data-node="receiver">
-    <span class="${P}-node-icon">${ICONS.receiver}</span>
-    <span class="${P}-node-name">Beneficiary on the hub chain</span>
-    <span class="${P}-node-sub">named in your payload</span>
-  </div>
 </div>`
 }
 
@@ -234,7 +223,6 @@ function row(uid: string, mode: Mode, parts: ComparisonParts, scenario: Scenario
       <p class="${P}-row-count"><span class="${P}-row-number" data-part="count-${mode}">${t[`count-${mode}`]}</span> <span class="${P}-row-unit" data-part="unit-${mode}">${t[`unit-${mode}`]}</span></p>
       <p class="${P}-row-meta" data-part="meta-${mode}">${escapeHtml(t[`meta-${mode}`])}</p>
     </div>
-    <button type="button" class="${P}-trace" data-part="trace-${mode}" disabled><span class="${P}-trace-icon" data-part="trace-icon-${mode}">${ICONS.play}</span><span data-part="trace-label-${mode}">Trace the route</span></button>
   </div>
   <div class="${P}-track" data-part="track-${mode}">
     <div class="${P}-cell ${P}-cell-source">
@@ -267,10 +255,6 @@ export function renderRouteRows(uid: string, scenario: Scenario): string {
     <div class="${P}-seg" role="radiogroup" aria-label="Action">
       ${radio(`${uid}-flow`, "flow", "deposit", "Deposit", scenario.flow === "deposit")}
       ${radio(`${uid}-flow`, "flow", "redeem", "Redeem", scenario.flow === "redeem")}
-    </div>
-    <div class="${P}-seg ${P}-seg-delivery" role="radiogroup" aria-label="Result delivered">
-      ${radio(`${uid}-delivery`, "delivery", "source", "Back on the source chain", scenario.delivery === "source")}
-      ${radio(`${uid}-delivery`, "delivery", "hub", "On the hub chain", scenario.delivery === "hub")}
     </div>
     <button type="button" class="${P}-reset" data-part="reset" disabled>Reset</button>
   </div>
