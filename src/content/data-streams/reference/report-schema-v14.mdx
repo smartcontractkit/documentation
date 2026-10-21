@@ -54,13 +54,13 @@ For full trading schedules and `marketStatus` mappings, see [Market Hours](/data
 
 ### Continuous roll price fields
 
-In addition to the raw generic feed prices — which switch entirely to the next contract at the first notice date — the v14 schema includes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
+In addition to the raw generic feed prices — which switch entirely to the next contract when the front contract expires — the v14 schema includes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
 
 | Field                          | Description                                                                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
 | `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price, smoothing the roll across the full cycle rather than the fixed Goldman window                                                      |
-| `currentBusinessDay`           | Current business day count within the active roll window, so integrators can implement the Goldman Roll methodology themselves                                      |
+| `currentBusinessDay`           | Current business day of the month, used to determine the Goldman Roll window                                                                                        |
 
 For details on how the generic feeds rotate between contracts and how the continuous roll fields behave, see the [Futures](/data-streams/rwa-streams/futures) reference.
 
@@ -73,4 +73,4 @@ For details on how the generic feeds rotate between contracts and how the contin
 
 #### `interpolatedGoldmanRollPrice`
 
-`interpolatedGoldmanRollPrice` smooths the roll across the full contract cycle rather than the fixed Goldman window, so it is populated continuously rather than only during business days 5–9.
+`interpolatedGoldmanRollPrice` smooths the roll across the full contract cycle rather than the fixed Goldman window. It is not limited to business days 5–9.

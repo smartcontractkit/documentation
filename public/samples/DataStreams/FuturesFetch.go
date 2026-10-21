@@ -3,7 +3,7 @@
 // Usage:
 //   export API_KEY="..."
 //   export API_SECRET="..."
-//   go run FuturesFetch.go 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647
+//   go run FuturesFetch.go 0x000e4b991d02aa6ce023f80f6fdebd8ec5039f9d2b184ffcc7bd3fc4a3ed2a9d
 package main
 
 import (

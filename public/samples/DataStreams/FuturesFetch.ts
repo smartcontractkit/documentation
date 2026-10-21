@@ -3,7 +3,7 @@
 // Usage:
 //   export API_KEY="..."
 //   export USER_SECRET="..."
-//   npx tsx FuturesFetch.ts 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647
+//   npx tsx FuturesFetch.ts 0x000e4b991d02aa6ce023f80f6fdebd8ec5039f9d2b184ffcc7bd3fc4a3ed2a9d
 import { createClient, decodeReport, getReportVersion, formatReport, LogLevel } from "@chainlink/data-streams-sdk"
 import "dotenv/config"
 

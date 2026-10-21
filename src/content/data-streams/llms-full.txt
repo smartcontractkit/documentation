@@ -1083,17 +1083,18 @@ This page covers trading schedules and `marketStatus` value mappings for each Ch
 
 ## Asset class overview
 
-| Asset class                                                                         | Weekly open                                      | Weekly close                                     | Daily breaks        | Bank holidays                                                                                  |
-| ----------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------ | ------------------- | ---------------------------------------------------------------------------------------------- |
-| [**Crypto**](#cryptocurrency)                                                       | 24/7/365                                         | —                                                | None                | None                                                                                           |
-| [**US Equities and ETFs**](#v11-standard-hours-feeds) (Standard)                    | **09:30 Mon**                                    | **16:00 Fri**                                    | 16:00–09:30 daily   | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
-| [**24/5 US Equities and ETFs**](#24-5-us-equities)                                  | **20:00 Sun**                                    | **20:00 Fri**                                    | None                | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
-| [**APAC Equities**](#apac-equities)(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange  | Consult each exchange's official holiday calendar                                              |
-| [**FX Majors**](#forex-precious-metals-and-commodities)(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                | Jan 1, Dec 25                                                                                  |
-| [**Precious Metals Spot**](#forex-precious-metals-and-commodities)(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
-| [**Commodities**](#forex-precious-metals-and-commodities)(WTI Synthetic Spot)       | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/)         |
+| Asset class                                                                         | Weekly open                                      | Weekly close                                     | Daily breaks          | Bank holidays                                                                                  |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------ | --------------------- | ---------------------------------------------------------------------------------------------- |
+| [**Crypto**](#cryptocurrency)                                                       | 24/7/365                                         | —                                                | None                  | None                                                                                           |
+| [**US Equities and ETFs**](#v11-standard-hours-feeds) (Standard)                    | **09:30 Mon**                                    | **16:00 Fri**                                    | 16:00–09:30 daily     | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
+| [**24/5 US Equities and ETFs**](#24-5-us-equities)                                  | **20:00 Sun**                                    | **20:00 Fri**                                    | None                  | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
+| [**APAC Equities**](#apac-equities)(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange    | Consult each exchange's official holiday calendar                                              |
+| [**FX Majors**](#forex-precious-metals-and-commodities)(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                  | Jan 1, Dec 25                                                                                  |
+| [**Precious Metals Spot**](#forex-precious-metals-and-commodities)(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu   | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
+| [**Commodities**](#forex-precious-metals-and-commodities)(WTI Synthetic Spot)       | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu   | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/)         |
+| [**Futures (v14)**](#futures-v14)(US Oil, UK Oil, Natural Gas)                      | Per listing exchange                             | Per listing exchange                             | Scheduled daily break | Exchange holiday calendar                                                                      |
 
-US Equities, FX Majors, Precious Metals Spot, and Commodities times are **ET (Eastern Time)** and follow US daylight saving time. APAC Equities times are **local exchange time**. Early closes may apply on major US holidays for Precious Metals Spot — see [Precious Metals Spot early closures](#precious-metals-early-closures).
+US Equities, FX Majors, Precious Metals Spot, and Commodities times are **ET (Eastern Time)** and follow US daylight saving time. APAC Equities times are **local exchange time**. Futures schedules are set by the exchange where the underlying contract is listed. Early closes may apply on major US holidays for Precious Metals Spot — see [Precious Metals Spot early closures](#precious-metals-early-closures).
 
 ***
 
@@ -1200,6 +1201,20 @@ On major US holidays, Precious Metals Spot markets may close early instead of at
 | Date        | Holiday                        | Early close (ET) |
 | ----------- | ------------------------------ | ---------------- |
 | Jul 3, 2026 | US Independence Day (observed) | 13:00            |
+
+***
+
+## Futures (v14)&#x20;
+
+Futures streams follow commodity market hours for the underlying contract, with a scheduled break each trading day. Holidays and early closes follow the calendar of the exchange where the contract is listed.
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+Always use the `marketStatus` field in each report to determine whether the market is open. See [Futures](/data-streams/rwa-streams/futures) for coverage and integration guidance.
 
 ***
 
@@ -6777,10 +6792,10 @@ Chainlink Data Streams that use the Futures (v14) schema adhere to the structure
 | `firstDayOfNotice`             | `uint64`  | First day of notice for the tracked contract (Unix seconds)                                                                               |
 | `lastSeenTimestampNs`          | `uint64`  | Timestamp of the last update received from the data provider (nanoseconds)                                                                |
 | `marketStatus`                 | `uint32`  | Market status. Mapping varies by feed; see schema docs. — [Status values](/data-streams/reference/report-schema-v14#market-status-values) |
-| `contractMonth`                | `uint32`  | Standard futures month code (F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec)                          |
+| `contractMonth`                | `uint32`  | Contract month, from 1 (Jan) to 12 (Dec)                                                                                                  |
 | `goldmanRollPrice`             | `int192`  | Continuous price using the Goldman Roll (GSCI) methodology                                                                                |
-| `currentBusinessDay`           | `uint32`  | Current business day count within the active roll window                                                                                  |
-| `interpolatedGoldmanRollPrice` | `int192`  | Interpolated Goldman Roll price (0 when not in an active roll window)                                                                     |
+| `currentBusinessDay`           | `uint32`  | Current business day of the month, used to determine the Goldman Roll window                                                              |
+| `interpolatedGoldmanRollPrice` | `int192`  | Interpolated Goldman Roll price, smoothed across the full contract cycle                                                                  |
 
 ### Market Status Values
 
@@ -6796,13 +6811,13 @@ For full trading schedules and `marketStatus` mappings, see [Market Hours](/data
 
 ### Continuous roll price fields
 
-In addition to the raw generic feed prices — which switch entirely to the next contract at the first notice date — the v14 schema includes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
+In addition to the raw generic feed prices — which switch entirely to the next contract when the front contract expires — the v14 schema includes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
 
 | Field                          | Description                                                                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
 | `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price, smoothing the roll across the full cycle rather than the fixed Goldman window                                                      |
-| `currentBusinessDay`           | Current business day count within the active roll window, so integrators can implement the Goldman Roll methodology themselves                                      |
+| `currentBusinessDay`           | Current business day of the month, used to determine the Goldman Roll window                                                                                        |
 
 For details on how the generic feeds rotate between contracts and how the continuous roll fields behave, see the [Futures](/data-streams/rwa-streams/futures) reference.
 
@@ -6815,7 +6830,7 @@ For details on how the generic feeds rotate between contracts and how the contin
 
 #### `interpolatedGoldmanRollPrice`
 
-`interpolatedGoldmanRollPrice` smooths the roll across the full contract cycle rather than the fixed Goldman window, so it is populated continuously rather than only during business days 5–9.
+`interpolatedGoldmanRollPrice` smooths the roll across the full contract cycle rather than the fixed Goldman window. It is not limited to business days 5–9.
 
 ---
 
@@ -7640,9 +7655,9 @@ Source: https://docs.chain.link/data-streams/rwa-streams/futures
 > Futures streams are in beta. To request access, contact
 > [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 
-Futures streams provide price data for exchange-traded futures contracts. These streams enable onchain protocols to build markets around futures price exposure. Coverage currently includes commodities — energy and precious metals — described below.
+Futures streams provide price data for exchange-traded futures contracts. These streams enable onchain protocols to build markets around futures price exposure. Coverage currently includes US Oil, UK Oil, and Natural Gas. Additional commodities are planned.
 
-Because futures contracts expire, Data Streams does not publish one feed per contract. Instead, each instrument is represented by three **generic** feeds that always track the current front, second, and third contract. This is explained in [Rotation methodology](#rotation-methodology) below.
+Because futures contracts expire, Data Streams uses **generic** feeds that track the active contract instead of publishing one feed per expiry. Each instrument currently has a single front feed, which tracks the nearest unexpired eligible contract. Additional feeds for later contracts are planned. See [Rotation methodology](#rotation-methodology) below.
 
 Developers are responsible for choosing the appropriate feed and ensuring that the operation and performance of their choice matches expectations. For more information, see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance.
 
@@ -7654,29 +7669,37 @@ The v14 schema includes consensus mid, bid, and ask prices, contract expiration 
 
 ### Continuous roll price fields
 
-In addition to the raw generic feed prices above — which switch entirely to the next contract at the first notice date — Chainlink also publishes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
+In addition to the raw generic feed prices above — which switch entirely to the next contract when the front contract expires — Chainlink also publishes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
 
 | Field                          | Description                                                                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
 | `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price, smoothing the roll across the full cycle rather than the fixed Goldman window                                                      |
-| `currentBusinessDay`           | Current business day count within the active roll window, so integrators can implement the Goldman Roll methodology themselves                                      |
+| `currentBusinessDay`           | Current business day of the month, used to determine the Goldman Roll window                                                                                        |
 
 For the complete field list and definitions, see the [Futures (v14) schema](/data-streams/reference/report-schema-v14).
+
+## Available streams
+
+> **NOTE: Feed availability**
+>
+> Only the front feed is currently available for each instrument. Additional feeds for later contracts are planned and
+> will be added to this table as they are released.
+
+The table below shows all available Futures streams.
 
 ## Implementation
 
 > **CAUTION: In development**
 >
-> Futures streams are still under active development. The single-report fetch and decode examples below work against the
-> current testnet feed, but the **three generic feeds** (front, second, and third) and the example of switching between
-> future cuts are **not yet available**. The guidance in [Consuming the three generic
-> feeds](#consuming-the-three-generic-feeds) describes the intended design and is subject to change as the streams are
-> finalized.
+> Futures streams are still under active development. The fetch and decode examples below work against a live testnet
+> front feed. Only the front feed is currently available for each instrument. The guidance in [Example implementation
+> for full rollout](#example-implementation-for-full-rollout) shows how to consume later feeds once they are released,
+> and is subject to change.
 
 Futures streams are consumed like any other [Data Streams report](/data-streams/tutorials/go-sdk-fetch): you fetch the latest report for a feed ID and decode it with the SDK. The only difference is the report schema version, which is **v14** for futures streams.
 
-The examples below fetch and decode a live `NY-UKOIL/USD` futures report from the testnet API. Each SDK auto-detects or explicitly targets the v14 schema.
+The examples below fetch and decode a live `NY-UKOIL/USD` front feed from the testnet API. Each SDK auto-detects or explicitly targets the v14 schema.
 
 ### Go
 
@@ -7686,7 +7709,7 @@ The examples below fetch and decode a live `NY-UKOIL/USD` futures report from th
 // Usage:
 //   export API_KEY="..."
 //   export API_SECRET="..."
-//   go run FuturesFetch.go 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647
+//   go run FuturesFetch.go 0x000e4b991d02aa6ce023f80f6fdebd8ec5039f9d2b184ffcc7bd3fc4a3ed2a9d
 package main
 
 import (
@@ -7777,7 +7800,7 @@ func main() {
 // Usage:
 //   export API_KEY="..."
 //   export USER_SECRET="..."
-//   npx tsx FuturesFetch.ts 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647
+//   npx tsx FuturesFetch.ts 0x000e4b991d02aa6ce023f80f6fdebd8ec5039f9d2b184ffcc7bd3fc4a3ed2a9d
 import { createClient, decodeReport, getReportVersion, formatReport, LogLevel } from "@chainlink/data-streams-sdk"
 import "dotenv/config"
 
@@ -7833,7 +7856,7 @@ main().catch((error) => {
 // Usage:
 //   export API_KEY="..."
 //   export API_SECRET="..."
-//   cargo run 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647
+//   cargo run 0x000e4b991d02aa6ce023f80f6fdebd8ec5039f9d2b184ffcc7bd3fc4a3ed2a9d
 use chainlink_data_streams_report::feed_id::ID;
 use chainlink_data_streams_report::report::{ decode_full_report, v14::ReportDataV14 };
 use chainlink_data_streams_sdk::client::Client;
@@ -7898,31 +7921,31 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 ### Expected output
 
-Running any of the examples above against a live `NY-UKOIL/USD` futures feed produces a decoded report similar to the following (values are illustrative and change with each report):
+Running any of the examples above against a live `NY-UKOIL/USD` front feed produces a decoded report similar to the following (values are illustrative and change with each report):
 
 ```text
-Decoded V14 Report for Stream ID 0x000ebfe7b7560e1866ef91d4607ce5ee7474382794e5ec755f38b70b1f30e647:
+Decoded V14 Report for Stream ID 0x000e4b991d02aa6ce023f80f6fdebd8ec5039f9d2b184ffcc7bd3fc4a3ed2a9d:
 ------------------------------------------
-Valid From Timestamp  : 1789593821
-Observations Timestamp: 1789593821
-Native Fee            : 132954556310247
-LINK Fee              : 29292627326579709
-Expires At            : 1792185821
-Mid Price             : 105584000000000000000
-Bid Price             : 105539000000000000000
-Ask Price             : 105629000000000000000
-Expiry Time           : 1790740800
-First Day of Notice   : 1790740800
-Last Seen TimestampNs : 1789592399813000000
-Market Status         : 1
-Contract Month        : 11
-Goldman Roll Price    : 100574999999999990000
-Current Business Day  : 11
-Interp Goldman Roll   : 0
+Valid From Timestamp  : 1792614089
+Observations Timestamp: 1792614089
+Native Fee            : 128559788905831
+LINK Fee              : 25306002187814827
+Expires At            : 1795206089
+Mid Price             : 109748000000000000000
+Bid Price             : 109733000000000000000
+Ask Price             : 109763000000000000000
+Expiry Time           : 1793332800
+First Day of Notice   : 1793332800
+Last Seen TimestampNs : 1792614081347000000
+Market Status         : 2
+Contract Month        : 12
+Goldman Roll Price    : 105806666666666660000
+Current Business Day  : 15
+Interp Goldman Roll   : 105806666666666660000
 ------------------------------------------
 ```
 
-The prices above are 18-decimal fixed-point integers. For example, `Mid Price` `105584000000000000000` equals `105.584` USD. `Contract Month` `11` is November, and `Market Status` `1` means the market is closed.
+The prices above are 18-decimal fixed-point integers. For example, `Mid Price` `109748000000000000000` equals `109.748` USD. `Contract Month` `12` is December, and `Market Status` `2` means the market is open.
 
 ### Decoded fields
 
@@ -7937,40 +7960,39 @@ The v14 report decodes to the following fields. Prices are 18-decimal fixed-poin
 | `marketStatus`                     | `uint32` | Market status: `0` Unknown, `1` Closed, `2` Open                |
 | `contractMonth`                    | `uint32` | Contract month, `1` (Jan) to `12` (Dec)                         |
 | `goldmanRollPrice`                 | `int192` | Goldman Roll continuous price (18 decimals)                     |
-| `currentBusinessDay`               | `uint32` | Current business day in the roll window                         |
+| `currentBusinessDay`               | `uint32` | Current business day of the month                               |
 | `interpolatedGoldmanRollPrice`     | `int192` | Interpolated Goldman Roll price, smoothed across the full cycle |
 
 ### Implementation patterns
 
 Futures streams differ from spot streams in a few ways that affect how you consume them:
 
-- **Use `marketStatus`, not timestamps, to gate trading.** `marketStatus` is the authoritative signal for whether the market is open. Do not infer market state from `lastSeenTimestampNs` or other timestamps; they only indicate when data was last recorded. See [Market Hours](/data-streams/market-hours) for the value mapping per feed.
-- **Monitor `lastSeenTimestampNs` for staleness.** Futures are sourced from a single provider per feed. If updates stop arriving, the price can go stale without an obvious price change. Pause trading or restrict liquidations when the timestamp lags your freshness threshold.
+- **Gate trading with `marketStatus`.** `marketStatus` is the authoritative signal for whether the market is open. Do not infer market state from `lastSeenTimestampNs` or other timestamps; they only indicate when data was last recorded. See [Market Hours](/data-streams/market-hours) for the value mapping per feed.
+- **Monitor `lastSeenTimestampNs` for staleness.** Futures are sourced from a single underlying provider per feed. If updates stop arriving, the price can go stale without an obvious price change. Pause trading or restrict liquidations when the timestamp lags your freshness threshold.
 - **Expect a price discontinuity at each roll.** When the front contract expires, the feed re-maps to the next contract, which can trade at a different price. Do not treat this step as a data error. If your application needs a smooth series, build it from the continuous roll fields (`goldmanRollPrice`, `interpolatedGoldmanRollPrice`) or construct your own off-chain.
-- **Do not hardcode contract-month spacing.** The gap between the front, second, and third feeds varies by instrument (one month for energy, up to a few months for precious metals). Read `contractMonth` from the report rather than assuming monthly spacing.
-- **Roll early if you are expiry-sensitive.** In the final days of a contract, liquidity migrates to the next contract while the front feed still tracks the expiring one, which can increase volatility. If your application is sensitive to this, roll ahead of expiry using the second feed.
+- **Do not hardcode contract-month spacing.** The gap between the contracts tracked by consecutive feeds varies by instrument (one month for energy, wider for precious metals). Read `contractMonth` from the report rather than assuming monthly spacing.
+- **Roll early if you are expiry-sensitive.** In the final days of a contract, liquidity migrates to the next contract while the front feed still tracks the expiring one, which can increase volatility. If your application is sensitive to this, roll ahead of expiry to a later feed when one is available.
 
-### Consuming the three generic feeds
+### Example implementation for full rollout
 
 > **NOTE: In development**
 >
-> The three generic feeds and the stream-switching example below describe the intended design. They are **not yet
-> available**, and only a single futures feed per instrument is currently exposed. This section is subject to change as
-> the streams are finalized.
+> Only the front feed is currently available. The example below shows how to consume the front, second, and third feeds
+> once they are released, and is subject to change as the streams are finalized.
 
-Each instrument is exposed as three feeds that always track the front, second, and third eligible contracts. The three feeds are the same schema (v14) and differ only in which contract they currently reference. To consume the curve correctly:
+When the full set is released, each instrument will be exposed as three feeds that always track the front, second, and third eligible contracts. The three feeds share the same schema (v14) and differ only in which contract they currently reference. To consume the curve correctly:
 
-- **Identify the cut from `contractMonth` and `expiryTime`, not from the feed ID.** The feed IDs are static and do not encode which cut a feed is. Read `contractMonth` and `expiryTime` from each report to know which contract a feed currently tracks. The feed with the nearest `expiryTime` is the front; the next two are the second and third.
-- **The three feeds cascade on the front contract's expiry.** When the front expires, the front feed takes over the second feed's contract, the second takes over the third's, and the third picks up the next eligible contract. Your integration should not hardcode which contract a feed tracks; it should re-read `contractMonth`/`expiryTime` each report.
-- **Build your own roll strategy.** Data Streams does not impose one. You can hold the front feed to expiry, roll early to the second feed when liquidity migrates, or construct a continuous series off-chain. The three feeds give you the visibility to implement whichever you choose.
+- **Read the cut from `contractMonth` and `expiryTime`.** The feed IDs are static and do not encode which cut a feed is. The feed with the nearest `expiryTime` is the front; the next two are the second and third.
+- **The three feeds will cascade on the front contract's expiry.** When the front expires, the front feed takes over the second feed's contract, the second takes over the third's, and the third picks up the next eligible contract. Your integration should not hardcode which contract a feed tracks; it should re-read `contractMonth`/`expiryTime` each report.
+- **Build your own roll strategy.** Data Streams does not impose one. You can hold the front feed to expiry, roll early to a later feed when liquidity migrates, or construct a continuous series off-chain.
 
-The example below fetches all three feeds for an instrument and prints which contract each currently tracks, so you can see the curve and detect a roll:
+The example below fetches all three feeds for an instrument once they are available and prints which contract each currently tracks, so you can see the curve and detect a roll:
 
 ### Go
 
 ```go
 // Read the front, second, and third feeds for an instrument.
-// Replace the three feed IDs with the front/second/third feeds for your instrument.
+// Replace the three feed IDs with the front/second/third feeds for your instrument once they are available.
 feedIDs := []feed.ID{frontID, secondID, thirdID}
 
 for _, id := range feedIDs {
@@ -7992,7 +8014,7 @@ for _, id := range feedIDs {
 
 ```typescript
 // Read the front, second, and third feeds for an instrument.
-// Replace the three feed IDs with the front/second/third feeds for your instrument.
+// Replace the three feed IDs with the front/second/third feeds for your instrument once they are available.
 const feedIds = [frontId, secondId, thirdId]
 
 for (const id of feedIds) {
@@ -8006,7 +8028,7 @@ for (const id of feedIds) {
 
 ```rust
 // Read the front, second, and third feeds for an instrument.
-// Replace the three feed IDs with the front/second/third feeds for your instrument.
+// Replace the three feed IDs with the front/second/third feeds for your instrument once they are available.
 let feed_ids = [front_id, second_id, third_id];
 
 for id in feed_ids {
@@ -8028,25 +8050,17 @@ for id in feed_ids {
 ### Notes
 
 - **Prices are 18-decimal fixed-point integers.** `midPrice`, `bidPrice`, `askPrice`, `goldmanRollPrice`, and `interpolatedGoldmanRollPrice` are raw integers. Divide by `10^18` to get the human-readable price. In Go and Rust these are big-number types; call `.String()` to display them.
-- **`interpolatedGoldmanRollPrice` is populated continuously.** It smooths the roll across the full contract cycle rather than only the fixed Goldman window, so it is not limited to business days 5–9.
+- **`interpolatedGoldmanRollPrice` smooths the roll across the full contract cycle** rather than only the fixed Goldman window, so it is not limited to business days 5–9.
 - **`contractMonth` is validated to `1`–`12`.** The SDKs reject reports with an out-of-range month, so a successful decode guarantees a valid month.
 - **The feed ID encodes the schema version.** The TypeScript SDK's `getReportVersion` and the Go SDK's `feedID.Version()` derive the schema from the feed ID. Use the v14 decoder for futures feeds.
 
 ## Coverage
 
-Futures streams are currently available for the following commodities. Additional commodities and asset classes may be added based on demand.
-
-| Commodity   | Generic feeds                  |
-| ----------- | ------------------------------ |
-| Gold        | Front, second, and third feeds |
-| Silver      | Front, second, and third feeds |
-| US Oil      | Front, second, and third feeds |
-| UK Oil      | Front, second, and third feeds |
-| Natural Gas | Front, second, and third feeds |
+Futures streams currently cover US Oil, UK Oil, and Natural Gas. Additional commodities are planned.
 
 ## Naming and price representation
 
-Feed names use the plain instrument name only (for example, "US Oil," "Gold," "Natural Gas").
+Feed names follow the instrument name as it appears in the available streams table (for example, "NY USOIL," "NY UK OIL," and "NatGas"). Naming may change as coverage expands.
 
 Contract specifications — contract size, tick size, quotation units, and similar terms — can vary between exchanges for the same underlying instrument. Chainlink does not publish these specifications, since they belong to the exchange where a given contract is listed. If your application needs exact contract specifications, consult that exchange's own public product documentation directly.
 
@@ -8054,22 +8068,22 @@ Contract specifications — contract size, tick size, quotation units, and simil
 
 Unlike spot instruments, futures contracts have a finite life. For example, a given month's Natural Gas contract trades for a limited window and then expires. If Data Streams published a dedicated feed per contract, integrators would need to re-point their integration to a new feed every time a contract expired.
 
-To avoid this, each instrument is represented by three static, non-expiring **generic feeds** that always represent the near-term forward curve of eligible contracts:
+To avoid this, each instrument is represented by static, non-expiring **generic feeds** that follow the near-term forward curve of eligible contracts. The front feed is available now. The second and third feeds are planned:
 
-| Generic feed    | Meaning                                                    |
-| --------------- | ---------------------------------------------------------- |
-| **Front feed**  | Tracks the nearest unexpired eligible contract             |
-| **Second feed** | Tracks the next eligible contract after the front contract |
-| **Third feed**  | Tracks the eligible contract after that                    |
+| Generic feed    | Meaning                                                    | Availability |
+| --------------- | ---------------------------------------------------------- | ------------ |
+| **Front feed**  | Tracks the nearest unexpired eligible contract             | Available    |
+| **Second feed** | Tracks the next eligible contract after the front contract | Planned      |
+| **Third feed**  | Tracks the eligible contract after that                    | Planned      |
 
-This design means:
+Once the full set is available, this design means:
 
-- **Zero maintenance.** Integrate the three generic feeds once. You never need to re-point feed endpoints when a contract expires — the feeds re-map internally.
-- **Full visibility of the curve.** Because the front, second, and third contracts are exposed simultaneously, you retain full autonomy over your own rolling logic. You can roll positions on a fixed schedule ahead of expiry, or when liquidity migrates from the front contract to the second — Data Streams does not impose a roll strategy.
+- **Zero maintenance.** Integrate the generic feeds once. You never need to re-point feed endpoints when a contract expires. The feeds re-map internally.
+- **Full visibility of the curve.** Because the front, second, and third contracts are exposed simultaneously, you retain full autonomy over your own rolling logic. You can roll positions on a fixed schedule ahead of expiry, or when liquidity migrates from the front contract to the next one. Data Streams does not impose a roll strategy.
 
 ### How the roll works
 
-When the front contract reaches its expiration, the generic feeds cascade forward:
+When the front contract reaches its expiration, the front feed re-maps to the next eligible contract. Once the second and third feeds are available, all three will cascade forward together:
 
 - The **front feed** takes over the contract previously tracked by the second feed
 - The **second feed** takes over the contract previously tracked by the third feed
@@ -8078,48 +8092,48 @@ When the front contract reaches its expiration, the generic feeds cascade forwar
 A few properties of the roll are worth calling out explicitly:
 
 - **The roll is triggered by the front contract's expiration**, as defined by the listed expiration calendar for that specific instrument. Expiration conventions differ by instrument, so rolls for different instruments happen on different dates — there is no single "roll day" across all instruments.
-- **The switch happens right after the primary exchange's trading session closes** on the expiration date, not at a fixed clock time across all instruments. For these commodities, that session close is typically around 17:00 ET.
-- **The roll is a re-mapping, not a price adjustment.** At the moment of the roll, the front feed switches from quoting the expiring contract to quoting what was previously the second contract. Because different contract months can trade at different prices, **expect a price discontinuity on the generic feed at each roll**. Feeds are not back-adjusted into a smooth continuous series — if your application needs a continuous series, construct it from the raw generic feeds on your end.
-- **Until expiration, the front feed continues to track the expiring contract**, even in its final days when liquidity has typically already migrated to the next contract. This is precisely why the second feed is exposed — so you can implement your own liquidity-based rolls ahead of expiry instead of holding the front contract to the end.
+- **The switch happens immediately after the primary exchange's trading session closes** on the expiration date. For these commodities, that is typically around 17:00 ET.
+- **The roll re-maps the feed.** At the moment of the roll, the front feed switches from quoting the expiring contract to quoting the next eligible contract. Because different contract months can trade at different prices, **expect a price discontinuity on the generic feed at each roll**. Feeds are not back-adjusted into a smooth continuous series. If your application needs a continuous series, construct it from the raw generic feeds on your end.
+- **Until expiration, the front feed continues to track the expiring contract**, even in its final days when liquidity has typically already migrated to the next contract. This is why later feeds are being added: so you can implement your own liquidity-based rolls ahead of expiry instead of holding the front contract to the end.
 
 ### Contract eligibility varies by instrument
 
-The front feed does not necessarily track the nearest calendar month — it tracks the nearest unexpired eligible contract, whatever month that happens to be. Each instrument has its own set of listed contract months, and for several instruments, the actively traded contracts are only a subset of what is listed:
+The front feed tracks the nearest unexpired eligible contract, which may not be the nearest calendar month. Each instrument has its own set of listed contract months, and for several instruments, the actively traded contracts are only a subset of what is listed:
 
-- **Energy** (US Oil, UK Oil, Natural Gas): every calendar month is listed, though liquidity is generally concentrated in nearer maturities. The generic feeds walk the full monthly strip regardless, so the front, second, and third feeds track three **consecutive** calendar months.
-- **Precious metals** (Gold, Silver): many calendar months are listed, but liquidity concentrates in a benchmark cycle. The generic feeds follow the benchmark cycle only and skip non-benchmark months, even though those contracts exist and trade.
+- **Energy** (US Oil, UK Oil, Natural Gas): every calendar month is listed, though liquidity is generally concentrated in nearer maturities. The generic feeds walk the full monthly strip regardless, so consecutive feeds track **consecutive** calendar months.
+- **Precious metals** (planned): many calendar months are listed, but liquidity concentrates in a benchmark cycle. When precious metals streams are available, the generic feeds will follow the benchmark cycle only and skip non-benchmark months, even though those contracts exist and trade.
 
 | Commodity | Benchmark months             |
 | --------- | ---------------------------- |
 | Gold      | Feb, Apr, Jun, Aug, Oct, Dec |
 | Silver    | Mar, May, Jul, Sep, Dec      |
 
-The practical consequence: **the gap between the front, second, and third feeds is not always one month.** For Gold or Silver, consecutive generic feeds can be one to three months apart. Do not assume monthly spacing in your integration.
+The practical consequence: **the gap between consecutive feeds is not always one month.** For Gold or Silver, consecutive generic feeds can be one to three months apart. Do not assume monthly spacing in your integration.
 
 ### Worked example
 
-Gold follows its benchmark cycle (Feb/Apr/Jun/Aug/Oct/Dec). In August 2026, before the August contract expires:
+For example, with US Oil, before the September contract expires:
 
 | Feed        | Contract tracked |
 | ----------- | ---------------- |
-| Front feed  | August 2026      |
-| Second feed | October 2026     |
-| Third feed  | December 2026    |
+| Front feed  | September        |
+| Second feed | October          |
+| Third feed  | November         |
 
-When the August contract expires, the front feed jumps directly to October, the second feed jumps to December, and the third feed begins tracking February 2027 — skipping the non-benchmark September and November contracts entirely, since they never appear on the generic feeds.
+When the September contract expires, the front feed moves to October, the second feed moves to November, and the third feed begins tracking December. The front feed is available now; the second and third feeds are planned.
 
 ## Integration guidance
 
-- **Do not hardcode contract-month assumptions.** The spacing between the front, second, and third feeds varies by instrument — one month for energy, up to a few months for precious metals.
-- **Expect price steps at rolls.** A protocol using the front feed directly for margining or liquidation should either accept the step as economically correct (the front contract genuinely changed), implement its own early roll using the second feed, or build an adjusted continuous series off-chain from the raw generic feeds.
-- **Roll early to avoid volatility near expiry.** In the final days of a contract's life, trading volume typically migrates to the next contract while the front feed still tracks the expiring one. Thin liquidity in the expiring contract can increase price volatility, which may unexpectedly trigger perpetual trades, liquidations, or other price-sensitive logic. If your application is sensitive to this, consider rolling ahead of expiry using the second feed.
+- **Do not hardcode contract-month assumptions.** The spacing between the feeds available for an instrument varies by instrument: one month for energy, up to a few months for precious metals.
+- **Expect price steps at rolls.** A protocol using the front feed directly for margining or liquidation should either accept the step as economically correct (the front contract genuinely changed), roll early to a later feed when one is available, or build an adjusted continuous series off-chain from the raw generic feeds.
+- **Roll early to avoid volatility near expiry.** In the final days of a contract's life, trading volume typically migrates to the next contract while the front feed still tracks the expiring one. Thin liquidity in the expiring contract can increase price volatility, which may unexpectedly trigger perpetual trades, liquidations, or other price-sensitive logic. If your application is sensitive to this, consider rolling ahead of expiry to a later feed when one is available.
 - **Follow the listed expiration calendar.** Expiration dates follow the official listed calendar of the exchange where the underlying contract trades, including holiday adjustments. Consult that exchange for the operative source of truth.
 
 ## Trading hours
 
-Futures trade during standard trading hours for each instrument, with a scheduled break each trading day. Consult the exchange where the underlying contract is listed for holiday and early-close schedules.
+Futures streams follow commodity market hours, with a scheduled break each trading day. Trading hours and holiday schedules are set by the exchange where the underlying contract is listed.
 
-Each feed's `marketStatus` field reflects the current market status of the primary exchange venue for that instrument.
+Each feed's `marketStatus` field reflects the current market status for that instrument. For the value mapping and generic commodity schedule, see [Market Hours](/data-streams/market-hours#futures-v14).
 
 ## Risk considerations
 
@@ -8127,13 +8141,9 @@ Integrating protocols are responsible for implementing appropriate monitoring an
 
 ### Single-source data
 
-Each Futures instrument is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on that provider's data quality and availability. There is no redundant cross-validation between providers for a given feed.
+Each Futures instrument is sourced from a single underlying institutional-grade data provider per feed. The Data Streams DON operators all source from that same provider, so there is no redundant cross-validation between independent providers for a given feed. While this enables high-frequency, low-latency delivery, it introduces dependency on that provider's data quality and availability.
 
 If the underlying provider fails to deliver data, there is no fallback source, and a gap in data may not be immediately obvious from price alone. Protocols should continuously monitor feed freshness and implement safeguards — such as pausing trading or restricting liquidations — if updates stop arriving or a feed appears stale. Review the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance before integration.
-
-## Available streams
-
-The table below shows all available Futures streams.
 
 ## Support
 

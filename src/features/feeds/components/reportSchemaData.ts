@@ -283,8 +283,7 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       {
         field: "contractMonth",
         type: "uint32",
-        description:
-          "Standard futures month code (F=Jan, G=Feb, H=Mar, J=Apr, K=May, M=Jun, N=Jul, Q=Aug, U=Sep, V=Oct, X=Nov, Z=Dec)",
+        description: "Contract month, from 1 (Jan) to 12 (Dec)",
       },
       {
         field: "goldmanRollPrice",
@@ -294,12 +293,12 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       {
         field: "currentBusinessDay",
         type: "uint32",
-        description: "Current business day count within the active roll window",
+        description: "Current business day of the month, used to determine the Goldman Roll window",
       },
       {
         field: "interpolatedGoldmanRollPrice",
         type: "int192",
-        description: "Interpolated Goldman Roll price (0 when not in an active roll window)",
+        description: "Interpolated Goldman Roll price, smoothed across the full contract cycle",
       },
     ],
   },
