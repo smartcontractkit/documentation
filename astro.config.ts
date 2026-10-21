@@ -164,8 +164,9 @@ export default defineConfig({
     plugins: [yaml()],
     build: {
       target: "esnext", // Use latest ES features, no transpilation for modern browsers
-      // Optimize CSS delivery
-      cssMinify: true,
+      // Optimize CSS delivery. esbuild, as before Vite 8: its default LightningCSS minifier merges
+      // `backdrop-filter` + `-webkit-backdrop-filter` into the last one, dropping the blur in Chrome/Firefox
+      cssMinify: "esbuild",
       // Increase the threshold for inlining assets to reduce render-blocking CSS
       assetsInlineLimit: 20000, // Inline CSS files up to 20KB to eliminate render-blocking
       // Removed manual chunking to prevent serverless function bloat
