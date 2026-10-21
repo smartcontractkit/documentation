@@ -279,7 +279,7 @@ When the front contract reaches its expiration, the front feed re-maps to the ne
 A few properties of the roll are worth calling out explicitly:
 
 - **The roll is triggered by the front contract's expiration**, which the feed reports in `expiryTime`. Expiration conventions differ by instrument, so rolls for different instruments happen on different dates — there is no single "roll day" across all instruments.
-- **The switch happens after the underlying market's trading session closes** on the expiration date. Exact timing follows that market's schedule.
+- **The switch happens after the underlying market's trading session closes** on the expiration date. For these commodities, that is often around 5:00 PM ET.
 - **The roll re-maps the feed.** At the moment of the roll, the front feed switches from quoting the expiring contract to quoting the next eligible contract. Because different contract months can trade at different prices, **expect a price discontinuity on the generic feed at each roll**. Feeds are not back-adjusted into a smooth continuous series. If your application needs a continuous series, construct it from the raw generic feeds on your end.
 - **Until expiration, the front feed continues to track the expiring contract**, even in its final days when liquidity has typically already migrated to the next contract. This is why later feeds are being added: so you can implement your own liquidity-based rolls ahead of expiry instead of holding the front contract to the end.
 
@@ -326,7 +326,7 @@ Integrating protocols are responsible for implementing appropriate monitoring an
 
 ### Single-source data
 
-Each Futures instrument is sourced from a single underlying institutional-grade data provider per feed. The Data Streams DON operators all source from that same provider, so there is no redundant cross-validation between independent providers for a given feed. While this enables high-frequency, low-latency delivery, it introduces dependency on that provider's data quality and availability.
+Each Futures instrument is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on that provider's data quality and availability. There is no redundant cross-validation between providers for a given feed.
 
 If the underlying provider fails to deliver data, there is no fallback source, and a gap in data may not be immediately obvious from price alone. Protocols should continuously monitor feed freshness and implement safeguards — such as pausing trading or restricting liquidations — if updates stop arriving or a feed appears stale. Review the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance before integration.
 
