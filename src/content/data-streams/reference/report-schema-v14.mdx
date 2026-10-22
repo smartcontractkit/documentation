@@ -48,7 +48,7 @@ Chainlink Data Streams that use the Futures (v14) schema adhere to the structure
   when data was last recorded, not whether the market is currently active.
 </Aside>
 
-Each feed's `marketStatus` field reflects the current market status of the primary exchange venue for that instrument. Futures trade during standard trading hours for each instrument, with a scheduled break each trading day. Consult the exchange where the underlying contract is listed for holiday and early-close schedules.
+Each feed's `marketStatus` field reflects the current market status for that instrument. Futures streams follow the trading hours of the underlying market, with a scheduled break each trading day. Use `marketStatus` in each report rather than an expected session schedule.
 
 For full trading schedules and `marketStatus` mappings, see [Market Hours](/data-streams/market-hours) and the [Futures](/data-streams/rwa-streams/futures) reference.
 
@@ -56,11 +56,11 @@ For full trading schedules and `marketStatus` mappings, see [Market Hours](/data
 
 In addition to the raw generic feed prices — which switch entirely to the next contract when the front contract expires — the v14 schema includes continuous price series built using alternative rolling methodologies, for integrators who want a smoothed price instead of a hard cutover:
 
-| Field                          | Description                                                                                                                                                         |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery |
-| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price, smoothing the roll across the full cycle rather than the fixed Goldman window                                                      |
-| `currentBusinessDay`           | Current business day of the month, used to determine the Goldman Roll window                                                                                        |
+| Field                          | Description                                                                                                                                                                   |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `goldmanRollPrice`             | Uses the Goldman Roll (GSCI methodology): shifts 20% of the position to the next contract each business day, over business days 5–9 of the month preceding delivery           |
+| `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price: the Goldman Roll's 20% daily shift to the next contract, smoothed over the course of each business day, 5–9, of the month preceding delivery |
+| `currentBusinessDay`           | Current business day of the month, used to determine the Goldman Roll window                                                                                                  |
 
 For details on how the generic feeds rotate between contracts and how the continuous roll fields behave, see the [Futures](/data-streams/rwa-streams/futures) reference.
 
@@ -69,8 +69,8 @@ For details on how the generic feeds rotate between contracts and how the contin
 #### `lastSeenTimestampNs`
 
 - `lastSeenTimestampNs` helps applications detect stale data, especially important during market transitions and holidays.
-- **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field as the authoritative signal for market availability.
+- **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field to determine market availability.
 
 #### `interpolatedGoldmanRollPrice`
 
-`interpolatedGoldmanRollPrice` smooths the roll across the full contract cycle rather than the fixed Goldman window. It is not limited to business days 5–9.
+`interpolatedGoldmanRollPrice` is a smoothed version of the Goldman Roll. It applies the 20% daily shift to the next contract over the course of each business day, 5–9, of the month preceding delivery.
