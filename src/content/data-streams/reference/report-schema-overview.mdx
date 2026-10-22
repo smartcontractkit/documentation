@@ -96,7 +96,7 @@ Each stream category uses one or more report schemas to deliver data. Several ca
       <td>
         <a href="/data-streams/reference/report-schema-v14">Futures (v14)</a>
       </td>
-      <td>Futures price data with continuous roll price series</td>
+      <td>Futures price data with Goldman Roll price fields</td>
       <td>
         <code>midPrice</code>, <code>bidPrice</code>, <code>askPrice</code>, <code>expiryTime</code>,{" "}
         <code>contractMonth</code>, <code>goldmanRollPrice</code>, <code>marketStatus</code>
@@ -168,7 +168,7 @@ While the Data Streams architecture is designed to deliver updates at least once
 
 - **[RWA Standard (v8)](/data-streams/reference/report-schema-v8)** — standard RWA format with consolidated mid price, market status, and freshness indicators. Used by the majority of RWA streams.
 - **[RWA Advanced (v11)](/data-streams/reference/report-schema-v11)** — adds bid/ask prices, volume depth, last traded price where supported, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
-- **[Futures (v14)](/data-streams/reference/report-schema-v14)** — futures price data with contract expiration, market status, and continuous roll price series. Used by [Futures streams](/data-streams/rwa-streams/futures).
+- **[Futures (v14)](/data-streams/reference/report-schema-v14)** — futures price data with contract expiration, market status, and Goldman Roll price fields. Used by [Futures streams](/data-streams/rwa-streams/futures).
 
 ### RWA Standard (v8)
 
@@ -188,7 +188,7 @@ These advanced fields enable protocols to implement more sophisticated risk mana
 
 The [Futures (v14)](/data-streams/reference/report-schema-v14) report schema provides price data for exchange-traded futures contracts. Each report includes consensus mid, bid, and ask prices (`midPrice`, `bidPrice`, `askPrice`), contract expiration (`expiryTime`), the first day of notice (`firstDayOfNotice`), the tracked contract month (`contractMonth`), market status (`marketStatus`), and a staleness measure (`lastSeenTimestampNs`).
 
-Because futures contracts expire, streams using this schema expose three **generic** feeds per instrument that always track the current front, second, and third contract. The schema also includes continuous roll price series — `goldmanRollPrice`, `interpolatedGoldmanRollPrice`, and `currentBusinessDay` — for integrators who want a smoothed price instead of a hard cutover at contract expiration. See the [Futures](/data-streams/rwa-streams/futures) reference for rotation methodology and the [Futures (v14) reference](/data-streams/reference/report-schema-v14) for complete field specifications.
+Because futures contracts expire, streams using this schema expose three **generic** feeds per instrument that always track the current front, second, and third contract. The schema also includes Goldman Roll price fields — `goldmanRollPrice`, `interpolatedGoldmanRollPrice`, and `currentBusinessDay` — for integrators who want a smoothed price instead of a hard cutover at contract expiration. See the [Futures](/data-streams/rwa-streams/futures) reference for rotation methodology and the [Futures (v14) reference](/data-streams/reference/report-schema-v14) for complete field specifications.
 
 ## SmartData
 

@@ -288,7 +288,7 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       {
         field: "goldmanRollPrice",
         type: "int192",
-        description: "Continuous price using the Goldman Roll (GSCI) methodology",
+        description: "Goldman Roll price (GSCI methodology; 20% shifted per business day over days 5–9)",
       },
       {
         field: "currentBusinessDay",
@@ -298,7 +298,8 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       {
         field: "interpolatedGoldmanRollPrice",
         type: "int192",
-        description: "Interpolated Goldman Roll price, smoothed across the full contract cycle",
+        description:
+          "Interpolated Goldman Roll price: the 20% daily shift to the next contract, smoothed over each business day in the 5–9 window",
       },
     ],
   },

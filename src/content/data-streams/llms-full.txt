@@ -6505,7 +6505,7 @@ Real-world asset prices (multiple price points and enhanced market data)
 
 [Futures (v14)](/data-streams/reference/report-schema-v14)
 
-Futures price data with continuous roll price series
+Futures price data with Goldman Roll price fields
 
 `midPrice`, `bidPrice`, `askPrice`, `expiryTime`, `contractMonth`, `goldmanRollPrice`, `marketStatus`
 
@@ -6563,7 +6563,7 @@ While the Data Streams architecture is designed to deliver updates at least once
 
 - **[RWA Standard (v8)](/data-streams/reference/report-schema-v8)** — standard RWA format with consolidated mid price, market status, and freshness indicators. Used by the majority of RWA streams.
 - **[RWA Advanced (v11)](/data-streams/reference/report-schema-v11)** — adds bid/ask prices, volume depth, last traded price where supported, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
-- **[Futures (v14)](/data-streams/reference/report-schema-v14)** — futures price data with contract expiration, market status, and continuous roll price series. Used by [Futures streams](/data-streams/rwa-streams/futures).
+- **[Futures (v14)](/data-streams/reference/report-schema-v14)** — futures price data with contract expiration, market status, and Goldman Roll price fields. Used by [Futures streams](/data-streams/rwa-streams/futures).
 
 ### RWA Standard (v8)
 
@@ -6583,7 +6583,7 @@ These advanced fields enable protocols to implement more sophisticated risk mana
 
 The [Futures (v14)](/data-streams/reference/report-schema-v14) report schema provides price data for exchange-traded futures contracts. Each report includes consensus mid, bid, and ask prices (`midPrice`, `bidPrice`, `askPrice`), contract expiration (`expiryTime`), the first day of notice (`firstDayOfNotice`), the tracked contract month (`contractMonth`), market status (`marketStatus`), and a staleness measure (`lastSeenTimestampNs`).
 
-Because futures contracts expire, streams using this schema expose three **generic** feeds per instrument that always track the current front, second, and third contract. The schema also includes continuous roll price series — `goldmanRollPrice`, `interpolatedGoldmanRollPrice`, and `currentBusinessDay` — for integrators who want a smoothed price instead of a hard cutover at contract expiration. See the [Futures](/data-streams/rwa-streams/futures) reference for rotation methodology and the [Futures (v14) reference](/data-streams/reference/report-schema-v14) for complete field specifications.
+Because futures contracts expire, streams using this schema expose three **generic** feeds per instrument that always track the current front, second, and third contract. The schema also includes Goldman Roll price fields — `goldmanRollPrice`, `interpolatedGoldmanRollPrice`, and `currentBusinessDay` — for integrators who want a smoothed price instead of a hard cutover at contract expiration. See the [Futures](/data-streams/rwa-streams/futures) reference for rotation methodology and the [Futures (v14) reference](/data-streams/reference/report-schema-v14) for complete field specifications.
 
 ## SmartData
 
@@ -6793,9 +6793,9 @@ Chainlink Data Streams that use the Futures (v14) schema adhere to the structure
 | `lastSeenTimestampNs`          | `uint64`  | Timestamp of the last update received from the data provider (nanoseconds)                                                                |
 | `marketStatus`                 | `uint32`  | Market status. Mapping varies by feed; see schema docs. — [Status values](/data-streams/reference/report-schema-v14#market-status-values) |
 | `contractMonth`                | `uint32`  | Contract month, from 1 (Jan) to 12 (Dec)                                                                                                  |
-| `goldmanRollPrice`             | `int192`  | Continuous price using the Goldman Roll (GSCI) methodology                                                                                |
+| `goldmanRollPrice`             | `int192`  | Goldman Roll price (GSCI methodology; 20% shifted per business day over days 5–9)                                                         |
 | `currentBusinessDay`           | `uint32`  | Current business day of the month, used to determine the Goldman Roll window                                                              |
-| `interpolatedGoldmanRollPrice` | `int192`  | Interpolated Goldman Roll price, smoothed across the full contract cycle                                                                  |
+| `interpolatedGoldmanRollPrice` | `int192`  | Interpolated Goldman Roll price: the 20% daily shift to the next contract, smoothed over each business day in the 5–9 window              |
 
 ### Market Status Values
 
@@ -6819,7 +6819,7 @@ In addition to the raw generic feed prices — which switch entirely to the next
 | `interpolatedGoldmanRollPrice` | Interpolated Goldman Roll price: the Goldman Roll's 20% daily shift to the next contract, smoothed over the course of each business day, 5–9, of the month preceding delivery |
 | `currentBusinessDay`           | Current business day of the month, used to determine the Goldman Roll window                                                                                                  |
 
-For details on how the generic feeds rotate between contracts and how the continuous roll fields behave, see the [Futures](/data-streams/rwa-streams/futures) reference.
+For details on how the generic feeds rotate between contracts and how the Goldman Roll fields behave, see the [Futures](/data-streams/rwa-streams/futures) reference.
 
 ### Notes
 
@@ -7665,7 +7665,7 @@ Developers are responsible for choosing the appropriate feed and ensuring that t
 
 Futures streams use the [Futures (v14) schema](/data-streams/reference/report-schema-v14).
 
-The v14 schema includes consensus mid, bid, and ask prices, contract expiration and first day of notice, the tracked contract month, market status, and a staleness measure. It also includes continuous roll price fields — `goldmanRollPrice`, `interpolatedGoldmanRollPrice`, and `currentBusinessDay` — described below.
+The v14 schema includes consensus mid, bid, and ask prices, contract expiration and first day of notice, the tracked contract month, market status, and a staleness measure. It also includes Goldman Roll price fields — `goldmanRollPrice`, `interpolatedGoldmanRollPrice`, and `currentBusinessDay` — described below.
 
 ### Continuous roll price fields
 
@@ -7959,7 +7959,7 @@ The v14 report decodes to the following fields. Prices are 18-decimal fixed-poin
 | `lastSeenTimestampNs`              | `uint64` | Last provider update, nanoseconds                                                                                                          |
 | `marketStatus`                     | `uint32` | Market status: `0` Unknown, `1` Closed, `2` Open                                                                                           |
 | `contractMonth`                    | `uint32` | Contract month, `1` (Jan) to `12` (Dec)                                                                                                    |
-| `goldmanRollPrice`                 | `int192` | Goldman Roll continuous price (18 decimals)                                                                                                |
+| `goldmanRollPrice`                 | `int192` | Goldman Roll price (18 decimals)                                                                                                           |
 | `currentBusinessDay`               | `uint32` | Current business day of the month                                                                                                          |
 | `interpolatedGoldmanRollPrice`     | `int192` | Interpolated Goldman Roll price: the 20% daily shift to the next contract, smoothed over business days 5–9 of the month preceding delivery |
 
@@ -7969,7 +7969,7 @@ Futures streams differ from spot streams in a few ways that affect how you consu
 
 - **Gate trading with `marketStatus`.** Use `marketStatus` to decide whether the underlying market is open: `2` = Open, `1` = Closed, `0` = unknown. Treat `0` as not open, and do not infer market state from `lastSeenTimestampNs` or expected session hours. The mapping is the same for every v14 futures feed; see [Market Hours](/data-streams/market-hours#futures-v14).
 - **Monitor `lastSeenTimestampNs` for staleness.** Futures are sourced from a single underlying provider per feed. If updates stop arriving, the price can go stale without an obvious price change. Pause trading or restrict liquidations when the timestamp lags your freshness threshold.
-- **Expect a price discontinuity at each roll.** When the front contract expires, the feed re-maps to the next contract, which can trade at a different price. Do not treat this step as a data error. If your application needs a smooth series, build it from the continuous roll fields (`goldmanRollPrice`, `interpolatedGoldmanRollPrice`) or construct your own off-chain.
+- **Expect a price discontinuity at each roll.** When the front contract expires, the feed re-maps to the next contract, which can trade at a different price. Do not treat this step as a data error. If your application needs a smooth series, build it from the Goldman Roll fields (`goldmanRollPrice`, `interpolatedGoldmanRollPrice`) or construct your own off-chain.
 - **Do not hardcode contract-month spacing.** The gap between the contracts tracked by consecutive feeds varies by instrument (one month for energy, wider for precious metals). Read `contractMonth` from the report rather than assuming monthly spacing.
 - **Roll early if you are expiry-sensitive.** In the final days of a contract, liquidity migrates to the next contract while the front feed still tracks the expiring one, which can increase volatility. If your application is sensitive to this, roll ahead of expiry to a later feed when one is available.
 
