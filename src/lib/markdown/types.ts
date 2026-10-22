@@ -75,6 +75,11 @@ export type ComponentHandler = (
   context: ComponentContext
 ) => number | void
 
+/** An unhandled JSX subtree removed by a successful transform. */
+export interface DroppedComponent {
+  name: string
+}
+
 /**
  * Configuration for markdown transformation
  */
@@ -87,6 +92,8 @@ export interface TransformConfig {
   includeFrontmatter?: boolean
   /** Custom component handlers */
   componentHandlers?: Record<string, ComponentHandler>
+  /** Synchronous, best-effort observer. Events are delivered only after a successful transform. */
+  onDropComponent?: (drop: DroppedComponent) => void
 }
 
 /**
