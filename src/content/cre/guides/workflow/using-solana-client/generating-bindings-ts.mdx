@@ -5,20 +5,20 @@ sdkLang: "ts"
 pageId: "guides-workflow-solana-generating-bindings"
 date: Last Modified
 metadata:
-  description: "Generate typed TypeScript classes from Anchor IDL files to write data to Solana programs from CRE workflows."
+  description: "Generate typed TypeScript classes from Anchor IDL files to read from and write to Solana programs from CRE workflows."
   datePublished: "2026-07-06"
-  lastModified: "2026-08-20"
+  lastModified: "2026-10-19"
 ---
 
 import { Aside } from "@components"
 
 To interact with a Solana program from your TypeScript workflow, you generate **bindings** from the program's [Anchor IDL](https://www.anchor-lang.com/docs/references/idl). Bindings are typed TypeScript classes that handle Borsh encoding, account hashing, and report submission automatically.
 
-The Solana CRE capability is write-only. For each Anchor struct in your IDL, the generator creates a `writeReportFrom<StructName>()` method on the binding class. Your workflow calls this method with the struct data and the required accounts; the generated code handles everything else.
+For each Anchor struct in your IDL, the generator creates a `writeReportFrom<StructName>()` method on the binding class for onchain writes. For each event, it creates a `logTrigger<EventName>Log()` method you can register as a [Solana Log trigger](/cre/guides/workflow/using-triggers/solana-log-trigger-ts). Your workflow calls these methods with the struct data (or filters) and the required accounts; the generated code handles everything else.
 
-<Aside type="note" title="CLI version requirement">
-  TypeScript Solana binding generation and Solana write simulation require **CRE CLI v1.24.0 or later**. Run `cre
-  version` to check, then `cre update` if needed.
+<Aside type="note" title="CLI version requirements">
+  TypeScript Solana binding generation, read, write, and log trigger support require **CRE CLI v1.33.0 or later**. Run
+  `cre version` to check, then `cre update` if needed.
 </Aside>
 
 ## The generation process
@@ -191,9 +191,15 @@ What's inside depends on your IDL:
 - **For all programs**:
   - A typed `<PROGRAM>_IDL` constant and `<PROGRAM>_PROGRAM_ID` from the IDL address.
   - A `<ProgramName>` class with a `writeReport(runtime, payload, remainingAccounts, computeConfig?)` base method.
+- **For onchain reads** (each account in `accounts`):
+  - A `decode<AccountName>Account(data)` method that decodes raw account bytes returned by a read.
 - **For onchain writes** (each struct in `types`):
   - A `writeReportFrom<StructName>(runtime, input, remainingAccounts, computeConfig?)` method.
   - A `writeReportFrom<StructName>s(...)` variant for Borsh `Vec` payloads.
+- **For log triggers** (each event in `events`):
+  - A `logTrigger<EventName>Log(filterName, filters?, opts?)` method that returns a `Trigger` decoding to that event's data.
+  - An `<EventName>Filters` type for filtering on the event's top-level scalar fields. See [Solana Log
+    Trigger](/cre/guides/workflow/using-triggers/solana-log-trigger-ts).
 
 You can import from the barrel file to keep imports clean:
 
