@@ -476,23 +476,23 @@ These quotas apply to each individual workflow.
 
 # Network Upgrades
 Source: https://docs.chain.link/cre/network-upgrades
-Last Updated: 2026-10-01
+Last Updated: 2026-10-22
 
 Blockchain networks periodically upgrade their protocol. Most upgrades do not affect CRE workflows, but some change how transactions are priced or executed. This page tracks upcoming upgrades that may require action from workflow developers.
 
 ## Ethereum Glamsterdam
 
-Ethereum is upgrading to [Glamsterdam](https://ethereum.org/roadmap/glamsterdam/) during Q4 2026. The Ethereum Sepolia upgrade is scheduled for 6 October 2026 at 13:53:36 UTC; Hoodi and Mainnet timings are still to be confirmed.
+Ethereum is upgrading to [Glamsterdam](https://ethereum.org/roadmap/glamsterdam/) during Q4 2026. The Ethereum Sepolia upgrade took place on 6 October 2026 at 13:53:36 UTC. Ethereum Hoodi and Mainnet activation dates are still to be confirmed.
 
 Glamsterdam changes the gas model of the chain. **You do not need to do anything unless your workflow sets a gas limit**, in which case see [Preparation](#preparation) below.
 
 ### Timelines
 
-| Network              | Timing                                         | Impact                                                                                  |
-| -------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------- |
-| **Ethereum Sepolia** | 6 October 2026, 13:53:36 UTC                   | Workflows writing to Ethereum Sepolia may fail 30 minutes before and after the upgrade. |
-| **Ethereum Hoodi**   | Q4 2026 (will be confirmed closer to the time) | Workflows writing to Ethereum Hoodi may fail 30 minutes before and after the upgrade.   |
-| **Ethereum Mainnet** | Q4 2026 (will be confirmed closer to the time) | Workflows writing to Ethereum Mainnet may fail 30 minutes before and after the upgrade. |
+| Network              | Timing                                                 | Impact                                                                                         |
+| -------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| **Ethereum Sepolia** | 6 October 2026, 13:53:36 UTC (completed)               | Workflows writing to Ethereum Sepolia may have failed 30 minutes before and after the upgrade. |
+| **Ethereum Hoodi**   | To be confirmed (26 October 2026 activation postponed) | Workflows writing to Ethereum Hoodi may fail 30 minutes before and after the upgrade.          |
+| **Ethereum Mainnet** | To be confirmed                                        | Workflows writing to Ethereum Mainnet may fail 30 minutes before and after the upgrade.        |
 
 > **NOTE: Writes may fail during the upgrade window**
 >
@@ -504,9 +504,8 @@ If your workflows set a gas limit, you may need to adjust it once the hardfork t
 
 To best prepare:
 
-1. **Ahead of the Ethereum Sepolia upgrade**, update your workflows to add extra gas headroom or unset the gas limit, and confirm they still succeed.
-2. **After the Ethereum Sepolia upgrade on 6 October 2026**, confirm whether your workflow's transactions still succeed. If they do, no more action is needed. If you still have a gas limit set and your transactions are reverting due to out of gas, increase your gas limit well above the previous Fusaka limit of 16,777,216.
-3. **Ahead of the Ethereum Hoodi and Mainnet upgrade** (date to be confirmed in Q4 2026), apply the same steps as Ethereum Sepolia to minimize impact to your workflows.
+1. **For Ethereum Sepolia**, if your workflows wrote to Sepolia around the 6 October 2026 upgrade, confirm their transactions still succeed. If you still have a gas limit set and your transactions are reverting due to out of gas, increase your gas limit well above the previous Fusaka limit of 16,777,216.
+2. **Ahead of the Ethereum Hoodi and Mainnet upgrades** (dates to be confirmed), apply the same steps as Ethereum Sepolia: add extra gas headroom or unset the gas limit, and confirm your workflows still succeed.
 
 For details on configuring gas limits in your workflows, see [Configuring gas limits](/cre/guides/workflow/using-evm-client/onchain-write/using-write-report-helpers#configuring-gas-limits) and [Writing data onchain](/cre/guides/workflow/using-evm-client/onchain-write/writing-data-onchain).
 
@@ -572,13 +571,27 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-10-19
+Last Updated: 2026-10-22
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
 > **CAUTION: Ethereum Glamsterdam upgrade**
 >
-> Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Sepolia upgrades on 6 October 2026 at 13:53:36 UTC; Ethereum Hoodi and Mainnet follow in Q4 2026. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
+> Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Hoodi and Mainnet activation dates are still to be confirmed. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
+
+## CLI v1.39.0 - October 21, 2026
+
+**[CRE CLI version 1.39.0](https://github.com/smartcontractkit/cre-cli/releases/tag/v1.39.0) is now available.**
+
+- **Secrets failures now fail the command**: `cre secrets` commands now exit with a non-zero status when the vault rejects a secret, so CI/CD pipelines and scripts can detect the failure instead of treating it as a success.
+- **TLS verification**: The CLI now verifies TLS certificates on Workflow Registry RPC connections.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.38.0...v1.39.0)
 
 ## Solana Onchain Read and Log Trigger - October 19, 2026
 
@@ -13883,7 +13896,7 @@ For most read operations, use the standard confidence levels by passing `-2` (la
 > gap exceeds the normal environment. When this happens, calls to `finalized` and/or `safe` blocks will return an error.
 >
 > The following chains have exhibited this behavior and safe and finalized reads may periodically return errors.
-> **Mainnet:** Polygon, Mantle, Scroll. **Testnet:** Polygon Amoy, Linea Sepolia.
+> **Mainnet:** Polygon, Mantle, Scroll, Linea. **Testnet:** Polygon Amoy, Linea Sepolia, Arbitrum Sepolia, ZKSync Era Sepolia.
 
 ### Custom block depths
 
@@ -27457,7 +27470,7 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 | Hyperliquid Mainnet                                            | v1.7.0+  | v1.7.0+  | v1.4.0+  |
 | Ink                                                            | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | Jovay                                                          | v1.3.0+  | v1.4.0+  | v1.3.1+  |
-| Linea                                                          | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Linea[\*](/cre/concepts/finality-go#using-confidence-levels)   | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | Mantle[\*](/cre/concepts/finality-go#using-confidence-levels)  | v1.5.0+  | v1.6.0+  | v1.3.0+  |
 | MegaETH                                                        | v1.5.0+  | v1.6.0+  | v1.3.1+  |
 | Monad                                                          | v1.29.0+ | v1.17.0+ | v1.18.0+ |
@@ -27475,41 +27488,41 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Testnets
 
-| Network                                                              | CLI      | Go SDK   | TS SDK   |
-| -------------------------------------------------------------------- | -------- | -------- | -------- |
-| ADI Testnet                                                          | v1.15.0+ | v1.9.0+  | v1.7.0+  |
-| Apechain Curtis                                                      | v1.0.7+  | v1.1.4+  | v1.0.7+  |
-| Arc Testnet                                                          | v1.0.7+  | v1.1.4+  | v1.3.1+  |
-| Arbitrum Sepolia                                                     | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Avalanche Fuji                                                       | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Base Sepolia                                                         | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| BNB Chain Testnet                                                    | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Celo Sepolia                                                         | v1.15.0+ | v1.9.0+  | v1.7.0+  |
-| Cronos Testnet                                                       | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Ethereum Hoodi Testnet                                               | v1.35.0+ | v1.21.0+ | v1.22.0+ |
-| Ethereum Sepolia                                                     | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Gnosis Chiado                                                        | v1.7.0+  | v1.7.0+  | v1.4.0+  |
-| Hyperliquid Testnet                                                  | v1.0.7+  | v1.1.4+  | v1.0.7+  |
-| Ink Sepolia                                                          | v1.0.7+  | v1.1.4+  | v1.0.7+  |
-| Jovay Testnet                                                        | v1.0.7+  | v1.1.4+  | v1.0.7+  |
-| Linea Sepolia[\*](/cre/concepts/finality-go#using-confidence-levels) | v1.0.7+  | v1.1.4+  | v1.0.7+  |
-| Mantle Sepolia                                                       | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| MegaETH Testnet 2                                                    | v1.5.0+  | v1.6.0+  | v1.3.1+  |
-| Monad Testnet                                                        | v1.30.0+ | v1.19.0+ | v1.19.0+ |
-| OP Sepolia                                                           | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Pharos Atlantic Testnet                                              | v1.3.0+  | v1.5.0+  | v1.3.1+  |
-| Plasma Testnet                                                       | v1.0.7+  | v1.1.4+  | v1.0.7+  |
-| Polygon Amoy[\*](/cre/concepts/finality-go#using-confidence-levels)  | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Robinhood Testnet                                                    | v1.30.0+ | v1.19.0+ | v1.19.0+ |
-| Scroll Sepolia (deprecated)                                          | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Sonic Testnet                                                        | v1.5.0+  | v1.6.0+  | v1.3.1+  |
-| Stable Testnet                                                       | v1.30.0+ | v1.19.0+ | v1.19.0+ |
-| TAC Testnet                                                          | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| T-REX Testnet (deprecated)                                           | v1.30.0+ | v1.19.0+ | v1.19.0+ |
-| Unichain Sepolia                                                     | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| World Chain Sepolia                                                  | v1.0.7+  | v1.1.4+  | v1.0.7+  |
-| XLayer Testnet                                                       | v1.5.0+  | v1.6.0+  | v1.3.1+  |
-| ZKSync Era Sepolia                                                   | v1.0.6+  | v1.1.2+  | v1.0.7+  |
+| Network                                                                   | CLI      | Go SDK   | TS SDK   |
+| ------------------------------------------------------------------------- | -------- | -------- | -------- |
+| ADI Testnet                                                               | v1.15.0+ | v1.9.0+  | v1.7.0+  |
+| Apechain Curtis                                                           | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Arc Testnet                                                               | v1.0.7+  | v1.1.4+  | v1.3.1+  |
+| Arbitrum Sepolia[\*](/cre/concepts/finality-go#using-confidence-levels)   | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Avalanche Fuji                                                            | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Base Sepolia                                                              | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| BNB Chain Testnet                                                         | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Celo Sepolia                                                              | v1.15.0+ | v1.9.0+  | v1.7.0+  |
+| Cronos Testnet                                                            | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Ethereum Hoodi Testnet                                                    | v1.35.0+ | v1.21.0+ | v1.22.0+ |
+| Ethereum Sepolia                                                          | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Gnosis Chiado                                                             | v1.7.0+  | v1.7.0+  | v1.4.0+  |
+| Hyperliquid Testnet                                                       | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Ink Sepolia                                                               | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Jovay Testnet                                                             | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Linea Sepolia[\*](/cre/concepts/finality-go#using-confidence-levels)      | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Mantle Sepolia                                                            | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| MegaETH Testnet 2                                                         | v1.5.0+  | v1.6.0+  | v1.3.1+  |
+| Monad Testnet                                                             | v1.30.0+ | v1.19.0+ | v1.19.0+ |
+| OP Sepolia                                                                | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Pharos Atlantic Testnet                                                   | v1.3.0+  | v1.5.0+  | v1.3.1+  |
+| Plasma Testnet                                                            | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| Polygon Amoy[\*](/cre/concepts/finality-go#using-confidence-levels)       | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Robinhood Testnet                                                         | v1.30.0+ | v1.19.0+ | v1.19.0+ |
+| Scroll Sepolia (deprecated)                                               | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Sonic Testnet                                                             | v1.5.0+  | v1.6.0+  | v1.3.1+  |
+| Stable Testnet                                                            | v1.30.0+ | v1.19.0+ | v1.19.0+ |
+| TAC Testnet                                                               | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| T-REX Testnet (deprecated)                                                | v1.30.0+ | v1.19.0+ | v1.19.0+ |
+| Unichain Sepolia                                                          | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| World Chain Sepolia                                                       | v1.0.7+  | v1.1.4+  | v1.0.7+  |
+| XLayer Testnet                                                            | v1.5.0+  | v1.6.0+  | v1.3.1+  |
+| ZKSync Era Sepolia[\*](/cre/concepts/finality-go#using-confidence-levels) | v1.0.6+  | v1.1.2+  | v1.0.7+  |
 
 \* Safe and finalized reads are not reliably supported on these networks. See [Finality and Confidence Levels](/cre/concepts/finality-go#using-confidence-levels).
 
