@@ -1249,7 +1249,7 @@ Deploy the `DataConsumerV3` smart contract on the Sepolia testnet.
 
    ![Remix Deployed Contracts Section](/images/getting-started/deployedContractDataConsumerV3.png)
 
-9. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **Show more details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed uses a different number of decimal places for answers.
+9. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **More Details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed can use a different number of decimal places, so always read the `decimals()` value from the feed contract instead of hardcoding it. See [Decimal precision](/data-feeds/price-feeds#decimal-precision) for details.
 
    ![A screenshot showing the deployed contract and the latest answer.](/images/getting-started/getLatestPrice.png)
 
@@ -2069,7 +2069,7 @@ async function checkDataStaleness() {
 
 **Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
 
-1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "More Details")
 2. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
 3. Consider your specific use case requirements (some applications may need very recent data)
 
@@ -2581,7 +2581,7 @@ require(block.timestamp - lastUpdateTime <= stalenessThreshold, "MVR feed data i
 
 **Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
 
-1. Find the feed's **heartbeat interval** on the [MVR Feeds Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Find the feed's **heartbeat interval** on the [MVR Feeds Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "More Details")
 2. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
 3. Consider your specific use case requirements (some applications may need very fresh data)
 
@@ -3024,7 +3024,7 @@ async function checkDataStaleness(
 
 **Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
 
-1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "More Details")
 2. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
 3. Consider your specific use case requirements
 
@@ -3633,6 +3633,25 @@ Live values such as feed contract addresses are not inlined here. Wait for the o
 Source: https://docs.chain.link/data-feeds/price-feeds
 
 Chainlink Data Feeds provide data that is aggregated from many data sources by a decentralized set of independent node operators. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) describes this in detail. However, there are some exceptions where data for a feed can come only from a single data source or where data values are calculated. Read the [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) to learn about the different data feed categories and how to identify them.
+
+## Decimal precision
+
+Feed answers are returned as integers without a decimal point. To convert an answer into a human-readable value, divide it by `10^decimals`. For example, an answer of `3030914000000` from a feed with `8` decimals represents `30309.14`.
+
+Chainlink generally uses the following decimal standards for new feeds:
+
+| Asset class          | Decimals      |
+| -------------------- | ------------- |
+| Crypto / USD         | 8             |
+| Crypto / ETH         | 18            |
+| Forex                | 8             |
+| Precious metals      | 8             |
+| Commodities / Energy | 8             |
+| All others           | Feed-specific |
+
+These standards are subject to change, individual feeds can differ, and some networks use a single precision for all feeds. For example, feeds on [Stellar](/data-feeds/stellar) and [Aptos](/data-feeds/aptos) use 18 decimals. This applies to every network, EVM and non-EVM: always read the precision of each feed you use from the feed contract instead of hardcoding a value based on the table above. On EVM chains, call the [`decimals()`](/data-feeds/api-reference#decimals) function on the feed's proxy contract. On other networks, use the equivalent function described in that network's guide. You can also verify the decimals for a feed on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by selecting **More Details**.
+
+Decimal precision is not changed on live feeds. If an asset's price moves to a level where the feed's precision is no longer sufficient for your use case, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) about launching a new feed.
 
 ---
 
@@ -5484,7 +5503,7 @@ The consumer contract contains two functions that you interact with in this exam
    status: success
    ```
 
-   The answer on the ETH / USD feed uses 8 decimal places, so an answer of `354661371569` indicates an ETH / USD price of `3546.61371569`. Each feed uses a different number of decimal places for answers. You can find the correct number of decimal places on the [Price Feed addresses](/data-feeds/price-feeds/addresses?network=starknet) page by clicking the Show more details checkbox.
+   The answer on the ETH / USD feed uses 8 decimal places, so an answer of `354661371569` indicates an ETH / USD price of `3546.61371569`. Each feed uses a different number of decimal places for answers. You can find the correct number of decimal places on the [Price Feed addresses](/data-feeds/price-feeds/addresses?network=starknet) page by clicking the **More Details** checkbox.
 
 ---
 
