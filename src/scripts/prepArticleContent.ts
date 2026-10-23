@@ -18,8 +18,11 @@ const childMap: Record<string, Set<string>> = {
   H3: childBase,
 }
 
+const isProductSection = (element: Element) => element.hasAttribute("data-product-section")
+
 // Recursively check if we can wrap the node
 const canWrap = (element: Element, dontWrap: Set<string>) => {
+  if (isProductSection(element)) return false
   if (["ASTRO-ISLAND", "SECTION"].includes(element.nodeName) && element.firstElementChild) {
     return canWrap(element.firstElementChild, dontWrap)
   }
@@ -28,6 +31,7 @@ const canWrap = (element: Element, dontWrap: Set<string>) => {
 
 // If starting element is an island, check that it's not already using SectionWrapper
 const isValidStartingElement = (element: Element) => {
+  if (isProductSection(element)) return false
   if (element.nodeName === "ASTRO-ANCHORED-ACCORDION") return false
   if (["ASTRO-ISLAND", "SECTION"].includes(element.nodeName) && element.firstElementChild) {
     return canWrap(element.firstElementChild, dontWrapFallback)
@@ -111,6 +115,16 @@ const restoreScrollToHash = () => {
  * This picks up any headers not already modified by rehypeSlug and rehypeAutolinkHeadings (anything besides markdown content)
  */
 export const prepareSections = () => {
+  // Product-scoped blocks stay at the article's top level so they can be shown
+  // and hidden as a unit. Prepare their contents separately.
+  const productSections = document.querySelectorAll("[data-product-section]")
+  for (const productSection of productSections) {
+    let start = productSection.querySelector(":scope > :not(section)")
+    while (start) {
+      start = prepareSection(start)
+    }
+  }
+
   let start = document.body.querySelector("#article > :not(section)")
   while (start) {
     start = prepareSection(start)

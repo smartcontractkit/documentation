@@ -1,0 +1,26 @@
+---
+/**
+ * Renders its content only when the page is viewed from one of the listed
+ * products. On the standalone page (no product context), content renders by
+ * default; set `strict` to hide it there too. Use `block` for list items.
+ */
+interface Props {
+  products: string
+  block?: boolean
+  strict?: boolean
+}
+
+const { products, block = false, strict = false } = Astro.props
+---
+
+{
+  block ? (
+    <div data-product-only={products} data-product-only-strict={strict ? "true" : undefined}>
+      <slot />
+    </div>
+  ) : (
+    <span data-product-only={products} data-product-only-strict={strict ? "true" : undefined}>
+      <slot />
+    </span>
+  )
+}

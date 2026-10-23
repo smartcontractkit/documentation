@@ -44,6 +44,8 @@ import {
   handleCcipSendErrors,
   handleCcipEvents,
   handleFeedPage,
+  handleProductOnly,
+  handleProductSection,
   loadCcipCommonMapping,
   replaceNode,
   staticEstreeValue,
@@ -58,6 +60,15 @@ function staticMdxString(value: unknown): string | undefined {
   )?.data?.estree?.body?.[0]?.expression
   const staticValue = staticEstreeValue(expression)
   return typeof staticValue === "string" ? staticValue : undefined
+}
+
+/** Whether a node still renders visible text after component projection. */
+function hasRenderableContent(node: Parent): boolean {
+  return (node.children ?? []).some((child) => {
+    if (child.type === "text") return String((child as Literal).value).trim().length > 0
+    if (child.type === "paragraph") return hasRenderableContent(child as Parent)
+    return true
+  })
 }
 
 /** Keep an explicit JSX space inline with adjacent source text, including soft source line breaks. */
@@ -142,7 +153,7 @@ export async function transformMarkdown(
   mdxAbsPath: string,
   config: Partial<TransformConfig> = {}
 ): Promise<string> {
-  const { targetLanguage } = config
+  const { targetLanguage, productContext } = config
   const drops: DroppedComponent[] = []
 
   // Inline CcipCommon content before AST parsing so embedded components reach the normal AST handlers.
@@ -159,6 +170,7 @@ export async function transformMarkdown(
         mdxAbsPath,
         markdown,
         targetLanguage,
+        productContext,
         processor,
       }
 
@@ -178,6 +190,17 @@ export async function transformMarkdown(
         // Handle CcipCommon
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "CcipCommon") {
           return handleCcipCommon(node as MdxJsxNode, parent, index, context)
+        }
+
+        // Handle product-scoped blocks and inline content
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "ProductSection") {
+          return handleProductSection(node as MdxJsxNode, parent, index, context)
+        }
+        if (
+          (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+          (node as MdxJsxNode).name === "ProductOnly"
+        ) {
+          return handleProductOnly(node as MdxJsxNode, parent, index, context)
         }
 
         // Handle Aside
@@ -449,6 +472,14 @@ export async function transformMarkdown(
         const nextIndex = projectNode(node, index, parent)
         // A replaced node is detached. Traverse its replacement instead of mutating its old children.
         return typeof nextIndex === "number" ? ([SKIP, nextIndex] as [typeof SKIP, number]) : undefined
+      })
+      // Product-scoped content can leave an empty list item behind. Drop those so
+      // the Markdown export does not contain stray bullets.
+      visit(tree, "list", (node) => {
+        const list = node as Parent
+        list.children = list.children.filter(
+          (child) => child.type !== "listItem" || hasRenderableContent(child as Parent)
+        )
       })
       // Materialize generated anchors after projection, which continues to drop source HTML.
       visit(tree, "heading", (node) => {

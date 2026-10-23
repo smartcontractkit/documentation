@@ -19,6 +19,7 @@ import { isChainAwareSection } from "~/config/chainTypes"
 import CLFShutdownCallout from "~/features/chainlink-functions/common/cre-callout.mdx"
 import { toContentEntryId } from "~/lib/ccip/contentPathMapping.js"
 import DocsNavigation from "~/components/DocsNavigation"
+import { getParentProductMap } from "~/components/Header/getNavigationProps.ts"
 import { isSunsetDocsPath } from "~/config/sunset"
 
 interface Props {
@@ -37,6 +38,7 @@ const filteredHeadings = headings?.filter((h) => h.depth < 5)
 const initialHeadings = [titleHeading].concat(filteredHeadings ?? [])
 
 const whatsNext = frontmatter.whatsnext
+const parentProducts = getParentProductMap()
 
 const currentPage = new URL(Astro.request.url).pathname
 const pathname = currentPage.replace(/\/$/, "") || "/"
@@ -88,6 +90,14 @@ const howToSteps = initialHeadings
   }
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
   <DocsNavigation client:load pathname={currentPage} />
+  <script is:inline define:vars={{ parentProducts }}>
+    // The server can only render the picker from the pathname; correct it from ?parent=.
+    const product = parentProducts[document.documentElement.dataset.parent]
+    if (product) {
+      for (const label of document.querySelectorAll("[data-docs-picker-label]")) label.textContent = product.label
+      for (const icon of document.querySelectorAll("[data-docs-picker-icon]")) icon.setAttribute("src", product.icon)
+    }
+  </script>
   <main>
     <div id="left-bg"></div>
     <div class="layout">
@@ -127,7 +137,12 @@ const howToSteps = initialHeadings
       </div>
 
       <aside id="grid-right">
-        <RightSidebar {githubEditUrl} headings={initialHeadings} frontmatter={frontmatter} />
+        <RightSidebar
+          {githubEditUrl}
+          headings={initialHeadings}
+          frontmatter={frontmatter}
+          deferToClient={frontmatter.section === "chainlinkPlatform"}
+        />
       </aside>
     </div>
   </main>

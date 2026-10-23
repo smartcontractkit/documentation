@@ -340,3 +340,44 @@ package main
     expect(result.markdown).toContain("## Deprecated Feeds")
   })
 })
+
+describe("product-scoped platform docs", () => {
+  it("includes every product table when there is no product context", async () => {
+    const artifact = await buildMarkdownArtifact("chainlink-platform/rbac")
+
+    expect(artifact?.markdown).toContain("Chainlink Platform roles control access")
+    expect(artifact?.markdown).toContain("CRE roles control access")
+    expect(artifact?.markdown).toContain("Data Streams has a single role")
+    expect(artifact?.markdown).toContain("Create API keys with scoped permissions")
+  })
+
+  it("filters the CRE view to shared and CRE content", async () => {
+    const artifact = await buildMarkdownArtifact("chainlink-platform/rbac", { productContext: "cre" })
+
+    expect(artifact?.markdown).toContain("Chainlink Platform roles control access")
+    expect(artifact?.markdown).toContain("CRE roles control access")
+    expect(artifact?.markdown).not.toContain("Data Streams has a single role")
+    expect(artifact?.markdown).toContain("Create API keys with scoped permissions")
+  })
+
+  it("filters the Data Streams view and drops CRE-only API key links", async () => {
+    const artifact = await buildMarkdownArtifact("chainlink-platform/rbac", { productContext: "dataStreams" })
+
+    expect(artifact?.markdown).toContain("Chainlink Platform roles control access")
+    expect(artifact?.markdown).toContain("Data Streams has a single role")
+    expect(artifact?.markdown).not.toContain("CRE roles control access")
+    expect(artifact?.markdown).not.toContain("Create API keys with scoped permissions")
+  })
+
+  it("only includes the strict CRE CLI next step in the CRE view", async () => {
+    const unfiltered = await buildMarkdownArtifact("chainlink-platform/creating-an-account")
+    const cre = await buildMarkdownArtifact("chainlink-platform/creating-an-account", { productContext: "cre" })
+    const dataStreams = await buildMarkdownArtifact("chainlink-platform/creating-an-account", {
+      productContext: "dataStreams",
+    })
+
+    expect(unfiltered?.markdown).not.toContain("Log in to the CLI")
+    expect(cre?.markdown).toContain("Log in to the CLI")
+    expect(dataStreams?.markdown).not.toContain("Log in to the CLI")
+  })
+})

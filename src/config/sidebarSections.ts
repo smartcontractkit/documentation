@@ -24,6 +24,7 @@ export const SIDEBAR_SECTIONS = {
   RESOURCES: "resources",
   LEGACY: "legacy",
   GLOBAL: "global",
+  CHAINLINK_PLATFORM: "chainlinkPlatform",
 } as const
 
 export type SidebarSection = (typeof SIDEBAR_SECTIONS)[keyof typeof SIDEBAR_SECTIONS]

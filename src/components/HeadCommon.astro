@@ -1,6 +1,7 @@
 ---
 import "../styles/theme.css"
 import "../styles/index.css"
+import "../styles/product-context.css"
 import "../styles/code-blocks.css"
 import "../styles/migrated.css"
 import "../styles/prism-darcula.css"
@@ -23,6 +24,18 @@ const ccipChainVersionRedirects = getCcipChainVersionRedirects(Astro.url.pathnam
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<script is:inline>
+  // Shared docs pages carry their product in ?parent=. Set it before paint so
+  // CSS can select the right product sections instead of flashing all of them.
+  ;(() => {
+    const sync = () => {
+      document.documentElement.dataset.parent = new URLSearchParams(window.location.search).get("parent") || ""
+    }
+    sync()
+    document.addEventListener("astro:after-swap", sync)
+  })()
+</script>
 
 <!-- Before any stylesheet: redirects CCIP pages whose stored chain family has no docs in this version -->
 {ccipChainVersionRedirects && <CcipVersionGuard redirects={ccipChainVersionRedirects} />}
