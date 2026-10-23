@@ -9,6 +9,7 @@ import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import rehypeWrapAll from "rehype-wrap-all"
 import sitemap from "@astrojs/sitemap"
 import type { RehypePlugins } from "astro"
+import { unified } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
 import { fileURLToPath } from "node:url"
 import { ccipRedirects } from "./src/config/redirects/ccip"
@@ -131,28 +132,31 @@ export default defineConfig({
         return item
       },
     }),
-    // Ensure our fence-meta parser runs for `.mdx` pages (in addition to `markdown.remarkPlugins`).
-    mdx({
-      remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
-    }),
+    // Inherits the remark/rehype plugins of `markdown.processor`
+    mdx(),
   ],
   markdown: {
-    remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
-    rehypePlugins: [
-      rehypeSlug, // Required for autolink to work properly
-      [
-        rehypeAutolinkHeadings,
-        {
-          behavior: "wrap",
-        },
-      ],
-      // Wrap tables in div with overflow supported
-      [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
-      rehypeCodeSampleFences,
-    ] as RehypePlugins,
+    // Unified (remark/rehype) pipeline for `.md` and `.mdx`: Astro 7's default Sätteri processor doesn't run these plugins
+    processor: unified({
+      remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
+      rehypePlugins: [
+        rehypeSlug, // Required for autolink to work properly
+        [
+          rehypeAutolinkHeadings,
+          {
+            behavior: "wrap",
+          },
+        ],
+        // Wrap tables in div with overflow supported
+        [rehypeWrapAll, { selector: "table", wrapper: "div.overflow-wrapper" }],
+        rehypeCodeSampleFences,
+      ] as RehypePlugins,
+      smartypants: false,
+    }),
     syntaxHighlight: "prism",
-    smartypants: false,
   },
+  // HTML whitespace rules, as before Astro 7 (its 'jsx' default drops whitespace between inline elements)
+  compressHTML: true,
   // output: 'static' (fully static or partial SSR with `prerender = false` ==> export const prerender = false;)
   output: "static",
   adapter: vercel(),
@@ -160,8 +164,9 @@ export default defineConfig({
     plugins: [yaml()],
     build: {
       target: "esnext", // Use latest ES features, no transpilation for modern browsers
-      // Optimize CSS delivery
-      cssMinify: true,
+      // Optimize CSS delivery. esbuild, as before Vite 8: its default LightningCSS minifier merges
+      // `backdrop-filter` + `-webkit-backdrop-filter` into the last one, dropping the blur in Chrome/Firefox
+      cssMinify: "esbuild",
       // Increase the threshold for inlining assets to reduce render-blocking CSS
       assetsInlineLimit: 20000, // Inline CSS files up to 20KB to eliminate render-blocking
       // Removed manual chunking to prevent serverless function bloat
@@ -171,7 +176,7 @@ export default defineConfig({
       //   }
       // },
     },
-    esbuild: {
+    oxc: {
       target: "esnext", // Match build target for consistency
     },
     css: {
