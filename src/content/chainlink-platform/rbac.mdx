@@ -1,0 +1,239 @@
+---
+section: chainlinkPlatform
+date: Last Modified
+title: "RBAC (Role-Based Access Control)"
+metadata:
+  title: "RBAC (Role-Based Access Control)"
+  description: "Learn how role-based access control (RBAC) works on the Chainlink Platform, including the roles available for each product and how to manage them."
+  datePublished: "2026-10-15"
+  lastModified: "2026-10-15"
+---
+
+import { Aside, ProductOnly, ProductSection } from "@components"
+
+Role-based access control (RBAC) determines what each member of your organization can do on the Chainlink Platform. This page describes the roles available for each product, what each role can do, and how to manage roles for your organization members.
+
+## How RBAC works
+
+Each organization member is assigned a role for each product. The role determines the permissions the member has for that product. For example, a member can be a CRE Admin and an ACE Viewer at the same time.
+
+- A member can hold a different role for each product.
+- A member can have no role for a product. A member without a role for a product has no access to that product.
+- Roles are managed per product. A member's role for one product does not affect their access to other products.
+
+## The Owner role
+
+The first user to create an organization is automatically assigned the **Owner** role. The Owner role includes every permission for every product, including all future products. This covers:
+
+- Managing members and their roles for every product
+- Creating and managing API keys
+- Managing organization settings, billing, and addresses
+
+There is exactly one Owner per organization, and the Owner role cannot be transferred.
+
+## Roles and permissions
+
+The tables below list the permissions included in each role. A check mark indicates that the role includes the permission. The Owner role includes every permission in every table.
+
+<ProductSection product="platform" shared>
+
+### Chainlink Platform
+
+Chainlink Platform roles control access to organization-level features such as members, API keys, addresses, billing, and limits.
+
+| Name                  | Action | Permission ID                            | Admin | User |
+| --------------------- | ------ | ---------------------------------------- | ----- | ---- |
+| Organization          | Read   | `platform:organization:read`             | ✓     | ✓    |
+| Organization          | Write  | `platform:organization:write`            | ✓     |      |
+| Billing               | Read   | `platform:billing:read/*`                | ✓     | ✓    |
+| Billing               | Write  | `platform:billing:write/*`               | ✓     |      |
+| Payments              | Read   | `platform:payments:read`                 | ✓     | ✓    |
+| Payments              | Write  | `platform:payments:write`                | ✓     |      |
+| Member                | Read   | `platform:member:read`                   | ✓     | ✓    |
+| Member invite         | Write  | `platform:member_invite:write`           | ✓     |      |
+| Member                | Write  | `platform:member:write`                  | ✓     |      |
+| Member role           | Write  | `platform:member_role:write/*`           | ✓     |      |
+| Owner address         | Read   | `platform:owner_address:read`            | ✓     | ✓    |
+| Owner address         | Write  | `platform:owner_address:write`           | ✓     |      |
+| API key               | Read   | `platform:api_key:read`                  | ✓     | ✓    |
+| API key               | Write  | `platform:api_key:write`                 | ✓     | ✓    |
+| Limits                | Read   | `platform:limits:read/platform`          | ✓     | ✓    |
+| Limits                | Write  | `platform:limits:write/platform`         | ✓     |      |
+| Owner address linking | Write  | `platform:owner_address:linking:write/*` |       |      |
+| Limits                | Read   | `platform:limits:read/*`                 |       |      |
+| Limits                | Write  | `platform:limits:write/*`                |       |      |
+
+The last three permissions in the table are cross-product permissions that no Platform role includes. Product roles grant their product-scoped versions instead: for example, the CRE Admin role includes `platform:owner_address:linking:write/cre` and `platform:limits:write/cre`.
+
+</ProductSection>
+
+<ProductSection product="cre">
+
+### CRE
+
+CRE roles control access to workflows, secrets, limits, and workflow owner addresses.
+
+| Name                  | Action | Permission ID                              | Admin | Developer | Viewer |
+| --------------------- | ------ | ------------------------------------------ | ----- | --------- | ------ |
+| Workflow              | Read   | `cre:workflow:read`                        | ✓     | ✓         | ✓      |
+| Workflow artifact     | Read   | `cre:workflow:artifact:read`               | ✓     | ✓         | ✓      |
+| Workflow artifact     | Write  | `cre:workflow:artifact:write`              | ✓     | ✓         |        |
+| Workflow              | Write  | `cre:workflow:write/private_registry`      | ✓     | ✓         |        |
+| Secret                | Read   | `cre:secret:read`                          | ✓     | ✓         | ✓      |
+| Secret                | Write  | `cre:secret:write`                         | ✓     | ✓         |        |
+| Member role           | Write  | `platform:member_role:write/cre`           | ✓     |           |        |
+| Owner address linking | Write  | `platform:owner_address:linking:write/cre` | ✓     |           |        |
+| Limits                | Read   | `platform:limits:read/cre`                 | ✓     | ✓         | ✓      |
+| Limits                | Write  | `platform:limits:write/cre`                | ✓     |           |        |
+
+</ProductSection>
+
+<ProductSection product="ace">
+
+### ACE
+
+ACE roles control access to policy engines, policies, targets, identities, evaluations, and active monitoring.
+
+**Policy manager**
+
+| Name                                  | Action | Permission ID                                     | Admin | Operator | Viewer |
+| ------------------------------------- | ------ | ------------------------------------------------- | ----- | -------- | ------ |
+| Policy manager policy engine          | Read   | `ace:policy_manager:policy_engine:read`           | ✓     | ✓        | ✓      |
+| Policy manager policy engine          | Write  | `ace:policy_manager:policy_engine:write`          | ✓     | ✓        |        |
+| Policy manager policy engine archive  | Write  | `ace:policy_manager:policy_engine:archive:write`  | ✓     |          |        |
+| Policy manager policy                 | Read   | `ace:policy_manager:policy:read`                  | ✓     | ✓        | ✓      |
+| Policy manager policy                 | Write  | `ace:policy_manager:policy:write`                 | ✓     | ✓        |        |
+| Policy manager policy archive         | Write  | `ace:policy_manager:policy:archive:write`         | ✓     | ✓        |        |
+| Policy manager target                 | Read   | `ace:policy_manager:target:read`                  | ✓     | ✓        | ✓      |
+| Policy manager target                 | Write  | `ace:policy_manager:target:write`                 | ✓     | ✓        |        |
+| Policy manager target archive         | Write  | `ace:policy_manager:target:archive:write`         | ✓     | ✓        |        |
+| Policy manager target access          | Read   | `ace:policy_manager:target_access:read`           | ✓     |          |        |
+| Policy manager target access          | Write  | `ace:policy_manager:target_access:write`          | ✓     |          |        |
+| Policy manager implementation         | Read   | `ace:policy_manager:implementation:read`          | ✓     | ✓        | ✓      |
+| Policy manager implementation         | Write  | `ace:policy_manager:implementation:write`         | ✓     | ✓        |        |
+| Policy manager implementation archive | Write  | `ace:policy_manager:implementation:archive:write` | ✓     |          |        |
+
+**Identity manager**
+
+| Name                              | Action | Permission ID                                 | Admin | Operator | Viewer |
+| --------------------------------- | ------ | --------------------------------------------- | ----- | -------- | ------ |
+| Identity manager registry         | Read   | `ace:identity_manager:registry:read`          | ✓     | ✓        | ✓      |
+| Identity manager registry         | Write  | `ace:identity_manager:registry:write`         | ✓     | ✓        |        |
+| Identity manager registry archive | Write  | `ace:identity_manager:registry:archive:write` | ✓     |          |        |
+| Identity manager registry access  | Read   | `ace:identity_manager:registry_access:read`   | ✓     |          |        |
+| Identity manager registry access  | Write  | `ace:identity_manager:registry_access:write`  | ✓     |          |        |
+| Identity manager identity         | Read   | `ace:identity_manager:identity:read`          | ✓     | ✓        | ✓      |
+| Identity manager identity         | Write  | `ace:identity_manager:identity:write`         | ✓     | ✓        |        |
+| Identity manager identity archive | Write  | `ace:identity_manager:identity:archive:write` | ✓     | ✓        |        |
+
+**Reporting and evaluation**
+
+| Name                  | Action | Permission ID                    | Admin | Operator | Viewer |
+| --------------------- | ------ | -------------------------------- | ----- | -------- | ------ |
+| Reporting policy      | Read   | `ace:reporting:policy:read`      | ✓     | ✓        | ✓      |
+| Reporting identity    | Read   | `ace:reporting:identity:read`    | ✓     | ✓        | ✓      |
+| Reporting target      | Read   | `ace:reporting:target:read`      | ✓     | ✓        | ✓      |
+| Reporting transaction | Read   | `ace:reporting:transaction:read` | ✓     | ✓        | ✓      |
+| Reporting permit      | Read   | `ace:reporting:permit:read`      | ✓     | ✓        | ✓      |
+| Reporting registry    | Read   | `ace:reporting:registry:read`    | ✓     | ✓        | ✓      |
+| Evaluation permit     | Read   | `ace:evaluation:permit:read`     | ✓     | ✓        | ✓      |
+| Evaluation permit     | Write  | `ace:evaluation:permit:write`    | ✓     | ✓        |        |
+
+**Core**
+
+| Name            | Action | Permission ID              | Admin | Operator | Viewer |
+| --------------- | ------ | -------------------------- | ----- | -------- | ------ |
+| Core org config | Read   | `ace:core:org_config:read` | ✓     | ✓        | ✓      |
+| Core network    | Read   | `ace:core:network:read`    | ✓     | ✓        | ✓      |
+| Core wallet     | Read   | `ace:core:wallet:read`     | ✓     | ✓        | ✓      |
+| Core wallet     | Write  | `ace:core:wallet:write`    | ✓     |          |        |
+
+**Active monitoring**
+
+| Name                                 | Action | Permission ID                                    | Admin | Operator | Viewer |
+| ------------------------------------ | ------ | ------------------------------------------------ | ----- | -------- | ------ |
+| Active monitoring action variable    | Read   | `ace:active_monitoring:action_variable:read`     | ✓     | ✓        | ✓      |
+| Active monitoring contract group     | Read   | `ace:active_monitoring:contract_group:read`      | ✓     | ✓        | ✓      |
+| Active monitoring contract group     | Write  | `ace:active_monitoring:contract_group:write`     | ✓     | ✓        |        |
+| Active monitoring rule group         | Read   | `ace:active_monitoring:rule_group:read`          | ✓     | ✓        | ✓      |
+| Active monitoring rule group         | Write  | `ace:active_monitoring:rule_group:write`         | ✓     | ✓        |        |
+| Active monitoring monitored address  | Read   | `ace:active_monitoring:monitored_address:read`   | ✓     | ✓        | ✓      |
+| Active monitoring monitored address  | Write  | `ace:active_monitoring:monitored_address:write`  | ✓     | ✓        |        |
+| Active monitoring screening interval | Read   | `ace:active_monitoring:screening_interval:read`  | ✓     | ✓        | ✓      |
+| Active monitoring screening interval | Write  | `ace:active_monitoring:screening_interval:write` | ✓     | ✓        |        |
+| Active monitoring decision log       | Read   | `ace:active_monitoring:decision_log:read`        | ✓     | ✓        | ✓      |
+| Active monitoring decision log       | Write  | `ace:active_monitoring:decision_log:write`       | ✓     | ✓        |        |
+| Active monitoring provider api key   | Read   | `ace:active_monitoring:provider_api_key:read`    | ✓     | ✓        | ✓      |
+| Active monitoring provider api key   | Write  | `ace:active_monitoring:provider_api_key:write`   | ✓     |          |        |
+
+**Administration**
+
+| Name        | Action | Permission ID                    | Admin | Operator | Viewer |
+| ----------- | ------ | -------------------------------- | ----- | -------- | ------ |
+| Member role | Write  | `platform:member_role:write/ace` | ✓     |          |        |
+
+</ProductSection>
+
+<ProductSection product="crec">
+
+### CRE Connect
+
+CRE Connect roles control access to operations, wallets, channels, watchers, queries, and events.
+
+| Name                | Action | Permission ID                     | Admin | Operator | Viewer |
+| ------------------- | ------ | --------------------------------- | ----- | -------- | ------ |
+| Network             | Read   | `crec:network:read`               | ✓     | ✓        | ✓      |
+| Operation           | Read   | `crec:operation:read`             | ✓     | ✓        | ✓      |
+| Operation           | Write  | `crec:operation:write`            | ✓     | ✓        |        |
+| Operation signature | Write  | `crec:operation:signature:write`  | ✓     | ✓        |        |
+| Wallet              | Read   | `crec:wallet:read`                | ✓     | ✓        | ✓      |
+| Wallet              | Write  | `crec:wallet:write`               | ✓     | ✓        |        |
+| Wallet archive      | Write  | `crec:wallet:archive:write`       | ✓     |          |        |
+| Channel             | Read   | `crec:channel:read`               | ✓     | ✓        | ✓      |
+| Channel             | Write  | `crec:channel:write`              | ✓     | ✓        |        |
+| Channel archive     | Write  | `crec:channel:archive:write`      | ✓     |          |        |
+| Watcher             | Read   | `crec:watcher:read`               | ✓     | ✓        | ✓      |
+| Watcher             | Write  | `crec:watcher:write`              | ✓     | ✓        |        |
+| Watcher archive     | Write  | `crec:watcher:archive:write`      | ✓     |          |        |
+| Query               | Read   | `crec:query:read`                 | ✓     | ✓        | ✓      |
+| Query               | Write  | `crec:query:write`                | ✓     | ✓        |        |
+| Event               | Read   | `crec:event:read`                 | ✓     | ✓        | ✓      |
+| Member role         | Write  | `platform:member_role:write/crec` | ✓     |          |        |
+
+</ProductSection>
+
+<ProductSection product="dataStreams">
+
+### Data Streams
+
+Data Streams has a single role.
+
+| Name        | Action | Permission ID                            | Admin |
+| ----------- | ------ | ---------------------------------------- | ----- |
+| Member role | Write  | `platform:member_role:write/datastreams` | ✓     |
+
+</ProductSection>
+
+{/* prettier-ignore */}
+<Aside type="note" title="Product availability">
+  Roles are available only for products your organization has access to. If a product is not enabled for your organization, members cannot be assigned a role for that product.
+</Aside>
+
+## Managing member roles
+
+Members with the appropriate permissions can assign and change roles for other members:
+
+- **Platform Admins** can manage member roles for all products.
+- **Product Admins** (for example, CRE Admins) can manage member roles for their product.
+- The **Owner** can manage member roles for all products.
+
+To assign or change a member's roles, see [Assigning and Modifying Roles](/chainlink-platform/assigning-and-modifying-roles).
+
+## What's next?
+
+- [Assigning and Modifying Roles](/chainlink-platform/assigning-and-modifying-roles) - Change the roles that organization members hold for each product.
+- <ProductOnly products="cre,ace,crec" block>
+    [API Keys](/chainlink-platform/api-keys) - Create API keys with scoped permissions for each product.
+  </ProductOnly>
+- [Inviting Team Members](/chainlink-platform/inviting-team-members) - Add members to your organization.
+- [Understanding Organizations](/chainlink-platform/understanding-organizations) - Learn how organizations work on the Chainlink Platform.

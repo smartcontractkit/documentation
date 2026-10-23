@@ -5,7 +5,7 @@ title: "Authentication Commands"
 metadata:
   description: "Manage your CLI authentication: browser-based login, API key authentication for CI/CD, and session management commands."
   datePublished: "2025-11-04"
-  lastModified: "2026-05-22"
+  lastModified: "2026-10-20"
 ---
 
 import { Aside } from "@components"
@@ -19,7 +19,7 @@ The CRE CLI supports two authentication methods:
 
 ### `cre login`
 
-Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the CRE platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
+Starts the interactive authentication flow. This command opens your browser for user login, saves your credentials locally to `~/.cre/cre.yaml`, and **fetches your tenant context** from the Chainlink Platform. That response is cached per CRE environment (for example `PRODUCTION`) in **`~/.cre/context.yaml`** — a registry manifest that includes items such as your vault gateway URL, workflow registries, and which secrets authentication flows each registry supports. See [Tenant context cache](#tenant-context-cache) below.
 
 `cre login` requires a browser and is not available in `--non-interactive` mode. For CI/CD pipelines and other headless environments, use `CRE_API_KEY` instead.
 
@@ -37,7 +37,7 @@ cre login
 1. Enter your one-time password (OTP) from your authenticator app
 1. The CLI automatically captures and saves your credentials locally, then fetches and caches tenant context (you may see **"Fetching user context…"** in the terminal)
 
-For a detailed walkthrough with screenshots, see [Logging in with the CLI](/cre/account/cli-login).
+For a detailed walkthrough with screenshots, see [Logging in with the CLI](/cre/guides/cli/cli-login).
 
 ### `cre logout`
 
@@ -68,22 +68,43 @@ cre whoami
 
 {/* prettier-ignore */}
 <Aside type="note" title="Deploy access required">
-  API key authentication requires your account to have deploy access approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+  API key authentication requires your account to have deploy access approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/guides/operations/deploy-access).
 </Aside>
 
 For CI/CD pipelines, automated scripts, or any environment where a browser is not available, you can authenticate using an API key. When the `CRE_API_KEY` environment variable is set, the CLI uses it automatically — no `cre login` required.
 
 ### Creating an API key
 
-1. Log in to the <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">CRE platform</a>
-1. Navigate to the **Organization** page
-1. Select the **APIs** tab
-1. Click **+ Organization API**
-1. Give your key a name and confirm
+<Aside type="note" title="To create an API key for CRE">
+- You must be the organization **Owner**
+  
+  **OR** 
+  
+- Have the CRE **Admin** role.
+
+For information about role-based access, see [RBAC](/chainlink-platform/rbac?parent=cre#cre). To invite team members and assign roles, see [Invite members](/chainlink-platform/inviting-team-members?parent=cre).
+
+</Aside>
+
+1. [Create an account](/chainlink-platform/creating-an-account?parent=cre) or sign in to <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a>.
+1. Click on your account's icon in the top-right corner of the navbar and go to **Org settings** to open the **Organization** page, then navigate to the **API Keys** tab.
+1. Click **Create API Key** and enter a name for the key.
+1. In the **API Scope** section, expand the **CRE** accordion and grant the key the permissions that the CLI uses. For the Organization permission, expand the **Chainlink Platform** accordion.
+
+   | Name                  | Action | Permission ID                              |
+   | --------------------- | ------ | ------------------------------------------ |
+   | Workflow              | Write  | `cre:workflow:write/private_registry`      |
+   | Workflow artifact     | Write  | `cre:workflow:artifact:write`              |
+   | Owner address linking | Write  | `platform:owner_address:linking:write/cre` |
+   | Organization          | Read   | `platform:organization:read`               |
+
+   See [API Keys](/chainlink-platform/api-keys?parent=cre#cre) for the full list of permissions available for CRE.
+
+1. Click **Create API Key**, then copy the key and click **Done**. The API key is displayed only once.
 
 {/* prettier-ignore */}
 <Aside type="caution" title="Keep your API key secure">
-  Treat your API key like a password. Do not commit it to version control or share it in plain text. Use your CI/CD platform's secret management to store it securely.
+  Treat your API key like a password. Do not commit it to version control, share it in plain text, or feed it to an agent via prompt. Use your CI/CD platform's secret management to store it securely.
 </Aside>
 
 ### Using the API key
@@ -138,11 +159,11 @@ PRODUCTION:
 | `cre login`                             | Local development                     | Opens a browser for interactive login with 2FA       |
 | `CRE_API_KEY`                           | CI/CD, scripts, headless environments | Set the environment variable — no browser needed(\*) |
 
-(\*) API key authentication requires your account to have deploy access approval. See [Requesting Deploy Access](/cre/account/deploy-access).
+(\*) API key authentication requires your account to have deploy access approval. See [Requesting Deploy Access](/cre/guides/operations/deploy-access).
 
 ## Learn more
 
-- [Logging in with the CLI](/cre/account/cli-login) — Step-by-step browser login guide with screenshots
-- [Managing Authentication](/cre/account/managing-auth) — Session management, expiration, and logout
+- [Logging in with the CLI](/cre/guides/cli/cli-login) — Step-by-step browser login guide with screenshots
+- [Managing Authentication](/cre/guides/cli/managing-auth) — Session management, expiration, and logout
 - [Account Management](/cre/reference/cli/account) — Link keys after authentication
 - [Deploying Workflows](/cre/guides/operations/deploying-workflows) — Requires authentication

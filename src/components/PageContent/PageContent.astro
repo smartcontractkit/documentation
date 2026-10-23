@@ -311,9 +311,16 @@ const { titleHeading, disableDefaultStyles, hideTitle } = Astro.props
 
 <script>
   import { prepareSections } from "../../scripts/prepArticleContent.ts"
+  import { applyProductOnlyVisibility, preservePlatformParentLinks } from "../../scripts/productContext.ts"
 
   // Runs on initial navigation
   prepareSections()
+  preservePlatformParentLinks()
+  applyProductOnlyVisibility()
   // Runs on view transitions navigation
-  document.addEventListener("astro:after-swap", () => prepareSections())
+  document.addEventListener("astro:after-swap", () => {
+    prepareSections()
+    preservePlatformParentLinks()
+    applyProductOnlyVisibility()
+  })
 </script>

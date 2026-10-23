@@ -200,6 +200,14 @@ const resourcesCollection = defineCollection({
   schema: baseFrontmatter,
 })
 
+const chainlinkPlatformCollection = defineCollection({
+  loader: glob({
+    base: "./src/content/chainlink-platform",
+    pattern: "**/*.md?(x)",
+  }),
+  schema: baseFrontmatter,
+})
+
 const vrfCollection = defineCollection({
   loader: glob({
     base: "./src/content/vrf",
@@ -331,6 +339,7 @@ export const collections = {
   cre: creCollection,
   crec: crecCollection,
   resources: resourcesCollection,
+  "chainlink-platform": chainlinkPlatformCollection,
   vrf: vrfCollection,
   "chainlink-local": chainlinkLocalCollection,
   quickstarts: quickstartsCollection,
