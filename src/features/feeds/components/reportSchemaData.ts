@@ -254,4 +254,53 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       },
     ],
   },
+  v14: {
+    label: "Report Schema v14 (Futures)",
+    shortLabel: "v14",
+    url: "/data-streams/reference/report-schema-v14",
+    fields: [
+      ...COMMON_FIELDS,
+      { field: "midPrice", type: "int192", description: "DON consensus mid price" },
+      { field: "bidPrice", type: "int192", description: "DON consensus bid price" },
+      { field: "askPrice", type: "int192", description: "DON consensus ask price" },
+      { field: "expiryTime", type: "uint64", description: "Contract expiration time (Unix seconds)" },
+      {
+        field: "firstDayOfNotice",
+        type: "uint64",
+        description: "First day of notice for the tracked contract (Unix seconds)",
+      },
+      {
+        field: "lastSeenTimestampNs",
+        type: "uint64",
+        description: "Timestamp of the last update received from the data provider (nanoseconds)",
+      },
+      {
+        field: "marketStatus",
+        type: "uint32",
+        description: "Market status. Mapping varies by feed; see schema docs.",
+        link: { label: "Status values", href: "/data-streams/reference/report-schema-v14#market-status-values" },
+      },
+      {
+        field: "contractMonth",
+        type: "uint32",
+        description: "Contract month, from 1 (Jan) to 12 (Dec)",
+      },
+      {
+        field: "goldmanRollPrice",
+        type: "int192",
+        description: "Goldman Roll price (GSCI methodology; 20% shifted per business day over days 5–9)",
+      },
+      {
+        field: "currentBusinessDay",
+        type: "uint32",
+        description: "Current business day of the month, used to determine the Goldman Roll window",
+      },
+      {
+        field: "interpolatedGoldmanRollPrice",
+        type: "int192",
+        description:
+          "Interpolated Goldman Roll price: the 20% daily shift to the next contract, smoothed over each business day in the 5–9 window",
+      },
+    ],
+  },
 }

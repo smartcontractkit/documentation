@@ -1696,6 +1696,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "data-streams/reference/report-schema-v11",
             },
             {
+              title: "Report Schema v14 (Futures)",
+              url: "data-streams/reference/report-schema-v14",
+            },
+            {
               title: "Handling Market Events",
               url: "data-streams/rwa-streams/handling-market-events",
               highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
@@ -1707,6 +1711,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
             {
               title: "APAC Equities",
               url: "data-streams/rwa-streams/apac-equities",
+            },
+            {
+              title: "Futures",
+              url: "data-streams/rwa-streams/futures",
             },
           ],
         },
