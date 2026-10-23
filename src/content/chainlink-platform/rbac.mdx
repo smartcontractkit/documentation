@@ -9,7 +9,7 @@ metadata:
   lastModified: "2026-10-15"
 ---
 
-import { Aside } from "@components"
+import { Aside, ProductOnly, ProductSection } from "@components"
 
 Role-based access control (RBAC) determines what each member of your organization can do on the Chainlink Platform. This page describes the roles available for each product, what each role can do, and how to manage roles for your organization members.
 
@@ -31,9 +31,11 @@ The first user to create an organization is automatically assigned the **Owner**
 
 There is exactly one Owner per organization, and the Owner role cannot be transferred.
 
-## Roles by product
+## Roles and permissions
 
-Each product defines its own set of roles. The following tables list every permission for each product: a check mark indicates that the role includes the permission. The Owner role includes every permission in every table.
+The tables below list the permissions included in each role. A check mark indicates that the role includes the permission. The Owner role includes every permission in every table.
+
+<ProductSection product="platform" shared>
 
 ### Chainlink Platform
 
@@ -63,6 +65,10 @@ Chainlink Platform roles control access to organization-level features such as m
 
 The last three permissions in the table are cross-product permissions that no Platform role includes. Product roles grant their product-scoped versions instead: for example, the CRE Admin role includes `platform:owner_address:linking:write/cre` and `platform:limits:write/cre`.
 
+</ProductSection>
+
+<ProductSection product="cre">
+
 ### CRE
 
 CRE roles control access to workflows, secrets, limits, and workflow owner addresses.
@@ -79,6 +85,10 @@ CRE roles control access to workflows, secrets, limits, and workflow owner addre
 | Owner address linking | Write  | `platform:owner_address:linking:write/cre` | ✓     |           |        |
 | Limits                | Read   | `platform:limits:read/cre`                 | ✓     | ✓         | ✓      |
 | Limits                | Write  | `platform:limits:write/cre`                | ✓     |           |        |
+
+</ProductSection>
+
+<ProductSection product="ace">
 
 ### ACE
 
@@ -162,6 +172,10 @@ ACE roles control access to policy engines, policies, targets, identities, evalu
 | ----------- | ------ | -------------------------------- | ----- | -------- | ------ |
 | Member role | Write  | `platform:member_role:write/ace` | ✓     |          |        |
 
+</ProductSection>
+
+<ProductSection product="crec">
+
 ### CRE Connect
 
 CRE Connect roles control access to operations, wallets, channels, watchers, queries, and events.
@@ -186,6 +200,10 @@ CRE Connect roles control access to operations, wallets, channels, watchers, que
 | Event               | Read   | `crec:event:read`                 | ✓     | ✓        | ✓      |
 | Member role         | Write  | `platform:member_role:write/crec` | ✓     |          |        |
 
+</ProductSection>
+
+<ProductSection product="dataStreams">
+
 ### Data Streams
 
 Data Streams has a single role.
@@ -193,6 +211,8 @@ Data Streams has a single role.
 | Name        | Action | Permission ID                            | Admin |
 | ----------- | ------ | ---------------------------------------- | ----- |
 | Member role | Write  | `platform:member_role:write/datastreams` | ✓     |
+
+</ProductSection>
 
 {/* prettier-ignore */}
 <Aside type="note" title="Product availability">
@@ -212,6 +232,8 @@ To assign or change a member's roles, see [Assigning and Modifying Roles](/chain
 ## What's next?
 
 - [Assigning and Modifying Roles](/chainlink-platform/assigning-and-modifying-roles) - Change the roles that organization members hold for each product.
-- [API Keys](/chainlink-platform/api-keys) - Create API keys with scoped permissions for each product.
+- <ProductOnly products="cre,ace,crec" block>
+    [API Keys](/chainlink-platform/api-keys) - Create API keys with scoped permissions for each product.
+  </ProductOnly>
 - [Inviting Team Members](/chainlink-platform/inviting-team-members) - Add members to your organization.
 - [Understanding Organizations](/chainlink-platform/understanding-organizations) - Learn how organizations work on the Chainlink Platform.

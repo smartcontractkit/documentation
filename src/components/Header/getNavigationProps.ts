@@ -204,6 +204,18 @@ export const getSubProductByParentParam = (parent: string | null | undefined) =>
   return href ? desktopSubProductsNav.find((item) => item.href === href) : undefined
 }
 
+/** Build-time map of `?parent=` values to the picker label and icon. */
+export const getParentProductMap = () => {
+  const map: Record<string, { label: string; icon: string }> = {}
+  for (const [section, href] of Object.entries(parentSectionToHref)) {
+    const product = desktopSubProductsNav.find((item) => item.href === href)
+    if (product) {
+      map[section] = { label: product.label, icon: product.icon }
+    }
+  }
+  return map
+}
+
 const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
   {
     label: "Documentation",

@@ -23,8 +23,8 @@ function DocsPickerDesktop({ pathname, parentSection = null }: { pathname: strin
       onMouseEnter={() => setProductMenuOpen(true)}
       onMouseLeave={() => setProductMenuOpen(false)}
     >
-      <img src={icon} alt="" className={styles.logo} />
-      <span>{label}</span>
+      <img src={icon} alt="" className={styles.logo} data-docs-picker-icon />
+      <span data-docs-picker-label>{label}</span>
       <div className={styles.caret}>
         <span></span>
       </div>

@@ -12,9 +12,12 @@ function DocsNavigation({
   isCcipDirectory?: boolean
 }) {
   // Shared pages viewed through a product sidebar carry `?parent=<section>`. The param never reaches
-  // this island as a prop (static output), so read it on the client. useState + useEffect (rather
-  // than a render-time read) keeps the first client render identical to the server-rendered HTML.
-  const [parentSection, setParentSection] = useState<string | null>(null)
+  // this island as a prop (static output), so read it on the client. The initializer runs against the
+  // DOM that DocsLayout's inline script has already corrected, which keeps hydration consistent.
+  const [parentSection, setParentSection] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null
+    return new URLSearchParams(window.location.search).get("parent")
+  })
   useEffect(() => {
     const readParentSection = () => setParentSection(new URLSearchParams(window.location.search).get("parent"))
     readParentSection()

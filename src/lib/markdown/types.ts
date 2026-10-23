@@ -60,6 +60,8 @@ export interface ComponentContext {
   markdown: string
   /** Target language (if any) */
   targetLanguage?: string
+  /** Product docs context (for example, "cre"), used by product-scoped components */
+  productContext?: string
   /** Unified processor instance */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   processor: any
@@ -88,6 +90,8 @@ export interface TransformConfig {
   siteBase: string
   /** Target language for language-specific content */
   targetLanguage?: string
+  /** Product docs context (for example, "cre"), used by product-scoped components */
+  productContext?: string
   /** Whether to include frontmatter in output */
   includeFrontmatter?: boolean
   /** Custom component handlers */

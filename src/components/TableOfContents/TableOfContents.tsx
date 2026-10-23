@@ -7,27 +7,50 @@ import { shouldUpdateToc } from "./tocStore.ts"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { useStore } from "@nanostores/preact"
 
+/**
+ * Drops headings that belong to another product's section. On shared platform
+ * pages the product context lives in `?parent=`, so this can only run client-side.
+ */
+function filterHeadingsForProduct(headings: MarkdownHeading[]): MarkdownHeading[] {
+  if (typeof window === "undefined") return headings
+
+  const parent = new URLSearchParams(window.location.search).get("parent")
+  if (!parent) return headings
+
+  return headings.filter((heading) => {
+    const section = document.getElementById(heading.slug)?.closest<HTMLElement>("[data-product-section]")
+    if (!section) return true
+    return section.dataset.productShared === "true" || section.dataset.productSection === parent
+  })
+}
+
 const TableOfContents: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
   onUpdateActiveTitle?: (title: string) => void
 }> = ({ initialHeadings, onUpdateActiveTitle }) => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
 
-  const [headings, setHeadings] = useState<MarkdownHeading[]>(initialHeadings)
+  const [headings, setHeadings] = useState<MarkdownHeading[]>(() => filterHeadingsForProduct(initialHeadings))
   const [activeIds, setActiveIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     const elements = document.querySelectorAll(
       [
         "article section > :where(h1, h2, h3, h4)",
+        "article [data-product-section] > :where(h1, h2, h3, h4)",
         "article astro-anchored-accordion[data-toc-depth]",
         "article astro-anchored-accordion :where(h1, h2, h3, h4)",
       ].join(", ")
     )
     const newHeadings: MarkdownHeading[] = []
+    const parent = new URLSearchParams(window.location.search).get("parent")
 
     elements.forEach((e) => {
       const el = e as HTMLElement
+      const productSection = el.closest<HTMLElement>("[data-product-section]")
+      const isShared = productSection?.dataset.productShared === "true"
+      if (parent && productSection && !isShared && productSection.dataset.productSection !== parent) return
+
       const depth = Number(e.nodeName.at(1)) || Number(el.dataset?.tocDepth)
       const slug = e.id
       const text = el.dataset?.tocText || e.textContent

@@ -9,7 +9,7 @@ import { isSunsetSidebarSection } from "./sunset.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
 import { CCIP_V16_SIDEBAR_CONTENT } from "./sidebar/ccip-v1.ts"
 import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
-import { CHAINLINK_PLATFORM_SECTION } from "./sidebar/chainlink-platform.ts"
+import { CHAINLINK_PLATFORM_SECTION, getAccountOrganizationSection } from "./sidebar/chainlink-platform.ts"
 import type { ChainType, CcipVersion } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
@@ -132,6 +132,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         { title: "Identity Manager Quick Start", url: "ace/getting-started/identity-manager" },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.ACE),
     {
       section: "Guides",
       contents: [
@@ -817,8 +818,9 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.CRE),
     {
-      section: "CLI Guide",
+      section: "CLI Setup",
       contents: [
         {
           title: "Logging in with the CLI",
@@ -1077,6 +1079,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         { title: "Quickstart: Send Your First Operation", url: "crec/getting-started/quickstart-send-operation" },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.CREC),
     {
       section: "Concepts",
       contents: [
@@ -1644,6 +1647,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.DATA_STREAMS),
     {
       section: "Streams & Report Schemas",
       contents: [

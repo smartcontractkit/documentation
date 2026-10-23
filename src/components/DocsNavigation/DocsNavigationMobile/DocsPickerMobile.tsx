@@ -146,8 +146,8 @@ export function ProductNavigation({ path, parentSection = null }: Props) {
   return (
     <Root open={open} onOpenChange={handleOpenChange}>
       <Trigger data-testid="docs-picker-trigger-mobile" className={styles.trigger}>
-        <img src={icon} alt="" className={styles.logo} />
-        <span>{label}</span>
+        <img src={icon} alt="" className={styles.logo} data-docs-picker-icon />
+        <span data-docs-picker-label>{label}</span>
         <div className={styles.caret}>
           <span></span>
         </div>
