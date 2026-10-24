@@ -1,5 +1,5 @@
 export {}
-window.addEventListener("load", () => {
+document.addEventListener("astro:page-load", () => {
   const url = `${window.location.href}`
   const searchRegex = /search.*?(?==)/
   const searchElementId = url.match(searchRegex)
