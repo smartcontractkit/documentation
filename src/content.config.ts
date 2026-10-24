@@ -1,4 +1,5 @@
-import { z, defineCollection } from "astro:content"
+import { defineCollection } from "astro:content"
+import { z } from "astro/zod"
 import { glob } from "astro/loaders"
 import { sectionValues } from "./config/sidebarSections.js"
 
@@ -32,7 +33,7 @@ export const productsInfo: Record<Products, { name: string; slug: string }> = {
   datalink: { name: "DataLink", slug: "datalink" },
 }
 
-const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.nativeEnum(Products))
+const productEnum = z.preprocess((val) => (val as string).toLowerCase(), z.enum(Products))
 
 const sectionEnum = z.enum(sectionValues)
 export type Sections = z.infer<typeof sectionEnum>

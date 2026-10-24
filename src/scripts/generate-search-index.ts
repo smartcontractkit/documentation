@@ -128,7 +128,9 @@ export async function createSearchPageCompiler(root: string): Promise<SearchPage
     let code = source
     for (const transform of transforms) {
       // These MDX compilation hooks do not resolve or execute imported components.
-      const result = await transform.call({} as ThisParameterType<typeof transform>, code, file, { ssr: true })
+      // Vite's environment API: MDX post-processing reads `this.environment.name` to compile for the server
+      const context = { environment: { name: "ssr" } } as unknown as ThisParameterType<typeof transform>
+      const result = await transform.call(context, code, file, { ssr: true })
       if (typeof result === "string") code = result
       else if (result) code = result.code
     }
