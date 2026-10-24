@@ -71,8 +71,9 @@ describe("buildMarkdownArtifact", () => {
       .trim()
 
     expect(transformed.transformMode).toBe("normal")
-    expect(markdown.split(`**CAUTION: Chainlink VRF ${version} is deprecated**`).length - 1).toBe(1)
-    expect(markdown.split(`Security fixes for VRF ${version} are not guaranteed.`).length - 1).toBe(1)
+    expect(markdown.split(`**DANGER: Chainlink VRF ${version} shuts down on October 28, 2026**`).length - 1).toBe(1)
+    expect(markdown.split(`will be permanently shut down on **October 28, 2026**`).length - 1).toBe(1)
+    expect(markdown.split(`VRF ${version} will no longer fulfill randomness requests.`).length - 1).toBe(1)
     expect(markdown).toContain(`](/vrf/v2-5/migration-from-${version})`)
     expect(markdown).not.toContain("replaces and enhances VRF v1")
     expect(normalized.split(expectedLegalNotice(version)).length - 1).toBe(1)
@@ -95,9 +96,13 @@ describe("buildMarkdownArtifact", () => {
       .trim()
 
     expect(artifact?.transformMode).toBe("normal")
-    expect(markdown).toContain(`Chainlink VRF ${version} is deprecated`)
-    expect(markdown.match(new RegExp(`Security fixes for VRF ${version} are not guaranteed\\.`, "g"))).toHaveLength(1)
-    expect(markdown).toContain("Complete this guide to migrate your application to Chainlink VRF v2.5.")
+    expect(markdown).toContain(`**DANGER: Chainlink VRF ${version} shuts down on October 28, 2026**`)
+    expect(
+      markdown.match(new RegExp(`VRF ${version} will no longer fulfill randomness requests\\.`, "g"))
+    ).toHaveLength(1)
+    expect(normalized).toContain(
+      "Complete this guide to migrate your application to Chainlink VRF v2.5 before October 28, 2026."
+    )
     expect(normalized.split(expectedLegalNotice(version)).length - 1).toBe(1)
   })
 
