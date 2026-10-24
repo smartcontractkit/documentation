@@ -1,5 +1,5 @@
 /** Fixes deployment URLs when on a preview URL */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("astro:page-load", () => {
   const currentHost = window.location.hostname
   if (currentHost !== "docs.chain.link") {
     // Rewrite Remix URLs with current hostname

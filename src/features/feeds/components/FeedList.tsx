@@ -10,7 +10,7 @@ import { ChainMetadata } from "~/features/data/api/index.ts"
 import useQueryString from "~/hooks/useQueryString.ts"
 import { RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
 import {

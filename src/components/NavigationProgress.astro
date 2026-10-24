@@ -1,0 +1,94 @@
+---
+/**
+ * Top-of-page progress bar for client-side navigation.
+ *
+ * With <ClientRouter /> there is no browser loading indicator, so a slow navigation looks like a
+ * dead click. This restores that feedback: the bar appears when a navigation starts and completes
+ * when the new page is swapped in.
+ *
+ * `transition:persist` keeps the element across swaps, so the script's element references stay
+ * valid and the bar never restarts mid-navigation.
+ */
+---
+
+<div id="nav-progress" transition:persist aria-hidden="true">
+  <div id="nav-progress-bar"></div>
+</div>
+
+<style>
+  #nav-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 200ms ease;
+  }
+
+  #nav-progress[data-active] {
+    opacity: 1;
+  }
+
+  #nav-progress-bar {
+    height: 100%;
+    width: 0;
+    background: var(--brand, #375bd2);
+    box-shadow: 0 0 8px var(--brand, #375bd2);
+    transition: width 200ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #nav-progress,
+    #nav-progress-bar {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  const wrap = document.getElementById("nav-progress")
+  const bar = document.getElementById("nav-progress-bar")
+
+  // If the navigation never completes (cancelled, or the router bailed), stop showing the bar.
+  const SAFETY_TIMEOUT_MS = 8000
+
+  let hideTimer: ReturnType<typeof setTimeout> | undefined
+  let safetyTimer: ReturnType<typeof setTimeout> | undefined
+
+  function start() {
+    if (!wrap || !bar) return
+    clearTimeout(hideTimer)
+    clearTimeout(safetyTimer)
+
+    wrap.setAttribute("data-active", "")
+
+    // Reset to 0 without animating, force a reflow, then ease toward 90%. The bar never reaches
+    // 100% until the page is actually swapped, so it reads as "still working" rather than "done".
+    // The reflow is what makes the 0 -> 90% change animate; do not replace it with
+    // requestAnimationFrame, which is throttled in background tabs and would leave the bar at 0.
+    bar.style.transition = "none"
+    bar.style.width = "0"
+    void bar.offsetWidth
+    bar.style.transition = ""
+    bar.style.width = "90%"
+
+    safetyTimer = setTimeout(finish, SAFETY_TIMEOUT_MS)
+  }
+
+  function finish() {
+    if (!wrap || !bar) return
+    clearTimeout(safetyTimer)
+
+    bar.style.width = "100%"
+    hideTimer = setTimeout(() => {
+      wrap.removeAttribute("data-active")
+      bar.style.width = "0"
+    }, 200)
+  }
+
+  document.addEventListener("astro:before-preparation", start)
+  document.addEventListener("astro:after-swap", finish)
+</script>
