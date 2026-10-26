@@ -1824,7 +1824,7 @@ Before diving in, these pages provide essential context:
 
 # Account Setup
 Source: https://docs.chain.link/ace/getting-started/account-setup
-Last Updated: 2026-10-05
+Last Updated: 2026-10-20
 
 > **NOTE: Private Beta**
 >
@@ -1835,11 +1835,15 @@ This page walks through the shared setup steps for all ACE users. Whether you us
 
 ## 1. Create your organization
 
-Go to [app.chain.link](https://app.chain.link) and create an account or sign in.
+Go to [app.chain.link](https://app.chain.link) and [create an account](/chainlink-platform/creating-an-account?parent=ace) or sign in.
 
-Once signed in, click **"My Org"** in the bottom-left corner of the sidebar to open the Organization page. Your **Organization ID** is displayed in the page header — copy it.
+Once signed in, navigate to your account icon on the top-right corner, then click **"Org settings"** in the dropdown to open the Organization page.
 
-![Image](/images/ace/account-setup/organization-id.webp)
+![Image](/images/ace/account-setup/navbar-organization.png)
+
+Your **Organization ID** is displayed in the page header — copy it.
+
+![Image](/images/ace/account-setup/organization-id.png)
 
 ## 2. Share your Organization ID
 
@@ -1857,16 +1861,42 @@ Share your Organization ID with your Chainlink contact so they can enable the AC
 > Do not create an API key until your Chainlink contact confirms that ACE has been enabled for your organization. API
 > keys created before enablement will not have access to ACE endpoints.
 
-Once your account has been provisioned for the ACE service, create an API key for authentication:
+Once your account has been provisioned for the ACE service, create an API key.
 
-1. Log in to the [Chainlink App](https://app.chain.link), click **"My Org"** at the bottom of the left sidebar, then select the **"APIs"** tab.
-2. Click **"+ Organization API"**.
+> **NOTE: To create an API key for ACE**
+>
+> - You must be the organization **Owner**
+>
+>   **OR**
+>
+> - Have the ACE **Admin** or **Operator** role.
+>
+> For information about role-based access, see [RBAC](/chainlink-platform/rbac?parent=ace#ace). To invite team members and assign roles, see [Invite members](/chainlink-platform/inviting-team-members?parent=ace).
 
-   ![Image](/images/ace/account-setup/api-key-1.webp)
-3. Enter a name for the key and select an expiration period (1 day, 1 month, or 1 year).
+1. Log in to the [Chainlink Platform](https://app.chain.link), click on "Org settings" in the top-right corner of the navbar to open your **Organization Settings** page, then open the **API Keys** tab.
 
-   ![Image](/images/ace/account-setup/api-key-2.webp)
-4. Click **"Generate"**. The API key is displayed once — copy it immediately.
+2. Click **Create API Key** and enter a name for the key.
+
+3. In the **API Scope** section, expand the **ACE** accordion and grant the key the permissions that this Getting Started guide uses.
+
+   | Name                         | Action | Permission ID                            |
+   | ---------------------------- | ------ | ---------------------------------------- |
+   | Core wallet                  | Write  | `ace:core:wallet:write`                  |
+   | Policy manager policy engine | Write  | `ace:policy_manager:policy_engine:write` |
+   | Policy manager target        | Write  | `ace:policy_manager:target:write`        |
+   | Policy manager policy        | Write  | `ace:policy_manager:policy:write`        |
+   | Identity manager registry    | Write  | `ace:identity_manager:registry:write`    |
+   | Identity manager identity    | Write  | `ace:identity_manager:identity:write`    |
+   | Reporting policy             | Read   | `ace:reporting:policy:read`              |
+   | Reporting identity           | Read   | `ace:reporting:identity:read`            |
+   | Reporting target             | Read   | `ace:reporting:target:read`              |
+   | Reporting transaction        | Read   | `ace:reporting:transaction:read`         |
+   | Reporting permit             | Read   | `ace:reporting:permit:read`              |
+   | Reporting registry           | Read   | `ace:reporting:registry:read`            |
+
+   See [API Keys](/chainlink-platform/api-keys?parent=ace#ace) for the full list of permissions available for ACE.
+
+4. Click **Create API Key**, then copy the key and click **Done**. The API key is displayed only once.
 
 > **CAUTION: Save your API key**
 >
@@ -8271,8 +8301,7 @@ curl https://ace.api.chain.link/v1/<endpoint> \
 
 > **CAUTION: API key security**
 >
-> Your API key grants full read-write access to your organization's ACE resources. Never share it, commit it to source
-> control, or expose it in client-side code.
+> Your API key grants access to the permissions you selected when you created it. Give each key only the permissions it needs, and never share it, commit it to source control, or expose it in client-side code. See [API Keys](/chainlink-platform/api-keys?parent=ace#ace) for the permissions available for ACE.
 
 ## Base URLs
 
