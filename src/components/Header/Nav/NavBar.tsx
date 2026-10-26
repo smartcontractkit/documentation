@@ -58,7 +58,7 @@ export const NavBar = ({ path, algoliaVars, onHideChange, productsNav, subProduc
         >
           <div className={clsx(styles.container, { [styles.isHomepage]: !doubleNavbar })}>
             <div className={styles.logoSection} onMouseEnter={exitMegamenu}>
-              <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="https://dev.chain.link/">
+              <a rel="noreferrer noopener" className={clsx("home-logo", styles.logo)} href="/">
                 <img
                   alt="Documentation Home"
                   title="Documentation Home"

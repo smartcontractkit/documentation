@@ -34,16 +34,32 @@ export type DestinationsLaneConfig = {
   [destinationChain: string]: LaneConfig
 }
 
+/** Normalized pool type (semantic). Used for logic, display, token mechanism. */
 export type PoolType = "lockRelease" | "burnMint" | "usdc" | "feeTokenOnly"
 
-type PoolInfo = {
+/** Raw pool type from downstream data; displayed as-is in the directory. */
+export type PoolRawType = string
+
+type Pool = {
+  address?: string
+  rawType: string
+  type: PoolType
+  version: string
+  hook?: string
+}
+
+export type PoolInfo = {
   tokenAddress: string
-  allowListEnabled: boolean
+  allowListEnabled?: boolean
   poolAddress?: string
-  poolType: PoolType
+  poolType?: PoolType
+  typeAndVersion?: string
   name?: string
   symbol: string
   decimals: number
+  // Optional nested pool shape used by newer (dev-3.0) code paths; absent in the
+  // canonical flat token data, so consumers fall back to the flat fields above.
+  pool?: Pool
 }
 
 export type ChainConfig = {
@@ -105,20 +121,6 @@ export type ChainConfig = {
 
 export type ChainsConfig = {
   [chain: string]: ChainConfig
-}
-
-export type VerifierConfig = {
-  id: string
-  name: string
-  role?: string
-  type: string
-  version: string
-}
-
-export type VerifiersConfig = {
-  [chain: string]: {
-    [address: string]: VerifierConfig
-  }
 }
 
 export type LanesConfig = {
@@ -280,4 +282,37 @@ export interface DecommissionedNetwork {
   logo: string
   explorer: ExplorerInfo
   chainType: ChainType
+}
+
+// Verifier types
+export type VerifierType = "committee" | "api"
+
+export interface VerifierMetadata {
+  id: string
+  name: string
+  type: VerifierType
+  role?: string
+  version: string
+}
+
+export interface VerifiersConfig {
+  [networkId: string]: {
+    [address: string]: VerifierMetadata
+  }
+}
+
+export interface Verifier extends VerifierMetadata {
+  network: string
+  address: string
+  logo: string
+}
+
+export interface VerifierDescription {
+  description: string
+  learnMoreLabel?: string
+  learnMoreUrl?: string
+}
+
+export type VerifiersDescriptionConfig = {
+  [verifierId: string]: VerifierDescription
 }

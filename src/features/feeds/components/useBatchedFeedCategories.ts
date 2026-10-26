@@ -1,6 +1,7 @@
 import { useEffect, useState } from "preact/hooks"
 import { getFeedRiskTiersBatch } from "~/db/feedCategories.js"
 import { ChainNetwork } from "~/features/data/chains.ts"
+import { isFeedIdAddressedNetwork } from "~/features/feeds/utils/feedIdAddressedNetworks.ts"
 
 /**
  * Extract the database network identifier from the rddUrl.
@@ -70,12 +71,13 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
           network: string
           shutdownDate?: string
           fallbackCategory?: string
+          allowAnyFallback?: boolean
         }> = []
 
         network.metadata?.forEach((metadata) => {
-          // Use proxyAddress for Aptos, contractAddress/proxyAddress for others
+          // Use proxyAddress for feed-ID-addressed networks (Aptos, Stellar), contractAddress/proxyAddress for others
           let feedKey: string | undefined
-          if (network.name.toLowerCase().includes("aptos")) {
+          if (isFeedIdAddressedNetwork(network.name)) {
             feedKey = metadata.proxyAddress ?? undefined
           } else {
             feedKey = metadata.contractAddress ?? metadata.proxyAddress ?? undefined
@@ -86,6 +88,8 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
               network: networkKey,
               shutdownDate: metadata.docs?.shutdownDate,
               fallbackCategory: metadata.feedCategory,
+              // Aptos/Stellar are not in Supabase yet, so trust the RDD feedCategory.
+              allowAnyFallback: isFeedIdAddressedNetwork(network.name),
             })
           }
         })

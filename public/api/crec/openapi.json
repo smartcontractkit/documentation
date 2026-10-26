@@ -1,0 +1,4992 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "CRE Connect API",
+    "version": "0.8.0",
+    "description": "API specification for CRE Connect resources"
+  },
+  "servers": [
+    {
+      "url": "https://cre-connect.api.chain.link/v1",
+      "description": "CRE Connect base URL."
+    },
+    {
+      "url": "http://localhost:8080",
+      "description": "Local development."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Service health."
+    },
+    {
+      "name": "Networks",
+      "description": "Supported networks."
+    },
+    {
+      "name": "Wallets",
+      "description": "Wallet lifecycle."
+    },
+    {
+      "name": "Channels",
+      "description": "Channels for watchers, events, and operations."
+    },
+    {
+      "name": "Watchers",
+      "description": "Watchers scoped to a channel."
+    },
+    {
+      "name": "Operations",
+      "description": "Operations within a channel."
+    },
+    {
+      "name": "Queries",
+      "description": "Chain queries scoped to a channel."
+    },
+    {
+      "name": "Events",
+      "description": "Events (poll and historical search)."
+    }
+  ],
+  "paths": {
+    "/health-check": {
+      "get": {
+        "tags": ["Health"],
+        "operationId": "getHealthCheck",
+        "summary": "Health check endpoint",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheck"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/networks": {
+      "get": {
+        "tags": ["Networks"],
+        "operationId": "listNetworks",
+        "summary": "Retrieves available networks.",
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NetworkList"
+                },
+                "example": {
+                  "data": [],
+                  "has_more": false
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallets": {
+      "post": {
+        "tags": ["Wallets"],
+        "operationId": "createWallet",
+        "summary": "Creates a new wallet.",
+        "requestBody": {
+          "description": "Wallet creation parameters.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWallet"
+              },
+              "example": {
+                "name": "my-wallet",
+                "wallet_owner_address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                "chain_selector": "16015286601757825753",
+                "wallet_type": "ecdsa",
+                "configuration": {
+                  "allowed_signers": []
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Wallet created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                },
+                "example": {
+                  "wallet_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                  "name": "my-wallet",
+                  "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "chain_selector": "16015286601757825753",
+                  "wallet_type": "ecdsa",
+                  "wallet_owner_address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "status": "deployed",
+                  "allowed_rsa_signers": [],
+                  "allowed_ecdsa_signers": [],
+                  "configuration": {
+                    "allowed_signers": []
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request data."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "409": {
+            "description": "Wallet name already exists in the organization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "CONFLICT",
+                  "code": "WALLET_ALREADY_EXISTS",
+                  "message": "wallet name already exists in this organization"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Wallets"],
+        "operationId": "listWallets",
+        "summary": "Retrieves wallets for the organization.",
+        "description": "Returns wallets for the organization. Archived wallets are excluded by default.\nTo include archived wallets, explicitly specify the archived status in the status filter.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "description": "Filter wallets by name (case-insensitive partial match)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "chain_selector",
+            "description": "Filter wallets by chain selector",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "owner",
+            "description": "Filter wallets by owner address",
+            "schema": {
+              "$ref": "#/components/schemas/EthereumAddress"
+            }
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "description": "Filter wallets by wallet address",
+            "schema": {
+              "$ref": "#/components/schemas/EthereumAddress"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "description": "Filter wallets by type",
+            "schema": {
+              "$ref": "#/components/schemas/WalletType"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "description": "Filter wallets by status. Multiple values allowed. Archived wallets are excluded by default when no status filter is specified.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/WalletStatus"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "in": "query",
+            "name": "chain_environment",
+            "description": "Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.",
+            "schema": {
+              "$ref": "#/components/schemas/ChainEnvironment"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Maximum number of wallets to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Number of wallets to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletList"
+                },
+                "example": {
+                  "data": [],
+                  "has_more": false
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wallets/{wallet_id}": {
+      "get": {
+        "tags": ["Wallets"],
+        "operationId": "getWallet",
+        "summary": "Retrieves a specific wallet by ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wallet_id",
+            "required": true,
+            "description": "Unique wallet identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                },
+                "example": {
+                  "wallet_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                  "name": "my-wallet",
+                  "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "chain_selector": "16015286601757825753",
+                  "wallet_type": "ecdsa",
+                  "wallet_owner_address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "status": "deployed",
+                  "allowed_rsa_signers": [],
+                  "allowed_ecdsa_signers": [],
+                  "configuration": {
+                    "allowed_signers": []
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Wallet not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Wallets"],
+        "operationId": "updateWallet",
+        "summary": "Updates a wallet name.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "wallet_id",
+            "required": true,
+            "description": "Unique wallet identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Wallet update parameters.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWallet"
+              },
+              "example": {
+                "name": "updated-wallet"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Wallet updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                },
+                "example": {
+                  "wallet_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                  "name": "updated-wallet",
+                  "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "chain_selector": "16015286601757825753",
+                  "wallet_type": "ecdsa",
+                  "wallet_owner_address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "status": "deployed",
+                  "allowed_rsa_signers": [],
+                  "allowed_ecdsa_signers": [],
+                  "configuration": {
+                    "allowed_signers": []
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request data."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Wallet not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Wallet is already archived, or was modified concurrently by another request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "CONFLICT",
+                  "code": "WALLET_ALREADY_ARCHIVED",
+                  "message": "conflict error: wallet already in archived state"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels": {
+      "post": {
+        "tags": ["Channels"],
+        "operationId": "createChannel",
+        "summary": "Creates a new channel.",
+        "requestBody": {
+          "description": "Channel creation parameters.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateChannel"
+              },
+              "example": {
+                "name": "my-channel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Channel created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Channel"
+                },
+                "example": {
+                  "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "name": "my-channel",
+                  "status": "active",
+                  "created_at": 1715698800
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request data."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "409": {
+            "description": "Channel with the same name already exists in the organization.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "CONFLICT",
+                  "code": "CHANNEL_ALREADY_EXISTS",
+                  "message": "resource already exists: channel with the same name already exists in this organization"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Channels"],
+        "operationId": "listChannels",
+        "summary": "Retrieves channels for the organization.",
+        "description": "Returns channels for the organization. Archived channels are excluded by default.\nTo include archived channels, explicitly specify the archived status in the status filter.\n",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "description": "Filter channels by name (case-insensitive partial match)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "description": "Filter channels by status. Multiple values allowed. Archived channels are excluded by default when no status filter is specified.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/ChannelStatus"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Maximum number of channels to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Number of channels to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelList"
+                },
+                "example": {
+                  "data": [],
+                  "has_more": false
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}": {
+      "get": {
+        "tags": ["Channels"],
+        "operationId": "getChannel",
+        "summary": "Retrieves a specific channel by ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Channel found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Channel"
+                },
+                "example": {
+                  "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "name": "my-channel",
+                  "status": "active",
+                  "created_at": 1715698800
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Channels"],
+        "operationId": "updateChannel",
+        "summary": "Updates a channel.",
+        "description": "Updates channel properties. Can be used to update the name, description, or to transition the channel status (e.g., to archived).\nA channel cannot be archived if it has active watchers.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Channel update parameters.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchChannel"
+              },
+              "example": {
+                "name": "updated-channel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Channel updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Channel"
+                },
+                "example": {
+                  "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "name": "updated-channel",
+                  "status": "active",
+                  "created_at": 1715698800
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request data."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Channel name already exists, or the channel cannot be archived because it has active watchers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "CONFLICT",
+                  "code": "CHANNEL_ALREADY_EXISTS",
+                  "message": "resource already exists: channel with the same name already exists in this organization"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}/queries": {
+      "post": {
+        "tags": ["Queries"],
+        "operationId": "createQuery",
+        "summary": "Creates a chain query under a channel.",
+        "description": "Creates a channel-scoped Chain Query Request. New queries are rejected for archived channels.\nThe customer-provided idempotency_key is scoped to the organization and channel.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateQuery"
+              },
+              "examples": {
+                "latestEVMCall": {
+                  "summary": "EVM call resolved at the latest block",
+                  "value": {
+                    "idempotency_key": "balance-latest-001",
+                    "query_kind": "evm_call",
+                    "chain_selector": "16015286601757825753",
+                    "params": {
+                      "contract_address": "0x1111111111111111111111111111111111111111",
+                      "call_data": "0x70a08231000000000000000000000000742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                      "block_selection": {
+                        "type": "latest"
+                      },
+                      "from_address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                    },
+                    "metadata": {
+                      "request_id": "balance-check-001"
+                    }
+                  }
+                },
+                "finalizedEVMCall": {
+                  "summary": "EVM call resolved at the finalized block",
+                  "value": {
+                    "idempotency_key": "total-supply-finalized-001",
+                    "query_kind": "evm_call",
+                    "chain_selector": "16015286601757825753",
+                    "params": {
+                      "contract_address": "0x1111111111111111111111111111111111111111",
+                      "call_data": "0x18160ddd",
+                      "block_selection": {
+                        "type": "finalized"
+                      }
+                    }
+                  }
+                },
+                "explicitBlockEVMCall": {
+                  "summary": "EVM call at an explicit block number",
+                  "value": {
+                    "idempotency_key": "decimals-block-001",
+                    "query_kind": "evm_call",
+                    "chain_selector": "16015286601757825753",
+                    "params": {
+                      "contract_address": "0x1111111111111111111111111111111111111111",
+                      "call_data": "0x313ce567",
+                      "block_selection": {
+                        "type": "block_number",
+                        "block_number": "6500000"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Query accepted for execution.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryAcceptedResponse"
+                },
+                "example": {
+                  "query_id": "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a",
+                  "status": "accepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data, unsupported query kind, invalid params, invalid calldata, invalid block selection, or archived channel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid query request."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested channel was not found."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency key reused with a different canonical request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "CONFLICT",
+                  "code": "IDEMPOTENCY_KEY_MISMATCH",
+                  "message": "Idempotency key reused with a different canonical request."
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Query create quota or workflow admission rate limit exceeded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Query create quota or workflow admission rate limit exceeded."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Queries"],
+        "operationId": "listQueries",
+        "summary": "Lists chain queries for a channel.",
+        "description": "Returns chain query records for the channel.\nEach item includes `target`, `event_hash`, `verifiable_result`, and `proof` when those fields are available.\nFilters compose with logical AND.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Maximum number of queries to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Number of queries to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "description": "Filter queries by status. Multiple values allowed.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/QueryStatus"
+              }
+            },
+            "style": "form",
+            "explode": true,
+            "example": ["accepted", "completed"]
+          },
+          {
+            "in": "query",
+            "name": "query_kind",
+            "description": "Filter queries by kind. Multiple values allowed.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/QueryKind"
+              }
+            },
+            "style": "form",
+            "explode": true,
+            "example": ["evm_call"]
+          },
+          {
+            "in": "query",
+            "name": "chain_selector",
+            "description": "Filter queries by chain selector (network).",
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "in": "query",
+            "name": "chain_environment",
+            "description": "Filter queries by chain environment (mainnet or testnet). If omitted, returns all chain environments.",
+            "schema": {
+              "$ref": "#/components/schemas/ChainEnvironment"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueryList"
+                },
+                "examples": {
+                  "defaultList": {
+                    "summary": "Default list — limit=20, offset=0",
+                    "description": "`GET /channels/{channel_id}/queries?limit=20&offset=0`\n",
+                    "value": {
+                      "data": [
+                        {
+                          "query_id": "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a",
+                          "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                          "status": "completed",
+                          "query_kind": "evm_call",
+                          "chain_selector": "16015286601757825753",
+                          "target": "0x1111111111111111111111111111111111111111",
+                          "event_hash": "0xabc123def456",
+                          "verifiable_result": "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9",
+                          "proof": {
+                            "alg": "ocr2vrf",
+                            "ocr_report": "0xabc123",
+                            "ocr_context": "0xdef456",
+                            "signatures": ["0x789abc"]
+                          },
+                          "created_at": 1715698800,
+                          "updated_at": 1715698815,
+                          "expires_at": 1715702400,
+                          "accepted_at": 1715698800,
+                          "sending_at": 1715698801,
+                          "sent_at": 1715698802,
+                          "completed_at": 1715698815
+                        },
+                        {
+                          "query_id": "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10",
+                          "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                          "status": "sent",
+                          "query_kind": "evm_call",
+                          "chain_selector": "16015286601757825753",
+                          "target": "0x2222222222222222222222222222222222222222",
+                          "created_at": 1715698700,
+                          "updated_at": 1715698710,
+                          "expires_at": 1715702300,
+                          "accepted_at": 1715698700,
+                          "sending_at": 1715698705,
+                          "sent_at": 1715698710
+                        }
+                      ],
+                      "has_more": false
+                    }
+                  },
+                  "filterByStatusAndChain": {
+                    "summary": "Filter — status=completed, chain_selector=16015286601757825753",
+                    "description": "`GET /channels/{channel_id}/queries?status=completed&chain_selector=16015286601757825753`\nCompleted Sepolia queries for the channel.\n",
+                    "value": {
+                      "data": [
+                        {
+                          "query_id": "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10",
+                          "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                          "status": "completed",
+                          "query_kind": "evm_call",
+                          "chain_selector": "16015286601757825753",
+                          "target": "0x1111111111111111111111111111111111111111",
+                          "created_at": 1715698700,
+                          "updated_at": 1715698712,
+                          "completed_at": 1715698712
+                        },
+                        {
+                          "query_id": "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a",
+                          "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                          "status": "completed",
+                          "query_kind": "evm_call",
+                          "chain_selector": "16015286601757825753",
+                          "target": "0x2222222222222222222222222222222222222222",
+                          "created_at": 1715698800,
+                          "updated_at": 1715698815,
+                          "completed_at": 1715698815
+                        }
+                      ],
+                      "has_more": false
+                    }
+                  },
+                  "filterByKind": {
+                    "summary": "Filter by kind — query_kind=evm_call",
+                    "description": "`GET /channels/{channel_id}/queries?query_kind=evm_call`\nEVM call queries for the channel.\n",
+                    "value": {
+                      "data": [
+                        {
+                          "query_id": "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a",
+                          "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                          "status": "completed",
+                          "query_kind": "evm_call",
+                          "chain_selector": "12922642891491394802",
+                          "target": "0x3333333333333333333333333333333333333333",
+                          "created_at": 1715698700,
+                          "updated_at": 1715698715,
+                          "completed_at": 1715698715
+                        },
+                        {
+                          "query_id": "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10",
+                          "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                          "status": "completed",
+                          "query_kind": "evm_call",
+                          "chain_selector": "16015286601757825753",
+                          "target": "0x1111111111111111111111111111111111111111",
+                          "created_at": 1715698800,
+                          "updated_at": 1715698815,
+                          "completed_at": 1715698815
+                        }
+                      ],
+                      "has_more": false
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested channel was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}/queries/{query_id}": {
+      "get": {
+        "tags": ["Queries"],
+        "operationId": "getQuery",
+        "summary": "Retrieves a specific chain query by ID.",
+        "description": "Returns request fields, status timestamps, expiration, and terminal verifiable fields from the query resource.\nImplementations must not hydrate terminal query details by querying channel events.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "query_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Query found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Query"
+                },
+                "example": {
+                  "query_id": "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a",
+                  "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "status": "completed",
+                  "query_kind": "evm_call",
+                  "chain_selector": "16015286601757825753",
+                  "target": "0x1111111111111111111111111111111111111111",
+                  "event_hash": "0xabc123def456",
+                  "verifiable_result": "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9",
+                  "proof": {
+                    "alg": "ocr2vrf",
+                    "ocr_report": "0xabc123",
+                    "ocr_context": "0xdef456",
+                    "signatures": ["0x789abc"]
+                  },
+                  "created_at": 1715698800,
+                  "updated_at": 1715698815,
+                  "expires_at": 1715702400,
+                  "accepted_at": 1715698800,
+                  "sending_at": 1715698801,
+                  "sent_at": 1715698802,
+                  "completed_at": 1715698815
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel or query not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested query was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}/watchers": {
+      "post": {
+        "tags": ["Watchers"],
+        "operationId": "createWatcher",
+        "summary": "Creates a watcher in a channel.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Watcher creation parameters.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWatcher"
+              },
+              "example": {
+                "name": "my-watcher",
+                "chain_selector": "16015286601757825753",
+                "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                "service": "dta",
+                "events": ["SubscriptionRequested"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Watcher created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Watcher"
+                },
+                "example": {
+                  "watcher_id": "a8098c1a-f86e-11da-bd1a-00112444be1e",
+                  "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "created_at": 1715698800,
+                  "status": "active",
+                  "chain_selector": "16015286601757825753",
+                  "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "events": ["SubscriptionRequested"],
+                  "don_family": "zone-a"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request data."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested channel was not found."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Watcher with the same name already exists in the channel.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "CONFLICT",
+                  "code": "WATCHER_ALREADY_EXISTS",
+                  "message": "conflict error: a watcher with name 'my-watcher' already exists in this channel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Watchers"],
+        "operationId": "listWatchers",
+        "summary": "Retrieves watchers for a channel.",
+        "description": "Returns watchers for the specified channel. Archived watchers are excluded by default.\nTo include archived watchers, explicitly specify the archived status in the status filter.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Maximum number of watchers to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Number of watchers to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "description": "Filter watchers by name (case-insensitive partial match)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "description": "Filter watchers by status. Multiple values allowed. Archived watchers are excluded by default when no status filter is specified.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/WatcherStatus"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "in": "query",
+            "name": "chain_selector",
+            "description": "Filter watchers by chain selector",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "chain_environment",
+            "description": "Filter watchers by chain environment (mainnet or testnet). If omitted, returns all chain environments.",
+            "schema": {
+              "$ref": "#/components/schemas/ChainEnvironment"
+            }
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "description": "Filter watchers by contract address",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "service",
+            "description": "Filter watchers by service. Multiple values allowed.",
+            "example": ["dta"],
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "in": "query",
+            "name": "event_name",
+            "description": "Filter watchers by event name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatcherList"
+                },
+                "example": {
+                  "data": [],
+                  "has_more": false
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}/watchers/{watcher_id}": {
+      "get": {
+        "tags": ["Watchers"],
+        "operationId": "getWatcher",
+        "summary": "Retrieves a specific watcher by ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "watcher_id",
+            "required": true,
+            "description": "Unique watcher identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Watcher found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Watcher"
+                },
+                "example": {
+                  "watcher_id": "a8098c1a-f86e-11da-bd1a-00112444be1e",
+                  "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "created_at": 1715698800,
+                  "status": "active",
+                  "chain_selector": "16015286601757825753",
+                  "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "events": ["SubscriptionRequested"],
+                  "don_family": "zone-a"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel or query not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested query was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Watchers"],
+        "operationId": "updateWatcher",
+        "summary": "Updates a watcher.",
+        "description": "Updates watcher properties. Can be used to update the name or to transition the watcher status (e.g., to archived).\nWhen transitioning to archived status, the operation is asynchronous and returns 202 with the watcher in archiving state.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "watcher_id",
+            "required": true,
+            "description": "Unique watcher identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Watcher update parameters.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWatcher"
+              },
+              "example": {
+                "name": "updated-watcher"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Watcher updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Watcher"
+                },
+                "example": {
+                  "watcher_id": "a8098c1a-f86e-11da-bd1a-00112444be1e",
+                  "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "created_at": 1715698800,
+                  "status": "active",
+                  "chain_selector": "16015286601757825753",
+                  "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "events": ["SubscriptionRequested"],
+                  "don_family": "zone-a"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Archive request accepted. The watcher is transitioning to archived state asynchronously.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Watcher"
+                },
+                "example": {
+                  "watcher_id": "a8098c1a-f86e-11da-bd1a-00112444be1e",
+                  "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+                  "created_at": 1715698800,
+                  "status": "archiving",
+                  "chain_selector": "16015286601757825753",
+                  "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "events": ["SubscriptionRequested"],
+                  "don_family": "zone-a"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request data."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel or watcher not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Watcher with the same name already exists in the channel, or the watcher was modified concurrently by another request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "CONFLICT",
+                  "code": "WATCHER_ALREADY_EXISTS",
+                  "message": "conflict error: a watcher with name 'updated-watcher' already exists in this channel"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}/operations": {
+      "post": {
+        "tags": ["Operations"],
+        "operationId": "createOperation",
+        "summary": "Creates a signed operation or draft request, scoped to a channel.",
+        "description": "Creates a signed or draft operation first, depending on the presence of a signature.\nSigned operations are relayed immediately. Drafts can be finalized or cancelled later.\nThe operation is scoped to the channel, and will only be visible to the channel.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Operation creation parameters.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOperation"
+              },
+              "example": {
+                "chain_selector": "16015286601757825753",
+                "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                "wallet_operation_id": "42",
+                "deadline": 0,
+                "transactions": [
+                  {
+                    "to": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                    "value": "0",
+                    "data": "0x"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Operation created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationResponse"
+                },
+                "example": {
+                  "operation_id": "c1e5b8d0-1234-5678-abcd-ef0123456789"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request data."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel or wallet not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "examples": {
+                  "channelNotFound": {
+                    "value": {
+                      "type": "NOT_FOUND",
+                      "code": "CHANNEL_NOT_FOUND",
+                      "message": "channel with ID abc not found"
+                    }
+                  },
+                  "walletNotFound": {
+                    "value": {
+                      "type": "NOT_FOUND",
+                      "code": "WALLET_NOT_FOUND",
+                      "message": "wallet with address 0x742d35Cc6634C0532925a3b844Bc454e4438f44e and chain_selector 16015286601757825753 not found"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Wallet is archived and can no longer accept operations.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "CONFLICT",
+                  "code": "WALLET_ALREADY_ARCHIVED",
+                  "message": "conflict error: cannot create operations on an archived wallet"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["Operations"],
+        "operationId": "listOperations",
+        "summary": "Retrieves operations for a channel.",
+        "description": "Returns operation records for the channel, including audit subjects and preview snapshots when available.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Maximum number of operations to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Number of operations to skip for pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0,
+              "default": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "description": "Filter operations by status. Multiple values allowed.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/OperationStatus"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "in": "query",
+            "name": "chain_selector",
+            "description": "Filter operations by chain selector",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "chain_environment",
+            "description": "Filter operations by chain environment (mainnet or testnet). If omitted, returns all chain environments.",
+            "schema": {
+              "$ref": "#/components/schemas/ChainEnvironment"
+            }
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "description": "Filter operations by wallet address",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "wallet_id",
+            "description": "Filter operations by wallet ID",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "initiator_subject_type",
+            "description": "Filter operations by initiator subject type.",
+            "schema": {
+              "$ref": "#/components/schemas/SubjectType"
+            }
+          },
+          {
+            "in": "query",
+            "name": "initiator_subject_id",
+            "description": "Filter operations by initiator subject ID.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "signer_subject_type",
+            "description": "Filter operations by signer subject type.",
+            "schema": {
+              "$ref": "#/components/schemas/SubjectType"
+            }
+          },
+          {
+            "in": "query",
+            "name": "signer_subject_id",
+            "description": "Filter operations by signer subject ID.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "canceller_subject_type",
+            "description": "Filter operations by canceller subject type.",
+            "schema": {
+              "$ref": "#/components/schemas/SubjectType"
+            }
+          },
+          {
+            "in": "query",
+            "name": "canceller_subject_id",
+            "description": "Filter operations by canceller subject ID.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OperationList"
+                },
+                "example": {
+                  "data": [
+                    {
+                      "operation_id": "c1e5b8d0-1234-5678-abcd-ef0123456789",
+                      "status": "accepted",
+                      "chain_selector": "16015286601757825753",
+                      "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                      "wallet_operation_id": "42",
+                      "deadline": 0,
+                      "transactions": [],
+                      "initiator": {
+                        "subject_type": "api_key",
+                        "subject_id": "key-123",
+                        "subject_name": "my-key"
+                      },
+                      "signature": null,
+                      "created_at": 1715698800,
+                      "updated_at": 1715698800
+                    }
+                  ],
+                  "has_more": false
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested channel was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}/operations/{operation_id}": {
+      "get": {
+        "tags": ["Operations"],
+        "operationId": "getOperation",
+        "summary": "Gets Operation record for a specific operation.",
+        "description": "Returns the operation record.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "description": "Unique operation identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Operation found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                },
+                "example": {
+                  "operation_id": "c1e5b8d0-1234-5678-abcd-ef0123456789",
+                  "status": "accepted",
+                  "chain_selector": "16015286601757825753",
+                  "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "wallet_operation_id": "42",
+                  "deadline": 0,
+                  "transactions": [],
+                  "initiator": {
+                    "subject_type": "api_key",
+                    "subject_id": "key-123",
+                    "subject_name": "my-key"
+                  },
+                  "signature": null,
+                  "created_at": 1715698800,
+                  "updated_at": 1715698800
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel or operation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["Operations"],
+        "operationId": "finalizeOrCancelOperation",
+        "summary": "Finalizes or cancels an operation.",
+        "description": "Finalize by sending status accepted with signature and digest.\nCancel by sending status cancelled with no additional fields.\nThe request body is a oneOf with closed branches so invalid combinations and extra fields are rejected.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "operation_id",
+            "required": true,
+            "description": "Unique operation identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Operation finalization or cancellation parameters.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatchOperation"
+              },
+              "example": {
+                "status": "cancelled"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Operation updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Operation"
+                },
+                "example": {
+                  "operation_id": "c1e5b8d0-1234-5678-abcd-ef0123456789",
+                  "status": "cancelled",
+                  "chain_selector": "16015286601757825753",
+                  "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                  "wallet_operation_id": "42",
+                  "deadline": 0,
+                  "transactions": [],
+                  "initiator": {
+                    "subject_type": "api_key",
+                    "subject_id": "key-123",
+                    "subject_name": "my-key"
+                  },
+                  "signature": null,
+                  "created_at": 1715698800,
+                  "updated_at": 1715698800
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request data."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel or operation not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Operation could not be finalized or cancelled because it is in an invalid state, its deadline elapsed, or it was modified concurrently.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "examples": {
+                  "notFinalizable": {
+                    "value": {
+                      "type": "CONFLICT",
+                      "code": "OPERATION_NOT_FINALIZABLE",
+                      "message": "conflict error: operation is not in a finalizable state"
+                    }
+                  },
+                  "notCancellable": {
+                    "value": {
+                      "type": "CONFLICT",
+                      "code": "OPERATION_NOT_CANCELLABLE",
+                      "message": "conflict error: operation is not in a cancellable state"
+                    }
+                  },
+                  "deadlineElapsed": {
+                    "value": {
+                      "type": "CONFLICT",
+                      "code": "OPERATION_DEADLINE_ELAPSED",
+                      "message": "conflict error: operation deadline has elapsed"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}/events": {
+      "get": {
+        "tags": ["Events"],
+        "operationId": "listChannelEvents",
+        "summary": "Retrieves events from a channel.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Maximum number of events to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 200
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offset for message-oriented pagination. If not provided, the API returns the latest limit events ordered by descending offset.",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventList"
+                },
+                "example": {
+                  "events": [],
+                  "has_more": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request parameters."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}/events/search": {
+      "get": {
+        "tags": ["Events"],
+        "operationId": "searchChannelEvents",
+        "summary": "Query and search historical events from a channel.",
+        "description": "Retrieves events with filtering capabilities. Use this endpoint for historical queries and searches. For real-time polling, use the /events endpoint.\n\nNote: Some query parameters only apply to specific event types. Invalid parameter combinations for a given event type will result in a 400 Bad Request response:\n- operation.status: status, chain_selector, address, wallet_operation_id\n- query.status: status, chain_selector, query_id\n- watcher.status: watcher_id, status, chain_selector\n- watcher.event: watcher_id, chain_selector, address, event_name, service\n- wallet.status: wallet_id, status, chain_selector, address\n\nUniversal parameters (apply to all types): type, limit, offset, created.*\nQuery event payload filtering by query_id is not supported; fetch /channels/{channel_id}/queries/{query_id} when a query_id is already known.\n",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "description": "Maximum number of events to return",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "description": "Offset for message-oriented pagination",
+            "schema": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "description": "Filter events by type. Multiple values allowed.",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/EventType"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "in": "query",
+            "name": "created.lt",
+            "description": "Filter events created before this timestamp",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "in": "query",
+            "name": "created.lte",
+            "description": "Filter events created at or before this timestamp",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "in": "query",
+            "name": "created.gt",
+            "description": "Filter events created after this timestamp",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "in": "query",
+            "name": "created.gte",
+            "description": "Filter events created at or after this timestamp",
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "in": "query",
+            "name": "chain_selector",
+            "description": "Filter by chain selector",
+            "example": ["16015286601757825753"],
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "in": "query",
+            "name": "chain_environment",
+            "description": "Filter by chain environment (mainnet or testnet). If omitted, returns all chain environments.",
+            "schema": {
+              "$ref": "#/components/schemas/ChainEnvironment"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "description": "Filter by operation status. Multiple values allowed.",
+            "example": ["confirmed"],
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "in": "query",
+            "name": "watcher_id",
+            "description": "Filter by watcher ID (applies to watcher.status and watcher.event types)",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "wallet_id",
+            "description": "Filter by wallet ID (applies to wallet.status type)",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "query",
+            "name": "address",
+            "description": "Filter by wallet address. Multiple values allowed.",
+            "example": ["0x742d35Cc6634C0532925a3b844Bc454e4438f44e"],
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/components/schemas/EthereumAddress"
+              }
+            },
+            "style": "form",
+            "explode": true
+          },
+          {
+            "in": "query",
+            "name": "wallet_operation_id",
+            "description": "Filter by wallet operation ID (applies to operation.status type)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "operation_id",
+            "description": "Filter by operation ID (applies to operation.status type)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "query_id",
+            "description": "Filter by query ID (applies to query.status type)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "event_name",
+            "description": "Filter by event name (applies to watcher.event type)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "service",
+            "description": "Filter by watcher service. Multiple values allowed.",
+            "example": ["dta"],
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "style": "form",
+            "explode": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventList"
+                },
+                "example": {
+                  "events": [],
+                  "has_more": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "VALIDATION_ERROR",
+                  "message": "Invalid request parameters."
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/channels/{channel_id}/events/search/{event_id}": {
+      "get": {
+        "tags": ["Events"],
+        "operationId": "getChannelEvent",
+        "summary": "Retrieves a specific event by ID from a channel.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "channel_id",
+            "required": true,
+            "description": "Unique channel identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "path",
+            "name": "event_id",
+            "required": true,
+            "description": "Unique event identifier.",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Event"
+                },
+                "example": {
+                  "event_id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+                  "payload": {
+                    "status": "confirmed",
+                    "status_reason": "",
+                    "operation_id": "c1e5b8d0-1234-5678-abcd-ef0123456789",
+                    "wallet_operation_id": "42",
+                    "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                    "chain_selector": "16015286601757825753",
+                    "timestamp": 1715698800
+                  },
+                  "headers": {
+                    "type": "operation.status",
+                    "offset": 1,
+                    "proofs": []
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/OrganizationNotFound"
+          },
+          "404": {
+            "description": "Channel or event not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "NOT_FOUND",
+                  "message": "The requested resource was not found."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplicationError"
+                },
+                "example": {
+                  "type": "INTERNAL_ERROR",
+                  "message": "An internal error occurred."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "Send `Authorization: Apikey <api-key>`.\n"
+      }
+    },
+    "responses": {
+      "OrganizationNotFound": {
+        "description": "The authenticated organization is not onboarded in CRE Connect. The caller's credentials are valid, but no matching organization exists.\n",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ApplicationError"
+            },
+            "example": {
+              "type": "ORGANIZATION_NOT_FOUND",
+              "message": "organization not found"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "WalletStatus": {
+        "type": "string",
+        "description": "Status of a wallet entity",
+        "enum": ["pending", "deploying", "deployed", "archived", "failed"],
+        "x-enum-varnames": [
+          "WalletStatusPending",
+          "WalletStatusDeploying",
+          "WalletStatusDeployed",
+          "WalletStatusArchived",
+          "WalletStatusFailed"
+        ],
+        "example": "pending"
+      },
+      "WatcherStatus": {
+        "type": "string",
+        "description": "Status of a watcher entity",
+        "enum": ["pending", "active", "failed", "archiving", "archived"],
+        "x-enum-varnames": [
+          "WatcherStatusPending",
+          "WatcherStatusActive",
+          "WatcherStatusFailed",
+          "WatcherStatusArchiving",
+          "WatcherStatusArchived"
+        ],
+        "example": "pending"
+      },
+      "OperationStatus": {
+        "type": "string",
+        "description": "Status of an operation",
+        "enum": [
+          "accepted",
+          "pending_signature",
+          "sending",
+          "sent",
+          "broadcasting",
+          "confirmed_latest",
+          "confirmed_safe",
+          "confirmed",
+          "cancelled",
+          "expired",
+          "failed"
+        ],
+        "x-enum-varnames": [
+          "OperationStatusAccepted",
+          "OperationStatusPendingSignature",
+          "OperationStatusSending",
+          "OperationStatusSent",
+          "OperationStatusBroadcasting",
+          "OperationStatusConfirmedLatest",
+          "OperationStatusConfirmedSafe",
+          "OperationStatusConfirmed",
+          "OperationStatusCancelled",
+          "OperationStatusExpired",
+          "OperationStatusFailed"
+        ],
+        "example": "accepted"
+      },
+      "QueryStatus": {
+        "type": "string",
+        "description": "Status of a chain query.",
+        "enum": ["accepted", "sending", "sent", "completed", "failed", "expired"],
+        "x-enum-varnames": [
+          "QueryStatusAccepted",
+          "QueryStatusSending",
+          "QueryStatusSent",
+          "QueryStatusCompleted",
+          "QueryStatusFailed",
+          "QueryStatusExpired"
+        ],
+        "example": "accepted"
+      },
+      "QueryKind": {
+        "type": "string",
+        "description": "Kind of chain query.",
+        "enum": ["evm_call"],
+        "x-enum-varnames": ["QueryKindEVMCall"],
+        "example": "evm_call"
+      },
+      "SubjectType": {
+        "type": "string",
+        "description": "Type of subject used for audit identity and filtering.",
+        "enum": ["api_key", "user"],
+        "x-enum-varnames": ["SubjectTypeApiKey", "SubjectTypeUser"],
+        "example": "api_key"
+      },
+      "WalletType": {
+        "type": "string",
+        "description": "Type of wallet",
+        "enum": ["ecdsa", "rsa", "protected_ecdsa", "protected_rsa"],
+        "x-enum-varnames": ["WalletTypeECDSA", "WalletTypeRSA", "WalletTypeProtectedECDSA", "WalletTypeProtectedRSA"],
+        "example": "ecdsa"
+      },
+      "EventType": {
+        "type": "string",
+        "description": "Type of event",
+        "enum": ["operation.status", "query.status", "watcher.status", "watcher.event", "wallet.status"],
+        "x-enum-varnames": [
+          "EventTypeOperationStatus",
+          "EventTypeQueryStatus",
+          "EventTypeWatcherStatus",
+          "EventTypeWatcherEvent",
+          "EventTypeWalletStatus"
+        ]
+      },
+      "EthereumAddress": {
+        "type": "string",
+        "description": "42-character hex Ethereum address",
+        "pattern": "^0x[a-fA-F0-9]{40}$",
+        "example": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+      },
+      "WalletOperationId": {
+        "type": "string",
+        "description": "Base-10 non-negative integer within uint256 range. Leading zeros are accepted on input but normalized at runtime.",
+        "pattern": "^[0-9]{1,78}$",
+        "example": "42"
+      },
+      "DecimalString": {
+        "type": "string",
+        "description": "Base-10 decimal string.",
+        "pattern": "^[0-9]+$",
+        "example": "0"
+      },
+      "HexCalldata": {
+        "type": "string",
+        "description": "Even-length hex-encoded calldata bytes. The 0x prefix is optional; both 0xdeadbeef and deadbeef are accepted. Org-scoped aggregate byte limits are enforced at runtime.",
+        "pattern": "^(0x)?([a-fA-F0-9]{2})*$",
+        "example": "0x"
+      },
+      "OperationSignature": {
+        "type": "string",
+        "description": "0x-prefixed 65-byte ECDSA or 256-byte RSA signature hex. Optional on create; signer authorization is enforced at runtime.",
+        "minLength": 1,
+        "pattern": "^0x([0-9a-fA-F]{130}|[0-9a-fA-F]{512})$",
+        "example": "0x1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "CREWorkflowId": {
+        "type": "string",
+        "description": "CRE workflow deployment identifier (0x-prefixed hex).",
+        "example": "0x3f8e2a1b9c4d7650e1f2a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8"
+      },
+      "CREWorkflowExecutionId": {
+        "type": "string",
+        "description": "CRE workflow execution identifier (0x-prefixed hex). Present when the workflow run produced an OCR proof.",
+        "example": "0x8b4f2e7a1c9d3056b2e4f1a8c7d9e0b3f5a6c8d0e2f4a6b8c0d2e4f6a8b0c2d4"
+      },
+      "RSAPublicKey": {
+        "type": "object",
+        "description": "RSA public key with exponent and modulus",
+        "example": {
+          "e": "0x010001",
+          "n": "0x00c458b08a5b7939c97a5611389823468087f90918712a20166d3215917263548596071234567890abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef"
+        },
+        "properties": {
+          "e": {
+            "type": "string",
+            "description": "RSA public exponent (hex encoded, 2-17 bytes)",
+            "example": "0x010001",
+            "pattern": "^0x[a-fA-F0-9]{2,34}$"
+          },
+          "n": {
+            "type": "string",
+            "description": "RSA modulus (hex encoded, min 2048 bits)",
+            "example": "0x00c458b08a5b7939c97a5611389823468087f90918712a20166d3215917263548596071234567890abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef",
+            "pattern": "^0x[a-fA-F0-9]{512,}$"
+          }
+        },
+        "required": ["e", "n"]
+      },
+      "RSASignersList": {
+        "type": "array",
+        "description": "DEPRECATED - use WalletConfiguration instead. List of allowed RSA public signing keys",
+        "items": {
+          "$ref": "#/components/schemas/RSAPublicKey"
+        },
+        "minItems": 0,
+        "maxItems": 10,
+        "uniqueItems": true,
+        "example": [
+          {
+            "e": "0x010001",
+            "n": "0x00c458b08a5b7939c97a5611389823468087f90918712a20166d3215917263548596071234567890abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef"
+          }
+        ]
+      },
+      "ECDSASignersList": {
+        "type": "array",
+        "description": "DEPRECATED - use WalletConfiguration instead. List of allowed ECDSA public signing keys (Ethereum addresses)",
+        "items": {
+          "$ref": "#/components/schemas/EthereumAddress"
+        },
+        "minItems": 0,
+        "maxItems": 10,
+        "uniqueItems": true,
+        "example": ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"]
+      },
+      "ChainSelector": {
+        "type": "string",
+        "description": "Chain selector identifier for the blockchain network",
+        "example": "16015286601757825753"
+      },
+      "Timestamp": {
+        "type": "integer",
+        "format": "int64",
+        "description": "Unix timestamp in seconds",
+        "example": 1601528660
+      },
+      "HealthCheck": {
+        "description": "Health check response.",
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        },
+        "required": ["status"]
+      },
+      "WalletConfiguration": {
+        "type": "object",
+        "description": "Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.\n",
+        "additionalProperties": true,
+        "example": {
+          "allowed_signers": ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]
+        }
+      },
+      "CreateWallet": {
+        "description": "Request body for creating a new wallet.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the wallet",
+            "example": "my-wallet"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the wallet. Send empty string to omit.",
+            "example": "My wallet description",
+            "maxLength": 255
+          },
+          "wallet_owner_address": {
+            "$ref": "#/components/schemas/EthereumAddress"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "wallet_type": {
+            "$ref": "#/components/schemas/WalletType"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/WalletConfiguration"
+          },
+          "allowed_rsa_signers": {
+            "$ref": "#/components/schemas/RSASignersList"
+          },
+          "allowed_ecdsa_signers": {
+            "$ref": "#/components/schemas/ECDSASignersList"
+          },
+          "status_channel_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the channel where the wallet status will be published",
+            "example": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          }
+        },
+        "required": ["name", "wallet_owner_address", "chain_selector", "wallet_type"]
+      },
+      "UpdateWallet": {
+        "description": "Request body for updating a wallet.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "New name for the wallet",
+            "example": "my-wallet",
+            "minLength": 1,
+            "maxLength": 255,
+            "pattern": ".*\\S.*"
+          },
+          "description": {
+            "type": "string",
+            "description": "New description for the wallet. Send empty string to clear.",
+            "example": "My wallet description",
+            "maxLength": 255
+          },
+          "status": {
+            "$ref": "#/components/schemas/WalletStatus"
+          }
+        }
+      },
+      "UpdateWatcher": {
+        "description": "Request body for updating a watcher.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "New name for the watcher",
+            "example": "my-watcher",
+            "minLength": 1,
+            "maxLength": 255,
+            "pattern": ".*\\S.*"
+          },
+          "status": {
+            "$ref": "#/components/schemas/WatcherStatus"
+          }
+        }
+      },
+      "Wallet": {
+        "description": "A wallet resource.",
+        "type": "object",
+        "properties": {
+          "wallet_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the wallet",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the wallet",
+            "example": "my-wallet"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the wallet",
+            "example": "My wallet description"
+          },
+          "address": {
+            "$ref": "#/components/schemas/EthereumAddress"
+          },
+          "wallet_owner_address": {
+            "$ref": "#/components/schemas/EthereumAddress"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "wallet_type": {
+            "$ref": "#/components/schemas/WalletType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/WalletStatus"
+          },
+          "status_channel_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Channel ID where wallet status events are published",
+            "example": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          },
+          "allowed_rsa_signers": {
+            "$ref": "#/components/schemas/RSASignersList"
+          },
+          "allowed_ecdsa_signers": {
+            "$ref": "#/components/schemas/ECDSASignersList"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/WalletConfiguration"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "wallet_id",
+          "name",
+          "address",
+          "chain_selector",
+          "wallet_type",
+          "wallet_owner_address",
+          "status",
+          "allowed_rsa_signers",
+          "allowed_ecdsa_signers",
+          "configuration"
+        ]
+      },
+      "WalletList": {
+        "description": "Paginated list of wallets.",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Wallet"
+            },
+            "example": []
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "True if there are more wallets to fetch",
+            "example": false
+          }
+        },
+        "required": ["data", "has_more"]
+      },
+      "Network": {
+        "description": "A blockchain network supported by CRE Connect.",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the network",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the network",
+            "example": "Sepolia"
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "Chain selector identifier",
+            "example": "16015286601757825753"
+          },
+          "chain_id": {
+            "type": "string",
+            "description": "Chain ID identifier",
+            "example": "11155111"
+          },
+          "chain_family": {
+            "type": "string",
+            "description": "Chain family (e.g., \"evm\", \"solana\")",
+            "example": "evm"
+          },
+          "created_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp of when the network was created",
+            "example": 1715698800
+          },
+          "updated_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp of when the network was last updated",
+            "example": 1715698800
+          },
+          "type": {
+            "$ref": "#/components/schemas/ChainEnvironment"
+          }
+        },
+        "required": ["id", "name", "chain_selector", "chain_id", "chain_family", "created_at", "updated_at"]
+      },
+      "NetworkList": {
+        "description": "Paginated list of networks.",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Network"
+            },
+            "example": []
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "True if there are more networks to fetch",
+            "example": false
+          }
+        },
+        "required": ["data", "has_more"]
+      },
+      "TransactionPreview": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Preview metadata attached to a draft transaction before signing.",
+        "properties": {
+          "function_signature": {
+            "type": "string",
+            "description": "Function signature used to build the transaction preview."
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Optional arbitrary metadata attached to the preview.",
+            "additionalProperties": true
+          }
+        },
+        "required": ["function_signature"]
+      },
+      "TransactionPreviewSnapshot": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Snapshot of the preview captured after the operation is read back.",
+        "properties": {
+          "function_signature": {
+            "type": "string",
+            "description": "Function signature used to build the snapshot."
+          },
+          "execution_values": {
+            "type": "object",
+            "description": "Resolved execution values captured during previewing. It will be an empty map when the function has no parameters.",
+            "additionalProperties": true
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Optional arbitrary metadata captured with the snapshot.",
+            "additionalProperties": true
+          }
+        },
+        "required": ["function_signature", "execution_values"]
+      },
+      "TransactionRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Transaction payload for operation creation.",
+        "properties": {
+          "to": {
+            "$ref": "#/components/schemas/EthereumAddress"
+          },
+          "value": {
+            "$ref": "#/components/schemas/DecimalString"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HexCalldata"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/TransactionPreview"
+          }
+        },
+        "required": ["to", "value", "data"]
+      },
+      "Transaction": {
+        "type": "object",
+        "description": "Transaction payload returned by operation reads and events.",
+        "properties": {
+          "to": {
+            "type": "string",
+            "description": "Address receiving the transaction"
+          },
+          "value": {
+            "type": "string",
+            "description": "Amount of native token value being sent in the transaction"
+          },
+          "data": {
+            "type": "string",
+            "description": "Hex-encoded calldata for the transaction"
+          },
+          "preview_snapshot": {
+            "$ref": "#/components/schemas/TransactionPreviewSnapshot"
+          }
+        },
+        "required": ["to", "value", "data"]
+      },
+      "ApplicationErrorCode": {
+        "type": "string",
+        "description": "Machine-readable error code for NOT_FOUND and CONFLICT responses.",
+        "enum": [
+          "CHANNEL_NOT_FOUND",
+          "WALLET_NOT_FOUND",
+          "OPERATION_NOT_FOUND",
+          "WATCHER_NOT_FOUND",
+          "QUERY_NOT_FOUND",
+          "CHANNEL_ALREADY_EXISTS",
+          "WALLET_ALREADY_EXISTS",
+          "WATCHER_ALREADY_EXISTS",
+          "IDEMPOTENCY_KEY_MISMATCH",
+          "OPERATION_NOT_FINALIZABLE",
+          "OPERATION_NOT_CANCELLABLE",
+          "OPERATION_DEADLINE_ELAPSED",
+          "RESOURCE_VERSION_CONFLICT",
+          "WALLET_ALREADY_ARCHIVED",
+          "CHAIN_UNAVAILABLE"
+        ],
+        "x-enum-varnames": [
+          "ApplicationErrorCodeChannelNotFound",
+          "ApplicationErrorCodeWalletNotFound",
+          "ApplicationErrorCodeOperationNotFound",
+          "ApplicationErrorCodeWatcherNotFound",
+          "ApplicationErrorCodeQueryNotFound",
+          "ApplicationErrorCodeChannelAlreadyExists",
+          "ApplicationErrorCodeWalletAlreadyExists",
+          "ApplicationErrorCodeWatcherAlreadyExists",
+          "ApplicationErrorCodeIdempotencyKeyMismatch",
+          "ApplicationErrorCodeOperationNotFinalizable",
+          "ApplicationErrorCodeOperationNotCancellable",
+          "ApplicationErrorCodeOperationDeadlineElapsed",
+          "ApplicationErrorCodeResourceVersionConflict",
+          "ApplicationErrorCodeWalletAlreadyArchived",
+          "ApplicationErrorCodeChainUnavailable"
+        ],
+        "example": "WALLET_NOT_FOUND"
+      },
+      "ApplicationError": {
+        "description": "Standard error response body.",
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Error type",
+            "example": "NOT_FOUND",
+            "enum": ["NOT_FOUND", "VALIDATION_ERROR", "CONFLICT", "INTERNAL_ERROR", "ORGANIZATION_NOT_FOUND"]
+          },
+          "code": {
+            "$ref": "#/components/schemas/ApplicationErrorCode"
+          },
+          "message": {
+            "type": "string",
+            "description": "Error message describing the issue",
+            "example": "The requested resource was not found."
+          }
+        },
+        "required": ["type", "message"]
+      },
+      "CreateChannel": {
+        "description": "Request body for creating a new channel.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the channel",
+            "example": "my-channel"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the channel. Send empty string to omit.",
+            "example": "My channel description",
+            "maxLength": 255
+          }
+        },
+        "required": ["name"]
+      },
+      "PatchChannel": {
+        "description": "Request body for updating a channel.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "New name for the channel",
+            "example": "my-channel",
+            "minLength": 1,
+            "maxLength": 255,
+            "pattern": ".*\\S.*"
+          },
+          "description": {
+            "type": "string",
+            "description": "New description for the channel. Send empty string to clear.",
+            "example": "My channel description",
+            "maxLength": 255
+          },
+          "status": {
+            "$ref": "#/components/schemas/ChannelStatus"
+          }
+        }
+      },
+      "Channel": {
+        "description": "A channel resource.",
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the channel",
+            "example": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the channel",
+            "example": "my-channel"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of the channel",
+            "example": "My channel description"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ChannelStatus"
+          },
+          "created_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp of when the channel was created",
+            "example": 1715698800
+          }
+        },
+        "required": ["channel_id", "name", "status", "created_at"]
+      },
+      "ChannelList": {
+        "description": "Paginated list of channels.",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Channel"
+            },
+            "example": []
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "True if there are more channels to fetch",
+            "example": false
+          }
+        },
+        "required": ["data", "has_more"]
+      },
+      "CreateQuery": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Request body for creating a chain query.",
+        "example": {
+          "idempotency_key": "balance-latest-001",
+          "query_kind": "evm_call",
+          "chain_selector": "16015286601757825753",
+          "params": {
+            "contract_address": "0x1111111111111111111111111111111111111111",
+            "call_data": "0x70a08231000000000000000000000000742d35Cc6634C0532925a3b844Bc454e4438f44e",
+            "block_selection": {
+              "type": "latest"
+            },
+            "from_address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+          },
+          "metadata": {
+            "request_id": "balance-check-001"
+          }
+        },
+        "properties": {
+          "idempotency_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "description": "Customer-provided idempotency key scoped to organization and channel."
+          },
+          "query_kind": {
+            "$ref": "#/components/schemas/QueryKind"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "params": {
+            "$ref": "#/components/schemas/EVMCallQueryParams"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Optional customer metadata. Not part of the signed query unless explicitly copied into verifiable_result by the workflow.",
+            "additionalProperties": true
+          }
+        },
+        "required": ["idempotency_key", "query_kind", "chain_selector", "params"]
+      },
+      "EVMCallQueryParams": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Parameters for an evm_call chain query.",
+        "example": {
+          "contract_address": "0x1111111111111111111111111111111111111111",
+          "call_data": "0x18160ddd",
+          "block_selection": {
+            "type": "finalized"
+          },
+          "from_address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        },
+        "properties": {
+          "contract_address": {
+            "$ref": "#/components/schemas/EthereumAddress"
+          },
+          "call_data": {
+            "type": "string",
+            "description": "0x-prefixed even-length hex calldata bytes, including the function selector.",
+            "pattern": "^0x([a-fA-F0-9]{2})*$"
+          },
+          "block_selection": {
+            "$ref": "#/components/schemas/QueryBlockSelection"
+          },
+          "from_address": {
+            "$ref": "#/components/schemas/EthereumAddress"
+          }
+        },
+        "required": ["contract_address", "call_data", "block_selection"]
+      },
+      "QueryBlockSelection": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/LatestBlockSelection"
+          },
+          {
+            "$ref": "#/components/schemas/FinalizedBlockSelection"
+          },
+          {
+            "$ref": "#/components/schemas/BlockNumberBlockSelection"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "latest": "#/components/schemas/LatestBlockSelection",
+            "finalized": "#/components/schemas/FinalizedBlockSelection",
+            "block_number": "#/components/schemas/BlockNumberBlockSelection"
+          }
+        },
+        "description": "Explicit block selector for a chain query. MVP supports latest, finalized, and explicit block_number only.",
+        "example": {
+          "type": "block_number",
+          "block_number": "6500000"
+        }
+      },
+      "LatestBlockSelection": {
+        "type": "object",
+        "additionalProperties": false,
+        "example": {
+          "type": "latest"
+        },
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["latest"],
+            "description": "Resolve latest to concrete block metadata before executing the call.",
+            "x-enum-varnames": ["LatestBlockSelectionTypeLatest"]
+          }
+        },
+        "required": ["type"]
+      },
+      "FinalizedBlockSelection": {
+        "type": "object",
+        "additionalProperties": false,
+        "example": {
+          "type": "finalized"
+        },
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["finalized"],
+            "description": "Resolve finalized to concrete block metadata before executing the call.",
+            "x-enum-varnames": ["FinalizedBlockSelectionTypeFinalized"]
+          }
+        },
+        "required": ["type"]
+      },
+      "BlockNumberBlockSelection": {
+        "type": "object",
+        "additionalProperties": false,
+        "example": {
+          "type": "block_number",
+          "block_number": "6500000"
+        },
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["block_number"],
+            "description": "Execute against an explicit block number after resolving header metadata.",
+            "x-enum-varnames": ["BlockNumberBlockSelectionTypeBlockNumber"]
+          },
+          "block_number": {
+            "type": "string",
+            "pattern": "^[0-9]+$",
+            "description": "Decimal uint64 block number."
+          }
+        },
+        "required": ["type", "block_number"]
+      },
+      "QueryAcceptedResponse": {
+        "type": "object",
+        "example": {
+          "query_id": "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a",
+          "status": "accepted"
+        },
+        "properties": {
+          "query_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the query."
+          },
+          "status": {
+            "$ref": "#/components/schemas/QueryStatus"
+          }
+        },
+        "required": ["query_id", "status"]
+      },
+      "Query": {
+        "type": "object",
+        "description": "Chain query resource loaded from chain_queries.",
+        "example": {
+          "query_id": "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a",
+          "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+          "status": "completed",
+          "query_kind": "evm_call",
+          "chain_selector": "16015286601757825753",
+          "target": "0x1111111111111111111111111111111111111111",
+          "event_hash": "0xabc123def456",
+          "verifiable_result": "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9",
+          "proof": {
+            "alg": "ocr2vrf",
+            "ocr_report": "0xabc123",
+            "ocr_context": "0xdef456",
+            "signatures": ["0x789abc"]
+          },
+          "created_at": 1715698800,
+          "updated_at": 1715698815,
+          "expires_at": 1715702400,
+          "accepted_at": 1715698800,
+          "sending_at": 1715698801,
+          "sent_at": 1715698802,
+          "completed_at": 1715698815
+        },
+        "properties": {
+          "query_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the query."
+          },
+          "channel_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Channel that owns the query."
+          },
+          "status": {
+            "$ref": "#/components/schemas/QueryStatus"
+          },
+          "query_kind": {
+            "$ref": "#/components/schemas/QueryKind"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "target": {
+            "type": "string",
+            "description": "Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.",
+            "example": "0x1111111111111111111111111111111111111111"
+          },
+          "event_hash": {
+            "type": "string",
+            "description": "Verifiable event hash for the terminal query result."
+          },
+          "verifiable_result": {
+            "type": "string",
+            "description": "Base64-encoded verifiable query result."
+          },
+          "proof": {
+            "$ref": "#/components/schemas/OCRProof"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "expires_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "accepted_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "sending_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "sent_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "completed_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "failed_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "expired_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "workflow_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowId"
+              }
+            ],
+            "description": "CRE chain-query workflow that executes read queries for this tenant."
+          },
+          "workflow_execution_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowExecutionId"
+              }
+            ],
+            "description": "CRE execution ID from the chain-query workflow run. Present when the query completed with an OCR proof."
+          }
+        },
+        "required": [
+          "query_id",
+          "channel_id",
+          "status",
+          "query_kind",
+          "chain_selector",
+          "target",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "QueryList": {
+        "type": "object",
+        "description": "Paginated list of queries.",
+        "example": {
+          "data": [
+            {
+              "query_id": "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a",
+              "channel_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+              "status": "completed",
+              "query_kind": "evm_call",
+              "chain_selector": "16015286601757825753",
+              "target": "0x1111111111111111111111111111111111111111",
+              "event_hash": "0xabc123def456",
+              "verifiable_result": "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9",
+              "proof": {
+                "alg": "ocr2vrf",
+                "ocr_report": "0xabc123",
+                "ocr_context": "0xdef456",
+                "signatures": ["0x789abc"]
+              },
+              "created_at": 1715698800,
+              "updated_at": 1715698815,
+              "expires_at": 1715702400,
+              "completed_at": 1715698815
+            }
+          ],
+          "has_more": false
+        },
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Query"
+            }
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "True if there are more queries to fetch."
+          }
+        },
+        "required": ["data", "has_more"]
+      },
+      "CreateWatcher": {
+        "description": "Request body for creating a new watcher (service-based or ABI-based).",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CreateWatcherWithService"
+          },
+          {
+            "$ref": "#/components/schemas/CreateWatcherWithABI"
+          }
+        ]
+      },
+      "CreateWatcherWithService": {
+        "description": "Watcher creation parameters using a named service namespace.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name for the watcher to help identify it",
+            "minLength": 4
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "The chain selector to identify the chain where the watcher will run"
+          },
+          "address": {
+            "type": "string",
+            "description": "Smart contract address to watch for events"
+          },
+          "service": {
+            "type": "string",
+            "description": "Service service namespace (e.g., \"dvp\", \"dta\")",
+            "example": "dta"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of event names to watch for within the service",
+            "minItems": 1
+          },
+          "service_config": {
+            "type": "object",
+            "description": "Optional service-specific configuration (e.g. secondary contract addresses)",
+            "additionalProperties": true
+          }
+        },
+        "required": ["name", "chain_selector", "address", "service", "events"]
+      },
+      "CreateWatcherWithABI": {
+        "description": "Watcher creation parameters using a raw ABI definition.",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name for the watcher to help identify it",
+            "minLength": 4
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "The chain selector to identify the chain where the watcher will run"
+          },
+          "address": {
+            "type": "string",
+            "description": "Smart contract address to watch for events"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of event names to watch for",
+            "minItems": 1
+          },
+          "abi": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventABI"
+            },
+            "description": "ABI definitions for the events to watch",
+            "minItems": 1
+          }
+        },
+        "required": ["name", "chain_selector", "address", "events", "abi"]
+      },
+      "EventABI": {
+        "description": "ABI definition for a smart contract event.",
+        "type": "object",
+        "properties": {
+          "anonymous": {
+            "type": "boolean",
+            "description": "Whether the event is anonymous"
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventABIInput"
+            },
+            "description": "Event input parameters"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the event"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["event"],
+            "description": "Type must be 'event'"
+          }
+        },
+        "required": ["anonymous", "inputs", "name", "type"]
+      },
+      "EventABIInput": {
+        "description": "A single input parameter in an event ABI.",
+        "type": "object",
+        "properties": {
+          "indexed": {
+            "type": "boolean",
+            "description": "Whether the parameter is indexed"
+          },
+          "internalType": {
+            "type": "string",
+            "description": "Internal Solidity type"
+          },
+          "name": {
+            "type": "string",
+            "description": "Parameter name"
+          },
+          "type": {
+            "type": "string",
+            "description": "Parameter type"
+          }
+        },
+        "required": ["indexed", "internalType", "name", "type"]
+      },
+      "Watcher": {
+        "description": "A watcher resource.",
+        "type": "object",
+        "properties": {
+          "watcher_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the watcher",
+            "example": "a8098c1a-f86e-11da-bd1a-00112444be1e"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the watcher for identification",
+            "example": "my-watcher"
+          },
+          "channel_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the channel this watcher belongs to",
+            "example": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          },
+          "created_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp of when the watcher was created",
+            "example": 1715698800
+          },
+          "status": {
+            "$ref": "#/components/schemas/WatcherStatus"
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "The chain selector to identify the chain where the watcher will run",
+            "example": "16015286601757825753"
+          },
+          "address": {
+            "type": "string",
+            "description": "Smart contract address being watched",
+            "example": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+          },
+          "service": {
+            "type": "string",
+            "description": "Service service namespace (if using service-based events)",
+            "example": "dta"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "List of event names being watched",
+            "example": ["SubscriptionRequested"]
+          },
+          "abi": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventABI"
+            },
+            "description": "ABI definitions for the events (if not using service-based events)",
+            "example": []
+          },
+          "don_family": {
+            "type": "string",
+            "description": "DON family the watcher's workflow runs on (e.g., \"zone-a\"). Used to identify which DON nodes signed the events.",
+            "example": "zone-a"
+          },
+          "workflow_id": {
+            "$ref": "#/components/schemas/CREWorkflowId"
+          },
+          "service_config": {
+            "type": "object",
+            "description": "Optional service-specific configuration (e.g. secondary contract addresses)",
+            "additionalProperties": true,
+            "example": {}
+          }
+        },
+        "required": [
+          "watcher_id",
+          "channel_id",
+          "created_at",
+          "status",
+          "chain_selector",
+          "address",
+          "events",
+          "don_family"
+        ]
+      },
+      "WatcherSummary": {
+        "description": "Summary view of a watcher.",
+        "type": "object",
+        "properties": {
+          "watcher_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the watcher",
+            "example": "a8098c1a-f86e-11da-bd1a-00112444be1e"
+          },
+          "name": {
+            "type": "string",
+            "description": "Name of the watcher for identification",
+            "example": "my-watcher"
+          },
+          "channel_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "ID of the channel this watcher belongs to",
+            "example": "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          },
+          "created_at": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp of when the watcher was created",
+            "example": 1715698800
+          },
+          "status": {
+            "$ref": "#/components/schemas/WatcherStatus"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "address": {
+            "type": "string",
+            "description": "Smart contract address being watched",
+            "example": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+          },
+          "service": {
+            "type": "string",
+            "description": "Service service namespace (if using service-based events)",
+            "example": "dta"
+          },
+          "don_family": {
+            "type": "string",
+            "description": "DON family the watcher's workflow runs on (e.g., \"zone-a\"). Used to identify which DON nodes signed the events.",
+            "example": "zone-a"
+          },
+          "workflow_id": {
+            "$ref": "#/components/schemas/CREWorkflowId"
+          }
+        },
+        "required": ["watcher_id", "channel_id", "created_at", "status", "chain_selector", "address", "don_family"]
+      },
+      "WatcherList": {
+        "description": "Paginated list of watchers.",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WatcherSummary"
+            },
+            "example": []
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "True if there are more watchers to fetch",
+            "example": false
+          }
+        },
+        "required": ["data", "has_more"]
+      },
+      "CreateOperation": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Request body for creating a signed operation or a draft when the signature is omitted.",
+        "properties": {
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "address": {
+            "$ref": "#/components/schemas/EthereumAddress"
+          },
+          "wallet_operation_id": {
+            "$ref": "#/components/schemas/WalletOperationId"
+          },
+          "deadline": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0,
+            "description": "Unix timestamp deadline for the operation. A value of 0 means no expiration.",
+            "example": 0
+          },
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionRequest"
+            },
+            "description": "List of transactions to execute. Each transaction may include optional preview data.",
+            "example": [
+              {
+                "to": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+                "value": "0",
+                "data": "0x"
+              }
+            ],
+            "minItems": 1,
+            "maxItems": 16
+          },
+          "signature": {
+            "$ref": "#/components/schemas/OperationSignature"
+          }
+        },
+        "required": ["chain_selector", "address", "wallet_operation_id", "deadline", "transactions"]
+      },
+      "Operation": {
+        "description": "A signed operation resource.",
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the operation",
+            "example": "c1e5b8d0-1234-5678-abcd-ef0123456789"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OperationStatus"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "address": {
+            "type": "string",
+            "description": "Wallet address performing the operation",
+            "example": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+          },
+          "wallet_operation_id": {
+            "type": "string",
+            "description": "Unique wallet operation identifier",
+            "example": "42"
+          },
+          "deadline": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unix timestamp deadline for the operation. A value of 0 means no expiration.",
+            "example": 0
+          },
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Transaction"
+            },
+            "description": "List of transactions associated with the operation.",
+            "example": []
+          },
+          "signature": {
+            "type": "string",
+            "nullable": true,
+            "description": "EIP-712 signature of the operation. Draft rows may have a null signature until finalized.",
+            "example": null
+          },
+          "digest": {
+            "type": "string",
+            "nullable": true,
+            "description": "Signing digest for the finalized operation.",
+            "example": null
+          },
+          "initiator": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Subject"
+              }
+            ]
+          },
+          "signer": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Subject"
+              }
+            ]
+          },
+          "canceller": {
+            "nullable": true,
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Subject"
+              }
+            ]
+          },
+          "signed_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "cancelled_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "confirmed_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "created_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "updated_at": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "operation_writer_workflow_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowId"
+              }
+            ],
+            "description": "CRE workflow that executed the operation."
+          },
+          "operation_writer_workflow_execution_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowExecutionId"
+              }
+            ],
+            "description": "CRE execution ID from the operation-writer workflow run that executed the operation."
+          },
+          "operation_status_workflow_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowId"
+              }
+            ],
+            "description": "CRE workflow that received blockchain events that confirm the operation was executed."
+          },
+          "operation_status_workflow_execution_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowExecutionId"
+              }
+            ],
+            "description": "CRE execution ID from the operation-status workflow run that confirmed the operation. Present when status is confirmed and OCR proof was received."
+          }
+        },
+        "required": [
+          "operation_id",
+          "status",
+          "chain_selector",
+          "address",
+          "wallet_operation_id",
+          "deadline",
+          "transactions",
+          "signature",
+          "created_at",
+          "updated_at"
+        ]
+      },
+      "OperationResponse": {
+        "description": "Response body for a created operation.",
+        "type": "object",
+        "properties": {
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the operation",
+            "example": "c1e5b8d0-1234-5678-abcd-ef0123456789"
+          }
+        },
+        "required": ["operation_id"]
+      },
+      "OperationList": {
+        "description": "Paginated list of operations.",
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Operation"
+            },
+            "example": []
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "True if there are more operations to fetch",
+            "example": false
+          }
+        },
+        "required": ["data", "has_more"]
+      },
+      "Subject": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.",
+        "properties": {
+          "subject_type": {
+            "$ref": "#/components/schemas/SubjectType"
+          },
+          "subject_id": {
+            "type": "string",
+            "description": "Stable subject identifier used for filtering and equality.",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "subject_name": {
+            "type": "string",
+            "description": "Human-friendly subject name.",
+            "example": "my-wallet"
+          }
+        },
+        "required": ["subject_type", "subject_id", "subject_name"]
+      },
+      "FinalizeOperation": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "PATCH body for finalizing a pending operation.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["accepted"],
+            "x-enum-varnames": ["FinalizeOperationStatusAccepted"],
+            "description": "Marks the operation as accepted/finalized.",
+            "example": "accepted"
+          },
+          "signature": {
+            "type": "string",
+            "description": "Final signature returned by the signing flow.",
+            "example": "0xabcdef..."
+          },
+          "digest": {
+            "type": "string",
+            "description": "Digest associated with the finalized operation.",
+            "example": "0x1234..."
+          }
+        },
+        "required": ["status", "signature", "digest"]
+      },
+      "CancelOperation": {
+        "type": "object",
+        "additionalProperties": false,
+        "description": "PATCH body for cancelling a pending operation.",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["cancelled"],
+            "x-enum-varnames": ["CancelOperationStatusCancelled"],
+            "description": "Marks the operation as cancelled.",
+            "example": "cancelled"
+          }
+        },
+        "required": ["status"]
+      },
+      "PatchOperation": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/FinalizeOperation"
+          },
+          {
+            "$ref": "#/components/schemas/CancelOperation"
+          }
+        ],
+        "discriminator": {
+          "propertyName": "status",
+          "mapping": {
+            "accepted": "#/components/schemas/FinalizeOperation",
+            "cancelled": "#/components/schemas/CancelOperation"
+          }
+        },
+        "description": "PATCH body for finalizing or cancelling an operation."
+      },
+      "EventList": {
+        "description": "Paginated list of events.",
+        "type": "object",
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Event"
+            },
+            "example": []
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "True if there are more events to fetch",
+            "example": false
+          }
+        },
+        "required": ["events", "has_more"]
+      },
+      "Event": {
+        "description": "A channel event containing a typed payload and headers.",
+        "type": "object",
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the event",
+            "example": "d290f1ee-6c54-4b01-90e6-d701748f0851"
+          },
+          "payload": {
+            "description": "Event payload object; use headers.type to determine the variant (operation.status → OperationStatusPayload, watcher.status → WatcherStatusPayload, watcher.event → WatcherEventPayload, wallet.status → WalletStatusPayload). ",
+            "example": {
+              "status": "confirmed",
+              "status_reason": "",
+              "operation_id": "c1e5b8d0-1234-5678-abcd-ef0123456789",
+              "wallet_operation_id": "42",
+              "address": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e",
+              "chain_selector": "16015286601757825753",
+              "timestamp": 1715698800
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/OperationStatusPayload"
+              },
+              {
+                "$ref": "#/components/schemas/QueryStatusPayload"
+              },
+              {
+                "$ref": "#/components/schemas/WatcherStatusPayload"
+              },
+              {
+                "$ref": "#/components/schemas/WatcherEventPayload"
+              },
+              {
+                "$ref": "#/components/schemas/WalletStatusPayload"
+              }
+            ]
+          },
+          "headers": {
+            "$ref": "#/components/schemas/EventHeaders"
+          }
+        },
+        "required": ["payload", "headers"]
+      },
+      "EventHeaders": {
+        "description": "Metadata headers for an event, including type discriminator and proofs.",
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/EventType"
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique offset for message ordering",
+            "example": 1
+          },
+          "proofs": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/OCRProof"
+                },
+                {
+                  "$ref": "#/components/schemas/GenericProofObject"
+                }
+              ]
+            },
+            "example": []
+          }
+        },
+        "required": ["type", "offset", "proofs"],
+        "example": {
+          "type": "operation.status",
+          "offset": 15520,
+          "proofs": [
+            {
+              "alg": "keccak256",
+              "ocr_report": "0x00010203",
+              "ocr_context": "0x0a0b0c",
+              "signatures": ["0x789abc"]
+            }
+          ]
+        }
+      },
+      "GenericProofObject": {
+        "description": "Generic proof object for future extensibility.",
+        "type": "object",
+        "properties": {
+          "alg": {
+            "type": "string",
+            "description": "Optional algorithm used for the proof",
+            "example": "generic"
+          }
+        },
+        "additionalProperties": true,
+        "x-is-free-form": false
+      },
+      "OCRProof": {
+        "description": "An OCR-based cryptographic proof attached to a verifiable event.",
+        "type": "object",
+        "properties": {
+          "alg": {
+            "type": "string",
+            "description": "Algorithm used for the proof",
+            "example": "ocr2vrf"
+          },
+          "ocr_report": {
+            "type": "string",
+            "description": "OCR report data",
+            "example": "0xabc123..."
+          },
+          "ocr_context": {
+            "type": "string",
+            "description": "OCR context data",
+            "example": "0xdef456..."
+          },
+          "signatures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array of signatures",
+            "example": []
+          }
+        },
+        "required": ["alg", "ocr_report", "ocr_context", "signatures"]
+      },
+      "OperationStatusPayload": {
+        "description": "Event payload for an operation status change.",
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/OperationStatus"
+          },
+          "status_reason": {
+            "type": "string",
+            "description": "Reason for the status",
+            "example": "Resource not found"
+          },
+          "operation_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the operation",
+            "example": "c1e5b8d0-1234-5678-abcd-ef0123456789"
+          },
+          "wallet_operation_id": {
+            "type": "string",
+            "description": "Wallet operation identifier",
+            "example": "42"
+          },
+          "address": {
+            "type": "string",
+            "description": "Wallet address performing the operation",
+            "example": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+          },
+          "digest": {
+            "type": "string",
+            "nullable": true,
+            "description": "Canonical signing digest for the operation.",
+            "example": null
+          },
+          "transactions": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/Transaction"
+            },
+            "description": "Transactions associated with the event.",
+            "example": []
+          },
+          "event_hash": {
+            "type": "string",
+            "description": "Verifiable event hash for reference (only present when status is confirmed)",
+            "example": "0xabc123def456"
+          },
+          "verifiable_event": {
+            "type": "string",
+            "description": "Base64 encoded verifiable event for verification",
+            "example": "eyJhbGciOiJFUzI1NiJ9..."
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "Chain selector identifier for the blockchain network",
+            "example": "16015286601757825753"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp when the event was created",
+            "example": 1715698800
+          },
+          "operation_writer_workflow_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowId"
+              }
+            ],
+            "description": "CRE workflow that executed the operation."
+          },
+          "operation_writer_workflow_execution_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowExecutionId"
+              }
+            ],
+            "description": "CRE execution ID from the operation-writer workflow run that executed the operation."
+          },
+          "operation_status_workflow_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowId"
+              }
+            ],
+            "description": "CRE workflow that received blockchain events that confirm the operation was executed."
+          },
+          "operation_status_workflow_execution_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowExecutionId"
+              }
+            ],
+            "description": "CRE execution ID from the operation-status workflow run that confirmed the operation. Present when status is confirmed and OCR proof was received."
+          }
+        },
+        "required": [
+          "status",
+          "status_reason",
+          "operation_id",
+          "wallet_operation_id",
+          "address",
+          "chain_selector",
+          "timestamp"
+        ]
+      },
+      "QueryStatusPayload": {
+        "type": "object",
+        "description": "Minimal top-level payload for query.status channel events.",
+        "example": {
+          "query_id": "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a",
+          "status": "completed",
+          "target": "0x1111111111111111111111111111111111111111",
+          "chain_selector": "16015286601757825753",
+          "timestamp": 1715698815,
+          "event_hash": "0xabc123def456",
+          "verifiable_result": "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
+        },
+        "properties": {
+          "query_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the query."
+          },
+          "status": {
+            "$ref": "#/components/schemas/QueryStatus"
+          },
+          "target": {
+            "type": "string",
+            "description": "Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.",
+            "example": "0x1111111111111111111111111111111111111111"
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "Chain selector identifier for the blockchain network",
+            "example": "16015286601757825753"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp when the status event was created."
+          },
+          "event_hash": {
+            "type": "string",
+            "description": "Verifiable event hash for terminal query status events."
+          },
+          "verifiable_result": {
+            "type": "string",
+            "description": "Base64-encoded verifiable query result for terminal query status events."
+          },
+          "workflow_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowId"
+              }
+            ],
+            "description": "CRE chain-query workflow that executed this query."
+          },
+          "workflow_execution_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowExecutionId"
+              }
+            ],
+            "description": "CRE execution ID from the chain-query workflow run. Present when the query completed with an OCR proof."
+          }
+        },
+        "required": ["query_id", "status", "target", "chain_selector", "timestamp"]
+      },
+      "WatcherStatusPayload": {
+        "description": "Event payload for a watcher status change.",
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/WatcherStatus"
+          },
+          "status_reason": {
+            "type": "string",
+            "description": "Reason for the status",
+            "example": "Resource not found"
+          },
+          "watcher_id": {
+            "type": "string",
+            "description": "Unique watcher identifier",
+            "example": "a8098c1a-f86e-11da-bd1a-00112444be1e"
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "Chain selector identifier for the blockchain network",
+            "example": "16015286601757825753"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp when the event was created",
+            "example": 1715698800
+          },
+          "service": {
+            "type": "string",
+            "description": "Service namespace of the watcher",
+            "example": "dta"
+          },
+          "workflow_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowId"
+              }
+            ],
+            "description": "CRE event-watcher workflow deployed for this watcher."
+          }
+        },
+        "required": ["status", "status_reason", "watcher_id", "chain_selector", "timestamp"]
+      },
+      "WatcherEventPayload": {
+        "description": "Event payload for an on-chain event detected by a watcher.",
+        "type": "object",
+        "properties": {
+          "watcher_id": {
+            "type": "string",
+            "description": "Unique watcher identifier",
+            "example": "a8098c1a-f86e-11da-bd1a-00112444be1e"
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "Chain selector identifier for the blockchain network",
+            "example": "16015286601757825753"
+          },
+          "event_hash": {
+            "type": "string",
+            "description": "Verifiable event hash",
+            "example": "0xabc123def456"
+          },
+          "verifiable_event": {
+            "type": "string",
+            "description": "Base64 encoded verifiable event",
+            "example": "eyJhbGciOiJFUzI1NiJ9..."
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp when the event was created",
+            "example": 1715698800
+          },
+          "workflow_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowId"
+              }
+            ],
+            "description": "CRE event-watcher workflow deployed for this watcher."
+          },
+          "workflow_execution_id": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/CREWorkflowExecutionId"
+              }
+            ],
+            "description": "CRE execution ID from the event-watcher workflow run that detected this on-chain event."
+          }
+        },
+        "required": ["watcher_id", "event_hash", "verifiable_event", "chain_selector", "timestamp"]
+      },
+      "WalletStatusPayload": {
+        "description": "Event payload for a wallet status change.",
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/WalletStatus"
+          },
+          "status_reason": {
+            "type": "string",
+            "description": "Reason for the status",
+            "example": "Resource not found"
+          },
+          "address": {
+            "type": "string",
+            "description": "Wallet address performing the operation",
+            "example": "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+          },
+          "chain_selector": {
+            "type": "string",
+            "description": "Chain selector identifier for the blockchain network",
+            "example": "16015286601757825753"
+          },
+          "wallet_id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the wallet",
+            "example": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Timestamp when the event was created",
+            "example": 1715698800
+          }
+        },
+        "required": ["status", "status_reason", "wallet_id", "address", "chain_selector", "timestamp"]
+      },
+      "ChannelStatus": {
+        "type": "string",
+        "description": "Status of a channel",
+        "enum": ["active", "archived"],
+        "x-enum-varnames": ["ChannelStatusActive", "ChannelStatusArchived"],
+        "example": "active"
+      },
+      "ChainEnvironment": {
+        "type": "string",
+        "description": "Type of chain",
+        "enum": ["mainnet", "testnet"],
+        "x-enum-varnames": ["ChainEnvironmentMainnet", "ChainEnvironmentTestnet"],
+        "example": "mainnet"
+      }
+    }
+  }
+}

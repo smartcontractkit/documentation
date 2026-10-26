@@ -13,8 +13,13 @@ import yaml from "@rollup/plugin-yaml"
 import { ccipRedirects } from "./src/config/redirects/ccip"
 import trailingSlashMiddleware from "./src/integrations/trailing-slash-middleware"
 import redirectsJson from "./src/features/redirects/redirects.json"
+import tailwindcss from "tailwindcss"
+import autoprefixer from "autoprefixer"
 import { extractCanonicalUrlsWithLanguageVariants } from "./src/utils/sidebar"
+import { isSunsetDocsPath, SUNSET_PAGES_STAY_IN_SITEMAP } from "./src/config/sunset"
 import remarkCodeFenceFilename from "./src/lib/markdown/remarkCodeFenceFilename"
+import remarkCodeFenceLanguageAlias from "./src/lib/markdown/remarkCodeFenceLanguageAlias"
+import remarkPrismTolk from "./src/lib/markdown/prismTolk"
 import rehypeCodeSampleFences from "./src/lib/markdown/rehypeCodeSampleFences"
 
 config() // Load .env file
@@ -45,6 +50,8 @@ export default defineConfig({
     "/ccip/supported-networks": "/ccip/directory/mainnet",
     "/getting-started": "/getting-started/conceptual-overview",
     "/resources": "/resources/link-token-contracts",
+    "/chainlink-platform": "/chainlink-platform/getting-started",
+    "/chainlink-platform/overview": "/chainlink-platform/getting-started",
     ...ccipRedirects,
   },
   integrations: [
@@ -68,8 +75,6 @@ export default defineConfig({
         "https://docs.chain.link/data-streams/llms-full.txt",
         "https://docs.chain.link/dta-technical-standard/llms-full.txt",
         "https://docs.chain.link/datalink/llms-full.txt",
-        "https://docs.chain.link/chainlink-functions/llms-full.txt",
-        "https://docs.chain.link/chainlink-automation/llms-full.txt",
         "https://docs.chain.link/resources/llms-full.txt",
         "https://docs.chain.link/architecture-overview/llms-full.txt",
         "https://docs.chain.link/getting-started/llms-full.txt",
@@ -81,7 +86,13 @@ export default defineConfig({
         const pathname = new URL(page).pathname
         const cleanPath = pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname
 
-        // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/api-reference/evm/v150)
+        // Sunset pages stay listed for now so a crawler can recrawl and read noindex.
+        // Flip SUNSET_PAGES_STAY_IN_SITEMAP to false after a few weeks.
+        if (!SUNSET_PAGES_STAY_IN_SITEMAP && isSunsetDocsPath(cleanPath)) {
+          return false
+        }
+
+        // Exclude short format API reference URLs (e.g., /api-reference/v150, /ccip/evm/api-reference/v150)
         // These are aliases for versioned content - we keep only the canonical long format URLs
         const shortVersionPattern = /\/api-reference\/(?:.*\/)?v\d{3,4}(?:\/|$)/
         if (shortVersionPattern.test(cleanPath)) {
@@ -95,6 +106,11 @@ export default defineConfig({
 
         // CCIP directory API v1 interactive page: noindex + omit from sitemap to avoid competing with CCIP Tools REST (v2)
         if (cleanPath === "/api/ccip/v1/docs") {
+          return false
+        }
+
+        // Old v1 glossary. The URL stays. It is not a current product page.
+        if (cleanPath === "/resources/glossary") {
           return false
         }
 
@@ -113,11 +129,11 @@ export default defineConfig({
     }),
     // Ensure our fence-meta parser runs for `.mdx` pages (in addition to `markdown.remarkPlugins`).
     mdx({
-      remarkPlugins: [remarkCodeFenceFilename],
+      remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
     }),
   ],
   markdown: {
-    remarkPlugins: [remarkCodeFenceFilename],
+    remarkPlugins: [remarkCodeFenceFilename, remarkCodeFenceLanguageAlias, remarkPrismTolk],
     rehypePlugins: [
       rehypeSlug, // Required for autolink to work properly
       [
@@ -137,7 +153,26 @@ export default defineConfig({
   output: "static",
   adapter: vercel(),
   vite: {
-    plugins: [yaml()],
+    plugins: [
+      yaml(),
+      // Dev-only workaround for slow `astro dev`: @chainlink/blocks ships raw TS whose root entry
+      // re-exports ~3,700 icon modules, and Astro's dev server crawls the whole module graph on every request.
+      // Pre-bundling blocks for SSR collapses it into a single module. Remove once blocks ships a built package.
+      {
+        name: "dev-prebundle-chainlink-blocks",
+        apply: "serve",
+        config: () => ({
+          ssr: {
+            noExternal: ["@chainlink/blocks"],
+            optimizeDeps: {
+              include: ["@chainlink/blocks"],
+              exclude: ["react", "react-dom"], // keep a single React instance (react-dom/server stays external)
+              esbuildOptions: { jsx: "automatic" }, // blocks relies on the automatic JSX runtime
+            },
+          },
+        }),
+      },
+    ],
     build: {
       target: "esnext", // Use latest ES features, no transpilation for modern browsers
       // Optimize CSS delivery
@@ -156,6 +191,10 @@ export default defineConfig({
     },
     css: {
       devSourcemap: false,
+      // Tailwind 3 runs through PostCSS directly (formerly wired by the deprecated @astrojs/tailwind integration)
+      postcss: {
+        plugins: [tailwindcss(), autoprefixer()],
+      },
     },
   },
   legacy: {

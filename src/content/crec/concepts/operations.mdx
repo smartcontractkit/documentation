@@ -3,27 +3,44 @@ section: crec
 title: "Operations and Transactions"
 date: Last Modified
 metadata:
-  description: "An Operation in Chainlink CRE Connect is a signed, gas-less batch of EVM transactions executed atomically by a Smart Account. This page describes the Operation/Transaction model and the end-to-end submission lifecycle."
+  description: "An Operation in Chainlink CRE Connect is a signed, gas-less batch of EVM transactions executed atomically by a Smart Account. This page describes the Operation/Transaction data model, the EIP-712 signing flow, and the end-to-end submission lifecycle."
   datePublished: "2026-05-01"
-  lastModified: "2026-05-01"
+  lastModified: "2026-08-31"
 ---
 
 import { Aside, ClickToZoom } from "@components"
 
-An **Operation** is the unit of write in CRE Connect. It packages one or more EVM transactions into a single, atomic, EIP-712-signed batch that a Smart Account executes on behalf of an application — without the application managing gas, nonces, or relayers. If any transaction in the batch reverts, the entire Operation reverts.
+An **Operation** is the unit of write in CRE Connect. It packages one or more EVM transactions into a single, atomic, EIP-712-signed batch that a Smart Account executes on behalf of your application without your application managing gas, nonces, or relayers. If any transaction in the batch reverts, the entire Operation reverts.
 
-For the underlying signing mechanism and the on-chain execution model, see [EIP-712 Signing](/crec/concepts/eip712-signing) and [Smart Accounts](/crec/concepts/smart-accounts).
+For deferred-signing workflows, see [Draft Operations](/crec/concepts/drafts). For the underlying signing mechanism and the on-chain execution model, see [EIP-712 Signing](/crec/concepts/eip712-signing) and [Smart Accounts](/crec/concepts/smart-accounts).
 
-## Model
+## Data model
 
-An Operation is a small, ordered structure:
+An Operation is composed of two structs that live in `transact/types`:
 
-| Field               | Meaning                                                                                                                                                                                      |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Wallet operation ID | A monotonically-increasing nonce-like value chosen by the application. Used to detect duplicates and to order operations.                                                                    |
-| Account             | The Smart Account address (the wallet) that will execute the Operation.                                                                                                                      |
-| Deadline            | A Unix timestamp after which the Operation must not be executed. Operations whose deadline has passed are not broadcast.                                                                     |
-| Transactions        | An ordered list of `(to, value, data)` triples — exactly the same shape as the standard EVM transaction call, except the sender is the Smart Account, not the EOA that signed the Operation. |
+```go
+type Transaction struct {
+    To    common.Address  `json:"to"`
+    Value *big.Int        `json:"value,string"`
+    Data  hexutil.Bytes   `json:"data"`
+}
+
+type Operation struct {
+    ID           *big.Int        `json:"id"`
+    Account      common.Address  `json:"account"`
+    Deadline     *big.Int        `json:"deadline"`
+    Transactions []Transaction   `json:"transactions"`
+}
+```
+
+| <div style="width: 120px;">Field</div> | Meaning                                                                                                                                                                                                                 |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ID`                                   | The **wallet operation ID**. A nonce-like value chosen by the client. When you call `ExecuteTransactions`, the SDK generates a random 128-bit ID; when you construct an Operation manually, you choose the ID yourself. |
+| `Account`                              | The Smart Account address (the wallet) that will execute the Operation. This must equal the `verifyingContract` of the EIP-712 domain.                                                                                  |
+| `Deadline`                             | A Unix timestamp after which the Operation must not be executed. The DON ignores Operations whose deadline has passed.                                                                                                  |
+| `Transactions`                         | An ordered list of `Transaction` structs. They execute in order, atomically.                                                                                                                                            |
+
+Each `Transaction` is just `(to, value, data)`, exactly what you would pass to `eth_sendTransaction`, except the _sender_ is the Smart Account, not the EOA that signed the Operation.
 
 ## End-to-end flow
 
@@ -31,41 +48,77 @@ An Operation is a small, ordered structure:
 
 ## Signing
 
-Operations are signed with EIP-712 typed data. The CRE Connect EIP-712 domain identifies the Smart Account contract and the chain on which it lives — not just by chain ID, but as a CRE Connect-native authorization domain (see [EIP-712 Signing](/crec/concepts/eip712-signing) for details).
+The SDK signs the Operation client-side using EIP-712 typed data. The domain is fixed across CRE Connect:
 
-The signing key can be any of the supported key-management options at launch — local ECDSA keys, AWS KMS, HashiCorp Vault, Fireblocks, Privy, or a custom signer. CRE Connect itself never holds private keys.
+| Field               | Value                                                                   |
+| ------------------- | ----------------------------------------------------------------------- |
+| `name`              | `CLLSmartAccount`                                                       |
+| `version`           | `1`                                                                     |
+| `chainId`           | Derived from the `chainSelector` argument via `GetChainIDFromSelector`. |
+| `verifyingContract` | The Smart Account address (`Operation.Account`).                        |
+
+The signing key can be any implementation of the [`signer.Signer`](/crec/concepts/eip712-signing#signers) interface: local ECDSA, AWS KMS, HashiCorp Vault, Fireblocks, Privy, or your own custom adapter.
+
+## Submission helpers
+
+The SDK exposes two entry points on `client.Transact`:
+
+### `ExecuteTransactions`
+
+The high-level helper. Builds the Operation, signs it, and submits it in one call.
+
+```go
+op, err := client.Transact.ExecuteTransactions(
+    ctx,
+    channelID,                    // uuid.UUID
+    operationSigner,              // signer.Signer
+    smartAccountAddress,          // common.Address
+    []types.Transaction{tx1, tx2},
+    big.NewInt(time.Now().Add(15*time.Minute).Unix()), // deadline
+    chainSelector,                // string
+)
+```
+
+`ExecuteTransactions` generates a random 128-bit wallet operation ID, so two calls in the same second never collide. If you construct the Operation manually instead, you own the ID: make it unique per Smart Account, because the Smart Account rejects re-used IDs.
+
+### `ExecuteOperation`
+
+Lower-level: takes a fully-formed `*types.Operation` (so you can override `ID` or assemble a complex multi-transaction batch yourself), signs it, and submits it. Use this when you need precise nonce control or want to construct the Operation through extension builders such as the [DTA `Prepare*Operation`](/crec/extensions/dta) helpers.
+
+```go
+op, err := client.Transact.ExecuteOperation(ctx, channelID, signer, builtOperation, chainSelector)
+```
+
+## Draft operations
+
+Operations can also be created without a signature. CRE Connect stores these as **draft operations** in `pending_signature` state until your application finalizes them with a digest and signature, cancels them, or lets their deadline expire.
+
+Drafts are useful when the signer is not available synchronously: MPC policy approval, human review, KMS approval workflows, or UIs that show decoded transaction previews before the user signs. See [Draft Operations](/crec/concepts/drafts) for the model and [Draft Operations: Create, Finalize, Cancel](/crec/guides/operations/drafts) for the SDK flow.
 
 ## Lifecycle
 
-A submitted Operation is observable through the channel's event stream. Its status enum has six values:
+The submitted Operation is observable through the channel's event stream. A signed operation starts at `accepted`; a draft starts at `pending_signature` and must be finalized before relay. From there, CRE Connect reports relay progress, progressive on-chain confirmation, cancellation, expiration, or failure through `operation.status` events.
 
-<ClickToZoom src="/images/crec/concepts/operations-lifecycle.png" />
+For the complete state diagram and status table, see [Lifecycles](/crec/reference/lifecycles#operation-lifecycle). For the confirmation model, see [Multi-Event Finality](/crec/concepts/multi-event-finality). For polling and event verification patterns, see [Submit and Track Operations](/crec/guides/operations/submit-and-track).
 
-| <div style="width: 120px;">Status</div> | Meaning                                                                                                                                                                  |
-| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `accepted`                              | CRE Connect accepted the signed Operation; the workflow has not yet picked it up.                                                                                        |
-| `sending`                               | The workflow is preparing the on-chain write.                                                                                                                            |
-| `sent`                                  | The transaction has been broadcast to the chain.                                                                                                                         |
-| `broadcasting`                          | Awaiting inclusion in a block.                                                                                                                                           |
-| `confirmed`                             | The Smart Account emitted `OperationExecuted` and CRE Connect attested to it via an `operation.status` event. The on-chain transaction hash is available in the payload. |
-| `failed`                                | An unrecoverable error prevented execution. The payload includes the failure reason.                                                                                     |
-
-Status transitions are themselves verifiable events — applications consume them through the same channel stream they use for on-chain data.
+Draft lifecycle events (`pending_signature`, `cancelled`, `expired`) are operational notifications without DON proofs. Confirmation events (`confirmed_latest`, `confirmed_safe`, `confirmed`) carry DON proofs and can be verified with `client.Events.VerifyOperationStatus`.
 
 ## Atomicity
 
-All transactions in a single Operation execute atomically: the Smart Account either executes every transaction successfully, or it reverts the entire batch. This is the guarantee that makes Operations a useful primitive for **multi-step on-chain flows** — for example, "approve token + call protocol contract + emit auxiliary log" — that would otherwise require careful retry handling on partial failure.
+All transactions in a single Operation execute atomically: the Smart Account either executes every transaction successfully, or it reverts the entire batch. This guarantee makes Operations useful for **multi-step on-chain flows**, for example, "approve token + call DTA contract + emit auxiliary log", that would otherwise require careful retry handling on partial failure.
 
-If an application needs _all-or-some_ semantics (for example, several independent token transfers that should succeed independently), it should submit them as **separate Operations** — one Operation per transaction.
+If you need _all-or-some_ semantics (e.g. several independent token transfers that should succeed independently), submit them as **separate Operations**, one Operation per transaction. See [Batch Transactions](/crec/guides/operations/batch-transactions) for guidance on choosing.
 
-<Aside type="note" title="How deadlines work">
-  An Operation's `Deadline` is a Unix-second timestamp (or `0` for "no expiration") after which the DON drops the
-  operation instead of broadcasting it. When that happens the application sees a `failed` status and can decide whether
-  to construct a new Operation and retry. Pick a deadline that matches the application's freshness requirements.
+<Aside type="note" title="How Deadlines work">
+  `Operation.Deadline` is the Unix-second timestamp (or `0` for "no expiration") after which the DON drops the operation
+  instead of broadcasting it. When that happens your application sees a `failed` status on the operation and can decide
+  whether to construct a new `Operation` and retry. Pick a deadline that matches your application's freshness
+  requirements.
 </Aside>
 
 ## Related
 
-- [EIP-712 Signing](/crec/concepts/eip712-signing) — what gets signed and why.
-- [Smart Accounts](/crec/concepts/smart-accounts) — the on-chain executor.
-- [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction) — the gas-less execution model.
+- [EIP-712 Signing](/crec/concepts/eip712-signing): what gets signed and why.
+- [Smart Accounts](/crec/concepts/smart-accounts): the on-chain executor.
+- [Account Abstraction & Gas Sponsorship](/crec/concepts/account-abstraction): the gas-less execution model.
+- [Build and Sign Operations](/crec/guides/operations/build-and-sign) · [Submit and Track Operations](/crec/guides/operations/submit-and-track) · [Batch Transactions](/crec/guides/operations/batch-transactions): the implementation guides.

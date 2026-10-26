@@ -21,11 +21,17 @@ export interface SchemaDefinition {
 // Fields present in every report schema
 const COMMON_FIELDS: SchemaField[] = [
   { field: "feedId", type: "bytes32", description: "Unique identifier for the Data Streams feed" },
-  { field: "validFromTimestamp", type: "uint32", description: "Earliest timestamp when the price is valid (seconds)" },
+  {
+    field: "validFromTimestamp",
+    type: "uint32",
+    description: "Earliest timestamp when the price is valid (seconds)",
+    link: { label: "How report timestamps work", href: "/data-streams/how-report-timestamps-work" },
+  },
   {
     field: "observationsTimestamp",
     type: "uint32",
     description: "Latest timestamp when the price is valid (seconds)",
+    link: { label: "How report timestamps work", href: "/data-streams/how-report-timestamps-work" },
   },
   { field: "nativeFee", type: "uint192", description: "Legacy onchain verification fee field" },
   {
@@ -37,6 +43,15 @@ const COMMON_FIELDS: SchemaField[] = [
 ]
 
 export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
+  v2: {
+    label: "Report Schema v2 (Crypto Standard)",
+    shortLabel: "v2 (Crypto)",
+    url: "/data-streams/reference/report-schema-v2",
+    fields: [
+      ...COMMON_FIELDS,
+      { field: "price", type: "int192", description: "Time-weighted average price (TWAP) for the stream's window" },
+    ],
+  },
   "v3-crypto": {
     label: "Report Schema v3 (Crypto Advanced)",
     shortLabel: "v3 (Crypto)",
@@ -189,7 +204,11 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
       { field: "bidVolume", type: "int192", description: "Volume at bid price" },
       { field: "ask", type: "int192", description: "Median ask price" },
       { field: "askVolume", type: "int192", description: "Volume at ask price" },
-      { field: "lastTradedPrice", type: "int192", description: "Last traded price" },
+      {
+        field: "lastTradedPrice",
+        type: "int192",
+        description: "Last traded price. Availability and production support vary by stream.",
+      },
       {
         field: "marketStatus",
         type: "uint32",

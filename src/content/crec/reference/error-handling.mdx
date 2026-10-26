@@ -1,0 +1,268 @@
+---
+section: crec
+title: "Error Handling"
+date: Last Modified
+metadata:
+  description: "Sentinel errors per SDK sub-package, REST error responses, and the SDK's transient-vs-permanent error classification used by the watchers client's polling loops."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+This page collects every sentinel error exposed by the Go SDK, the REST error envelope, and the transient-vs-permanent error classification used by the SDK's polling loops.
+
+## REST error envelope
+
+Every non-2xx HTTP response uses the same shape:
+
+```json
+{
+  "type": "NOT_FOUND",
+  "code": "WALLET_NOT_FOUND",
+  "message": "The requested resource was not found."
+}
+```
+
+`type` ∈ `NOT_FOUND | VALIDATION_ERROR | CONFLICT | INTERNAL_ERROR | ORGANIZATION_NOT_FOUND`. The `code` field provides a machine-readable error code for `NOT_FOUND` and `CONFLICT` responses (e.g. `CHANNEL_NOT_FOUND`, `OPERATION_NOT_FINALIZABLE`, `IDEMPOTENCY_KEY_MISMATCH`). See the [REST API Reference](/crec/reference/rest-api#error-responses) for the full table.
+
+## Transient vs permanent errors
+
+The SDK does **not** layer automatic HTTP-level retries on top of API calls. Each method on `wallets.Client`, `channels.Client`, `events.Client`, and `transact.Client` issues its request once and surfaces any error to the caller.
+
+The exception is the `watchers.Client` polling helpers, `WaitForActive` and `WaitForArchived`. These methods poll `Get` on a `time.Ticker` (default `2 * time.Second`, configurable via `crec.WithWatcherPolling`). When `Get` returns a transient error, the loop logs it and continues to the next tick instead of aborting; permanent errors abort the wait immediately.
+
+The transient/permanent classification is implemented in [`watchers.go`](https://github.com/smartcontractkit/crec-sdk/blob/main/watchers/watchers.go) (`isTransientError` / `isTransientStatusCode`):
+
+| Status code                                                                                                                | Classification       | Behaviour inside `WaitForActive` / `WaitForArchived` |
+| -------------------------------------------------------------------------------------------------------------------------- | -------------------- | ---------------------------------------------------- |
+| `429 Too Many Requests`                                                                                                    | Transient            | Loop continues to the next poll tick                 |
+| `500`–`599`                                                                                                                | Transient            | Loop continues to the next poll tick                 |
+| Network errors (connection refused/reset, timeout, EOF, no such host, network unreachable, broken pipe, temporary failure) | Transient            | Loop continues to the next poll tick                 |
+| `400`–`499` (excluding `429`)                                                                                              | Permanent            | Wait aborts; error returned to caller                |
+| Any other error not matched above                                                                                          | Treated as permanent | Wait aborts                                          |
+
+For all other sub-clients, retry behaviour is your responsibility. If you wrap calls in your own retry loop, base the transient check on `errors.Is(err, …)` against the sentinel errors documented below, or on the HTTP status code returned in the REST error envelope.
+
+## Common symptoms: what to do
+
+If you're hitting a specific error and just want to know what to fix, find the symptom below first. The full sentinel-error catalog (organised per SDK package) is in the next section.
+
+| Symptom (what you see)                                                                      | Likely cause                                                                                                                           | Fix                                                                                                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `crec.ErrBaseURLRequired` / `ErrAPIKeyRequired` on `NewClient`                              | `CREC_BASE_URL` / `CREC_API_KEY` env var unset or passed as `""`.                                                                      | Set both before constructing the client; see [Authentication](/crec/getting-started/authentication).                                                                                                                                            |
+| `401 Unauthorized` from any endpoint                                                        | API key not sent, sent in the wrong header, or for the wrong environment.                                                              | The header is `Authorization: Apikey <key>`. The Go SDK sets it for you; for raw `curl` see [REST API Reference](/crec/reference/rest-api#authentication).                                                                                      |
+| `wallets.ErrStatusChannelIDZero` on `Wallets.Create`                                        | `StatusChannelId` was supplied as the zero UUID.                                                                                       | Pass a real channel ID, or omit the field entirely; see [Create and Manage Wallets](/crec/guides/wallets/create-and-manage).                                                                                                                    |
+| `transact.ErrInvalidDeadline` or `types.ErrOperationDeadlineRequired` on `ExecuteOperation` | `Operation.Deadline` is now mandatory.                                                                                                 | Set `Deadline: big.NewInt(0)` for "no expiration" or a Unix-seconds value; see [Build and Sign Operations](/crec/guides/operations/build-and-sign).                                                                                             |
+| `eip712.ErrUnsupportedChainFamily` on signing                                               | The chain selector resolves to a non-EVM chain.                                                                                        | EVM is the only supported family today; pick a different chain selector via [Supported Networks](/crec/supported-networks).                                                                                                                     |
+| `events.ErrVerificationNotConfigured` on `Events.Verify`                                    | Client built without `crec.WithEventVerification(...)`.                                                                                | Configure verification at construction time; see [Verify Event Signatures](/crec/guides/events/verify-signatures).                                                                                                                              |
+| `events.ErrNoOCRProofs` on `Events.Verify` / `VerifyOperationStatus`                        | The event record returned by the API has no Off-Chain Reporting (OCR) proof attached.                                                  | Skip the event with `errors.Is(err, events.ErrNoOCRProofs)` and re-poll on the next cycle.                                                                                                                                                      |
+| `events.ErrInvalidEventHash` / `ErrMultipleOCRProofs`                                       | The event payload is malformed, tampered, or wasn't produced by your tenant's watcher.                                                 | Re-fetch the event with `Events.SearchEvents` (filtered by `EventId`) or `GET /channels/{channel_id}/events/search/{event_id}`; if it persists, the watcher source is the problem. See [Event Verification](/crec/concepts/event-verification). |
+| `events.ErrOrgIDOrWorkflowOwnerReq` / `ErrWorkflowOwnerRequired`                            | Verification needs an org context the SDK couldn't resolve.                                                                            | Pass `crec.WithOrgID(os.Getenv("CREC_ORG_ID"))` or `WithWorkflowOwner(...)` at client construction time. There is no default.                                                                                                                   |
+| `watchers.ErrWaitForActiveTimeout` / `ErrWatcherDeploymentFailed`                           | `WaitForActive` exceeded its deadline, or the watcher transitioned to `failed`.                                                        | Inspect the latest `watcher.status` event for `status_reason`. Most failures are bad ABI / address / chain selector; see [Manage Watcher Lifecycle](/crec/guides/watchers/manage-lifecycle).                                                    |
+| `watchers.ErrWatcherIsArchiving` / `ErrWatcherAlreadyArchived`                              | You called `WaitForActive` on a watcher that's already being torn down.                                                                | Recreate the watcher; archived watchers cannot be reactivated.                                                                                                                                                                                  |
+| `wallets.ErrDuplicateEcdsaSigner` / `ErrDuplicateRsaSigner`                                 | Two identical entries in the signer list.                                                                                              | Deduplicate before calling `Create`.                                                                                                                                                                                                            |
+| `transact.ErrChannelNotFound` on `ExecuteOperation`                                         | Wrong `channelID`, or the channel was archived.                                                                                        | Confirm with `Channels.Get`; recreate or pick a different channel.                                                                                                                                                                              |
+| `fireblocks.ErrEnvFireblocksAPIKey` (etc.)                                                  | `FIREBLOCKS_*` env var missing when calling `FromEnv`.                                                                                 | Set every `FIREBLOCKS_API_KEY` / `_API_SECRET` / `_VAULT_ACCOUNT_ID` / `_ASSET_ID`; see [Fireblocks Signer](/crec/guides/signers/fireblocks).                                                                                                   |
+| `privy.ErrEnvPrivyAppIDNotSet` (etc.)                                                       | `PRIVY_*` env var missing when calling `FromEnv`.                                                                                      | Set `PRIVY_APP_ID` / `_APP_SECRET` / `_WALLET_ID`; see [Privy Signer](/crec/guides/signers/privy).                                                                                                                                              |
+| `429 Too Many Requests` on watcher endpoints                                                | Rate-limited. Inside `WaitForActive` / `WaitForArchived` the polling loop classifies this as transient and continues to the next tick. | Increase the poll interval with `crec.WithWatcherPolling(...)`. For all other client methods, the SDK does not retry: wrap the call in your own retry logic.                                                                                    |
+| `404 Not Found` on a `wallet_id` / `watcher_id` / `operation_id`                            | The resource was archived, never existed, or belongs to a different channel.                                                           | Re-list within the right channel; check archive status.                                                                                                                                                                                         |
+
+If the symptom isn't here, look up the exact `Err…` value in the per-package catalog below.
+
+## Sentinel errors by package
+
+All sentinel errors are exported `var Err…` values. Check with `errors.Is(err, pkg.ErrSomething)`.
+
+### `crec` (root)
+
+| Error                                    | Returned by                                                               |
+| ---------------------------------------- | ------------------------------------------------------------------------- |
+| `crec.ErrBaseURLRequired`                | `NewClient` / `NewAPIClient` when `baseURL == ""`.                        |
+| `crec.ErrAPIKeyRequired`                 | `NewClient` / `NewAPIClient` when `apiKey == ""`.                         |
+| `crec.ErrInvalidEventVerificationConfig` | `NewClient` when `validSigners` is set but `minRequiredSignatures <= 0`.  |
+| `crec.ErrIncompleteDONConfig`            | `NewClient` when `WithDONConfig` was used but the DON unit is incomplete. |
+| `crec.ErrListNetworks`                   | `Client.ListNetworks` when the underlying API call fails.                 |
+| `crec.ErrNilResponse`                    | `Client.ListNetworks` when the API client returns a nil response.         |
+
+### `apierror` (conflict sentinels)
+
+HTTP **409** responses are mapped to canonical sentinels based on `ApplicationError.code`, so `errors.Is` works across packages:
+
+| Error                                  | Trigger (`ApplicationError.code`) |
+| -------------------------------------- | --------------------------------- |
+| `apierror.ErrChannelAlreadyExists`     | `CHANNEL_ALREADY_EXISTS`          |
+| `apierror.ErrWalletAlreadyExists`      | `WALLET_ALREADY_EXISTS`           |
+| `apierror.ErrWatcherAlreadyExists`     | `WATCHER_ALREADY_EXISTS`          |
+| `apierror.ErrIdempotencyKeyMismatch`   | `IDEMPOTENCY_KEY_MISMATCH`        |
+| `apierror.ErrOperationNotFinalizable`  | `OPERATION_NOT_FINALIZABLE`       |
+| `apierror.ErrOperationNotCancellable`  | `OPERATION_NOT_CANCELLABLE`       |
+| `apierror.ErrOperationDeadlineElapsed` | `OPERATION_DEADLINE_ELAPSED`      |
+| `apierror.ErrWalletAlreadyArchived`    | `WALLET_ALREADY_ARCHIVED`         |
+| `apierror.ErrChainUnavailable`         | `CHAIN_UNAVAILABLE`               |
+
+An unrecognized or missing code returns no sentinel (forward-compatible for codes added after this SDK release).
+
+### `channels`
+
+| Error                                                                                                    | Notes                                          |
+| -------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| `channels.ErrChannelNotFound`                                                                            | 404 lookup.                                    |
+| `channels.ErrOptionsRequired`, `ErrAPIClientRequired`                                                    | Constructor validation.                        |
+| `channels.ErrChannelNameRequired`, `ErrChannelNameTooLong`                                               | Channel name validation.                       |
+| `channels.ErrCreateChannel`, `ErrGetChannel`, `ErrListChannels`, `ErrUpdateChannel`, `ErrArchiveChannel` | API call failures (wrap the underlying error). |
+| `channels.ErrUnexpectedStatusCode`, `ErrNilResponse`, `ErrNilResponseBody`                               | HTTP-layer issues.                             |
+
+### `events`
+
+| Error                                                                                                                                    | Notes                                                                          |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `events.ErrChannelIDRequired`                                                                                                            | Missing `channel_id` parameter.                                                |
+| `events.ErrOptionsRequired`, `ErrCRECClientRequired`                                                                                     | Constructor validation.                                                        |
+| `events.ErrChannelNotFound`                                                                                                              | Channel does not exist (404).                                                  |
+| `events.ErrPollEvents`, `ErrSearchEvents`, `ErrGetEvents`                                                                                | API call failed; wraps the underlying status.                                  |
+| `events.ErrVerifyEvent`                                                                                                                  | Verification failed; check the wrapped cause.                                  |
+| `events.ErrWorkflowOwnerMismatch`                                                                                                        | The workflow owner embedded in the OCR report differs from the expected owner. |
+| `events.ErrInsufficientValidSignatures`                                                                                                  | The OCR proof does not reach the configured signature threshold.               |
+| `events.ErrInvalidEventHash`                                                                                                             | The supplied event hash doesn't match the verifiable payload.                  |
+| `events.ErrNoOCRProofs` / `ErrMultipleOCRProofs`                                                                                         | The verifiable event has zero or more than one OCR proof.                      |
+| `events.ErrParseSignature`, `ErrRecoverPubKeyFromSignature`                                                                              | Signature mechanics failed (corrupted payload).                                |
+| `events.ErrParseOCRReport`, `ErrParseOCRContext`, `ErrOCRReportTooShort`                                                                 | Malformed OCR report.                                                          |
+| `events.ErrParseEventPayload`, `ErrMarshalEventPayload`, `ErrMarshalEventToJSON`                                                         | Encoding round-trip failure.                                                   |
+| `events.ErrDecodeEvent`, `ErrDecodeVerifiableEvent`                                                                                      | Decoding failed; check ABI / payload.                                          |
+| `events.ErrOnlyWatcherEventsSupported`                                                                                                   | `Verify` was called on a non-`watcher.event` event.                            |
+| `events.ErrOnlyOperationStatusSupported`                                                                                                 | `VerifyOperationStatus` was called on a non-`operation.status` event.          |
+| `events.ErrOnlyQueryStatusSupported`                                                                                                     | `VerifyQueryStatus` was called on a non-`query.status` event.                  |
+| `events.ErrVerificationNotConfigured`                                                                                                    | Empty signer set; configure `WithEventVerification`.                           |
+| `events.ErrOrgIDRequired`, `ErrWorkflowOwnerRequired`, `ErrOrgIDOrWorkflowOwnerReq`                                                      | Missing identity context for verification: supply via options or per-call.     |
+| `events.ErrDeriveWorkflowOwner`                                                                                                          | `WithCRETenantID` derivation failed.                                           |
+| `events.ErrUnexpectedStatusCode`, `ErrNilResponse`, `ErrNilResponseBody`, `ErrBadRequest`                                                | HTTP-layer issues.                                                             |
+| `events.ErrInvalidMinRequiredSignatures`, `ErrInvalidSignerAddress`, `ErrDuplicateSigner`, `ErrMinSignersExceedsUnique`                  | Verification configuration validation (`WithEventVerification`).               |
+| `events.ErrNilWatcherEventPayload`, `ErrVerifiableEventRequired`, `ErrNilVerifiablePayload`                                              | Hashing/decoding called with nil or empty payload.                             |
+| `events.ErrDecodeNilEvent`, `ErrDecodeNilEventID`, `ErrDecodeNilEventProofs`                                                             | `Decode` was called with an event missing required fields.                     |
+| `events.ErrDecodeVerifiableEmpty`, `ErrDecodeVerifiableNilOrEmpty`, `ErrDecodeVerifiableInvalidBase64`, `ErrDecodeVerifiableInvalidJSON` | `DecodeVerifiableEvent` was called with a malformed verifiable payload.        |
+| `events.ErrInvalidOCRSignatureLength`, `ErrInvalidOCRSignatureRecovery`                                                                  | OCR signature is not 65 bytes or has an invalid recovery byte.                 |
+
+### `watchers`
+
+| Error                                                                                                                                                                                                                 | Notes                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `watchers.ErrWatcherNotFound`                                                                                                                                                                                         | 404 lookup.                                     |
+| `watchers.ErrChannelIDRequired`, `ErrWatcherIDRequired`, `ErrNameRequired`                                                                                                                                            | Argument validation.                            |
+| `watchers.ErrWatcherNameTooShort`                                                                                                                                                                                     | Name must be ≥4 characters.                     |
+| `watchers.ErrServiceRequired`, `ErrAddressRequired`, `ErrEventsRequired`                                                                                                                                              | Missing required fields on `CreateWithService`. |
+| `watchers.ErrABIRequired`, `ErrInvalidABIType`, `ErrEventNotInABI`                                                                                                                                                    | `CreateWithABI` validation.                     |
+| `watchers.ErrChainSelectorRequired`                                                                                                                                                                                   | Missing `chain_selector`.                       |
+| `watchers.ErrWaitForActiveTimeout`                                                                                                                                                                                    | `WaitForActive` exceeded its deadline.          |
+| `watchers.ErrWaitForArchivedTimeout`                                                                                                                                                                                  | `WaitForArchived` exceeded its deadline.        |
+| `watchers.ErrWatcherDeploymentFailed`                                                                                                                                                                                 | Watcher transitioned to `failed`.               |
+| `watchers.ErrWatcherIsArchiving`, `ErrWatcherAlreadyArchived`, `ErrWatcherArchiveFailed`                                                                                                                              | Terminal-state errors during waits.             |
+| `watchers.ErrUnexpectedStatus`, `ErrEmptyResponse`, `ErrNilResponse`                                                                                                                                                  | HTTP-layer issues.                              |
+| `watchers.ErrCreateWatcherRequest`, `ErrCreateWatcherService`, `ErrCreateWatcherABI`, `ErrListWatchers`, `ErrGetWatcher`, `ErrUpdateWatcher`, `ErrArchiveWatcher`, `ErrCheckWatcherStatus`, `ErrUnexpectedStatusCode` | API-call failures (wrap the underlying error).  |
+
+### `wallets`
+
+| Error                                                                                                                                                                 | Notes                                                                                                  |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `wallets.ErrWalletNotFound`                                                                                                                                           | 404 lookup.                                                                                            |
+| `wallets.ErrNameRequired`, `ErrNameTooLong`                                                                                                                           | Name validation.                                                                                       |
+| `wallets.ErrChainSelectorRequired`, `ErrWalletOwnerAddressRequired`, `ErrInvalidWalletOwnerAddress`                                                                   | Required fields.                                                                                       |
+| `wallets.ErrWalletTypeRequired`, `ErrUnsupportedWalletType`                                                                                                           | Wallet type validation.                                                                                |
+| `wallets.ErrWalletIDRequired`                                                                                                                                         | Missing `wallet_id`.                                                                                   |
+| `wallets.ErrStatusChannelIDZero`                                                                                                                                      | `StatusChannelId` was supplied as the zero UUID on `Create`. Omit the field or pass a real channel ID. |
+| `wallets.ErrEcdsaSignersRequired`, `ErrRsaSignersRequired`                                                                                                            | The matching signer list is required for the chosen wallet type.                                       |
+| `wallets.ErrInvalidSignersForEcdsa`, `ErrInvalidSignersForRsa`                                                                                                        | Wrong signer-list field for the wallet type.                                                           |
+| `wallets.ErrDuplicateEcdsaSigner`, `ErrDuplicateRsaSigner`                                                                                                            | The signer list contains duplicate entries.                                                            |
+| `wallets.ErrInvalidEcdsaSigner`, `ErrInvalidRsaSigner`                                                                                                                | Malformed signer entries.                                                                              |
+| `wallets.ErrInvalidLimit`, `ErrInvalidOffset`, `ErrInvalidOwnerAddress`                                                                                               | List-filter validation.                                                                                |
+| `wallets.ErrCreateWallet`, `ErrGetWallet`, `ErrListWallets`, `ErrUpdateWallet`, `ErrArchiveWallet`, `ErrUnexpectedStatusCode`, `ErrNilResponse`, `ErrNilResponseBody` | API-call failures.                                                                                     |
+
+### `transact`
+
+| Error                                                                                                                                                                         | Notes                                                                                                                                  |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `transact.ErrChannelIDRequired`, `ErrChainSelectorRequired`, `ErrAddressRequired`, `ErrWalletOperationIDRequired`, `ErrAtLeastOneTransactionRequired`, `ErrSignatureRequired` | Argument validation. The SDK also validates `Operation.Deadline`/`ID`/`Transactions` upstream; see [`transact/types`](#transacttypes). |
+| `transact.ErrInvalidDeadline`                                                                                                                                                 | Deadline must fit `int64` and be ≥0.                                                                                                   |
+| `transact.ErrChannelNotFound`, `ErrOperationNotFound`                                                                                                                         | 404 lookup.                                                                                                                            |
+| `transact.ErrDraftNotFound`                                                                                                                                                   | Draft operation not found (404).                                                                                                       |
+| `transact.ErrDraftNotFinalizable`                                                                                                                                             | Operation is not in `pending_signature` state (409 `OPERATION_NOT_FINALIZABLE`).                                                       |
+| `transact.ErrDraftNotCancellable`                                                                                                                                             | Operation is not in `pending_signature` state (409 `OPERATION_NOT_CANCELLABLE`).                                                       |
+| `transact.ErrDigestRequired`, `ErrSignatureRequired`                                                                                                                          | Missing digest or signature on finalize.                                                                                               |
+| `transact.ErrCreateOperation`, `ErrGetOperation`, `ErrListOperations`, `ErrSendOperation`, `ErrUnexpectedStatusCode`, `ErrNilResponse`, `ErrNilResponseBody`                  | API-call failures.                                                                                                                     |
+
+### `transact/types`
+
+| Error                                                                   | Notes                                                                              |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `types.ErrOperationIDRequired`, `ErrOperationIDNonNegative`             | Operation `ID` is missing or negative.                                             |
+| `types.ErrOperationDeadlineRequired`, `ErrOperationDeadlineNonNegative` | Operation `Deadline` is missing or negative (`big.NewInt(0)` means no expiration). |
+| `types.ErrNoTransactions`                                               | Operation must contain at least one transaction.                                   |
+| `types.ErrTransactionValueRequired`, `ErrTransactionValueNonNegative`   | Each transaction must set a non-negative `Value`.                                  |
+| `types.ErrChainIDNonNegative`, `ErrFailedParseChainID`                  | EIP-712 domain chain ID validation.                                                |
+
+### `transact/eip712`
+
+| Error                                                                                                                        | Notes                                            |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `eip712.ErrOperationRequired`, `ErrSignerRequired`                                                                           | Constructor validation.                          |
+| `eip712.ErrParseChainSelector`, `ErrGetChainFamily`, `ErrUnsupportedChainFamily`, `ErrGetChainID`, `ErrInvalidChainIDString` | Chain selector lookup failed.                    |
+| `eip712.ErrCreateTypedData`, `ErrComputeOperationHash`, `ErrHashOperation`, `ErrSignOperation`                               | Typed-data assembly, hashing, or signing failed. |
+
+### `transact/signer/fireblocks`
+
+| Error                                                                                                                                             | Notes                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `fireblocks.ErrAPIKeyRequired`, `ErrPrivateKeyPEMRequired`, `ErrVaultAccountIDRequired`, `ErrAssetIDRequired`                                     | Constructor validation when configuring the signer programmatically.           |
+| `fireblocks.ErrEnvFireblocksAPIKey`, `ErrEnvFireblocksAPISecret`, `ErrEnvFireblocksVaultAcct`, `ErrEnvFireblocksAssetID`                          | Required `FIREBLOCKS_*` environment variable was not set when using `FromEnv`. |
+| `fireblocks.ErrFailedParsePEMBlock`, `ErrTrailingGarbageAfterPEM`, `ErrPrivateKeyNotRSA`, `ErrFailedParsePrivateKey`                              | Provided API secret is not a valid RSA PEM.                                    |
+| `fireblocks.ErrTypedDataNil`, `ErrNegativeUnsignedTypedValue`, `ErrFloat64PrecisionLoss`, `ErrParseTypedDataIntegerString`                        | Typed-data encoding / numeric conversion error.                                |
+| `fireblocks.ErrCreateSigningOperationFailed`, `ErrCreateTypedMessageOperationFailed`, `ErrFireblocksOperationTerminal`, `ErrGetVaultAccountNonOK` | Fireblocks API call failed or operation ended in a terminal non-success state. |
+
+### `transact/signer/privy`
+
+| Error                                                                                            | Notes                                                                     |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| `privy.ErrAppIDRequired`, `ErrAppSecretRequired`, `ErrWalletIDRequired`                          | Constructor validation.                                                   |
+| `privy.ErrEnvPrivyAppIDNotSet`, `ErrEnvPrivyAppSecretNotSet`, `ErrEnvPrivyWalletIDNotSet`        | Required `PRIVY_*` environment variable was not set when using `FromEnv`. |
+| `privy.ErrPrivyUnauthorized`, `ErrPrivyRPCUnexpectedStatus`, `ErrPrivyGetWalletUnexpectedStatus` | Privy API call failed (auth or non-2xx response).                         |
+
+## Async error states
+
+Some failures don't surface synchronously: they appear as a state transition on a `*.status` event:
+
+| State                               | Meaning                                      | Recovery                                                                                                              |
+| ----------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `WatcherStatus.failed`              | Watcher provisioning failed.                 | Inspect `WatcherStatusPayload.status_reason`; usually requires re-creating the watcher with corrected parameters.     |
+| `WatcherEventStatus.archive_failed` | Archive teardown failed.                     | Retry the archive `PATCH`; if it persists, contact support.                                                           |
+| `WalletStatus.failed`               | Smart Account deploy failed.                 | Inspect `WalletStatusPayload.status_reason`; provision a fresh wallet.                                                |
+| `OperationStatus.failed`            | Operation execution failed (revert, gas, …). | Inspect `OperationStatusPayload.status_reason`; resubmit with corrected calldata.                                     |
+| `OperationStatus.expired`           | Draft deadline elapsed before finalization.  | Create a new draft with a fresh `wallet_operation_id`. See [Drafts](/crec/concepts/drafts).                           |
+| `QueryStatus.failed`                | Chain query execution failed.                | Inspect `QueryError` in the result; check contract address and calldata. See [Chain Queries](/crec/concepts/queries). |
+| `QueryStatus.expired`               | Query TTL elapsed before terminal callback.  | Resubmit the query with a new idempotency key. See [Chain Queries](/crec/concepts/queries).                           |
+
+Subscribe to the appropriate `*.status` event stream to react to these transitions in real time. See [Lifecycles](/crec/reference/lifecycles).
+
+## Worked example
+
+```go
+op, err := ext.PrepareRequestSubscriptionWithTokenApprovalOperation(
+    fundAdminAddr, fundTokenId, amount, refID, paymentToken,
+)
+if err != nil { return fmt.Errorf("build op: %w", err) }
+
+resp, err := client.Transact.ExecuteOperation(ctx, channelID, signer, op, chainSelector)
+if err != nil {
+    switch {
+    case errors.Is(err, transact.ErrChannelNotFound):
+        // bad channel id
+    case errors.Is(err, eip712.ErrUnsupportedChainFamily):
+        // unsupported chain
+    default:
+        return err
+    }
+}
+```
+
+## See also
+
+- [REST API Reference](/crec/reference/rest-api): REST error envelope.
+- [Lifecycles](/crec/reference/lifecycles): async state transitions.
+- [Event Verification](/crec/concepts/event-verification): what `events.ErrVerifyEvent` actually proves.

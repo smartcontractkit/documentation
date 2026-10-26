@@ -1,0 +1,105 @@
+---
+section: ccip
+date: Last Modified
+title: "Operate: day 2"
+metadata:
+  description: "Day-2 operations for a CCV cell: signing on-chain changes with Safe or EOA, and managing lanes, committee signers, roles and ownership, and fees on-chain; upgrades, scaling, peer credentials, key rotation, and Postgres off-chain; plus a troubleshooting table."
+  excerpt: "CCV day 2, OUTPUT_MODE Safe EOA, SIGNER keystore KMS, apply-signature-configs, pause-lane, sweep-fees, transfer-owner, helm upgrade rollback, peer credentials, troubleshooting"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-27"
+whatsnext:
+  "Reference": "/ccip/ccv-starter-kit/reference"
+---
+
+Day-2 work splits in two: on-chain changes to your verifier contracts, run through the on-chain kit's `make`
+targets, and off-chain operations on the running cells (your Helm releases). This page maps what those
+operations are and where each is documented; the kits carry the exact commands.
+
+## Sign on-chain changes: Safe or EOA
+
+The `make` targets that change on-chain state take `OUTPUT_MODE`, set to `SAFE` or `EOA` (there is no default).
+
+- `SAFE`, recommended for production: the target writes a Safe transaction batch under `out/safe/` instead of
+  broadcasting, and your multisig imports and executes it, so governance stays the owner of the contracts. See
+  [Safe batches](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/safe-batches.md).
+- `EOA`: the target broadcasts immediately, signed by whatever the `SIGNER` variable holds. `SIGNER` passes
+  straight to `forge script`, so any Foundry wallet works: AWS KMS (`--aws`, the default), GCP KMS (`--gcp`), an
+  encrypted local keystore (`--account <name>` or `--keystore <path>`), a hardware wallet, or `--private-key`
+  for local use. Prefer a keystore or KMS over a raw private key. See
+  [Signing](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/getting-started.md#signing).
+
+The deploy targets (factory, resolver, verifier) are EOA-only and always broadcast.
+
+## On-chain operations
+
+Run these through the `make` targets in either mode above. The generated
+[command reference](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/commands.md)
+lists every target with its required caller and variables, and the
+[operations](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/operations.md)
+and
+[governance](https://github.com/smartcontractkit/chainlink-ccv-starter-kit-contracts/blob/main/docs/src/governance.md)
+pages walk the workflows.
+
+- **Manage lanes.** Add or update a lane's remote config on the source verifier (`apply-remote-config`), set
+  per-lane sender allowlists (`apply-allowlists`), wire the resolver's inbound and outbound maps when you add a
+  lane or a new verifier version (`apply-inbound`, `apply-outbound`), and pause a lane (`pause-lane`, which sets
+  the router to zero for that destination on the source verifier and writes the change into the lane's config
+  file to commit).
+- **Manage the committee.** Add, remove, or rotate committee signers on the destination verifier
+  (`apply-signature-configs`), and set the allowed-finality cap (`set-finality-config`).
+- **Manage roles and ownership.** Set the verifier's fee aggregator and allowlist admin (`set-dynamic-config`),
+  update its storage locations (`update-storage-locations`), and hand over control through the two-step
+  transfers for the owner (`transfer-owner`, then `accept-owner` from the incoming signer) and the
+  storage-locations admin (`transfer-sla`, then `accept-sla`).
+- **Manage fees.** Withdraw accrued fee-token balances to the aggregators (`sweep-fees`, permissionless); read
+  balances first with `balance-report`.
+- **Check for drift.** Snapshot the live on-chain roles and settings (`snapshot`), and run the config and
+  governance drift check on a schedule (`drift`).
+
+## Off-chain operations
+
+These act on the running cells, not the contracts.
+
+- **Upgrade and roll back.** `helm upgrade` with a changed config or image tag restarts the pods (the chart
+  stamps config and secret checksums) and the containers run their database migrations on startup, so expect
+  brief downtime while the single pod is recreated. `helm rollback` restores the previous release but does not
+  reverse migrations, so back up Postgres before you upgrade. Choose the image tag from the
+  [public ECR gallery](https://gallery.ecr.aws/chainlink).
+- **Scale the committee.** Add fault tolerance by running more cells, each its own Helm release with its own
+  Postgres, secrets, and key custody, never by adding replicas (both StatefulSets are fixed at `replicas: 1`).
+  See [Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee).
+- **Add or remove a cell.** After you add or remove an aggregator, exchange the peer credentials (below) and
+  re-send the aggregator endpoint list to the indexer; see
+  [Onboard to the CCIP indexer](/ccip/ccv-starter-kit/onboard-to-the-indexer).
+- **Exchange or rotate peer credentials.** Every verifier-to-aggregator pair in the committee uses one HMAC key
+  pair, so when you add or rotate a member you generate and distribute the pairs. The off-chain kit's
+  [peer information and credential exchange](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#8-peer-information-and-credential-exchange)
+  documentation has the layout.
+- **Rotate the signing key.** Follow
+  [Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms) for the Postgres
+  keystore or cloud KMS.
+- **Manage Postgres.** Provision storage with headroom and alert on disk; the cell does not size the database
+  for you. With the Postgres keystore, backups contain the signing key, so encrypt them and restrict who can
+  read them.
+- **Monitor.** Collect metrics and set alerts; see
+  [Logging and monitoring](/ccip/ccv-starter-kit/logging-and-monitoring).
+
+## Troubleshooting
+
+The rows are ordered by where they surface, from deploy through onboarding.
+
+| Symptom                                                                             | Likely cause                                                                                        | Where to look                                                                                |
+| ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Green pods, no attestation ever                                                     | An address field holds the CommitteeVerifier, not the resolver                                      | [Deploy your first cell, step 2](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Verifier crash-loops on startup, no chain sources                                   | `committee_verifier_addresses` and `on_ramp_addresses` are not both set for the same chain selector | [Deploy your first cell, step 2](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Aggregator crash-loops on startup                                                   | `quorumConfigs` or `destinationVerifiers` is empty                                                  | [Deploy your first cell, step 2](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Pods stuck in `ContainerCreating`, `PermissionDenied` (GCP) or `AccessDenied` (AWS) | The ServiceAccount cannot read the secret; workload identity is not wired                           | [Deploy your first cell, step 3](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Pods stuck in `ContainerCreating`, `serviceAccount.tokens not provided`             | Secrets Store CSI driver installed without the `tokenRequests` audience (AWS)                       | [Deploy your first cell, step 3](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)           |
+| Verifier crash-loops, `AccessDenied` on `kms:Sign` or `kms:GetPublicKey`            | KMS keystore missing a grant; it needs Sign, GetPublicKey, and (on AWS) DescribeKey on the key      | [Signer key custody and KMS](/ccip/ccv-starter-kit/how-to/signer-key-custody-and-kms)        |
+| `connection refused` past a minute after deploy                                     | Aggregator not listening on port 50051, often a config with no `[server] address`                   | [Logging and monitoring](/ccip/ccv-starter-kit/logging-and-monitoring)                       |
+| Every request 503, Gateway `Programmed: True`, pods 1/1                             | Load balancer health check on the default `GET /`, not readiness                                    | [Expose the aggregator](/ccip/ccv-starter-kit/how-to/expose-the-aggregator)                  |
+| Only `Healthy` in the logs, a message takes ~13 minutes (looks hung)                | `finality_depth: 0` waits for the source chain's finality tag; nothing is wrong                     | [Logging and monitoring](/ccip/ccv-starter-kit/logging-and-monitoring#read-the-startup-logs) |
+| CCIP API reports the verifier as `UNKNOWN`                                          | Committee not onboarded yet                                                                         | [Onboard to the CCIP indexer](/ccip/ccv-starter-kit/onboard-to-the-indexer)                  |
+| `policy_unavailable` rising, messages not signed                                    | Policy-hook endpoint down or timing out                                                             | [Logging and monitoring](/ccip/ccv-starter-kit/logging-and-monitoring)                       |
+| `Dropping task - policy hook returned FAIL` in the log                              | Your endpoint rejected the message                                                                  | [Add a custom policy hook](/ccip/ccv-starter-kit/how-to/add-a-custom-policy-hook)            |
+| Onboarded, but a message was never executed                                         | All aggregators unreachable for over an hour                                                        | [Onboard to the CCIP indexer](/ccip/ccv-starter-kit/onboard-to-the-indexer#after-onboarding) |

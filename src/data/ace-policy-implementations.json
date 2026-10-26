@@ -1,0 +1,342 @@
+[
+  {
+    "id": "07a10c49-7846-4596-9a5f-76ffd5d27bc3",
+    "name": "AllowPolicy",
+    "apiName": "allow",
+    "description": "Maintains an allowlist. Rejects the transaction if any checked address is not on the list.",
+    "libraryUrl": "/ace/reference/policy-library/allow-policy",
+    "configFields": [
+      {
+        "name": "allowlist",
+        "type": "array of { address }",
+        "description": "Addresses permitted to participate in transactions protected by this policy.",
+        "requiredAtCreation": false
+      }
+    ],
+    "exampleConfig": {
+      "allowlist": [
+        { "address": "0x1111111111111111111111111111111111111111" },
+        { "address": "0x2222222222222222222222222222222222222222" }
+      ]
+    }
+  },
+  {
+    "id": "c6a2cab5-149a-4553-8a2d-02cfa6769379",
+    "name": "BypassPolicy",
+    "apiName": "bypass",
+    "description": "Maintains an allowlist. If all checked addresses are on the list, immediately allows the transaction and skips all remaining policies.",
+    "libraryUrl": "/ace/reference/policy-library/bypass-policy",
+    "configFields": [
+      {
+        "name": "bypassList",
+        "type": "array of { address }",
+        "description": "Addresses permitted to bypass all remaining policy checks.",
+        "requiredAtCreation": false
+      }
+    ],
+    "exampleConfig": {
+      "bypassList": [
+        { "address": "0x1111111111111111111111111111111111111111" },
+        { "address": "0x2222222222222222222222222222222222222222" }
+      ]
+    }
+  },
+  {
+    "id": "73a13ce1-f83c-402a-ade0-d394ec0eb07c",
+    "name": "RejectPolicy",
+    "apiName": "reject",
+    "description": "Maintains a denylist. Rejects the transaction if any checked address is on the list.",
+    "libraryUrl": "/ace/reference/policy-library/reject-policy",
+    "configFields": [
+      {
+        "name": "rejectList",
+        "type": "array of { address }",
+        "description": "Addresses blocked from participating in transactions protected by this policy.",
+        "requiredAtCreation": false
+      }
+    ],
+    "exampleConfig": {
+      "rejectList": [
+        { "address": "0x1111111111111111111111111111111111111111" },
+        { "address": "0x2222222222222222222222222222222222222222" }
+      ]
+    }
+  },
+  {
+    "id": "becf8725-a5a1-4230-be2a-73e8632d433a",
+    "name": "OnlyAuthorizedSenderPolicy",
+    "apiName": "only_authorized_sender",
+    "description": "Rejects the transaction if the sender (msg.sender) is not on the authorized list.",
+    "libraryUrl": "/ace/reference/policy-library/only-authorized-sender-policy",
+    "configFields": [
+      {
+        "name": "authorizedList",
+        "type": "array of { address }",
+        "description": "If the sender is not on this list, method calls will be rejected.",
+        "requiredAtCreation": false
+      }
+    ],
+    "exampleConfig": {
+      "authorizedList": [
+        { "address": "0x1111111111111111111111111111111111111111" },
+        { "address": "0x2222222222222222222222222222222222222222" }
+      ]
+    }
+  },
+  {
+    "id": "141c31f8-a3e5-4e9d-9560-06b05e27a5f2",
+    "name": "MaxPolicy",
+    "apiName": "max",
+    "description": "Rejects the transaction if the extracted value exceeds a configured maximum.",
+    "libraryUrl": "/ace/reference/policy-library/max-policy",
+    "configFields": [
+      {
+        "name": "max",
+        "type": "integer",
+        "description": "Maximum amount.",
+        "requiredAtCreation": true
+      }
+    ],
+    "exampleConfig": {
+      "max": 1000000
+    }
+  },
+  {
+    "id": "90d1c0e8-845a-40cf-a626-6b6409ea617f",
+    "name": "PausePolicy",
+    "apiName": "pause",
+    "description": "Global toggle. Rejects every transaction when paused; passes through when unpaused.",
+    "libraryUrl": "/ace/reference/policy-library/pause-policy",
+    "configFields": [
+      {
+        "name": "paused",
+        "type": "boolean",
+        "description": "The paused state.",
+        "requiredAtCreation": true
+      }
+    ],
+    "exampleConfig": {
+      "paused": false
+    }
+  },
+  {
+    "id": "be0f9ba4-a844-4990-9346-fde4cd36f269",
+    "name": "IntervalPolicy",
+    "apiName": "interval",
+    "description": "Divides time into repeating slot-based cycles. Rejects if the current slot is outside the allowed window.",
+    "libraryUrl": "/ace/reference/policy-library/interval-policy",
+    "configFields": [
+      {
+        "name": "startSlot",
+        "type": "integer",
+        "description": "The lowest (inclusive) slot index within the cycle for which execution is allowed.",
+        "requiredAtCreation": true
+      },
+      {
+        "name": "endSlot",
+        "type": "integer",
+        "description": "The highest (exclusive) slot index within the cycle for which execution is allowed.",
+        "requiredAtCreation": true
+      },
+      {
+        "name": "cycleParameters",
+        "type": "object { slotDuration, cycleSize, cycleOffset }",
+        "description": "Cycle parameters: slotDuration (seconds per slot), cycleSize (total slots per cycle), cycleOffset (slot offset).",
+        "requiredAtCreation": true
+      }
+    ],
+    "exampleConfig": {
+      "startSlot": 9,
+      "endSlot": 17,
+      "cycleParameters": {
+        "slotDuration": 3600,
+        "cycleSize": 24,
+        "cycleOffset": 0
+      }
+    }
+  },
+  {
+    "id": "1ae246d7-fd00-476e-ae74-5f2608b6214d",
+    "name": "VolumeRatePolicy",
+    "apiName": "volume_rate",
+    "description": "Tracks cumulative volume per account per time period. Rejects if the period's cap would be exceeded.",
+    "libraryUrl": "/ace/reference/policy-library/volume-rate-policy",
+    "configFields": [
+      {
+        "name": "maxAmount",
+        "type": "integer",
+        "description": "The maximum allowed transfer amount within a single time period.",
+        "requiredAtCreation": true
+      },
+      {
+        "name": "timePeriodDuration",
+        "type": "integer",
+        "description": "The duration (in seconds) of the time period for tracking transfers.",
+        "requiredAtCreation": true
+      }
+    ],
+    "exampleConfig": {
+      "timePeriodDuration": 86400,
+      "maxAmount": 1000000
+    }
+  },
+  {
+    "id": "37cf9b81-b395-43b4-b6fa-fc6e46b94da0",
+    "name": "CredentialRegistryIdentityValidatorPolicy",
+    "apiName": "identity_validator",
+    "description": "Checks each address against configured credential requirements. Rejects if any address lacks required credentials.",
+    "libraryUrl": "/ace/reference/policy-library/credential-registry-identity-validator-policy",
+    "configFields": [
+      {
+        "name": "credentialSources",
+        "type": "array of { credentialTypeId, identityRegistry, credentialRegistry, dataValidator }",
+        "description": "List of credential sources per credential type.",
+        "requiredAtCreation": true
+      },
+      {
+        "name": "credentialRequirements",
+        "type": "array of { requirementId, credentialTypeIds, minValidations, invert }",
+        "description": "List of credential requirements to validate an identity.",
+        "requiredAtCreation": true
+      }
+    ],
+    "exampleConfig": {
+      "credentialSources": [
+        {
+          "credentialTypeId": "0x<CREDENTIAL_TYPE_HASH>",
+          "identityRegistry": "0x<IDENTITY_REGISTRY_ADDRESS>",
+          "credentialRegistry": "0x<CREDENTIAL_REGISTRY_ADDRESS>",
+          "dataValidator": "0x0000000000000000000000000000000000000000"
+        }
+      ],
+      "credentialRequirements": [
+        {
+          "requirementId": "0x<REQUIREMENT_HASH>",
+          "credentialTypeIds": ["0x<CREDENTIAL_TYPE_HASH>"],
+          "minValidations": 1,
+          "invert": false
+        }
+      ]
+    }
+  },
+  {
+    "id": "abfca438-b32f-4b43-a464-e67b23f6f507",
+    "name": "CertifiedActionDONValidatorPolicy",
+    "apiName": "certified_action_don_validator",
+    "description": "Validates DON-issued permits delivered on-chain via the Keystone Forwarder. Rejects if no valid permit exists.",
+    "libraryUrl": "/ace/reference/policy-library/certified-action-don-validator-policy",
+    "configFields": [
+      {
+        "name": "keystoneForwarder",
+        "type": "address",
+        "description": "Trusted Keystone Forwarder address allowed to call onReport() and issue DON-based permits.",
+        "requiredAtCreation": true
+      },
+      {
+        "name": "issuers",
+        "type": "array of { issuerKey }",
+        "description": "Workflow owners authorized to issue certified action permits.",
+        "requiredAtCreation": false
+      }
+    ],
+    "exampleConfig": {
+      "keystoneForwarder": "0x<KEYSTONE_FORWARDER_ADDRESS>",
+      "issuers": [{ "issuerKey": "0x<WORKFLOW_OWNER_KEY>" }]
+    }
+  },
+  {
+    "id": "38ccb199-c4f2-42b1-8ea8-d098449561a1",
+    "name": "RoleBasedAccessControlPolicy",
+    "apiName": "role_based_access_control",
+    "description": "Maps roles to function selectors. Rejects if the sender does not hold a role allowed for the called function.",
+    "libraryUrl": "/ace/reference/policy-library/role-based-access-control-policy",
+    "configFields": [
+      {
+        "name": "roleAssignments",
+        "type": "array of { role, account }",
+        "description": "List of role assignments (role + account) for grantRole/revokeRole operations.",
+        "requiredAtCreation": false
+      },
+      {
+        "name": "roleOperationAllowances",
+        "type": "array of { role, operation_input }",
+        "description": "List of roles mapped to operations (function signatures).",
+        "requiredAtCreation": false
+      }
+    ],
+    "exampleConfig": {
+      "roleAssignments": [{ "role": "0x<ROLE_HASH>", "account": "0x1111111111111111111111111111111111111111" }],
+      "roleOperationAllowances": [{ "role": "0x<ROLE_HASH>", "operation_input": "transfer(address,uint256)" }]
+    }
+  },
+  {
+    "id": "0a31705c-7653-4f23-8f34-9f1faff343cc",
+    "name": "VolumePolicy",
+    "apiName": "volume",
+    "description": "Rejects the transaction if the extracted value is below a minimum or above a maximum.",
+    "libraryUrl": "/ace/reference/policy-library/volume-policy",
+    "configFields": [
+      {
+        "name": "minAmount",
+        "type": "integer",
+        "description": "The minimum volume amount. If set to 0, there is no minimum limit.",
+        "requiredAtCreation": true
+      },
+      {
+        "name": "maxAmount",
+        "type": "integer",
+        "description": "The maximum volume amount. If set to 0, there is no maximum limit.",
+        "requiredAtCreation": true
+      }
+    ],
+    "exampleConfig": {
+      "minAmount": 100,
+      "maxAmount": 1000000
+    }
+  },
+  {
+    "id": "2d136edf-8b54-4bc9-9929-31dc2fa6d078",
+    "name": "SecureMintPolicy",
+    "apiName": "secure_mint",
+    "description": "Checks a Chainlink Proof of Reserve feed. Rejects if minting would push total supply beyond verified reserves.",
+    "libraryUrl": "/ace/reference/policy-library/secure-mint-policy",
+    "configFields": [
+      {
+        "name": "reservesFeed",
+        "type": "address",
+        "description": "Chainlink AggregatorV3 price feed contract address used as reserves source.",
+        "requiredAtCreation": true
+      },
+      {
+        "name": "tokenMetadata",
+        "type": "object { tokenAddress, tokenDecimals }",
+        "description": "Token metadata including address and decimals.",
+        "requiredAtCreation": true
+      },
+      {
+        "name": "reserveMarginConfigs",
+        "type": "object { reserveMarginMode, reserveMarginAmount }",
+        "description": "Reserve margin configuration. Mode: 0=None, 1=PositivePercentage, 2=PositiveAbsolute, 3=NegativePercentage, 4=NegativeAbsolute.",
+        "requiredAtCreation": true
+      },
+      {
+        "name": "maxStalenessSeconds",
+        "type": "integer",
+        "description": "Maximum age (in seconds) of the reserve data feed before the policy rejects. 0 disables the check.",
+        "requiredAtCreation": true
+      }
+    ],
+    "exampleConfig": {
+      "reservesFeed": "0x<CHAINLINK_FEED_ADDRESS>",
+      "tokenMetadata": {
+        "tokenAddress": "0x<TOKEN_ADDRESS>",
+        "tokenDecimals": 18
+      },
+      "reserveMarginConfigs": {
+        "reserveMarginMode": 0,
+        "reserveMarginAmount": 0
+      },
+      "maxStalenessSeconds": 86400
+    }
+  }
+]

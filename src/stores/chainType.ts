@@ -11,7 +11,7 @@ export const selectedChainType = atom<ChainType>(DEFAULT_CHAIN_TYPE)
 /**
  * Smart initialization: Auto-detect from URL path, then localStorage, then default
  * Priority order:
- * 1. URL path detection (/ccip/tutorials/svm/... → solana, persisted to localStorage)
+ * 1. URL path detection (explicit chain segment, e.g. /ccip/canton/... → canton, persisted to localStorage)
  * 2. LocalStorage (previous selection or last detected chain)
  * 3. Default (EVM)
  *
@@ -25,8 +25,12 @@ export function initializeChainType(): void {
   const detectedChain = detectChainFromPath(pathname)
 
   if (detectedChain) {
-    selectedChainType.set(detectedChain)
+    // Persist BEFORE notifying subscribers. selectedChainType.set() runs nanostores
+    // subscribers synchronously, and some of them (the sidebar filter in
+    // RecursiveSidebar.astro) read this key back from localStorage — so setting the
+    // store first lets them observe the previous navigation's value.
     localStorage.setItem(CHAIN_TYPE_STORAGE_KEY, detectedChain)
+    selectedChainType.set(detectedChain)
     trackEvent(GA_EVENTS.CHAIN_AUTO_DETECTED, detectedChain)
     return
   }
@@ -57,22 +61,31 @@ export function setChainType(chainType: ChainType): void {
 
 /**
  * Detect chain type from URL path
- * Matches chain identifiers with or without trailing slashes
+ * Matches explicit chain identifiers with or without trailing slashes. Paths without a chain
+ * segment (e.g. /ccip, /ccip/concepts/fees-and-billing) return null so the stored selection
+ * is preserved. This is the same rule production uses.
  * Examples:
- *   /ccip/tutorials/evm/transfer-tokens → 'evm'
- *   /ccip/service-limits/svm → 'solana'
- *   /ccip/api-reference/aptos/v1.6.0 → 'aptos'
- *   /ccip/tutorials/ton/receivers → 'ton'
+ *   /ccip/evm/tutorials/application-developers → 'evm'
+ *   /ccip/v1/svm/tutorials → 'solana'
+ *   /ccip/v1/aptos/api-reference/v1.6.0 → 'aptos'
+ *   /ccip/v1/ton/tutorials/receivers → 'ton'
+ *   /ccip/canton/getting-started → 'canton'
+ *   /ccip/concepts/fees-and-billing → null
+ *
+ * Exported so navigation code can tell chainless URLs from chain-specific ones.
  *
  * @param pathname - URL pathname to analyze
- * @returns Detected chain type or null if not found
+ * @returns Detected chain type or null if the path has no explicit chain segment
  */
-function detectChainFromPath(pathname: string): ChainType | null {
-  if (/\/(evm|ethereum)(\/|$)/i.test(pathname)) return "evm"
-  if (/\/(svm|solana)(\/|$)/i.test(pathname)) return "solana"
-  if (/\/aptos(\/|$)/i.test(pathname)) return "aptos"
-  if (/\/ton(\/|$)/i.test(pathname)) return "ton"
-  if (/\/canton(\/|$)/i.test(pathname)) return "canton"
+export function detectChainFromPath(pathname: string): ChainType | null {
+  const path = pathname.replace(/\/+$/, "") || "/"
+
+  if (/\/(evm|ethereum)(\/|$)/i.test(path)) return "evm"
+  if (/\/(svm|solana)(\/|$)/i.test(path)) return "solana"
+  if (/\/aptos(\/|$)/i.test(path)) return "aptos"
+  if (/\/ton(\/|$)/i.test(path)) return "ton"
+  if (/\/canton(\/|$)/i.test(path)) return "canton"
+
   return null
 }
 

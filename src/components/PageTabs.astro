@@ -80,7 +80,19 @@ const {
 const currentPath = Astro.url.pathname
 
 const normalizeUrl = (url: string) => url.trim().replace(/\/$/, "")
-const isActive = (pageUrl: string) => normalizeUrl(currentPath) === normalizeUrl(pageUrl)
+const isV1Path = currentPath.startsWith("/ccip/v1/")
+
+const withVersionContext = (url: string) => {
+  const normalized = normalizeUrl(url)
+
+  if (!isV1Path) return normalized
+  if (!normalized.startsWith("/ccip/")) return normalized
+  if (normalized.startsWith("/ccip/v1/")) return normalized
+
+  return normalized.replace(/^\/ccip\//, "/ccip/v1/")
+}
+
+const isActive = (pageUrl: string) => normalizeUrl(currentPath) === withVersionContext(pageUrl)
 
 // Add current page info for mobile dropdown
 const currentPageGroup = pages.find((pageOrGroup) => {
@@ -155,7 +167,7 @@ const displayPage = hasActivePage ? (Array.isArray(currentPageGroup) ? currentPa
             const isGroupActive = pageOrGroup.some((p) => isActive(p.url))
             return (
               <a
-                href={pageOrGroup[0].url}
+                href={withVersionContext(pageOrGroup[0].url)}
                 class:list={["dropdown-item", { active: isGroupActive }]}
                 role="menuitem"
                 aria-current={isGroupActive ? "page" : undefined}
@@ -195,7 +207,7 @@ const displayPage = hasActivePage ? (Array.isArray(currentPageGroup) ? currentPa
             const page = pageOrGroup
             return (
               <a
-                href={page.url}
+                href={withVersionContext(page.url)}
                 class:list={["dropdown-item", { active: isActive(page.url) }]}
                 role="menuitem"
                 aria-current={isActive(page.url) ? "page" : undefined}

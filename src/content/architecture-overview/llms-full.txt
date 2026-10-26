@@ -9,6 +9,8 @@ Each data feed is updated by multiple, independent Chainlink oracle operators. T
 
 Offchain Reporting (OCR) further enhances the aggregation process. To learn more about OCR and how it works, see the [Offchain Reporting](/architecture-overview/off-chain-reporting) page.
 
+![Image](/images/contract-devs/price-aggr.png)
+
 ## Shared data resource
 
 Each data feed is built and funded by the community of users who rely on accurate, up-to-date data in their smart contracts. As more users rely on and contribute to a data feed, the quality of the data feed improves. For this reason, each data feed has its own properties depending on the needs of its community of users.
@@ -32,7 +34,6 @@ To learn how to create a consumer contract that uses an existing data feed, read
 ### Consumer
 
 A Consumer contract is any contract that uses Chainlink Data Feeds to consume aggregated data. Consumer contracts must reference the correct [`AggregatorV3Interface`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol) contract and call one of the exposed functions.
-
 
 ```solidity
 ...
@@ -64,34 +65,42 @@ Aggregators receive updates from the oracle network only when the **Deviation Th
 # Data Feeds Architecture
 Source: https://docs.chain.link/architecture-overview/architecture-overview
 
+Chainlink Data Feeds, Offchain Reporting (OCR), and the Chainlink Runtime Environment (CRE) are the current ways to bring data and computation to a smart contract.
+
+## Data Feeds
+
+A Chainlink Data Feed aggregates answers from many independent oracle nodes. Your contract reads that one aggregated answer. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model) describes how the feed is updated and how a consumer contract reads it.
+
+Start with [Data Feeds](/data-feeds/getting-started).
+
+## Offchain Reporting
+
+Offchain Reporting (OCR) is how those nodes agree. Each node reports its observation and signs it. The nodes then submit one aggregate transaction. The report is checked onchain against the quorum signatures. Read [Offchain Reporting](/architecture-overview/off-chain-reporting) for the protocol.
+
+## Chainlink Runtime Environment
+
+[CRE](/cre/overview) is the orchestration layer for new multi-step work. You write a workflow with the CRE SDK in Go or TypeScript. A workflow DON runs it. The workflow can call other DONs to fetch offchain data or to write onchain. Start with the [CRE getting started guide](/cre/getting-started/overview).
+
 ## Basic request model
 
-Chainlink connects smart contracts with external data using its decentralized oracle network. Chainlink API requests are handled 1:1 by an oracle.
-
-The [Basic Request Model](/architecture-overview/architecture-request-model) describes the onchain architecture of requesting data from a single oracle source.
-
-To learn how to make a GET request using a single oracle, see [Make a GET Request](/any-api/get-request/introduction).
-
-## Decentralized data model
-
-For a more robust and trustworthy answer, you can aggregate data from many oracles. With onchain aggregation, data is aggregated from a decentralized network of independent oracle nodes. This architecture is applied to Chainlink Data Feeds, which can aggregate data such as asset price data.
-
-The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model) describes how data is aggregated, and how consumer contracts can retrieve this data.
-
-## Offchain reporting
-
-Offchain Reporting (OCR) is an improvement on the decentralization and scalability of Chainlink networks. With our Offchain Reporting aggregators, all nodes communicate using a peer to peer network. During the communication process, a lightweight consensus algorithm runs where each node reports its price observation and signs it. A single aggregate transaction is then transmitted, which saves a significant amount of gas.
-
-To learn more about OCR and how it works, see the [Offchain Reporting](/architecture-overview/off-chain-reporting) page.
+The [Basic Request Model](/architecture-overview/architecture-request-model) is the old path: one contract, one oracle, and one request. That page stays at the same URL so existing contracts can still be read. It is not in the product navigation. Do not use it for a new project.
 
 ---
 
-# Basic Request Model
+# Basic Request Model (historical)
 Source: https://docs.chain.link/architecture-overview/architecture-request-model
+
+> **CAUTION: Historical**
+>
+> This page describes the old basic request model. One contract calls one oracle. The URL stays so existing contracts
+> can still be read. Do not use this model for a new project. Use [Data Feeds](/data-feeds/getting-started), [Offchain
+> Reporting](/architecture-overview/off-chain-reporting), or [CRE](/cre/overview).
 
 ## Contracts overview
 
 All source code is open source and available in the [Chainlink Github repository](https://github.com/smartcontractkit/chainlink).
+
+![Image](/files/881ade6-Simple_Architecture_Diagram_1_V1.png)
 
 ### ChainlinkClient
 
@@ -121,7 +130,7 @@ The client contract that initiates this cycle must create a request with the fol
 
 To learn about how to find oracles to suit your needs, see [Find Existing Jobs](/any-api/find-oracle).
 
-Operator contracts are responsible for handling onchain requests made through the LINK token, by implementing `onTokenTransfer` as a <a href="https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/LinkTokenReceiver.sol">`LinkTokenReceiver`</a>. Upon execution of this function, the operator contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the offchain oracle node which acts upon it.
+Operator contracts are responsible for handling onchain requests made through the LINK token, by implementing `onTokenTransfer` as a [`LinkTokenReceiver`](https://github.com/smartcontractkit/chainlink/blob/contracts-v1.3.0/contracts/src/v0.8/operatorforwarder/LinkTokenReceiver.sol). Upon execution of this function, the operator contract **emits an `OracleRequest` event** containing information about the request. This event is crucial, as it is monitored by the offchain oracle node which acts upon it.
 
 #### Fulfillment
 
@@ -139,6 +148,8 @@ For more information on how to become a node operator, learn how to [run a Chain
 
 Below is a UML diagram describing the contract structure of `ATestnetConsumer`, a deployed example contract implementing `ChainlinkClient`.
 
+![Image](/files/8ac3fc1-69a048b-Consumer_UML.svg)
+
 ---
 
 # Offchain Reporting
@@ -152,13 +163,13 @@ The report contained in the aggregate transaction is signed by a quorum of oracl
 
 ## What is OCR?
 
-<Aside type="note" title="A simple analogy">
-  Imagine ordering 10 items from an online store. Each item is packaged separately and posted separately, meaning
-  postage and packaging costs must be applied to each one, and the carrier has to transport 10 different boxes.
-
-  OCR, on the other hand, packages all of these items into a single box and posts that. This saves postage and packaging
-  fees and all effort the carrier associates with transporting 9 fewer boxes.
-</Aside>
+> **NOTE: A simple analogy**
+>
+> Imagine ordering 10 items from an online store. Each item is packaged separately and posted separately, meaning
+> postage and packaging costs must be applied to each one, and the carrier has to transport 10 different boxes.
+>
+> OCR, on the other hand, packages all of these items into a single box and posts that. This saves postage and packaging
+> fees and all effort the carrier associates with transporting 9 fewer boxes.
 
 The OCR protocol allows nodes to aggregate their observations into a single report offchain using a secure P2P network. A single node then submits a transaction with the aggregated report to the chain. Each report consists of many nodes' observations and has to be signed by a quorum of nodes. These signatures are verified onchain.
 

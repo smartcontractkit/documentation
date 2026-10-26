@@ -1,0 +1,851 @@
+---
+/**
+ * Interactive token pool rate limit bucket.
+ * Usage in MDX: import RateLimitBucket from "@features/ccip/components/rate-limit-bucket/RateLimitBucket.astro"
+ * then <RateLimitBucket />. It takes no props and can be used more than once on a page.
+ */
+import {
+  AMOUNT_RANGE,
+  CAPACITY_RANGE,
+  DRAWING,
+  INITIAL_STATUS,
+  RATE_RANGE,
+  createBucket,
+  describeAmountValue,
+  describePreview,
+  describeRefill,
+  describeSliderValue,
+  formatInflow,
+  formatRate,
+  formatTokenAmount,
+  formatTokens,
+  levelToY,
+  markerLayout,
+  previewTransfer,
+  rangeFillPercent,
+} from "./rateLimitBucketModel.ts"
+
+const uid = `rlb-${Math.random().toString(36).slice(2, 10)}`
+const ids = {
+  title: `${uid}-title`,
+  settings: `${uid}-settings`,
+  transfer: `${uid}-transfer`,
+  capacity: `${uid}-capacity`,
+  capacityHint: `${uid}-capacity-hint`,
+  rate: `${uid}-rate`,
+  rateHint: `${uid}-rate-hint`,
+  amount: `${uid}-amount`,
+  preview: `${uid}-preview`,
+}
+
+const state = createBucket({ capacity: CAPACITY_RANGE.initial, rate: RATE_RANGE.initial }, 0)
+const preview = previewTransfer(state, AMOUNT_RANGE.initial, 0)
+const marker = markerLayout(AMOUNT_RANGE.initial, CAPACITY_RANGE.initial)
+const surfaceY = levelToY(state.tokens, state.capacity)
+const d = DRAWING
+---
+
+<ccip-rate-limit-bucket
+  class="rlb"
+  role="group"
+  aria-labelledby={ids.title}
+  data-copy-exclude
+  data-refilling="false"
+  data-preview={preview.kind}
+>
+  <div class="rlb-header">
+    <p class="rlb-title" id={ids.title}>Rate limit bucket</p>
+    <button type="button" class="rlb-reset" data-part="reset">Reset</button>
+  </div>
+
+  <div class="rlb-body">
+    <div class="rlb-visual">
+      <svg
+        class="rlb-drawing"
+        width={d.width}
+        height={d.height}
+        viewBox={`0 0 ${d.width} ${d.height}`}
+        aria-hidden="true"
+        focusable="false"
+      >
+        <line class="rlb-inflow-line" x1={d.inflowX} y1={d.inflowTop} x2={d.inflowX} y2={d.inflowTip - 7}></line>
+        <path
+          class="rlb-inflow-head"
+          d={`M ${d.inflowX - 5} ${d.inflowTip - 8} L ${d.inflowX + 5} ${d.inflowTip - 8} L ${d.inflowX} ${d.inflowTip} Z`}
+        ></path>
+        <text class="rlb-svg-text rlb-inflow-label" x={d.inflowX + 9} y={17} data-part="inflow-label">
+          {formatInflow(state.rate)}
+        </text>
+        <rect
+          class="rlb-liquid"
+          data-part="liquid"
+          x={d.innerLeft}
+          y={surfaceY}
+          width={d.innerRight - d.innerLeft}
+          height={d.innerBottom - surfaceY}></rect>
+        <line class="rlb-surface" data-part="surface" x1={d.innerLeft} y1={surfaceY} x2={d.innerRight} y2={surfaceY}
+        ></line>
+        <path class="rlb-bucket" d={`M ${d.bucketLeft} ${d.rimY} V ${d.bottomY} H ${d.bucketRight} V ${d.rimY}`}></path>
+        <line class="rlb-tick" x1={d.tickStart} y1={d.rimY} x2={d.tickEnd} y2={d.rimY}></line>
+        <text
+          class="rlb-svg-text rlb-max-label"
+          data-part="max-label"
+          x={d.labelX}
+          y={d.rimY + d.labelBaselineOffset}
+          style={marker.showMaxLabel ? undefined : "visibility: hidden"}>MAX</text
+        >
+        <line
+          class="rlb-marker"
+          data-part="marker"
+          x1={marker.lineStartX}
+          y1={marker.lineY}
+          x2={d.tickEnd}
+          y2={marker.lineY}></line>
+        <text class="rlb-svg-text rlb-marker-label" data-part="marker-label" x={d.labelX} y={marker.labelY}
+          >{marker.label}</text
+        >
+      </svg>
+
+      <div class="rlb-readout">
+        <p class="rlb-readout-label">Available now</p>
+        <p class="rlb-readout-value">
+          <span class="rlb-readout-number" data-part="available">{formatTokens(state.tokens)}</span>
+          <span class="rlb-readout-unit">tokens</span>
+        </p>
+        <p class="rlb-readout-meta" data-part="refill">{describeRefill(state, 0)}</p>
+      </div>
+    </div>
+
+    <div class="rlb-controls">
+      <div class="rlb-group" role="group" aria-labelledby={ids.settings}>
+        <p class="rlb-eyebrow" id={ids.settings}>Rate limit settings</p>
+
+        <div class="rlb-field">
+          <div class="rlb-field-row">
+            <label class="rlb-field-label" for={ids.capacity}>Max capacity</label>
+            <span class="rlb-field-value" data-part="capacity-value">{formatTokenAmount(CAPACITY_RANGE.initial)}</span>
+          </div>
+          <input
+            class="rlb-range"
+            id={ids.capacity}
+            data-part="capacity"
+            type="range"
+            autocomplete="off"
+            min={CAPACITY_RANGE.min}
+            max={CAPACITY_RANGE.max}
+            step={CAPACITY_RANGE.step}
+            value={CAPACITY_RANGE.initial}
+            aria-describedby={ids.capacityHint}
+            aria-valuetext={describeSliderValue("capacity", CAPACITY_RANGE.initial)}
+            style={`--rlb-fill: ${rangeFillPercent(CAPACITY_RANGE.initial, CAPACITY_RANGE)}%`}
+          />
+          <p class="rlb-field-hint" id={ids.capacityHint}>Largest possible single transfer.</p>
+        </div>
+
+        <div class="rlb-field">
+          <div class="rlb-field-row">
+            <label class="rlb-field-label" for={ids.rate}>Refill rate</label>
+            <span class="rlb-field-value" data-part="rate-value">{formatRate(RATE_RANGE.initial)}</span>
+          </div>
+          <input
+            class="rlb-range"
+            id={ids.rate}
+            data-part="rate"
+            type="range"
+            autocomplete="off"
+            min={RATE_RANGE.min}
+            max={RATE_RANGE.max}
+            step={RATE_RANGE.step}
+            value={RATE_RANGE.initial}
+            aria-describedby={ids.rateHint}
+            aria-valuetext={describeSliderValue("rate", RATE_RANGE.initial)}
+            style={`--rlb-fill: ${rangeFillPercent(RATE_RANGE.initial, RATE_RANGE)}%`}
+          />
+          <p class="rlb-field-hint" id={ids.rateHint}>Tokens added back every second.</p>
+        </div>
+      </div>
+
+      <div class="rlb-group" role="group" aria-labelledby={ids.transfer}>
+        <p class="rlb-eyebrow" id={ids.transfer}>Transfer</p>
+
+        <div class="rlb-field">
+          <div class="rlb-field-row">
+            <label class="rlb-field-label" for={ids.amount}>Transfer amount</label>
+            <span class="rlb-field-value" data-part="amount-value">{formatTokenAmount(AMOUNT_RANGE.initial)}</span>
+          </div>
+          <input
+            class="rlb-range"
+            id={ids.amount}
+            data-part="amount"
+            type="range"
+            autocomplete="off"
+            min={AMOUNT_RANGE.min}
+            max={AMOUNT_RANGE.max}
+            step={AMOUNT_RANGE.step}
+            value={AMOUNT_RANGE.initial}
+            aria-describedby={ids.preview}
+            aria-valuetext={describeAmountValue(AMOUNT_RANGE.initial, preview.kind)}
+            style={`--rlb-fill: ${rangeFillPercent(AMOUNT_RANGE.initial, AMOUNT_RANGE)}%`}
+          />
+          <p class="rlb-preview" id={ids.preview} data-part="preview">
+            <span class="rlb-preview-swatch" aria-hidden="true"></span>
+            <span class="rlb-preview-text" data-part="preview-text">{describePreview(preview)}</span>
+          </p>
+        </div>
+
+        <button type="button" class="rlb-send" data-part="send">Send transfer</button>
+
+        <div
+          class="rlb-status"
+          data-part="status"
+          data-tone={INITIAL_STATUS.tone}
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <svg class="rlb-status-icon" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false">
+            <circle class="rlb-status-circle" cx="10" cy="10" r="10"></circle>
+            <g class="rlb-glyph" data-glyph="info">
+              <path d="M10 9v5"></path>
+              <circle cx="10" cy="6" r="1.25"></circle>
+            </g>
+            <g class="rlb-glyph" data-glyph="check"><path d="M6 10.5l2.75 2.75L14 7.75"></path></g>
+            <g class="rlb-glyph" data-glyph="alert">
+              <path d="M10 5.5v5.25"></path>
+              <circle cx="10" cy="14.25" r="1.25"></circle>
+            </g>
+            <g class="rlb-glyph" data-glyph="cross"><path d="M7 7l6 6M13 7l-6 6"></path></g>
+          </svg>
+          <div class="rlb-status-body">
+            <p class="rlb-status-title" data-part="status-title">{INITIAL_STATUS.title}</p>
+            <p class="rlb-status-detail" data-part="status-detail">{INITIAL_STATUS.detail}</p>
+            <p class="rlb-status-error" data-part="status-error" hidden>
+              Contract error: <code data-part="status-code"></code>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="rlb-footnote">
+    Illustrative values in whole tokens. On-chain, rate limits are set in the token's smallest unit.
+  </p>
+</ccip-rate-limit-bucket>
+
+<style>
+  /*
+   * Colors come only from the site's design tokens (@chainlink/blocks, loaded on every docs page).
+   * The fallback after each token is that token's current value.
+   * Every text element sets its own font-size and line-height, because the docs article applies
+   * global rules (line-height: 28px on p, display: flex on label, 14px on span/label, input borders).
+   */
+  .rlb {
+    --rlb-marker: var(--brand, #0847f7);
+    display: block;
+    container: rlb / inline-size;
+    isolation: isolate;
+    border: 1px solid var(--border, #e4e8ed);
+    border-radius: 4px;
+    background: var(--background, #ffffff);
+    color: var(--foreground, #141921);
+    font-family: var(--font-family-text, "Inter", Arial, sans-serif);
+    text-align: left;
+  }
+
+  /* Fixed-width digits only where numbers change while the reader watches (Inter's tnum also widens "-"). */
+  .rlb-inflow-label,
+  .rlb-readout-number,
+  .rlb-readout-meta,
+  .rlb-field-value,
+  .rlb-preview-text {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rlb[data-preview="wait"] {
+    --rlb-marker: var(--yellow-700, #a16207);
+  }
+
+  .rlb[data-preview="exceeds"] {
+    --rlb-marker: var(--error-foreground, #dc2626);
+  }
+
+  /* Header */
+  .rlb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 40px;
+    padding: 4px 8px 4px 16px;
+    border-bottom: 1px solid var(--border, #e4e8ed);
+    border-radius: 3px 3px 0 0;
+    background: var(--muted, #f5f7fa);
+  }
+
+  .rlb-title {
+    margin: 0;
+    color: var(--gray-700, #3c414c);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .rlb-reset {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    margin: 0;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--color-text-link, #0847f7);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    cursor: pointer;
+  }
+
+  .rlb-reset:hover {
+    background: var(--muted-more, #e4e8ed);
+  }
+
+  /* Body layout: stacked below 440px, drawing beside readout from 440px, two columns from 560px (container width). */
+  .rlb-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+    padding: 16px;
+  }
+
+  .rlb-visual {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .rlb-drawing {
+    display: block;
+    flex: none;
+    width: 204px;
+    height: 180px;
+    overflow: visible;
+  }
+
+  .rlb-readout {
+    display: grid;
+    gap: 2px;
+    text-align: center;
+  }
+
+  @container rlb (min-width: 440px) {
+    .rlb-visual {
+      flex-direction: row;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .rlb-readout {
+      text-align: left;
+    }
+  }
+
+  @container rlb (min-width: 560px) {
+    .rlb-body {
+      grid-template-columns: 204px minmax(0, 1fr);
+      column-gap: 32px;
+      padding: 24px;
+    }
+
+    .rlb-visual {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+  }
+
+  /* Drawing */
+  .rlb-svg-text {
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    fill: var(--muted-foreground, #6c7585);
+  }
+
+  .rlb-inflow-line {
+    stroke: var(--brand, #0847f7);
+    stroke-width: 2;
+    stroke-dasharray: 4 3;
+  }
+
+  .rlb-inflow-head {
+    fill: var(--brand, #0847f7);
+  }
+
+  .rlb-inflow-label {
+    font-size: 12px;
+    letter-spacing: 0;
+    fill: var(--brand, #0847f7);
+  }
+
+  /* Idle (bucket full): gray, still 4.65:1 on white. */
+  .rlb[data-refilling="false"] .rlb-inflow-line {
+    stroke: var(--muted-foreground, #6c7585);
+  }
+
+  .rlb[data-refilling="false"] .rlb-inflow-head,
+  .rlb[data-refilling="false"] .rlb-inflow-label {
+    fill: var(--muted-foreground, #6c7585);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .rlb[data-refilling="true"] .rlb-inflow-line {
+      animation: rlb-inflow-dash 0.7s linear infinite;
+    }
+  }
+
+  @keyframes rlb-inflow-dash {
+    to {
+      stroke-dashoffset: -7;
+    }
+  }
+
+  .rlb-liquid {
+    fill: var(--blue-200, #c1dbff);
+  }
+
+  .rlb-surface {
+    stroke: var(--brand, #0847f7);
+    stroke-width: 2;
+  }
+
+  .rlb-bucket {
+    fill: none;
+    stroke: var(--foreground, #141921);
+    stroke-width: 2;
+    stroke-linejoin: miter;
+  }
+
+  .rlb-tick {
+    stroke: var(--muted-foreground, #6c7585);
+    stroke-width: 1;
+  }
+
+  .rlb-marker {
+    stroke: var(--rlb-marker);
+    stroke-width: 2;
+    stroke-dasharray: 5 3;
+  }
+
+  .rlb-marker-label {
+    fill: var(--rlb-marker);
+  }
+
+  /* Readout */
+  .rlb-readout-label,
+  .rlb-eyebrow {
+    margin: 0;
+    color: var(--muted-foreground, #6c7585);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .rlb-readout-value {
+    margin: 0;
+    color: var(--foreground, #141921);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 36px;
+    white-space: nowrap;
+  }
+
+  .rlb-readout-number {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+  }
+
+  .rlb-readout-unit {
+    color: var(--color-text-primary, #4e5560);
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+
+  .rlb-readout-meta {
+    margin: 0;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  /* Controls */
+  .rlb-controls {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
+  }
+
+  .rlb-group {
+    display: grid;
+    gap: 16px;
+  }
+
+  .rlb-field {
+    display: grid;
+    gap: 6px;
+  }
+
+  .rlb-field-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .rlb-field-label {
+    display: block;
+    margin: 0;
+    color: var(--foreground, #141921);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+
+  .rlb-field-value {
+    display: block;
+    color: var(--foreground, #141921);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+  }
+
+  .rlb-field-hint {
+    margin: 0;
+    color: var(--muted-foreground, #6c7585);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  /* Range input: reset the site's text-input styles, then draw a 4px track and a 20px thumb. */
+  .rlb-range {
+    -webkit-appearance: none;
+    appearance: none;
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    box-shadow: none;
+    font: inherit;
+    line-height: normal;
+    cursor: pointer;
+  }
+
+  .rlb-range:focus {
+    outline: none;
+  }
+
+  .rlb-range:focus-visible {
+    outline: 2px solid var(--brand, #0847f7);
+    outline-offset: 2px;
+  }
+
+  .rlb-range::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(
+      to right,
+      var(--brand, #0847f7) 0 var(--rlb-fill, 50%),
+      var(--muted-more, #e4e8ed) var(--rlb-fill, 50%) 100%
+    );
+  }
+
+  .rlb-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    margin-top: -8px;
+    border: 2px solid var(--brand, #0847f7);
+    border-radius: 50%;
+    background: var(--background, #ffffff);
+  }
+
+  .rlb-range:hover::-webkit-slider-thumb {
+    background: var(--blue-50, #eff6ff);
+  }
+
+  .rlb-range::-moz-range-track {
+    height: 4px;
+    border: 0;
+    border-radius: 2px;
+    background: var(--muted-more, #e4e8ed);
+  }
+
+  .rlb-range::-moz-range-progress {
+    height: 4px;
+    border-radius: 2px;
+    background: var(--brand, #0847f7);
+  }
+
+  .rlb-range::-moz-range-thumb {
+    box-sizing: border-box;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--brand, #0847f7);
+    border-radius: 50%;
+    background: var(--background, #ffffff);
+  }
+
+  .rlb-range:hover::-moz-range-thumb {
+    background: var(--blue-50, #eff6ff);
+  }
+
+  .rlb-preview {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  .rlb-preview-swatch {
+    flex: none;
+    width: 16px;
+    height: 0;
+    border-top: 2px dashed var(--rlb-marker);
+  }
+
+  .rlb-preview-text {
+    color: inherit;
+    font-size: inherit;
+    font-weight: 400;
+    line-height: inherit;
+  }
+
+  /* Primary button, matching @chainlink/blocks Button (primary): brand fill, 4px radius, 14px semibold. */
+  .rlb-send {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 40px;
+    margin: 0;
+    padding: 10px 24px;
+    border: 0;
+    border-radius: 4px;
+    background: var(--primary, #0847f7);
+    color: var(--primary-foreground, #ffffff);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    cursor: pointer;
+    transition: background-color 100ms linear;
+  }
+
+  .rlb-send:hover {
+    background: var(--primary-hover, #0036c9);
+  }
+
+  .rlb-reset:focus-visible,
+  .rlb-send:focus-visible {
+    outline: 2px solid var(--brand, #0847f7);
+    outline-offset: 2px;
+  }
+
+  /* Status */
+  .rlb-status {
+    --rlb-tone-bg: var(--background-alt, #fafbfc);
+    --rlb-tone-border: var(--border, #e4e8ed);
+    --rlb-tone-icon: var(--muted-foreground, #6c7585);
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+    padding: 12px;
+    border: 1px solid var(--rlb-tone-border);
+    border-radius: 4px;
+    background: var(--rlb-tone-bg);
+  }
+
+  .rlb-status[data-tone="info"] {
+    --rlb-tone-bg: var(--blue-50, #eff6ff);
+    --rlb-tone-border: var(--blue-200, #c1dbff);
+    --rlb-tone-icon: var(--brand, #0847f7);
+  }
+
+  .rlb-status[data-tone="success"] {
+    --rlb-tone-bg: var(--success, #f1fcf5);
+    --rlb-tone-border: var(--success-border, #b9f1cc);
+    --rlb-tone-icon: var(--success-foreground, #30a059);
+  }
+
+  .rlb-status[data-tone="warning"] {
+    --rlb-tone-bg: var(--warning, #fffbeb);
+    --rlb-tone-border: var(--warning-border, #fde68a);
+    --rlb-tone-icon: var(--yellow-700, #a16207);
+  }
+
+  .rlb-status[data-tone="error"] {
+    --rlb-tone-bg: var(--error, #fef2f2);
+    --rlb-tone-border: var(--error-border, #fca5a5);
+    --rlb-tone-icon: var(--error-foreground, #dc2626);
+  }
+
+  .rlb-status-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+
+  .rlb-status-circle {
+    fill: var(--rlb-tone-icon);
+  }
+
+  .rlb-glyph {
+    display: none;
+    fill: var(--background, #ffffff);
+    stroke: var(--background, #ffffff);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .rlb-glyph path {
+    fill: none;
+  }
+
+  .rlb-glyph circle {
+    stroke: none;
+  }
+
+  .rlb-status[data-tone="neutral"] .rlb-glyph[data-glyph="info"],
+  .rlb-status[data-tone="info"] .rlb-glyph[data-glyph="info"],
+  .rlb-status[data-tone="success"] .rlb-glyph[data-glyph="check"],
+  .rlb-status[data-tone="warning"] .rlb-glyph[data-glyph="alert"],
+  .rlb-status[data-tone="error"] .rlb-glyph[data-glyph="cross"] {
+    display: inline;
+  }
+
+  .rlb-status-body {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .rlb-status-title {
+    margin: 0;
+    color: var(--foreground, #141921);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+  }
+
+  .rlb-status-detail,
+  .rlb-status-error {
+    margin: 0;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .rlb-status-error[hidden] {
+    display: none;
+  }
+
+  /*
+   * The error name keeps the site's inline code look, with two changes: the site's inline code color
+   * (#6d7380, forced with !important by a site-wide stylesheet) is only 4.41:1 on its gray pill, so it is
+   * overridden here (7.0:1); and the box may wrap between the words of the name (see errorNameChunks).
+   */
+  .rlb-status-error code {
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: baseline;
+    line-height: 18px;
+    color: var(--color-text-primary, #4e5560) !important;
+  }
+
+  /* Footnote */
+  .rlb-footnote {
+    margin: 0;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border, #e4e8ed);
+    color: var(--muted-foreground, #6c7585);
+    font-size: 12px;
+    line-height: 16px;
+  }
+
+  @container rlb (min-width: 560px) {
+    .rlb-footnote {
+      padding: 12px 24px;
+    }
+  }
+
+  /* Windows High Contrast and other forced-colors modes: keep the slider tracks and the button outline visible. */
+  @media (forced-colors: active) {
+    .rlb-range {
+      forced-color-adjust: none;
+    }
+
+    .rlb-range:focus-visible {
+      outline-color: Highlight;
+    }
+
+    .rlb-range::-webkit-slider-runnable-track {
+      background: linear-gradient(to right, Highlight 0 var(--rlb-fill, 50%), CanvasText var(--rlb-fill, 50%) 100%);
+    }
+
+    .rlb-range::-webkit-slider-thumb,
+    .rlb-range:hover::-webkit-slider-thumb {
+      border-color: Highlight;
+      background: Canvas;
+    }
+
+    .rlb-range::-moz-range-track {
+      background: CanvasText;
+    }
+
+    .rlb-range::-moz-range-progress {
+      background: Highlight;
+    }
+
+    .rlb-range::-moz-range-thumb,
+    .rlb-range:hover::-moz-range-thumb {
+      border-color: Highlight;
+      background: Canvas;
+    }
+
+    .rlb-send {
+      border: 1px solid ButtonText;
+    }
+  }
+</style>
+
+<script>
+  import { RATE_LIMIT_BUCKET_TAG, RateLimitBucketElement } from "./rateLimitBucketElement.ts"
+
+  if (!customElements.get(RATE_LIMIT_BUCKET_TAG)) {
+    customElements.define(RATE_LIMIT_BUCKET_TAG, RateLimitBucketElement)
+  }
+</script>

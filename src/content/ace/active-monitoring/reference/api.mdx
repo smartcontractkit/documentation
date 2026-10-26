@@ -1,0 +1,79 @@
+---
+section: ace
+title: "Active Monitoring API"
+date: Last Modified
+metadata:
+  description: "Reference for the Chainlink ACE Active Monitoring endpoints in the Coordinator API: monitored tokens, monitoring rules, watchlist, TRM API key, screening, and decisions."
+  datePublished: "2026-10-05"
+  lastModified: "2026-10-05"
+---
+
+import { Aside } from "@components"
+import AceCallout from "@features/ace/callouts/AceCallout.astro"
+
+<AceCallout callout="privateBeta" />
+
+Use the Active Monitoring endpoints of the Coordinator API to set up monitoring, run it, and read its decisions without the Platform UI. This page lists the endpoints by task and explains which identifier goes where. For request and response schemas, see the <a href="/api/ace/coordinator/docs" target="_blank">Coordinator API Reference</a>, where these endpoints appear under the **Active Monitoring** tags.
+
+## Authentication and base URL
+
+Active Monitoring endpoints share the host, base URL, and API key of the rest of the Coordinator API. All paths on this page are relative to `https://ace.api.chain.link/v1`. Pass your [API key](/ace/getting-started/account-setup#3-create-an-api-key) in the `Authorization` header:
+
+```bash
+curl https://ace.api.chain.link/v1/active-monitoring/contract-groups \
+  -H "Authorization: Apikey <API_KEY>"
+```
+
+## Endpoints by task
+
+| Task                                        | Method and path                                                    | Guide                                                                                  |
+| ------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| Store, check, or remove the TRM API key     | `POST /active-monitoring/provider-api-keys`                        | [Configure Screening](/ace/active-monitoring/guides/configure-screening)               |
+|                                             | `GET /active-monitoring/provider-api-keys/{screening_provider}`    |                                                                                        |
+|                                             | `DELETE /active-monitoring/provider-api-keys/{screening_provider}` |                                                                                        |
+| Set, read, or remove the screening interval | `POST`, `GET`, `DELETE /active-monitoring/screening-interval`      | [Configure Screening](/ace/active-monitoring/guides/configure-screening)               |
+| Start or stop screening                     | `POST /active-monitoring/screening-interval/start`                 | [Configure Screening](/ace/active-monitoring/guides/configure-screening)               |
+|                                             | `POST /active-monitoring/screening-interval/stop`                  |                                                                                        |
+| Register or list monitored tokens           | `POST`, `GET /active-monitoring/contract-groups`                   | [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens)       |
+| Get one monitored token                     | `GET /active-monitoring/contract-groups/{contract_group_id}`       | [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens)       |
+| List the action variables for a rule        | `GET /active-monitoring/action-variables`                          | [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules) |
+| Create or list monitoring rules             | `POST`, `GET /active-monitoring/rule-groups`                       | [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules) |
+| Get or archive a monitoring rule            | `GET`, `PATCH /active-monitoring/rule-groups/{rule_group_id}`      | [Configure Monitoring Rules](/ace/active-monitoring/guides/configure-monitoring-rules) |
+| Add or list watchlist addresses             | `POST`, `GET /active-monitoring/monitored-addresses`               | [Manage the Watchlist](/ace/active-monitoring/guides/manage-watchlist)                 |
+| List decisions                              | `GET /active-monitoring/decision-logs`                             | [Review Decisions](/ace/active-monitoring/guides/review-decisions)                     |
+| Get a decision                              | `GET /active-monitoring/decision-logs/{decision_log_id}`           | [Review Decisions](/ace/active-monitoring/guides/review-decisions)                     |
+
+Resolving and enforcing a flagged decision are not available with an API key: they require a signed-in user. Use the Platform UI. See [Review Decisions](/ace/active-monitoring/guides/review-decisions).
+
+The API uses the names `contract group` for a monitored token, `rule group` for a monitoring rule, `monitored address` for a watchlist address, and `decision log` for a decision.
+
+## Identifiers to carry between requests
+
+Several requests need an identifier returned by an earlier one.
+
+| You need                          | Where it comes from                                                              | Where you use it                                                                       |
+| --------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `group_id` of the monitored token | Response of `POST /contract-groups`. It equals the `id` of the primary contract. | `contract_group_id` when you create a monitoring rule                                  |
+| `id` of a contract                | `contracts[].id` in the monitored token response                                 | `contract_id` in an enforced action, and in a balance condition (the primary contract) |
+| `func_id` of a function           | `contracts[].functions[].func_id` in the monitored token response                | `admin_function_id` in an enforced action                                              |
+| `id` of a monitoring rule         | Response of `POST /rule-groups`                                                  | `rule_group_id` to get or archive the rule                                             |
+| `id` of a decision                | `decision_logs[].id` in the list response                                        | `decision_log_id` to get the decision                                                  |
+| `registry_id`                     | `id` of an [identity registry](/ace/guides/identity-manager/manage-registries)   | `registry_id` when you import a watchlist from a registry                              |
+
+## Status codes
+
+Errors return a JSON body with `error` and `message`.
+
+| Status | When                                                                                                                                                                                                                           |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `400`  | The request is invalid. For example, a network has no created CRE Connect Wallet, a rule does not cover an ABI argument, or `POST /screening-interval/start` is called before a prerequisite is met.                           |
+| `401`  | The API key is missing or invalid.                                                                                                                                                                                             |
+| `404`  | The resource does not exist, or a `contract_group_id` is the `id` of an associated contract.                                                                                                                                   |
+| `409`  | The resource already exists: a token address on a network, an address on the watchlist, or a second active rule on one token. Also returned when `POST /screening-interval/stop` is called while a screening run is executing. |
+
+Start screening returns `400` until a screening interval, a TRM API key, an active monitoring rule, and at least one watchlist address exist.
+
+## Related pages
+
+- [Limits, Statuses, and Values](/ace/active-monitoring/reference/limits-and-values): the values these endpoints accept and return.
+- [Active Monitoring Quick Start](/ace/active-monitoring/quick-start): the full setup in order, with UI and API steps.

@@ -60,6 +60,8 @@ export interface ComponentContext {
   markdown: string
   /** Target language (if any) */
   targetLanguage?: string
+  /** Product docs context (for example, "cre"), used by product-scoped components */
+  productContext?: string
   /** Unified processor instance */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   processor: any
@@ -75,6 +77,11 @@ export type ComponentHandler = (
   context: ComponentContext
 ) => number | void
 
+/** An unhandled JSX subtree removed by a successful transform. */
+export interface DroppedComponent {
+  name: string
+}
+
 /**
  * Configuration for markdown transformation
  */
@@ -83,10 +90,14 @@ export interface TransformConfig {
   siteBase: string
   /** Target language for language-specific content */
   targetLanguage?: string
+  /** Product docs context (for example, "cre"), used by product-scoped components */
+  productContext?: string
   /** Whether to include frontmatter in output */
   includeFrontmatter?: boolean
   /** Custom component handlers */
   componentHandlers?: Record<string, ComponentHandler>
+  /** Synchronous, best-effort observer. Events are delivered only after a successful transform. */
+  onDropComponent?: (drop: DroppedComponent) => void
 }
 
 /**
@@ -109,4 +120,12 @@ export interface CodeBlock {
   value: string
   /** Optional title */
   title?: string
+}
+
+export type MarkdownArtifact = {
+  requestPath: string
+  routeKind: "normal" | "special" | "selector" | "redirect"
+  transformMode: "normal" | "sanitized" | "fallback" | "replacement"
+  sourcePath?: string
+  markdown: string
 }

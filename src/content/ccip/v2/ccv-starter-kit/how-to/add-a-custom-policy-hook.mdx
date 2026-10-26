@@ -1,0 +1,86 @@
+---
+section: ccip
+date: Last Modified
+title: "Add a custom policy hook"
+metadata:
+  description: "The CCV policy hook is an operator PASS/FAIL gate the verifier calls before signing. Implement one HTTPS endpoint against the OpenAPI spec in any language, for compliance, AML, sanctions, or risk screening."
+  excerpt: "CCV policy hook, PASS FAIL gate, compliance, AML, sanctions, OpenAPI, evaluate endpoint, HMAC, HOLD reserved"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-27"
+whatsnext:
+  "Onboard to the CCIP indexer": "/ccip/ccv-starter-kit/onboard-to-the-indexer"
+  "Reference": "/ccip/ccv-starter-kit/reference"
+---
+
+import { Aside } from "@components"
+
+The policy hook is how you apply your own verification logic to every message your CCV signs: your compliance,
+AML, sanctions, or risk screening. It is an HTTPS endpoint that you build and run; the verifier calls it with
+each message as the last check before it signs, and the endpoint returns PASS or FAIL. A FAIL withholds that
+node's signature. Because the interface is a plain HTTP request and response, you implement it in whatever
+language and framework you already use, and run it against your own systems and data.
+
+## Build the endpoint
+
+You implement one HTTPS endpoint that follows the OpenAPI 3.0.3 spec,
+[`policy_hook_openapi_v1.yaml`](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/policy_hook_openapi_v1.yaml).
+The verifier POSTs each message to `<base_url>/v1/evaluate` and expects a JSON body of `{"decision":"PASS"}` or
+`{"decision":"FAIL"}`, with an optional `reason`. Any language and framework works, as long as it serves the
+spec and the verifier can reach it.
+
+Point the verifier at the endpoint with `base_url`, and set the call timeout and retry delay alongside it. The
+recommended setup keeps the endpoint inside your own network, reachable only by your verifier, which needs no
+credential. If you must expose it, the verifier signs each request with an HMAC-SHA256 credential so your
+endpoint can confirm the request to `/v1/evaluate` came from your verifier and reject anything else. The
+chainlink-ccv
+[policy hook guide](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/docs/policy_hook.md)
+documents every config field, the request and response schema, and the HMAC scheme.
+
+Run the endpoint as its own deployment rather than as an extra container beside the verifier, so you scale and
+configure it independently; the off-chain kit's
+[Policy Hooks](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#policy-hooks)
+documentation covers both options. Size it for the verifier's per-message call rate within the call timeout,
+which defaults to 5 seconds and cannot exceed 15.
+
+## How the verifier reads the response
+
+The verifier acts on one thing: an HTTP 200 whose body is `{"decision":"PASS"}` or `{"decision":"FAIL"}`.
+
+- `PASS`: the node signs the message, byte-for-byte identical to a node that runs no hook.
+- `FAIL`: the node drops the message and never signs it. The drop is permanent for that node.
+
+Any other response, a timeout, a 5xx, unparseable JSON, or a `decision` that is neither value, is treated as a
+failed call rather than a verdict: the verifier waits `retry_delay` and asks again.
+
+<Aside type="caution" title="A degraded endpoint must return an error, never FAIL">
+  When your endpoint cannot reach a decision, return an error status (a 5xx) so the call is retried. If it returns
+  `FAIL` instead, the node drops the message permanently, exactly as if the endpoint had screened it and rejected it,
+  when in fact nothing screened it. Retries are bounded: the verifier stops retrying 7 days after the message was first
+  queued, and a message with no verdict by then is failed the same way a `FAIL` would fail it. Treat an outage that
+  approaches that window as an incident, not something the retry loop will ride out.
+</Aside>
+
+## What a FAIL stops, and how to recover
+
+A single `FAIL` withholds one node's signature; on its own it does not stop the message. The committee has a
+signing threshold per source chain, and the aggregator builds a report as soon as that many nodes sign. A message
+stops only when enough nodes withhold to leave the rest below the threshold, which takes `N − threshold + 1` of
+the `N` nodes. In a 2-of-2 committee one `FAIL` is decisive; in a 3-of-5, two rejections are not enough and the
+message still executes on the other three signatures, so it takes three.
+
+Committee sizing is therefore part of the control. If a node's signature is not needed to reach the threshold,
+its `FAIL` does not stop the transfer, it only means that node did not attest. Size the committee so the nodes
+running your hook can actually block.
+
+A dropped message is permanent from that node's point of view, but recoverable. The verifier keeps the failed job
+in its archive with your `reason` as the error; replaying it asks your endpoint again, so the next call can answer
+`PASS`. Each node that dropped the message recovers its own copy, since each dropped it on its own verdict. The
+[policy hook guide](https://github.com/smartcontractkit/chainlink-ccv/blob/main/verifier/docs/policy_hook.md) has
+the reschedule command for a single message and the checkpoint rewind for a range.
+
+`HOLD` appears in the response schema but is not implemented, so do not return it. To hold a message while a review
+is open, return `FAIL`, then replay it once the review clears. Do not hold a message by stalling the call or
+returning a 5xx: both count as a failed call against the 7-day retry window, not as a pause.
+
+Put a short case reference in `reason`, never customer data. The verifier logs and archives it (truncated at 256
+characters) and never signs it.

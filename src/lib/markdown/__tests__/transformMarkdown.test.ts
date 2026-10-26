@@ -43,6 +43,24 @@ contract Test {
     expect(result).toContain("[Link text](/some/path)")
   })
 
+  it("should preserve DocCards as markdown links", async () => {
+    const markdown = `<DocCards>
+  <DocCard title="Programmable Token Transfers" href="/ccip/evm/tutorials/programmable-token-transfers">
+    Send tokens across chains.
+  </DocCard>
+  <DocCard title="Send Arbitrary Data" href="/ccip/evm/tutorials/send-arbitrary-data">
+    Send data between contracts.
+  </DocCard>
+</DocCards>`
+
+    const result = await transformMarkdown(markdown, "/fake/path.mdx")
+
+    expect(result).toContain("[Programmable Token Transfers](/ccip/evm/tutorials/programmable-token-transfers)")
+    expect(result).toContain("Send tokens across chains.")
+    expect(result).toContain("[Send Arbitrary Data](/ccip/evm/tutorials/send-arbitrary-data)")
+    expect(result).toContain("Send data between contracts.")
+  })
+
   it("should handle tables", async () => {
     const markdown = `| Col1 | Col2 |
 |------|------|
@@ -51,6 +69,939 @@ contract Test {
     const result = await transformMarkdown(markdown, "/fake/path.mdx")
     expect(result).toContain("Col1")
     expect(result).toContain("Col2")
+  })
+
+  it.each([
+    {
+      name: "ClickToZoom",
+      component: `<ClickToZoom alt="A" src="/a.jpg" />`,
+      projection: "![A](/a.jpg)",
+    },
+    {
+      name: "Address",
+      component: `<Address address="0x1234" contractUrl="https://example.test/address" />`,
+      projection: "[0x1234](https://example.test/address)",
+    },
+    {
+      name: "Fragment",
+      component: `<Fragment>
+## Fragment heading
+
+- first
+- second
+</Fragment>`,
+      projection: `## Fragment heading
+
+- first
+- second`,
+    },
+    {
+      name: "Accordion",
+      component: `<Accordion title="Deploy" number={2}>
+- first
+- second
+</Accordion>`,
+      projection: `### 2. Deploy
+
+- first
+- second`,
+    },
+    {
+      name: "Tabs",
+      component: `<Tabs>
+  <Fragment slot="tab.shell">Shell</Fragment>
+  <Fragment slot="panel.shell">
+\`\`\`sh
+npm test
+\`\`\`
+  </Fragment>
+</Tabs>`,
+      projection: `### Shell
+
+\`\`\`sh
+npm test
+\`\`\``,
+    },
+    {
+      name: "PackageManagerTabs",
+      component: `<PackageManagerTabs>
+  <Fragment slot="yarn">
+\`\`\`sh
+yarn add
+\`\`\`
+  </Fragment>
+  <Fragment slot="npm">
+\`\`\`sh
+npm install
+\`\`\`
+  </Fragment>
+</PackageManagerTabs>`,
+      projection: `### npm
+
+\`\`\`sh
+npm install
+\`\`\`
+
+### yarn
+
+\`\`\`sh
+yarn add
+\`\`\``,
+    },
+    {
+      name: "MethodTabs",
+      component: `<MethodTabs>
+  <Fragment slot="ui">
+Open the app.
+  </Fragment>
+  <Fragment slot="api">
+\`\`\`sh
+curl https://api.example.com
+\`\`\`
+  </Fragment>
+</MethodTabs>`,
+      projection: `**Platform UI**
+
+Open the app.
+
+**API**
+
+\`\`\`sh
+curl https://api.example.com
+\`\`\``,
+    },
+  ])("keeps block siblings around a flow-position $name projection", async ({ component, projection }) => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+${component}
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+${projection}
+
+### Sub
+
+Tail.
+`)
+  })
+
+  it("retains indented Tabs panel content inside a callout", async () => {
+    const result = await transformMarkdown(
+      `<Aside type="note" title="Install">
+    <Tabs>
+      <Fragment slot="tab.npm">npm</Fragment>
+      <Fragment slot="panel.npm">npm install example</Fragment>
+    </Tabs>
+</Aside>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toContain("> npm install example")
+  })
+
+  it("preserves inline links, code, strong text, and subscript children", async () => {
+    const result = await transformMarkdown(
+      `Please <a href="https://chain.link/contact">Contact us</a> to talk to an expert.
+
+The field <code>marketStatus</code> matters.
+
+<strong><sub>The bonded amount is credited.</sub></strong>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Please [Contact us](https://chain.link/contact) to talk to an expert.
+
+The field \`marketStatus\` matters.
+
+**The bonded amount is credited.**
+`)
+  })
+
+  it("preserves JSX links, code, and lists in table cells", async () => {
+    const result = await transformMarkdown(
+      `| Key | Value |
+| --- | --- |
+| <a href="#limit"><code>PerOwner.VaultSecretsLimit</code></a> | Max secrets per owner |
+| <ul><li>first</li><li>second</li></ul> | list |`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toContain("[`PerOwner.VaultSecretsLimit`](#limit)")
+    expect(result).toContain("first; second")
+    expect(result).not.toContain("<a")
+    expect(result).not.toContain("<ul")
+  })
+
+  it("keeps HTML table cell text without collapsing surrounding blocks", async () => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+<div>
+  <table>
+    <thead>
+      <tr>
+        <th>Network</th>
+        <th>Chain ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Ethereum Mainnet</td>
+        <td><code>1</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+Network
+Chain ID
+
+Ethereum Mainnet
+\`1\`
+
+### Sub
+
+Tail.
+`)
+    expect(result).not.toContain("<table")
+    expect(result).not.toContain("<td")
+  })
+
+  it("keeps a flow HTML link without collapsing surrounding blocks", async () => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+<div class="remix-callout">
+  <a href="https://example.test">See the code</a>
+</div>
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+[See the code](https://example.test)
+
+### Sub
+
+Tail.
+`)
+  })
+
+  it("keeps a flow MDX string expression without collapsing surrounding blocks", async () => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+{" "}
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+### Sub
+
+Tail.
+`)
+  })
+
+  it("keeps static MDX whitespace and string expressions while dropping dynamic expressions", async () => {
+    const result = await transformMarkdown(
+      `Word{" "}next and {"literal"} end.
+
+Before {runtimeValue} after.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Word next and literal end.
+
+Before  after.
+`)
+  })
+
+  it("uses a depth-four Accordion heading", async () => {
+    const result = await transformMarkdown(
+      `<Accordion title="Deploy the contract" number={2} depth={4}>
+Body instructions.
+</Accordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`#### 2. Deploy the contract
+
+Body instructions.
+`)
+  })
+
+  it("projects PageTabs header descriptions only when the header is shown", async () => {
+    const withHeader = await transformMarkdown(
+      `<PageTabs
+  headerTitle="Install"
+  headerDescription="Choose an installation path."
+  pages={[{ name: "macOS", url: "/macos" }, { name: "Windows", url: "/windows" }]}
+/>`,
+      "/fake/page.mdx"
+    )
+    expect(withHeader).toBe(`## Install
+
+Choose an installation path.
+
+- [macOS](/macos)
+
+- [Windows](/windows)
+`)
+
+    const withoutHeader = await transformMarkdown(
+      `<PageTabs
+  showHeader={false}
+  headerDescription="Hidden description."
+  pages={[{ name: "Only", url: "/only" }]}
+/>`,
+      "/fake/page.mdx"
+    )
+    expect(withoutHeader).toBe(`- [Only](/only)
+`)
+  })
+
+  it("keeps native and ClickToZoom images as Markdown image syntax", async () => {
+    const result = await transformMarkdown(
+      `![Plain](/plain.png)
+
+<ClickToZoom alt="Zoom" src="/zoom.png" />`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`![Plain](/plain.png)
+
+![Zoom](/zoom.png)
+`)
+    expect(result).not.toContain("(Image: Plain)")
+    expect(result).not.toContain("(Image: Zoom)")
+  })
+
+  it("projects PageTabs in source order with grouped labels and first URLs", async () => {
+    const result = await transformMarkdown(
+      `<PageTabs
+  headerTitle="Select your operating system"
+  pages={[
+    [
+      { name: "macOS", url: "/install/macos" },
+      { name: "Linux", url: "/install/linux" },
+    ],
+    { name: "Windows", url: "/install/windows" },
+  ]}
+/>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toContain("## Select your operating system")
+    expect(result).toContain("[macOS / Linux](/install/macos)")
+    expect(result).not.toContain("/install/linux")
+    expect(result.indexOf("[macOS / Linux]")).toBeLessThan(result.indexOf("[Windows]"))
+
+    const withoutHeader = await transformMarkdown(
+      `<PageTabs showHeader={false} pages={[{ name: "Only", url: "/only" }]} />`,
+      "/fake/page.mdx"
+    )
+    expect(withoutHeader).not.toContain("## Guide Versions")
+    expect(withoutHeader).toContain("[Only](/only)")
+  })
+
+  it("pairs Tabs and TabsContent labels with matching panels", async () => {
+    for (const component of ["Tabs", "TabsContent"]) {
+      const result = await transformMarkdown(
+        `<${component}>
+  <Fragment slot="tab.first">First</Fragment>
+  <Fragment slot="tab.second">Second</Fragment>
+  <Fragment slot="panel.second">Second panel</Fragment>
+  <Fragment slot="panel.first">First panel</Fragment>
+</${component}>`,
+        "/fake/page.mdx"
+      )
+
+      expect(result.indexOf("### First")).toBeLessThan(result.indexOf("First panel"))
+      expect(result.indexOf("First panel")).toBeLessThan(result.indexOf("### Second"))
+      expect(result.indexOf("### Second")).toBeLessThan(result.indexOf("Second panel"))
+    }
+  })
+
+  it("projects PackageManagerTabs as npm then yarn even when yarn is first", async () => {
+    const result = await transformMarkdown(
+      `<PackageManagerTabs>
+  <Fragment slot="yarn">yarn add example</Fragment>
+  <Fragment slot="npm">npm install example</Fragment>
+</PackageManagerTabs>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result.indexOf("### npm")).toBeLessThan(result.indexOf("npm install example"))
+    expect(result.indexOf("npm install example")).toBeLessThan(result.indexOf("### yarn"))
+    expect(result.indexOf("### yarn")).toBeLessThan(result.indexOf("yarn add example"))
+  })
+
+  it("projects indented MethodTabs content as Platform UI then API with nested components", async () => {
+    const result = await transformMarkdown(
+      `### Create a wallet
+
+<MethodTabs>
+  <Fragment slot="api">
+    Create wallets in a single request:
+
+    <PolicyInstanceBuilder client:only="react" />
+
+    \`\`\`bash
+    curl -X POST https://ace.api.chain.link/v1/wallets \\
+      -H "Authorization: Apikey <API_KEY>"
+    \`\`\`
+
+    | Field | Required |
+    | --- | --- |
+    | \`owner_address\` | Yes |
+
+    <Aside type="tip" title="Chain selectors">
+      Use chain selectors, not chain IDs.
+    </Aside>
+  </Fragment>
+  <Fragment slot="ui">
+    1. Open **Compliance** and click **Home**.
+    1. Click **Enable new network**.
+       <ClickToZoom src="/images/ace/add-wallets.webp" />
+  </Fragment>
+</MethodTabs>
+
+## Next steps`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toContain(`**Platform UI**
+
+1. Open **Compliance** and click **Home**.
+2. Click **Enable new network**.`)
+    expect(result).toContain("/images/ace/add-wallets.webp")
+    expect(result).toContain(`**API**
+
+Create wallets in a single request:
+
+\`\`\`bash
+curl -X POST https://ace.api.chain.link/v1/wallets \\
+  -H "Authorization: Apikey <API_KEY>"
+\`\`\``)
+    expect(result).toContain("| `owner_address` | Yes      |")
+    expect(result).toContain("> **TIP: Chain selectors**")
+    expect(result).toContain("> Use chain selectors, not chain IDs.")
+    expect(result.indexOf("**Platform UI**")).toBeLessThan(result.indexOf("**API**"))
+    expect(result.indexOf("**API**")).toBeLessThan(result.indexOf("## Next steps"))
+    expect(result).not.toMatch(/MethodTabs|Fragment|PolicyInstanceBuilder|slot=/)
+  })
+
+  it("unwraps Fragment content", async () => {
+    const result = await transformMarkdown(`<Fragment>Visible **content**</Fragment>`, "/fake/page.mdx")
+    expect(result).toContain("Visible **content**")
+    expect(result).not.toContain("Fragment")
+  })
+
+  it.each(["GitHubCards", "OverviewWrapper"])(
+    "preserves cards inside %s and continues with siblings",
+    async (wrapper) => {
+      const result = await transformMarkdown(
+        `Before wrapper.
+
+<${wrapper}>
+  <GitHubCard title="First repository" href="https://example.com/first" badge="New">
+    First repository description.
+  </GitHubCard>
+  <GitHubCard title="Second repository" href="https://example.com/second">
+    Second repository description.
+  </GitHubCard>
+</${wrapper}>
+
+After wrapper.`,
+        "/fake/page.mdx"
+      )
+
+      expect(result).toBe(
+        [
+          "Before wrapper.",
+          "[First repository](https://example.com/first) New",
+          "First repository description.",
+          "[Second repository](https://example.com/second)",
+          "Second repository description.",
+          "After wrapper.",
+        ].join("\n\n") + "\n"
+      )
+    }
+  )
+
+  it("preserves a card inside nested overview and card containers", async () => {
+    const result = await transformMarkdown(
+      `<OverviewWrapper>
+  <GitHubCards columns={2}>
+    <GitHubCard title="Repository" href="https://example.com/repo">
+      Repository description.
+    </GitHubCard>
+  </GitHubCards>
+</OverviewWrapper>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("[Repository](https://example.com/repo)\n\nRepository description.\n")
+  })
+
+  it("projects Accordion number, title, and body", async () => {
+    const result = await transformMarkdown(
+      `<Accordion title="Deploy the contract" number={2}>
+Body instructions.
+</Accordion>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("### 2. Deploy the contract")
+    expect(result).toContain("Body instructions.")
+  })
+
+  it("uses an Accordion title slot instead of the title prop", async () => {
+    const withTitleSlot = await transformMarkdown(
+      `<Accordion title="Ignored prop title" number={3}>
+  <Fragment slot="title">Review the deployment</Fragment>
+Body remains visible.
+</Accordion>`,
+      "/fake/page.mdx"
+    )
+    expect(withTitleSlot).toContain("### 3. Review the deployment")
+    expect(withTitleSlot).not.toContain("Ignored prop title")
+    expect(withTitleSlot).toContain("Body remains visible.")
+  })
+
+  it.each([2, 3, 4])("preserves an explicit AnchoredAccordion id at heading depth %s", async (depth) => {
+    const result = await transformMarkdown(
+      `[Fund the adapter](#fund-the-adapter)
+
+<AnchoredAccordion title="Set the return format and fund the adapter" number={4} depth={${depth}} anchorId="fund-the-adapter">
+Body instructions.
+</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(
+      `[Fund the adapter](#fund-the-adapter)\n\n${"#".repeat(depth)} 4. Set the return format and fund the adapter <a id="fund-the-adapter"></a>\n\nBody instructions.\n`
+    )
+  })
+
+  it.each(['{"static-id"}', "{`static-id`}"])("preserves a static expression anchorId=%s", async (attribute) => {
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Deploy" anchorId=${attribute}>\nInstructions.\n</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe('## Deploy <a id="static-id"></a>\n\nInstructions.\n')
+  })
+
+  it.each(["", 'anchorId=""', "anchorId={dynamicId}", "anchorId={42}"])(
+    "keeps accordion content without generating an anchor for %s",
+    async (attribute) => {
+      const result = await transformMarkdown(
+        `<AnchoredAccordion title="Deploy" ${attribute}>\nInstructions.\n</AnchoredAccordion>`,
+        "/fake/page.mdx"
+      )
+
+      expect(result).toBe("## Deploy\n\nInstructions.\n")
+    }
+  )
+
+  it("does not give a plain Accordion an AnchoredAccordion id", async () => {
+    const result = await transformMarkdown(
+      '<Accordion title="Deploy" anchorId="unused">\nInstructions.\n</Accordion>',
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("### Deploy\n\nInstructions.\n")
+  })
+
+  it("escapes an anchor id as HTML attribute content", async () => {
+    const anchorId = 'a&"<>\\_b'
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Deploy" anchorId={${JSON.stringify(anchorId)}}>\nInstructions.\n</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe('## Deploy <a id="a&amp;&quot;&lt;&gt;&#92;_b"></a>\n\nInstructions.\n')
+  })
+
+  it("keeps each nested accordion anchor on its own heading", async () => {
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Outer" anchorId="outer">
+Outer instructions.
+
+<AnchoredAccordion title="Inner" depth={3} anchorId="inner">
+Inner instructions.
+</AnchoredAccordion>
+</AnchoredAccordion>
+
+After accordions.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(
+      '## Outer <a id="outer"></a>\n\nOuter instructions.\n\n### Inner <a id="inner"></a>\n\nInner instructions.\n\nAfter accordions.\n'
+    )
+  })
+
+  it("continues dropping source HTML anchors while preserving generated accordion anchors", async () => {
+    const result = await transformMarkdown(
+      `<a id="source-anchor"></a>
+
+<AnchoredAccordion title="Deploy" anchorId="generated-anchor">
+Instructions.
+</AnchoredAccordion>`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe('## Deploy <a id="generated-anchor"></a>\n\nInstructions.\n')
+  })
+
+  it("projects Address with exact URLs and static truncation", async () => {
+    const result = await transformMarkdown(
+      `Exact: <Address address="0x1234567890abcdef" contractUrl="https://example.test/address/0x1234567890abcdef?view=code" />
+Truncated: <Address address="0x1234567890abcdef" endLength={4} contractUrl="https://example.test/exact" />`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("[0x1234567890abcdef](https://example.test/address/0x1234567890abcdef?view=code)")
+    expect(result).toContain("[0x1234...cdef](https://example.test/exact)")
+  })
+
+  it("projects a block ClickToZoom as an exact Markdown image", async () => {
+    const result = await transformMarkdown(
+      `<ClickToZoom alt="Architecture diagram" src="/images/architecture.png" />`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("![Architecture diagram](/images/architecture.png)\n")
+  })
+
+  it("projects an inline ClickToZoom with default alt text", async () => {
+    const result = await transformMarkdown(`Before <ClickToZoom src="/images/detail.png" /> after.`, "/fake/page.mdx")
+
+    expect(result).toBe("Before ![Image](/images/detail.png) after.\n")
+  })
+
+  it("projects ClickToZoom through the AST with a long repeated attribute value", async () => {
+    const repeated = " =".repeat(50_000)
+    const result = await transformMarkdown(
+      `<ClickToZoom data-value="${repeated}" src="/images/detail.png" alt="Detail" />`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe("![Detail](/images/detail.png)\n")
+  })
+
+  it("projects Aside as a Markdown blockquote", async () => {
+    const result = await transformMarkdown(
+      `<Aside type="warning" title="Important">
+Read the warning.
+</Aside>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("> **WARNING: Important**")
+    expect(result).toContain("> Read the warning.")
+  })
+
+  it.each([
+    [
+      "<Aside>Thrown when the caller is not the owner.</Aside>",
+      "> **NOTE**\n>\n> Thrown when the caller is not the owner.",
+    ],
+    [
+      '<Aside type="caution" title="Disclaimer">Use at your own risk.</Aside>',
+      "> **CAUTION: Disclaimer**\n>\n> Use at your own risk.",
+    ],
+    [
+      "<Aside>Call `withdraw` with <b>care</b>, see [the guide](/guide).</Aside>",
+      "> **NOTE**\n>\n> Call `withdraw` with **care**, see [the guide](/guide).",
+    ],
+  ])("projects a one-line Aside %s as a blockquote", async (source, projection) => {
+    const result = await transformMarkdown(`Before.\n\n${source}\n\nAfter.`, "/fake/page.mdx")
+    expect(result).toBe(`Before.\n\n${projection}\n\nAfter.\n`)
+  })
+
+  it("projects a one-line Aside inside a list item without leaking JSX", async () => {
+    const result = await transformMarkdown(
+      `- First step.
+
+  <Aside type="note">Keep the receipt.</Aside>
+- Second step.`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("  > **NOTE**\n  >\n  > Keep the receipt.")
+    expect(result).toContain("- Second step.")
+    expect(result).not.toContain("<Aside")
+  })
+
+  it("leaves a paragraph untouched when an inline Aside is not its only content", async () => {
+    const result = await transformMarkdown("See <Aside>inline</Aside> here.", "/fake/page.mdx")
+    expect(result).toBe("See <Aside>inline</Aside> here.\n")
+  })
+
+  it.each(["<Aside type={kind}>Dynamic type.</Aside>", "<Aside title={label}>Dynamic title.</Aside>"])(
+    "drops a one-line Aside with dynamic attributes like a flow Aside: %s",
+    async (source) => {
+      const result = await transformMarkdown(`Before.\n\n${source}\n\nAfter.`, "/fake/page.mdx")
+      expect(result).toBe("Before.\n\nAfter.\n")
+    }
+  )
+
+  it("projects an Aside with a long repeated attribute value", async () => {
+    const repeated = "a".repeat(100_000)
+    const result = await transformMarkdown(
+      `<Aside type="note" title="${repeated}">
+Body.
+</Aside>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain(`> **NOTE: ${repeated}**`)
+    expect(result).toContain("> Body.")
+  })
+
+  it("projects Callout like Aside", async () => {
+    const result = await transformMarkdown(
+      `<Callout type="caution" title="Check this">
+Read the warning.
+</Callout>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("> **CAUTION: Check this**")
+    expect(result).toContain("> Read the warning.")
+  })
+
+  it.each([
+    ['<Common callout="importPackage022" />', "npm install @chainlink/local@0.2.2"],
+    ['<AceCallout callout="privateBeta" />', "> **NOTE: Private Beta**"],
+    ['<CrecCommon callout="beta" />', "> **NOTE: Beta: permissioned access**"],
+    ['<Vrf2_5Common callout="security" />', "> **TIP: Security Considerations**"],
+    ['<Dta section="dtaNotes" />', "[Talk to an expert](https://chain.link/dta-access)"],
+    ['<TokenizedEquityFeeds section="tokenizedEquityNote" />', "Tokenized equity feeds present unique operational"],
+    ['<ContentCommon section="localTestingBenefits" />', "Testing locally using mock contracts saves you time"],
+  ])("inlines the static MDX selected by %s", async (component, expected) => {
+    const result = await transformMarkdown(`Before.\n\n${component}\n\nAfter.`, "/fake/page.mdx")
+    expect(result).toContain(expected)
+    expect(result.indexOf("Before.")).toBeLessThan(result.indexOf(expected))
+    expect(result.indexOf(expected)).toBeLessThan(result.indexOf("After."))
+    expect(result).not.toMatch(/<(Common|AceCallout|CrecCommon|Vrf2_5Common|Dta|TokenizedEquityFeeds|ContentCommon)\b/)
+  })
+
+  it("drops a selector component whose value has no static MDX target", async () => {
+    const result = await transformMarkdown('Before.\n\n<AceCallout callout="unknown" />\n\nAfter.', "/fake/page.mdx")
+    expect(result).toBe("Before.\n\nAfter.\n")
+  })
+
+  it("projects CCIPSendError data as a table with parameters, selectors, and Markdown descriptions", async () => {
+    const result = await transformMarkdown('<CCIPSendError type="router" version="v1_6_2" />', "/fake/page.mdx")
+    expect(result).toMatch(/^\| Error +\| Parameters +\| Error selector +\| Description +\|$/m)
+    expect(result).toMatch(/^\| `UnsupportedDestinationChain` +\| `uint64 destChainSelector` +\| `0xae236d9c` +\|/m)
+    expect(result).not.toContain("CCIPSendError")
+
+    const markdownDescription = await transformMarkdown(
+      '<CCIPSendError type="router" version="v1_5_0" />',
+      "/fake/page.mdx"
+    )
+    expect(markdownDescription).toContain("are *not* paid in native tokens, but `msg.value` is non-zero.")
+  })
+
+  it("projects CCIPEvent parameters in Solidity syntax and keeps type links", async () => {
+    const result = await transformMarkdown('<CCIPEvent type="onramp-send" version="v1_6_3" />', "/fake/page.mdx")
+    expect(result).toMatch(/^\| Event +\| Parameters +\| Description +\|$/m)
+    expect(result).toContain(
+      "`uint64 indexed destChainSelector`, `uint64 indexed sequenceNumber`, [`Internal.EVM2AnyRampMessage`](/ccip/v1/evm/api-reference/v1.6.3/internal#evm2anyrampmessage) `message`"
+    )
+    expect(result).not.toContain("CCIPEvent")
+  })
+
+  it.each([
+    '<CCIPSendError type="unknown" version="v1_6_2" />',
+    '<CCIPSendError type="router" version="v9_9_9" />',
+    '<CCIPEvent type="onramp-send" version="../v1_6_3" />',
+  ])("drops CCIP reference data that cannot be resolved: %s", async (component) => {
+    const result = await transformMarkdown(`Before.\n\n${component}\n\nAfter.`, "/fake/page.mdx")
+    expect(result).toBe("Before.\n\nAfter.\n")
+  })
+
+  it("projects SchemaFieldsTable from report schema definitions", async () => {
+    const result = await transformMarkdown(`<SchemaFieldsTable schema="v2" />`, "/fake/page.mdx")
+    expect(result).toContain("| Field")
+    expect(result).toContain("`feedId`")
+    expect(result).toContain("`price`")
+    expect(result).toContain("Time-weighted average price")
+  })
+
+  it("projects FeedPage as an official API placeholder without merging flow siblings", async () => {
+    const result = await transformMarkdown(
+      `Intro paragraph.
+
+## Heading
+
+<FeedPage />
+
+### Sub
+
+Tail.`,
+      "/fake/page.mdx"
+    )
+
+    expect(result).toBe(`Intro paragraph.
+
+## Heading
+
+Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data.
+
+### Sub
+
+Tail.
+`)
+    expect(result).not.toContain("<FeedPage")
+    expect(result).not.toContain("reference-data-directory")
+    expect(result).not.toContain("rddUrl")
+  })
+
+  it("projects FeedPage with static props as the same official API placeholder", async () => {
+    const result = await transformMarkdown(`<FeedPage dataFeedType="rates" />`, "/fake/page.mdx")
+
+    expect(result).toContain(
+      "Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data."
+    )
+    expect(result).not.toContain("https://")
+  })
+
+  it("projects every static CodeHighlightBlockMulti language when no target is set", async () => {
+    const result = await transformMarkdown(
+      `<CodeHighlightBlockMulti
+  languages={{
+    ts: { code: "const answer = 42" },
+    go: { code: "package main" },
+  }}
+/>`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("```ts")
+    expect(result).toContain("const answer = 42")
+    expect(result).toContain("```go")
+    expect(result).toContain("package main")
+    expect(result.indexOf("```ts")).toBeLessThan(result.indexOf("```go"))
+
+    const selected = await transformMarkdown(
+      `<CodeHighlightBlockMulti languages={{ ts: { code: "ts only" }, go: { code: "go only" } }} />`,
+      "/fake/page.mdx",
+      { targetLanguage: "go" }
+    )
+    expect(selected).not.toContain("```ts")
+    expect(selected).not.toContain("ts only")
+    expect(selected).toContain("```go")
+    expect(selected).toContain("go only")
+  })
+
+  it("removes residual MDX, HTML, ESM, and nonliteral projections", async () => {
+    const result = await transformMarkdown(
+      `import Unknown from "./Unknown"
+
+Before <Unknown>hidden JSX</Unknown> after.
+<span>hidden HTML</span>
+{dynamicValue}
+<PageTabs pages={dynamicPages} />`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("Before")
+    expect(result).toContain("after.")
+    expect(result).not.toMatch(/<[/A-Za-z]/)
+    expect(result).not.toContain("import Unknown")
+    expect(result).not.toContain("{dynamicValue}")
+    expect(result).not.toContain("dynamicPages")
+  })
+})
+
+describe("product-scoped content", () => {
+  const markdown = `<ProductSection product="platform" shared>
+
+### Chainlink Platform
+
+Platform roles.
+</ProductSection>
+
+<ProductSection product="cre">
+
+### CRE
+
+CRE roles.
+</ProductSection>
+
+<ProductSection product="dataStreams">
+
+### Data Streams
+
+Data Streams roles.
+</ProductSection>
+
+- <ProductOnly products="cre,ace,crec">API keys link</ProductOnly>
+- <ProductOnly products="cre" strict>CRE CLI step</ProductOnly>`
+
+  it("renders the full page and non-strict content when no product context is set", async () => {
+    const result = await transformMarkdown(markdown, "/fake/path.mdx")
+    expect(result).toContain("Platform roles.")
+    expect(result).toContain("CRE roles.")
+    expect(result).toContain("Data Streams roles.")
+    expect(result).toContain("API keys link")
+    expect(result).not.toContain("CRE CLI step")
+  })
+
+  it("renders the shared block and the matching product for CRE", async () => {
+    const result = await transformMarkdown(markdown, "/fake/path.mdx", { productContext: "cre" })
+    expect(result).toContain("Platform roles.")
+    expect(result).toContain("CRE roles.")
+    expect(result).not.toContain("Data Streams roles.")
+    expect(result).toContain("API keys link")
+    expect(result).toContain("CRE CLI step")
+  })
+
+  it("excludes other products and CRE-only content for Data Streams", async () => {
+    const result = await transformMarkdown(markdown, "/fake/path.mdx", { productContext: "dataStreams" })
+    expect(result).toContain("Platform roles.")
+    expect(result).not.toContain("CRE roles.")
+    expect(result).toContain("Data Streams roles.")
+    expect(result).not.toContain("API keys link")
+    expect(result).not.toContain("CRE CLI step")
   })
 })
 
@@ -108,5 +1059,126 @@ describe("getPageLanguage", () => {
 
   it("should return null for common files", () => {
     expect(getPageLanguage("/path/to/file.mdx")).toBeNull()
+  })
+})
+
+describe("solution content projections", () => {
+  it.each([
+    "<ol><li>First item.</li><li>[Second item](https://example.com).</li></ol>",
+    "<ol>\n  <li>First item.</li>\n  <li>[Second item](https://example.com).</li>\n</ol>",
+    '<Aside type="note">\n\n<ol>\n<li>First item.</li>\n<li>[Second item](https://example.com).</li>\n</ol>\n\n</Aside>',
+  ])("preserves ordered HTML lists, including their links", async (source) => {
+    const result = await transformMarkdown(source, "fixture.mdx")
+    expect(result).toContain("1. First item.")
+    expect(result).toContain("2. [Second item](https://example.com).")
+    expect(result).not.toContain("<ol")
+  })
+
+  it("reuses Accordion projection for anchored sections and retains nested cards and code", async () => {
+    const result = await transformMarkdown(
+      `<AnchoredAccordion title="Deploy" number={1} depth={2}>
+
+<GitHubCard title="Repository" href="https://example.com/repo" badge="New">
+Repository description.
+</GitHubCard>
+
+\`\`\`bash
+forge create ExampleVault
+\`\`\`
+
+</AnchoredAccordion>`,
+      "fixture.mdx"
+    )
+    expect(result).toContain("## 1. Deploy")
+    expect(result).toContain("[Repository](https://example.com/repo) New")
+    expect(result).toContain("Repository description.")
+    expect(result).toContain("```bash\nforge create ExampleVault\n```")
+    expect(result).not.toContain("<AnchoredAccordion")
+    expect(result).not.toContain("<GitHubCard")
+  })
+})
+
+describe("unordered list serialization regression", () => {
+  it("keeps callout list items as bullets without standalone encoded semicolon separators", async () => {
+    const result = await transformMarkdown(
+      `<Aside type="caution" title="Important">
+<ul>
+<li>
+The final transaction is submitted by the oracle.
+</li>
+<li>
+Searchers must sign for an **exactly equal** gas price.
+</li>
+</ul>
+</Aside>`,
+      "fixture.mdx"
+    )
+    expect(result).toContain("> - The final transaction is submitted by the oracle.")
+    expect(result).toContain("> - Searchers must sign for an **exactly equal** gas price.")
+    expect(result).not.toContain(";&#x20;")
+    expect(result).not.toMatch(/^\s*>?\s*;\s*$/m)
+  })
+})
+
+describe("inline JSX space serialization", () => {
+  it.each(["ol", "ul"])("keeps a JSX space and source newline inline in %s callout items", async (list) => {
+    const source = `<Aside type="note" title="Gas limit">
+<${list}>
+<li>Foundry scripts default to <strong>400,000</strong> gas. Hardhat scripts estimate gas unless you set{" "}
+  <code>GAS_LIMIT</code> (and fall back to 400,000 if estimation fails).</li>
+<li>Test all scenarios before deployment.</li>
+</${list}>
+</Aside>`
+    const result = await transformMarkdown(source, "fixture.mdx")
+    const first = list === "ol" ? "1." : "-"
+    const second = list === "ol" ? "2." : "-"
+
+    expect(result).toBe(
+      `> **NOTE: Gas limit**\n>\n> ${first} Foundry scripts default to **400,000** gas. Hardhat scripts estimate gas unless you set \`GAS_LIMIT\` (and fall back to 400,000 if estimation fails).\n> ${second} Test all scenarios before deployment.\n`
+    )
+    expect(result).not.toContain("&#x20;")
+  })
+
+  it("keeps the Data Feeds callout's JSX spaces next to inline code", async () => {
+    const source = `<Aside type="caution" title="Important">
+<ul>
+<li>Searchers must not exceed the allowed{" "}
+  <code>SolverGasLimit</code>. Query <code>getSolverGasLimit</code> on the{" "}
+  <code>DappControl</code> contract.</li>
+</ul>
+</Aside>`
+
+    expect(await transformMarkdown(source, "fixture.mdx")).toBe(
+      "> **CAUTION: Important**\n>\n> - Searchers must not exceed the allowed `SolverGasLimit`. Query `getSolverGasLimit` on the `DappControl` contract.\n"
+    )
+  })
+
+  it.each([
+    ['Use <code>A</code>{" "}\n<code>B</code>.', "Use `A` `B`.\n"],
+    ['Read{" "}\n<a href="https://example.com">the guide</a>.', "Read [the guide](https://example.com).\n"],
+    ['Read\n{" "}next.', "Read next.\n"],
+    ['Read{" "}\r\nnext.', "Read next.\n"],
+  ])("keeps an inline separator across a source line break: %s", async (source, expected) => {
+    expect(await transformMarkdown(source, "fixture.mdx")).toBe(expected)
+  })
+
+  it.each([
+    ['Before  \n{" "}after.', "Before\\\n&#x20;after.\n"],
+    ['Before{" "}\\\nafter.', "Before \\\nafter.\n"],
+    ['First{" "}\n\nSecond paragraph.', "First&#x20;\n\nSecond paragraph.\n"],
+    ['Use <code>a{" "}\nb</code>.', "Use `a \nb`.\n"],
+    ['before{"\\n"}{" "}<code>CODE</code>.', "before\n&#x20;`CODE`.\n"],
+    ['before{"\\u00a0"}<code>CODE</code>.', "before\u00a0`CODE`.\n"],
+    ['before{"  "}<code>CODE</code>.', "before  `CODE`.\n"],
+  ])(
+    "preserves explicit breaks, paragraph boundaries, code, and other literal spaces: %s",
+    async (source, expected) => {
+      expect(await transformMarkdown(source, "fixture.mdx")).toBe(expected)
+    }
+  )
+
+  it("leaves JSX-looking text inside inline and fenced code unchanged", async () => {
+    const source = 'Inline `{" "}`.\n\n```jsx\nset{" "}\n  <code>GAS_LIMIT</code>\n```\n\nAfter.'
+    expect(await transformMarkdown(source, "fixture.mdx")).toBe(source + "\n")
   })
 })

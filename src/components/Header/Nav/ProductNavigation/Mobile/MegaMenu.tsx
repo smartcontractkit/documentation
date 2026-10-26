@@ -7,16 +7,16 @@ function MegaMenu() {
   return (
     <div className={styles.wrapper}>
       <div className={styles.resourcesMenuContentMain}>
-        {megaMenuSections.map((section) => (
+        {Object.values(megaMenuSections).map((section) => (
           <div className={styles.resourcesMenuContentRow} key={section.title}>
             <h2 className="label">{section.title}</h2>
             {section.items?.map((item, index) => (
               <MegaMenuItem
                 key={index}
-                image={item.image?.src}
+                image={item.icon?.src}
                 title={item?.title}
                 description={item.description}
-                links={item.links}
+                links={[{ label: item.title, href: item.link }]}
               />
             ))}
           </div>
@@ -24,15 +24,11 @@ function MegaMenu() {
 
         <div className={styles.bottomLinks}>
           <div className="label">
-            <a href="https://dev.chain.link/resources" target="_blank" rel="noopener noreferrer">
-              View all resources
-            </a>
+            <a href="/resources">View all resources</a>
             <img src="/images/tabler_arrow-up.svg" alt="" />
           </div>
           <div className="label">
-            <a href="https://dev.chain.link/products/general" target="_blank" rel="noopener noreferrer">
-              Learn about Chainlink
-            </a>
+            <a href="/getting-started/conceptual-overview">Learn about Chainlink</a>
             <img src="/images/tabler_arrow-up.svg" alt="" />
           </div>
         </div>

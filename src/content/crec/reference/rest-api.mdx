@@ -1,0 +1,185 @@
+---
+section: crec
+title: "REST API Reference"
+date: Last Modified
+metadata:
+  description: "Authentication, base URL, error shapes, and async semantics of the CRE Connect REST API."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+import CrecCommon from "@features/crec/common/CrecCommon.astro"
+
+<CrecCommon callout="beta" />
+
+This page is the narrative companion to the live, generated REST API reference.
+
+- [Interactive reference](/api/crec/docs): browse every endpoint, view request/response schemas, and try requests
+  against your own organisation.
+- [OpenAPI specification](/api/crec/openapi.json)
+- **Go SDK**: prefer the [Go SDK reference](/crec/reference/go-sdk) for production code; the SDK wraps every endpoint described here.
+
+## Base URL
+
+CRE Connect is offered as a managed service. Use the base URL provided to your organisation when you onboarded:
+
+```
+https://cre-connect.api.chain.link/v1
+```
+
+Reach out to the Chainlink team if you don't yet have an environment URL or need a separate sandbox.
+
+## Authentication
+
+Every request requires an organisation API key, sent in the `Authorization` header with the `Apikey` scheme:
+
+```bash
+curl https://cre-connect.api.chain.link/v1/networks \
+  -H "Authorization: Apikey $CREC_API_KEY"
+```
+
+The OpenAPI specification declares this scheme as `ApiKeyAuth`:
+
+```yaml
+securitySchemes:
+  ApiKeyAuth:
+    type: apiKey
+    in: header
+    name: Authorization
+    description: |
+      Organisation API key. Send as `Authorization: Apikey <key>`.
+security:
+  - ApiKeyAuth: []
+```
+
+<Aside type="note" title="SDK auth header">
+  The Go SDK applies this header for you automatically: just pass the key to{" "}
+  <code>crec.NewClient(baseURL, apiKey, ...)</code>. You only need to set the header manually when calling the REST API
+  directly (for example, with <code>curl</code>).
+</Aside>
+
+Treat API keys as secrets: they grant full access to your organisation's channels, watchers, wallets, and operations. Rotate any key that may have been exposed.
+
+## Endpoint groups
+
+| Path prefix                               | Resource                       | Notes                                                  |
+| ----------------------------------------- | ------------------------------ | ------------------------------------------------------ |
+| `/health-check`                           | Service liveness               | Anonymous; no auth required.                           |
+| `/networks`                               | Supported networks             | List runtime-discovered networks.                      |
+| `/wallets`                                | Smart Accounts                 | Create, list, lookup, rename, archive.                 |
+| `/channels`                               | Channels                       | Create, list, lookup, rename, archive.                 |
+| `/channels/{id}/watchers`                 | Watchers within a channel      | Create with service or ABI; archive (async).           |
+| `/channels/{id}/operations`               | Operations within a channel    | Create, execute, finalize, or cancel; track lifecycle. |
+| `/channels/{id}/queries`                  | Chain queries within a channel | Create (async 202), list, lookup.                      |
+| `/channels/{id}/events`                   | Events on a channel            | Real-time poll.                                        |
+| `/channels/{id}/events/search`            | Historical event search        | Filter by type, time, address, etc.                    |
+| `/channels/{id}/events/search/{event_id}` | Single event lookup            | Fetch one event by ID.                                 |
+
+Full request/response schemas live in the [interactive reference](/api/crec/docs).
+
+## Async semantics
+
+A small number of endpoints are asynchronous and return `202 Accepted` rather than the final state:
+
+- **`PATCH /channels/{channel_id}/watchers/{watcher_id}`** with a status transition to `archived` returns `202` and a watcher in the `archiving` state. The watcher transitions to `archived` (or `archive_failed`) once CRE Connect deprovisions it. Poll the watcher resource, or subscribe to `watcher.status` events, to observe the terminal state.
+- **`POST /channels/{channel_id}/operations`** returns the operation in either the `accepted` state (when a `signature` is provided) or the `pending_signature` state (when the `signature` is omitted, creating a draft). Confirmation or failure is reported via `operation.status` events or follow-up GETs. On networks with multiple active finality stages, the same operation can emit `confirmed_latest`, `confirmed_safe`, and `confirmed` as the block matures. See [Submit and Track Operations](/crec/guides/operations/submit-and-track) and [Multi-Event Finality](/crec/concepts/multi-event-finality).
+- **`PATCH /channels/{channel_id}/operations/{operation_id}`** with `{status: "accepted", signature, digest}` finalizes a draft operation from `pending_signature` to `accepted`. With `{status: "cancelled"}`, it cancels a draft. See [Draft Operations](/crec/concepts/drafts).
+- **`POST /channels/{channel_id}/queries`** returns `202 Accepted` with the query in the `accepted` state. The DON executes the query asynchronously; terminal state (`completed` / `failed`) is reported via `query.status` events or follow-up GETs. Queries expire after a TTL if no terminal callback arrives. See [Chain Queries](/crec/concepts/queries).
+
+For a complete state-machine reference for every async resource, see [Lifecycles](/crec/reference/lifecycles).
+
+## Error responses
+
+All non-2xx responses use a uniform `ApplicationError` shape:
+
+```json
+{
+  "type": "NOT_FOUND",
+  "code": "WALLET_NOT_FOUND",
+  "message": "The requested resource was not found."
+}
+```
+
+`type` is one of:
+
+| `type`                   | Typical HTTP status | Meaning                                                                 |
+| ------------------------ | ------------------- | ----------------------------------------------------------------------- |
+| `VALIDATION_ERROR`       | 400                 | Invalid input: schema validation or parameter constraint failed.        |
+| `NOT_FOUND`              | 404                 | The referenced resource does not exist (or is not visible to your org). |
+| `CONFLICT`               | 409                 | A unique constraint or state transition guard was violated.             |
+| `INTERNAL_ERROR`         | 500                 | Server-side error. Safe to retry.                                       |
+| `ORGANIZATION_NOT_FOUND` | 401                 | The authenticated organization is not onboarded in CRE Connect.         |
+
+The `code` field provides a machine-readable error code. For `NOT_FOUND` responses, the code identifies which resource was not found:
+
+| `code`                | Meaning                                  |
+| --------------------- | ---------------------------------------- |
+| `CHANNEL_NOT_FOUND`   | The referenced channel does not exist.   |
+| `WALLET_NOT_FOUND`    | The referenced wallet does not exist.    |
+| `OPERATION_NOT_FOUND` | The referenced operation does not exist. |
+| `WATCHER_NOT_FOUND`   | The referenced watcher does not exist.   |
+| `QUERY_NOT_FOUND`     | The referenced query does not exist.     |
+
+For `CONFLICT` responses, the code identifies the specific conflict:
+
+| `code`                       | Meaning                                                          |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `CHANNEL_ALREADY_EXISTS`     | A channel with the same name already exists in the organization. |
+| `WALLET_ALREADY_EXISTS`      | A wallet with the same name already exists in the organization.  |
+| `WATCHER_ALREADY_EXISTS`     | A watcher with the same name already exists in the channel.      |
+| `IDEMPOTENCY_KEY_MISMATCH`   | An idempotency key was reused with a different request.          |
+| `OPERATION_NOT_FINALIZABLE`  | The operation is not in a finalizable state.                     |
+| `OPERATION_NOT_CANCELLABLE`  | The operation is not in a cancellable state.                     |
+| `OPERATION_DEADLINE_ELAPSED` | The operation deadline has elapsed.                              |
+| `RESOURCE_VERSION_CONFLICT`  | The resource was modified concurrently by another request.       |
+| `WALLET_ALREADY_ARCHIVED`    | The wallet is archived and can no longer accept operations.      |
+| `CHAIN_UNAVAILABLE`          | The chain is unavailable for wallet creation.                    |
+
+The Go SDK maps these codes to sentinel errors (`apierror.ErrChannelAlreadyExists`, etc.) so `errors.Is` works across packages; see [Error Handling](/crec/reference/error-handling#apierror-conflict-sentinels).
+
+`message` is a human-readable explanation that **may change between releases**: never key business logic on its exact text.
+
+### Authentication errors
+
+Calls without a valid `Authorization: Apikey <key>` header return `401 Unauthorized`. The body uses the same `ApplicationError` shape.
+
+### Rate limiting
+
+When rate limits apply, the API returns `429 Too Many Requests`. The Go SDK's polling helpers (`watchers.WaitForActive` / `WaitForArchived`) classify `429` and `5xx` as transient and continue to the next poll tick rather than aborting; for every other endpoint the SDK does not retry: implement your own retry logic in your application code. See [Error Handling](/crec/reference/error-handling) for the full classification.
+
+## Pagination
+
+Listing endpoints (`/wallets`, `/channels`, `/channels/{id}/watchers`, `/channels/{id}/operations`, `/channels/{id}/queries`, `/channels/{id}/events`) return:
+
+```json
+{
+  "data": [...],
+  "has_more": true
+}
+```
+
+When `has_more: true`, paginate using the endpoint-specific cursor parameters (`limit`, `offset`, or a time-based cursor; see the [interactive reference](/api/crec/docs) for each endpoint's exact contract).
+
+## Versioning
+
+The OpenAPI document declares `info.version`. The current spec is **`0.8.0`**. Backwards-incompatible changes are limited to major-version bumps; minor bumps may add new optional fields and endpoints. Pin your dependencies (Go SDK, generated clients) to a known minor.
+
+## Try it
+
+The fastest way to validate authentication is to call `ListNetworks`:
+
+```bash
+curl https://cre-connect.api.chain.link/v1/networks \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  | jq
+```
+
+A successful response returns `{ "data": [...], "has_more": false }`. See [Authentication](/crec/getting-started/authentication) for an end-to-end smoke test using the Go SDK.
+
+## See also
+
+- [Interactive REST reference](/api/crec/docs)
+- [Go SDK reference](/crec/reference/go-sdk)
+- [Error handling](/crec/reference/error-handling)
+- [Lifecycles](/crec/reference/lifecycles)

@@ -45,7 +45,7 @@ interface TooltipProps {
 
   /**
    * URL for the tooltip icon. Defaults to Chainlink's info icon.
-   * @default "https://smartcontract.imgix.net/icons/info.svg?auto=compress%2Cformat"
+   * @default "https://d2f70xi62kby8n.cloudfront.net/icons/info.svg?auto=compress%2Cformat"
    */
   imgURL?: string
 
@@ -138,7 +138,7 @@ interface TooltipProps {
 export const Tooltip = ({
   label,
   tip,
-  imgURL = "https://smartcontract.imgix.net/icons/info.svg?auto=compress%2Cformat",
+  imgURL = "https://d2f70xi62kby8n.cloudfront.net/icons/info.svg?auto=compress%2Cformat",
   style = {},
   labelStyle = {},
   position = "top",

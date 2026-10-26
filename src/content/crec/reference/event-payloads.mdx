@@ -1,0 +1,238 @@
+---
+section: crec
+title: "Event Payloads"
+date: Last Modified
+metadata:
+  description: "Complete reference of every event payload (WatcherEventPayload, OperationStatusPayload, QueryStatusPayload, WatcherStatusPayload, WalletStatusPayload) returned by the Events API."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The Events API returns a discriminated union: every record carries a `type` from the `EventType` enum, a `created_at` timestamp, and one of five `Event_Payload` shapes. This page lists each payload with its exact JSON schema and Go struct (from the generated OpenAPI types).
+
+## Discriminator: `EventType`
+
+```
+operation.status   // OperationStatusPayload
+query.status       // QueryStatusPayload
+watcher.status     // WatcherStatusPayload
+watcher.event      // WatcherEventPayload  ← cryptographically verifiable
+wallet.status      // WalletStatusPayload
+```
+
+The Go SDK exposes typed accessors on `Event_Payload`:
+
+```go
+// returns (OperationStatusPayload, error)
+ev.Payload.AsOperationStatusPayload()
+ev.Payload.AsQueryStatusPayload()
+ev.Payload.AsWatcherStatusPayload()
+ev.Payload.AsWatcherEventPayload()
+ev.Payload.AsWalletStatusPayload()
+```
+
+## `WatcherEventPayload` (`watcher.event`)
+
+The cryptographically verifiable on-chain event payload. Every other payload type is an operational notification produced by the CRE Connect backend.
+
+```go
+type WatcherEventPayload struct {
+    ChainSelector   string  `json:"chain_selector"`
+    EventHash       string  `json:"event_hash"`
+    Timestamp       int64   `json:"timestamp"`
+    VerifiableEvent string  `json:"verifiable_event"` // base64
+    WatcherId       string  `json:"watcher_id"`
+}
+```
+
+| <div style="width: 120px;">Field</div> | Notes                                                                                                                                                                                                             |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `chain_selector`                       | CCIP chain selector for the source chain.                                                                                                                                                                         |
+| `event_hash`                           | Hash of the verifiable event payload: useful as a stable, cross-system identifier.                                                                                                                                |
+| `timestamp`                            | Unix seconds.                                                                                                                                                                                                     |
+| `verifiable_event`                     | Base64-encoded `VerifiableEvent`: verify the parent event with `events.Client.Verify`, then decode with `events.Client.DecodeVerifiableEvent` (canonical model) or `events.Client.Decode` (into your own struct). |
+| `watcher_id`                           | UUID of the watcher that produced this event.                                                                                                                                                                     |
+
+`VerifiableEvent` itself is a `models.VerifiableEvent` carrying the raw EVM log, the Off-Chain Reporting (OCR) signatures, and the workflow context required for verification; see [Event Verification](/crec/concepts/event-verification).
+
+## `OperationStatusPayload` (`operation.status`)
+
+Emitted on every operation transition.
+
+```go
+type OperationStatusPayload struct {
+    Address           string             `json:"address"`
+    ChainSelector     string             `json:"chain_selector"`
+    EventHash         *string            `json:"event_hash,omitempty"`
+    OperationId       openapi_types.UUID `json:"operation_id"`
+    Status            OperationStatus    `json:"status"`
+    StatusReason      string             `json:"status_reason"`
+    Timestamp         int64              `json:"timestamp"`
+    VerifiableEvent   *string            `json:"verifiable_event,omitempty"`
+    WalletOperationId string             `json:"wallet_operation_id"`
+}
+```
+
+| Field                 | Notes                                                                                                                                                           |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `address`             | Smart Account that authored the operation.                                                                                                                      |
+| `chain_selector`      | Target chain.                                                                                                                                                   |
+| `event_hash`          | Present for `confirmed_latest`, `confirmed_safe`, and `confirmed` statuses.                                                                                     |
+| `operation_id`        | UUID assigned by the CRE Connect backend.                                                                                                                       |
+| `status`              | One of `pending_signature`, `accepted`, `sending`, `sent`, `broadcasting`, `confirmed_latest`, `confirmed_safe`, `confirmed`, `cancelled`, `expired`, `failed`. |
+| `status_reason`       | Human-readable explanation (especially for `failed`).                                                                                                           |
+| `verifiable_event`    | Present for `confirmed_latest`, `confirmed_safe`, and `confirmed`; verify with `events.Client.VerifyOperationStatus`.                                           |
+| `wallet_operation_id` | The Smart-Account-side operation ID (your nonce + ABI-encoded operation).                                                                                       |
+
+`operation.status` events at `confirmed_latest`, `confirmed_safe`, and `confirmed` are DON-verified and carry OCR proofs. Each confirmation status has a different chain-finality guarantee; see [Multi-Event Finality](/crec/concepts/multi-event-finality). `pending_signature`, `cancelled`, `expired`, and non-terminal transitions (`accepted`, `sending`, `sent`, `broadcasting`) are operational notifications without OCR proofs. See [Draft Operations](/crec/concepts/drafts).
+
+## `QueryStatusPayload` (`query.status`)
+
+Emitted on every chain query transition.
+
+```go
+type QueryStatusPayload struct {
+    QueryId             openapi_types.UUID `json:"query_id"`
+    Status              QueryStatus        `json:"status"`
+    Target              string             `json:"target"`
+    ChainSelector       string             `json:"chain_selector"`
+    Timestamp           int64              `json:"timestamp"`
+    EventHash           *string            `json:"event_hash,omitempty"`
+    VerifiableResult    *string            `json:"verifiable_result,omitempty"`
+    WorkflowId          *string            `json:"workflow_id,omitempty"`
+    WorkflowExecutionId *string            `json:"workflow_execution_id,omitempty"`
+}
+```
+
+| Field                   | Notes                                                                                       |
+| ----------------------- | ------------------------------------------------------------------------------------------- |
+| `query_id`              | UUID assigned by the CRE Connect backend.                                                   |
+| `status`                | One of `accepted`, `sending`, `sent`, `completed`, `failed`, `expired`.                     |
+| `target`                | The contract address for `evm_call` queries.                                                |
+| `chain_selector`        | Target chain.                                                                               |
+| `timestamp`             | Unix seconds.                                                                               |
+| `event_hash`            | Present on terminal events (`completed`, `failed`); `Keccak256(verifiable_result)`.         |
+| `verifiable_result`     | Present on terminal events; base64-encoded `ChainQueryVerifiableEvent`.                     |
+| `workflow_id`           | CRE chain-query workflow that executed this query.                                          |
+| `workflow_execution_id` | CRE execution ID from the workflow run. Present when the query completed with an OCR proof. |
+
+Terminal `query.status` events (`completed`, `failed`) carry OCR proofs and can be verified with `events.Client.VerifyQueryStatus`. Non-terminal events (`accepted`, `sending`, `sent`) and `expired` events are operational notifications without OCR proofs. See [Chain Queries](/crec/concepts/queries).
+
+## `WatcherStatusPayload` (`watcher.status`)
+
+Emitted on every watcher provisioning / archival transition.
+
+```go
+type WatcherStatusPayload struct {
+    ChainSelector string             `json:"chain_selector"`
+    Service       *string            `json:"service,omitempty"`
+    Status        WatcherEventStatus `json:"status"`
+    StatusReason  string             `json:"status_reason"`
+    Timestamp     int64              `json:"timestamp"`
+    WatcherId     string             `json:"watcher_id"`
+}
+```
+
+`WatcherEventStatus` extends `WatcherStatus` with archival states for filtering:
+
+```
+pending | active | failed | archiving | archive_failed | archived
+```
+
+| <div style="width: 120px;">Field</div> | Notes                                                                                                                            |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `service`                              | Service namespace (e.g. `dta.v2`) when the watcher was created with `Watchers.CreateWithService`. Absent for ABI-based watchers. |
+| `status_reason`                        | Useful when `status == failed` or `archive_failed`.                                                                              |
+
+## `WalletStatusPayload` (`wallet.status`)
+
+Emitted on every wallet (Smart Account) deploy / archival transition.
+
+```go
+type WalletStatusPayload struct {
+    Address       string             `json:"address"`
+    ChainSelector string             `json:"chain_selector"`
+    Status        WalletEventStatus  `json:"status"`
+    StatusReason  string             `json:"status_reason"`
+    Timestamp     int64              `json:"timestamp"`
+    WalletId      openapi_types.UUID `json:"wallet_id"`
+}
+```
+
+`WalletEventStatus`:
+
+```
+pending | deploying | deployed | failed | archived
+```
+
+| Field            | Notes                                             |
+| ---------------- | ------------------------------------------------- |
+| `address`        | Smart-Account address. May be unset on `pending`. |
+| `wallet_id`      | Backend UUID.                                     |
+| `chain_selector` | Target chain for the wallet.                      |
+
+## Common envelope
+
+Every `Event` returned by `/channels/{id}/events` and `/channels/{id}/events/search` carries:
+
+```go
+type Event struct {
+    ChannelId openapi_types.UUID `json:"channel_id"`
+    CreatedAt int64              `json:"created_at"`
+    EventId   openapi_types.UUID `json:"event_id"`
+    Payload   Event_Payload      `json:"payload"`
+    Type      EventType          `json:"type"`
+}
+```
+
+| Field        | Notes                                        |
+| ------------ | -------------------------------------------- |
+| `event_id`   | Stable UUID for deduplication.               |
+| `created_at` | Unix seconds: use as the cursor when paging. |
+| `type`       | Discriminator (see top).                     |
+| `payload`    | One of the four `*Payload` shapes above.     |
+
+## Decoding `watcher.event` further
+
+Once you have a `WatcherEventPayload`, the next step depends on what you want:
+
+```go
+// Step 1: cryptographic verification (returns (bool, error))
+ok, err := client.Events.Verify(&ev)
+if err != nil || !ok { return err }
+
+// Extract the typed payload
+wp, err := ev.Payload.AsWatcherEventPayload()
+if err != nil { return err }
+
+// Step 2a: canonical decoded form
+decoded, err := client.Events.DecodeVerifiableEvent(&wp)
+if err != nil { return err }
+
+// Step 2b: pull out the EVM-specific event and read its decoded params
+evm, err := decoded.ChainEvent.AsEVMEvent()
+if err != nil { return err }
+params := *evm.Params
+fmt.Println(params["from"], params["to"], params["value"])
+
+// Step 2c: extension decoder (e.g. DTA v2): handles steps 2a and 2b
+//          for you and returns a typed struct.
+typed, err := dtav2.DecodeFromEvent(ctx, ev)
+```
+
+<Aside type="caution" title="Don't use Events.Decode to read params">
+  `client.Events.Decode(&ev, &target)` re-marshals the **entire** `apiClient.Event` envelope to JSON and unmarshals into
+  your target: it does not perform ABI decoding of the inner chain event. To read `from / to / value` always go through
+  `AsWatcherEventPayload → DecodeVerifiableEvent → AsEVMEvent → *Params`. Use `Events.Decode` only for shaping the outer
+  envelope, never for log fields.
+</Aside>
+
+See [Decode Event Data](/crec/guides/events/decode-data).
+
+## See also
+
+- [Lifecycles](/crec/reference/lifecycles): what `Status` transitions trigger each `*.status` payload.
+- [Event Verification](/crec/concepts/event-verification): how `verifiable_event` is signed and verified.
+- [Verifiable Events](/crec/concepts/verifiable-events): the `VerifiableEvent` model itself.

@@ -1,0 +1,96 @@
+---
+section: ccip
+date: Last Modified
+title: "Signer key custody and KMS"
+metadata:
+  description: "Custody of the CCV signing key: the Postgres keystore versus cloud KMS, which clouds support a KMS signer today, and how to derive and set the KMS signer address."
+  excerpt: "CCV signer key, key custody, cloud KMS, GCP KMS, AWS KMS, Azure Key Vault, Postgres keystore, keystoreBackend, signer_address, signer address derivation, cloudkms publicKeyViewer"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-27"
+whatsnext:
+  "Deploy your first cell": "/ccip/ccv-starter-kit/evm/deploy-your-first-cell"
+  "Expose the aggregator": "/ccip/ccv-starter-kit/how-to/expose-the-aggregator"
+---
+
+import { Aside } from "@components"
+
+The verifier signs message hashes with one key. You choose where that key lives with `keystoreBackend`:
+
+- `postgres` (the default): the cell generates the key on first boot and keeps it in Postgres.
+- `kms`: the key lives in your cloud KMS, never leaves it, and the cell signs through it.
+
+On a managed cloud, KMS is strongly recommended. The Postgres keystore is supported, but it puts the key in
+your database and its backups.
+
+## KMS support by cloud
+
+- GKE: GCP KMS is supported and recommended.
+- EKS: AWS KMS is supported and recommended.
+- AKS: an Azure Key Vault signer is in progress; use the Postgres keystore for now.
+
+<Aside type="note" title="Key Vault for secrets is different from Key Vault as a signer">
+  On AKS you can already mount secrets from Azure Key Vault through the cluster's CSI driver, and the CCV cell supports
+  that as a secret backend. That is Key Vault holding your `secrets.toml`, not Key Vault holding the signing key. A Key
+  Vault signer (the cell signing through Key Vault without the key leaving it) is the part still in progress. Until it
+  ships, AKS cells use the Postgres keystore.
+</Aside>
+
+## The Postgres keystore
+
+The cell generates the signing key on first boot and stores it in the
+[`bootstrapper` database](/ccip/ccv-starter-kit/prerequisites#postgres-databases). Your Postgres
+backups therefore contain the signing key, so encrypt them and restrict who can read them. Leave
+`signer_address: auto` so the verifier accepts the key it generated. There is nothing to derive before deploy:
+once the cell is running, read the signer address from the verifier log and register it on-chain (the second
+pass in [Deploy your first cell](/ccip/ccv-starter-kit/evm/deploy-your-first-cell)).
+
+## Set the KMS signer address explicitly
+
+With KMS the key exists before the cell does, so you compute its address first and set `signer_address` to it
+rather than `auto`. The verifier then checks on boot that the KMS key matches that address and refuses to start
+if it does not, which catches a wrong key ID before the cell signs anything. With `auto` the verifier signs with
+whatever key the ID points to.
+
+The signing key must be secp256k1: an `EC_SIGN_SECP256K1_SHA256` key on GCP KMS, or an `ECC_SECG_P256K1` signing
+key on AWS KMS. Derive its address in three steps.
+
+1. Fetch the public key. GCP KMS writes it as PEM directly:
+
+   ```bash
+   gcloud kms keys versions get-public-key 1 \
+     --key <key> --keyring <keyring> --location <location> \
+     --public-key-format=pem --output-file public.pem
+   ```
+
+   AWS KMS returns base64-encoded DER, so decode it and convert to PEM:
+
+   ```bash
+   aws kms get-public-key --key-id <key-id-or-arn> \
+     --query PublicKey --output text | base64 --decode > public.der
+   openssl pkey -pubin -inform DER -in public.der -outform PEM -out public.pem
+   ```
+
+2. Derive the address from `public.pem`: take the X and Y coordinates of the uncompressed point (32 bytes each,
+   without the `0x04` prefix byte), hash the 64 bytes with Keccak-256, and keep the last 20. The off-chain kit's
+   [Signer Address](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#signer-address)
+   documentation has a short Python script that does exactly this and prints the resulting address.
+
+3. Set `signer_address` to that address, then complete the on-chain signature config in step 1 of the deploy.
+   KMS needs no second pass.
+
+## KMS permissions
+
+Scope every grant to the one signing key, and give the pod its access through workload identity so nothing
+holds a long-lived credential.
+
+- GKE: the pod needs `roles/cloudkms.signerVerifier` and `roles/cloudkms.viewer` on the key. `signerVerifier`
+  alone is not enough; without `viewer` the verifier crash-loops on `cloudkms.cryptoKeyVersions.get`. The operator
+  who derives the address needs only `roles/cloudkms.publicKeyViewer` (`viewer` does not include public-key
+  reads), and should never hold `signerVerifier`. See the Cloud KMS
+  [permissions and roles reference](https://cloud.google.com/kms/docs/reference/permissions-and-roles) and
+  [Grant a role on a resource](https://cloud.google.com/kms/docs/iam#granting_roles_on_a_resource).
+- EKS: the pod needs `kms:Sign`, `kms:GetPublicKey`, and `kms:DescribeKey`, restricted to the key ARN. Do not
+  grant `kms:ListKeys` or a wildcard resource. The operator who derives the address needs only
+  `kms:GetPublicKey`. See the AWS KMS
+  [permissions reference](https://docs.aws.amazon.com/kms/latest/developerguide/kms-api-permissions-reference.html)
+  and [key policies](https://docs.aws.amazon.com/kms/latest/developerguide/key-policies.html).

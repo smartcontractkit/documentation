@@ -20,6 +20,11 @@ type FeedRequest = {
   network: string
   shutdownDate?: string
   fallbackCategory?: string
+  /**
+   * When true, use fallbackCategory even if it is not a "new"/"custom" category.
+   * Used for feed-ID-addressed networks (Aptos/Stellar) that are not yet in Supabase.
+   */
+  allowAnyFallback?: boolean
 }
 
 export type FeedTierResult = { final: string | null }
@@ -84,6 +89,14 @@ export const FEED_CATEGORY_CONFIG = {
     title: "Deprecating - These feeds are scheduled for deprecation.",
     link: "/data-feeds/selecting-data-feeds#-deprecating",
   },
+  unrated: {
+    key: "unrated",
+    name: "Unrated",
+    icon: "⚪",
+    title:
+      "Unrated - These feeds have not yet been evaluated for market pricing risk. Treat them as unevaluated and use them at your own risk.",
+    link: "/data-feeds/selecting-data-feeds#-unrated",
+  },
 } as const
 
 export type CategoryKey = keyof typeof FEED_CATEGORY_CONFIG
@@ -96,6 +109,7 @@ const TIER_ANCHOR_KEY: Record<CategoryKey, string> = {
   new: "new-token",
   custom: "custom",
   deprecating: "deprecating",
+  unrated: "unrated",
 }
 
 const RISK_DOC_BASE_PATH: Record<MarketPricingRiskProduct, string> = {
@@ -108,6 +122,10 @@ export function getRiskCategoryLink(key: CategoryKey, product: MarketPricingRisk
 
   if (key === "deprecating") {
     return `${base}#-deprecating`
+  }
+
+  if (key === "unrated") {
+    return `${base}#-unrated`
   }
 
   return `${base}${tierAnchor(TIER_ANCHOR_KEY[key], getMarketPricingRiskTerms(product))}`
@@ -145,13 +163,16 @@ const FALLBACK_ONLY_CATEGORIES = new Set(["new", "custom"])
 const resolveRiskStatus = (
   dbTier: string | null | undefined,
   shutdownDate?: string,
-  fallbackCategory?: string
+  fallbackCategory?: string,
+  allowAnyFallback = false
 ): string | null => {
   // Deprecating feeds always show the deprecating icon, even when a DB risk tier exists.
   if (shutdownDate) return "deprecating"
   if (dbTier != null) return dbTier
-  if (fallbackCategory && FALLBACK_ONLY_CATEGORIES.has(fallbackCategory.toLowerCase()))
-    return fallbackCategory.toLowerCase()
+  if (fallbackCategory) {
+    const normalized = fallbackCategory.toLowerCase()
+    if (allowAnyFallback || FALLBACK_ONLY_CATEGORIES.has(normalized)) return normalized
+  }
   return null
 }
 
@@ -159,9 +180,10 @@ const resolveRiskStatus = (
 export function resolveFeedCategory(
   dbTier: string | null | undefined,
   shutdownDate?: string,
-  fallbackCategory?: string
+  fallbackCategory?: string,
+  allowAnyFallback = false
 ): string | null {
-  return resolveRiskStatus(dbTier, shutdownDate, fallbackCategory)
+  return resolveRiskStatus(dbTier, shutdownDate, fallbackCategory, allowAnyFallback)
 }
 
 const defaultCategoryList = () => Object.values(FEED_CATEGORY_CONFIG).map(({ key, name }) => ({ key, name }))
@@ -211,8 +233,10 @@ export async function getFeedRiskTiersBatch(feedRequests: FeedRequest[]): Promis
   const keyFor = (addr: string, net: string) => `${addr}-${net}`
 
   if (!supabase) {
-    feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory }) =>
-      out.set(keyFor(contractAddress, network), { final: resolveRiskStatus(null, shutdownDate, fallbackCategory) })
+    feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory, allowAnyFallback }) =>
+      out.set(keyFor(contractAddress, network), {
+        final: resolveRiskStatus(null, shutdownDate, fallbackCategory, allowAnyFallback),
+      })
     )
     return out
   }
@@ -229,8 +253,10 @@ export async function getFeedRiskTiersBatch(feedRequests: FeedRequest[]): Promis
       .limit(1000)
 
     if (error) {
-      feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory }) =>
-        out.set(keyFor(contractAddress, network), { final: resolveRiskStatus(null, shutdownDate, fallbackCategory) })
+      feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory, allowAnyFallback }) =>
+        out.set(keyFor(contractAddress, network), {
+          final: resolveRiskStatus(null, shutdownDate, fallbackCategory, allowAnyFallback),
+        })
       )
       return out
     }
@@ -240,15 +266,19 @@ export async function getFeedRiskTiersBatch(feedRequests: FeedRequest[]): Promis
       lookup.set(keyFor(row.proxy_address, row.network), row.risk_status ?? null)
     )
 
-    feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory }) => {
+    feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory, allowAnyFallback }) => {
       const key = keyFor(contractAddress, network)
-      out.set(key, { final: resolveRiskStatus(lookup.get(key), shutdownDate, fallbackCategory) })
+      out.set(key, {
+        final: resolveRiskStatus(lookup.get(key), shutdownDate, fallbackCategory, allowAnyFallback),
+      })
     })
 
     return out
   } catch (error) {
-    feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory }) =>
-      out.set(keyFor(contractAddress, network), { final: resolveRiskStatus(null, shutdownDate, fallbackCategory) })
+    feedRequests.forEach(({ contractAddress, network, shutdownDate, fallbackCategory, allowAnyFallback }) =>
+      out.set(keyFor(contractAddress, network), {
+        final: resolveRiskStatus(null, shutdownDate, fallbackCategory, allowAnyFallback),
+      })
     )
     return out
   }

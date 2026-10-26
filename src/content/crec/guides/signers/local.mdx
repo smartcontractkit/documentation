@@ -1,0 +1,111 @@
+---
+section: crec
+title: "Local ECDSA Signer"
+date: Last Modified
+metadata:
+  description: "Use the in-memory ECDSA signer (crec-sdk/transact/signer/local) for development, tests, and any flow where you control the secp256k1 private key directly."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The local signer (`github.com/smartcontractkit/crec-sdk/transact/signer/local`) signs CRE Connect operations with a secp256k1 private key held in process memory. It is the simplest signer and the right choice for local development, integration tests, and CI.
+
+## When to use
+
+- **Tests / fixtures**: deterministic ECDSA signatures.
+- **CLI tools** that read a key from disk or env var.
+- **Single-node services** where the operator owns the key.
+
+For production, prefer a managed signer ([AWS KMS](/crec/guides/signers/aws-kms), [HashiCorp Vault](/crec/guides/signers/hashicorp-vault), [Fireblocks](/crec/guides/signers/fireblocks), [Privy](/crec/guides/signers/privy)) so the key never sits in process memory.
+
+## Construct from a private key
+
+```go
+import (
+    "github.com/ethereum/go-ethereum/crypto"
+    "github.com/smartcontractkit/crec-sdk/transact/signer/local"
+)
+
+privateKey, err := crypto.HexToECDSA(os.Getenv("ECDSA_PRIVATE_KEY"))
+if err != nil {
+    return err
+}
+
+s := local.NewSigner(privateKey)
+```
+
+`NewSigner` takes a `*ecdsa.PrivateKey` (from `crypto/ecdsa`). The constructor never returns an error: validation happens at signing time.
+
+### Generate a fresh key
+
+```go
+privateKey, err := crypto.GenerateKey()
+if err != nil { return err }
+
+s := local.NewSigner(privateKey)
+addr := crypto.PubkeyToAddress(privateKey.PublicKey)
+fmt.Println("signer address:", addr.Hex()) // add this to AllowedEcdsaSigners
+```
+
+### Load from a hex string
+
+The hex string is the 32-byte secp256k1 private key (no `0x` prefix):
+
+```go
+// Hardhat/Anvil test key #0: never use in production
+privateKey, err := crypto.HexToECDSA("ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80")
+```
+
+## Sign an operation
+
+```go
+opHash, sig, err := client.Transact.SignOperation(ctx, op, s, chainSelector)
+```
+
+`local.Signer` implements `signer.Signer.Sign(ctx, hash) ([]byte, error)`:
+
+1. Calls `crypto.Sign(hash, privateKey)` (go-ethereum's secp256k1 sign).
+2. If the recovery byte is `0` or `1`, adds `27` to make it Ethereum-canonical.
+3. Returns the 65-byte `(r, s, v)` signature.
+
+The result is suitable for `ecrecover` on chain: exactly what the Smart Account verifies.
+
+## Provision the wallet's signer set
+
+The signer's address is the keccak256-derived address of its public key:
+
+```go
+addr := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
+```
+
+When you create the wallet, include this address in `AllowedEcdsaSigners`:
+
+```go
+ecdsa := []string{addr}
+w, err := client.Wallets.Create(ctx, wallets.CreateInput{
+    Name:                "dev",
+    ChainSelector:       "16015286601757825753",
+    WalletOwnerAddress:  ownerEOA.Hex(),
+    WalletType:          apiClient.Ecdsa,
+    AllowedEcdsaSigners: &ecdsa,
+    StatusChannelId:     &statusChannelID, // optional; receives wallet.status events
+})
+```
+
+## Security checklist
+
+<Aside type="caution" title="Don't ship local in production">
+  The local signer keeps the private key unencrypted in process memory. Anyone with debugger access, a memory dump, or a
+  coredump can extract it. Use it for development only.
+</Aside>
+
+- Inject the key via env var; never check it into source control.
+- Bind the key to a wallet whose blast radius is bounded (test funds, low-value testnet positions).
+- Rotate the key by archiving the wallet and provisioning a new one with the new signer; see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
+
+## Next steps
+
+- [AWS KMS Signer](/crec/guides/signers/aws-kms): production-grade equivalent.
+- [Build and Sign Operations](/crec/guides/operations/build-and-sign): feed the signer into the operation flow.

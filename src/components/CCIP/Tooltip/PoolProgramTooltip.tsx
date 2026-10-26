@@ -16,7 +16,7 @@ export const PoolProgramTooltip: React.FC = () => (
           </li>
         </ul>
         For hands-on tutorial, see{" "}
-        <a href="/ccip/tutorials/svm/cross-chain-tokens" style={{ color: "var(--blue-500)" }}>
+        <a href="/ccip/tutorials/svm/cross-chain-token" style={{ color: "var(--blue-500)" }}>
           Cross-Chain Tokens on Solana
         </a>
         .

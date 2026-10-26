@@ -4,8 +4,8 @@ title: "Cross-Chain Identity Contracts"
 date: Last Modified
 metadata:
   description: "Reference for the Chainlink ACE Cross-Chain Identity smart contracts: IIdentityRegistry, ICredentialRegistry, ICredentialRequirements, IIdentityValidator, ICredentialDataValidator, and ITrustedIssuerRegistry."
-  datePublished: "2026-04-20"
-  lastModified: "2026-04-20"
+  datePublished: "2026-04-15"
+  lastModified: "2026-07-17"
 ---
 
 import { Aside } from "@components"
@@ -32,6 +32,16 @@ The Cross-Chain Identity contracts manage identity registries and credential lif
 | [ICredentialDataValidator](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/ICredentialDataValidator.sol) | Optional interface for inspecting the contents of a credential's `credentialData` field. Enables granular, data-level checks beyond simple attestation (e.g., verifying a specific claim within the credential payload). |
 | [ITrustedIssuerRegistry](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/ITrustedIssuerRegistry.sol)     | Manages the list of trusted credential issuers — addresses authorized to register and manage credentials in a credential registry.                                                                                       |
 
+## Data validators
+
+Data validators inspect the contents of a credential's `credentialData` field, enabling checks beyond simple attestation (for example, a jurisdiction allow/deny list). They are attached to a [Credential Source](/ace/concepts/cross-chain-identity#credential-sources) and invoked by the identity validator policies after the credential's existence is confirmed. For how to configure them through the ACE Platform, see [Managing Data Validators](/ace/guides/policy-manager/manage-data-validators).
+
+| <div style={{ width: "175px" }}>Contract</div>                                                                                                                             | Description                                                                                                                                                                                                                                                                                    |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [AllowDenyListDataValidator](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/data-validators/AllowDenyListDataValidator.sol) | Pre-built `ICredentialDataValidator` that validates a `bytes32[]` credential payload against an allowlist and denylist, with optional restriction by credential type. Used for jurisdiction control (ISO 3166-1 alpha-2 country codes). Configuration is versioned for optimistic concurrency. |
+| [DataValidatorFactory](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/data-validators/DataValidatorFactory.sol)             | Deploys deterministic data validator instances (minimal-proxy clones or ERC-1967 proxies) from an implementation, with `create` and idempotent `getOrCreate` variants. Verifies the implementation supports the required interfaces via ERC-165.                                               |
+| [IInitializableDataValidator](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/cross-chain-identity/src/interfaces/IInitializableDataValidator.sol)    | Minimal initializer surface (`initialize(initialOwner, configData)`) implemented by data validators so the factory can deploy and configure them in one step.                                                                                                                                  |
+
 ## Repository documentation
 
 The [cross-chain-identity docs](https://github.com/smartcontractkit/chainlink-ace/tree/main/packages/cross-chain-identity/docs) folder contains detailed guides:
@@ -50,4 +60,6 @@ The [cross-chain-identity docs](https://github.com/smartcontractkit/chainlink-ac
 ## Related pages
 
 - [Cross-Chain Identity](/ace/concepts/cross-chain-identity) — Conceptual overview of CCIDs, registries, and credential sources
+- [Managing Registries](/ace/guides/identity-manager/manage-registries) — Create and manage identity and credential registries via the ACE Platform
+- [Managing Credentials](/ace/guides/identity-manager/manage-credentials) — Issue, renew, and revoke credentials via the ACE Platform
 - [Credential Registry Identity Validator Policy](/ace/reference/policy-library/credential-registry-identity-validator-policy) — The policy that checks credentials at transaction time

@@ -1,0 +1,83 @@
+---
+section: cre
+date: Last Modified
+title: "Managing Authentication"
+metadata:
+  description: "Manage your CRE CLI sessions: check if you're logged in, handle expired sessions, and securely log out when needed."
+  datePublished: "2025-11-04"
+  lastModified: "2026-05-22"
+---
+
+import { Aside } from "@components"
+
+This guide covers how to manage your CLI authentication, including browser-based login, API key authentication, checking your status, handling session expiration, and logging out.
+
+## Logging in
+
+To authenticate your CLI with your Chainlink Platform account, use the `cre login` command. This opens a browser window where you'll enter your credentials and complete two-factor authentication.
+
+For detailed login instructions, see the [Logging in with the CLI](/cre/guides/cli/cli-login) guide.
+
+Browser login stores **`~/.cre/cre.yaml`** (credentials) and **`~/.cre/context.yaml`** (cached **tenant context**: registry manifest from the platform, including vault gateway URL and related settings). **`cre logout`** removes both. Do not commit **`~/.cre/cre.yaml`** to version control. For a full description and a sample `context.yaml` shape, see [Tenant context cache](/cre/reference/cli/authentication#tenant-context-cache).
+
+## API key authentication
+
+{/* prettier-ignore */}
+<Aside type="note" title="Deploy access required">
+  API key authentication requires your account to have deploy access approval. Run `cre account access` to request access—this helps us provide better support as you build with CRE.
+</Aside>
+
+For CI/CD pipelines or headless environments where a browser is not available, you can authenticate using the `CRE_API_KEY` environment variable. When set, the CLI uses the API key automatically — no `cre login` required.
+
+```bash
+export CRE_API_KEY="your-api-key"
+cre whoami
+```
+
+API keys are created in the **API Keys** tab of the **Organization** page in the <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">Chainlink Platform</a>. When creating the key, select the CRE permissions the key needs, such as deploying workflow artifacts. For the exact permissions required for CLI deployments, see [API Key Authentication](/cre/reference/cli/authentication#api-key-authentication) and [API Keys](/chainlink-platform/api-keys?parent=cre).
+
+## Session expiration
+
+Your CLI session remains authenticated until you explicitly log out or until your session expires. When your session expires, you'll need to log in again.
+
+If you attempt to run a command with an expired session, you'll see an error:
+
+```bash
+Error: failed to attach credentials: failed to load credentials: you are not logged in, try running cre login
+```
+
+To resolve this, run `cre login` again to re-authenticate.
+
+## Checking authentication status
+
+To verify that you're logged in and view your account details, use the `cre whoami` command:
+
+```bash
+cre whoami
+```
+
+This command displays your account information:
+
+```bash
+Account details retrieved:
+
+Email:           email@domain.com
+Organization ID: org_mEMRknbVURM9DWsB
+Deploy Access:   Not enabled (run 'cre account access' to request)
+```
+
+If you're not logged in, you'll receive an error message prompting you to run `cre login`.
+
+To check your deploy access status or submit a request, see [Requesting Deploy Access](/cre/guides/operations/deploy-access).
+
+## Logging out
+
+To explicitly end your CLI session and remove your stored credentials **and cached tenant context** (`context.yaml`), use the `cre logout` command:
+
+```bash
+cre logout
+```
+
+After logging out, you'll need to run `cre login` again to authenticate future CLI commands.
+
+For the full list of CLI commands, see [CLI Reference](/cre/reference/cli).

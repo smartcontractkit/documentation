@@ -72,6 +72,11 @@ During closing auction periods and daily lunch breaks on APAC exchanges, `market
 
 Used by [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide) streams with extended and overnight sessions.
 
+<Aside type="caution" title="Deprecated as a production input">
+  On 24/5 U.S. Equity Streams, `lastTradedPrice` is deprecated as a production input. See the [24/5 U.S. Equities User
+  Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) for the effective date.
+</Aside>
+
 | Value | Status            | Hours (ET)                            | Description                                                                           |
 | ----- | ----------------- | ------------------------------------- | ------------------------------------------------------------------------------------- |
 | `0`   | **Unknown**       | N/A                                   | Market status cannot be determined                                                    |
@@ -81,7 +86,7 @@ Used by [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide
 | `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                              |
 | `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; ~8:00pm Fri–8:00pm Sun ET) |
 
-Implement appropriate safeguards based on market status — such as pausing trading, adjusting risk parameters, or adding staleness checks during non-regular or closed periods. See [Best Practices](/data-streams/concepts/best-practices#market-hours) for guidance.
+Implement appropriate safeguards based on market status — such as pausing trading, adjusting risk parameters, or adding staleness checks during non-regular or closed periods. See [Market Hours](/data-streams/market-hours) for guidance.
 
 ### Notes
 
@@ -90,6 +95,17 @@ Implement appropriate safeguards based on market status — such as pausing trad
 - `lastSeenTimestampNs` helps applications detect stale data for the mid price, especially important during market transitions and holidays.
 - **IMPORTANT**: The `lastSeenTimestampNs` field reflects the timestamp of the last update for the `mid` price only. Do not assume this timestamp applies to `bid`, `ask`, `bidVolume`, `askVolume`, or `lastTradedPrice`. Different fields may have been updated at different times.
 - **Do not use `lastSeenTimestampNs` (or any other timestamp field) to determine which stream to select or to infer whether the market is open.** Timestamps indicate when data was last recorded, not whether the market is currently active. Use the `marketStatus` field as the authoritative signal for market availability and stream selection.
+
+#### `lastSeenTimestampNs` is not guaranteed to be monotonic
+
+Do not assume `lastSeenTimestampNs` strictly increases from one report to the next. Use `marketStatus` to determine whether a market is open.
+
+`lastSeenTimestampNs` is not guaranteed to be monotonic (that is, it does not always increase from one report to the next); the value can vary between reports. Reasons for this include:
+
+- A provider dropping in or out between reports can shift the median.
+- The fewer providers contribute to a report, the more a single provider's inclusion or exclusion can move the result. For example, if a provider is excluded from one report (due to a timeout) and included in the next, the median can shift to an earlier value than the previous report.
+
+Under normal circumstances, expect this value to advance with each report. A single occurrence of non-monotonic movement is not by itself cause for concern: treat it as a potential issue only if the behavior persists across multiple consecutive reports.
 
 #### Bid/Ask Volume
 

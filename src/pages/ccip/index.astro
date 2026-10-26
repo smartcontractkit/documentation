@@ -1,16 +1,19 @@
 ---
-import DocsLayout from "~/layouts/DocsLayout.astro"
 import { getEntry, render } from "astro:content"
+import DocsV3Layout from "~/layouts/DocsV3Layout/DocsV3Layout.astro"
+import { LATEST_CCIP_CONTENT_DIR } from "~/config/ccipVersions.js"
 
-const entry = await getEntry("ccip", "index")
+// The latest CCIP landing lives at src/content/ccip/<dir>/index.mdx; the glob loader strips the
+// trailing /index, so the entry id is exactly the content dir (e.g. "v2").
+const entry = await getEntry("ccip", LATEST_CCIP_CONTENT_DIR)
 if (!entry) {
-  throw new Error("No entry found for ccip index!")
+  throw new Error(`No entry found for ccip ${LATEST_CCIP_CONTENT_DIR} (landing index)!`)
 }
 
 // use the global `render()` function
 const { Content, headings } = await render(entry)
 ---
 
-<DocsLayout frontmatter={entry.data} {headings}>
+<DocsV3Layout frontmatter={entry.data} {headings}>
   <Content />
-</DocsLayout>
+</DocsV3Layout>

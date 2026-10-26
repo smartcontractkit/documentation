@@ -5,7 +5,7 @@ title: "Simulating Workflows"
 metadata:
   description: "Simulate your workflows: learn to simulate CRE workflows with real API and testnet calls before deploying them."
   datePublished: "2025-11-04"
-  lastModified: "2026-06-11"
+  lastModified: "2026-10-19"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -18,7 +18,7 @@ Use workflow simulation to:
 
 - **Test workflow logic during development**: Validate that your code behaves correctly before deploying.
 - **Debug errors in a controlled environment**: Catch and fix issues locally without deploying to a live network.
-- **Test different trigger types**: Manually select and test how your workflow responds to [cron](/cre/guides/workflow/using-triggers/cron-trigger), [HTTP](/cre/guides/workflow/using-triggers/http-trigger/overview), or [EVM log](/cre/guides/workflow/using-triggers/evm-log-trigger) triggers.
+- **Test different trigger types**: Manually select and test how your workflow responds to [cron](/cre/guides/workflow/using-triggers/cron-trigger), [HTTP](/cre/guides/workflow/using-triggers/http-trigger/overview), [EVM log](/cre/guides/workflow/using-triggers/evm-log-trigger), or [Solana log](/cre/guides/workflow/using-triggers/solana-log-trigger) triggers.
 - **Verify onchain interactions**: Test [read](/cre/guides/workflow/using-evm-client/onchain-read) and [write](/cre/guides/workflow/using-evm-client/onchain-write/overview) operations against real testnets.
 
 ## Basic usage
@@ -40,7 +40,7 @@ cre workflow simulate my-workflow --target staging-settings
 ### What happens during simulation
 
 1. **Compilation**: The CLI compiles your workflow to WebAssembly (WASM).
-1. **Trigger selection**: You're prompted to select which trigger to test (cron, HTTP, or EVM log).
+1. **Trigger selection**: You're prompted to select which trigger to test (cron, HTTP, EVM log, or Solana log).
 1. **Execution**: The workflow runs locally, making real calls to configured RPCs and HTTP endpoints.
 1. **Output**: The simulator displays logs from your workflow and the final execution result.
 
@@ -48,7 +48,7 @@ cre workflow simulate my-workflow --target staging-settings
 
 Before running a simulation:
 
-- **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/cre/account/creating-account) and [Log in with the CLI](/cre/account/cli-login) for instructions.
+- **CRE account & authentication**: You must have a CRE account and be logged in with the CLI. See [Create your account](/chainlink-platform/creating-an-account?parent=cre) and [Log in with the CLI](/cre/guides/cli/cli-login) for instructions.
 - **CRE CLI installed**: You must have the CRE CLI installed on your machine. See [CLI Installation](/cre/getting-started/cli-installation) for instructions.
 - **Project configuration**: You must run the command from your project root directory.
 - **Valid `workflow.yaml`**: Your workflow directory must contain a `workflow.yaml` file with correct paths to your workflow code, config, and secrets (optional).
@@ -140,6 +140,14 @@ cre workflow simulate my-workflow --broadcast --target staging-settings
   When using `--broadcast`, your wallet (specified by `CRE_ETH_PRIVATE_KEY` in `.env`) must be funded with the native
   token of the chain you're writing to (e.g., Sepolia ETH for Ethereum Sepolia testnet). Visit
   <a href="https://faucets.chain.link" target="blank">faucets.chain.link</a> to get your testnet tokens.
+</Aside>
+
+{/* prettier-ignore */}
+<Aside type="caution" title="Solana simulation always requires CRE_ETH_PRIVATE_KEY">
+  For Solana workflows, `CRE_ETH_PRIVATE_KEY` is required even for dry-run simulation (without `--broadcast`). The CLI
+  uses it for workflow owner derivation regardless of chain family. Set any valid EVM private key in your `.env` — it
+  is not used for the Solana transaction itself. You also need `CRE_SOLANA_PRIVATE_KEY` for the transmitter account; see
+  [Writing to Solana](/cre/guides/workflow/using-solana-client/onchain-write-ts) for setup details.
 </Aside>
 
 **Use case:** Use `--broadcast` when you want to test the complete end-to-end flow, including actual onchain state changes, on a testnet.
@@ -243,6 +251,45 @@ cre workflow simulate my-workflow \
   <br />
   These are completely independent: one selects your workflow's
   handler to execute, the other selects which event data from the blockchain to test with.
+</Aside>
+
+### Solana log trigger
+
+[Solana log triggers](/cre/guides/workflow/using-triggers/solana-log-trigger) require a transaction signature and event index to fetch a specific event from Devnet or Mainnet. Unlike EVM log triggers, there is no listen mode for Solana — you always provide a signature for a transaction that already emitted the event.
+
+**Interactive mode:**
+
+When you select a Solana log trigger, the simulator prompts you for:
+
+1. **Transaction signature** (base58, e.g., `c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn`)
+1. **Event index** (0-based index among the program's events in that transaction, e.g., `0`)
+
+The simulator fetches the transaction from the configured RPC, parses its events, and passes the selected one to your workflow.
+
+**Non-interactive mode:**
+
+Use the `--solana-tx-sig` and `--solana-event-index` flags:
+
+```bash
+cre workflow simulate my-workflow \
+  --non-interactive \
+  --trigger-index 0 \
+  --solana-tx-sig c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn \
+  --solana-event-index 0 \
+  --target staging-settings
+```
+
+<Aside type="note" title="Where to get a transaction signature">
+  You need a Devnet (or Mainnet) transaction that already emitted the event you want to test with. If you are following
+  the [Solana Log Trigger guide](/cre/guides/workflow/using-triggers/solana-log-trigger), broadcast a transaction with
+  the [Writing to Solana guide](/cre/guides/workflow/using-solana-client/onchain-write) first (`cre workflow simulate
+  ... --broadcast`), then reuse its `txSignature`.
+</Aside>
+
+<Aside type="caution" title="CRE_SOLANA_PRIVATE_KEY is still required">
+  Solana simulation requires a funded `CRE_SOLANA_PRIVATE_KEY` for every run, including a log-trigger-only dry run that
+  never submits a transaction. See [Writing to Solana: Step
+  4](/cre/guides/workflow/using-solana-client/onchain-write#step-4-run-the-simulation) for how to generate and fund one.
 </Aside>
 
 ## Additional flags

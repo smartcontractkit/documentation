@@ -1,0 +1,239 @@
+---
+import BaseLayout from "~/layouts/BaseLayout.astro"
+import * as CONFIG from "../config"
+import { Typography } from "@chainlink/blocks"
+import { ChangelogFilters } from "~/components/ChangelogFilters/ChangelogFilters.tsx"
+import { getSecret } from "astro:env/server"
+import { searchClient, SearchClient } from "@algolia/client-search"
+import { ChangelogItem } from "~/components/ChangelogSnippet/types"
+import ChangelogCard from "~/components/ChangelogSnippet/ChangelogCard.astro"
+import { getUniqueNetworks, getUniqueTopics, getUniqueTypes } from "~/utils/changelogFilters"
+const formattedContentTitle = `${CONFIG.PAGE.titleFallback} | ${CONFIG.SITE.title}`
+
+const appId = getSecret("ALGOLIA_APP_ID")
+const apiKey = getSecret("PUBLIC_ALGOLIA_SEARCH_PUBLIC_API_KEY")
+
+let client: SearchClient
+let logs: ChangelogItem[] | undefined = undefined
+
+if (appId && apiKey) {
+  client = searchClient(appId, apiKey)
+
+  const firstReq = await client.search({
+    requests: [
+      {
+        indexName: "Changelog",
+        page: 0,
+        hitsPerPage: 1000,
+      },
+    ],
+  })
+
+  const firstResult = firstReq.results[0]
+  let allHits = "hits" in firstResult ? (firstResult.hits as ChangelogItem[]) : []
+  const nbPages = "nbPages" in firstResult ? firstResult.nbPages : 1
+
+  if (nbPages && nbPages > 1) {
+    const remainingRequests = Array.from({ length: nbPages - 1 }, (_, i) => ({
+      indexName: "Changelog",
+      page: i + 1,
+      hitsPerPage: 1000,
+    }))
+
+    const remainingResults = await client.search({ requests: remainingRequests })
+
+    remainingResults.results.forEach((result) => {
+      if ("hits" in result) {
+        allHits = [...allHits, ...(result.hits as ChangelogItem[])]
+      }
+    })
+  }
+
+  logs = allHits
+}
+
+// Extract unique filter values
+const products = logs ? getUniqueTopics(logs) : []
+const networks = logs ? getUniqueNetworks(logs) : []
+const types = logs ? getUniqueTypes(logs) : []
+---
+
+<BaseLayout title={formattedContentTitle}>
+  <main class="wrapper">
+    <header class="header">
+      <Typography className="tag">Changelog</Typography>
+      <Typography variant="h1" className="title">Never miss an update</Typography>
+    </header>
+
+    <section class="changelog-list">
+      {
+        logs?.map((log, index) => (
+          <div class="changelog-item" data-index={index} style={index >= 25 ? "display: none;" : ""}>
+            <ChangelogCard showNetworksAndTopic showBorder={false} item={log} />
+          </div>
+        ))
+      }
+    </section>
+
+    <section class="empty-state" style="display: none;">
+      <Typography variant="h3" className="empty-state-title">No updates found</Typography>
+      <Typography variant="body-l" color="muted" className="empty-state-text">
+        We couldn't find anything matching your filters.
+      </Typography>
+      <img src="/images/not-found.svg" alt="No updates found" class="empty-state-image" />
+    </section>
+
+    {
+      logs && logs.length > 25 && (
+        <div class="load-more-section">
+          <button id="load-more-btn" class="load-more-button">
+            Load more
+          </button>
+          <p class="count-text">
+            Showing <span id="visible-count">25</span> of <span id="total-count">{logs.length}</span> updates
+          </p>
+        </div>
+      )
+    }
+
+    <ChangelogFilters client:load products={products} networks={networks} types={types} items={logs || []} />
+  </main>
+</BaseLayout>
+
+<script>
+  const loadMoreBtn = document.getElementById("load-more-btn")
+  const visibleCountSpan = document.getElementById("visible-count")
+  const totalCountSpan = document.getElementById("total-count")
+
+  if (loadMoreBtn && visibleCountSpan && totalCountSpan) {
+    let visibleCount = 25
+    const totalCount = parseInt(totalCountSpan.textContent || "0")
+    const items = document.querySelectorAll(".changelog-item")
+
+    loadMoreBtn.addEventListener("click", () => {
+      // Show next 25 items
+      const newVisibleCount = Math.min(visibleCount + 25, totalCount)
+
+      for (let i = visibleCount; i < newVisibleCount; i++) {
+        if (items[i]) {
+          ;(items[i] as HTMLElement).style.display = ""
+        }
+      }
+
+      visibleCount = newVisibleCount
+      visibleCountSpan.textContent = visibleCount.toString()
+
+      // Hide button if all items are visible
+      if (visibleCount >= totalCount) {
+        const loadMoreSection = document.querySelector(".load-more-section")
+        if (loadMoreSection) {
+          ;(loadMoreSection as HTMLElement).style.display = "none"
+        }
+      }
+    })
+  }
+</script>
+
+<style is:global>
+  .wrapper {
+    max-width: 1064px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 100px var(--space-6x);
+  }
+
+  .tag {
+    font-weight: 500;
+    letter-spacing: 1.28px;
+    color: var(--grey-600);
+    margin-bottom: var(--space-4x);
+    text-transform: uppercase;
+  }
+
+  .header {
+    margin-bottom: var(--space-16x);
+  }
+
+  .changelog-list {
+    display: flex;
+    flex-direction: column;
+    gap: 60px;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-16x) var(--space-6x);
+    margin-top: var(--space-10x);
+  }
+
+  .empty-state-image {
+    max-width: 400px;
+    width: 100%;
+    height: auto;
+    margin-top: var(--space-6x);
+  }
+
+  .empty-state-title {
+    margin-bottom: var(--space-2x);
+  }
+
+  .empty-state-text {
+    max-width: 400px;
+  }
+
+  .load-more-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4x);
+    margin-top: var(--space-10x);
+  }
+
+  .load-more-button {
+    padding: var(--space-2x) var(--space-6x);
+    background: transparent;
+    border: 1px solid var(--link);
+    border-radius: var(--space-1x);
+    color: var(--link);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .load-more-button:hover {
+    border: 1px solid var(--brand);
+  }
+
+  .count-text {
+    font-size: 14px;
+    color: var(--grey-600);
+    margin: 0;
+    margin-top: 84px;
+  }
+
+  @media screen and (max-width: 768px) {
+    .tag {
+      font-size: 12px;
+      margin-bottom: var(--space-3x);
+    }
+    .title {
+      font-size: 2rem;
+    }
+    .header {
+      margin-bottom: var(--space-10x);
+    }
+
+    .wrapper {
+      padding: 60px var(--space-6x);
+    }
+
+    .changelog-list {
+      gap: 40px;
+    }
+  }
+</style>

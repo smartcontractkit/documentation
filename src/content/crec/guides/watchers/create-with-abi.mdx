@@ -1,0 +1,156 @@
+---
+section: crec
+title: "Create a Watcher with a Custom ABI"
+date: Last Modified
+metadata:
+  description: "Create a Chainlink CRE Connect watcher for an arbitrary smart contract by providing the chain selector, contract address, target events, and the matching Solidity event ABI fragments."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside, MethodTabs } from "@components"
+
+For contracts not covered by a [CRE Connect extension](/crec/concepts/extensions), use **`watchers.Client.CreateWithABI`**. You provide the event ABI fragments yourself and CRE Connect provisions a generic listener for that contract.
+
+## When to use this
+
+| You should use `CreateWithABI` if...                      | Otherwise use [`CreateWithService`](/crec/guides/watchers/create-with-service) |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| The contract is custom or no published service covers it. | A published extension covers your protocol (e.g. `dta.v2`).                    |
+| You only need a subset of events from the ABI.            | You want service-managed defaults and typed decoders.                          |
+
+## Procedure
+
+<MethodTabs>
+  <Fragment slot="ui">
+
+The Platform UI exposes the same ABI-based creation flow:
+
+1. Open the [Channels page](https://app.chain.link/cre-connect/channels) and open your channel.
+2. Click **Watchers → Add watcher**.
+3. Enter the **name**, **Network**, **Target contract address**
+4. Click the **Service** dropdown, select **Other**.
+5. Upload the **ABI** file (JSON format).
+6. Select the **Event types** to subscribe to.
+7. Click **Deploy watcher**. The watcher will appear in `pending` status and transition to `active` once deployed.
+
+  </Fragment>
+  <Fragment slot="api">
+
+**Go SDK**
+
+```go
+import (
+    "github.com/google/uuid"
+    "github.com/smartcontractkit/crec-sdk/watchers"
+)
+
+abi := []watchers.EventABI{
+    {
+        Type: "event",
+        Name: "Transfer",
+        Inputs: []watchers.EventABIInput{
+            {Indexed: true,  Name: "from",  Type: "address", InternalType: "address"},
+            {Indexed: true,  Name: "to",    Type: "address", InternalType: "address"},
+            {Indexed: false, Name: "value", Type: "uint256", InternalType: "uint256"},
+        },
+    },
+    {
+        Type: "event",
+        Name: "Approval",
+        Inputs: []watchers.EventABIInput{
+            {Indexed: true,  Name: "owner",   Type: "address", InternalType: "address"},
+            {Indexed: true,  Name: "spender", Type: "address", InternalType: "address"},
+            {Indexed: false, Name: "value",   Type: "uint256", InternalType: "uint256"},
+        },
+    },
+}
+
+w, err := client.Watchers.CreateWithABI(ctx, channelID, watchers.CreateWithABIInput{
+    Name:          "erc20-transfer-watcher",
+    ChainSelector: chainSelector,
+    Address:       "0xYourErc20",
+    Events:        []string{"Transfer", "Approval"},
+    ABI:           abi,
+})
+```
+
+**curl**
+
+```bash
+curl -sS -X POST "$CREC_BASE_URL/channels/$CHANNEL_ID/watchers" \
+  -H "Authorization: Apikey $CREC_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @- <<'EOF'
+{
+  "name": "erc20-transfer-watcher",
+  "chain_selector": "16015286601757825753",
+  "address": "0xYourErc20",
+  "events": ["Transfer","Approval"],
+  "abi": [
+    {
+      "type": "event",
+      "name": "Transfer",
+      "inputs": [
+        {"indexed":true,"name":"from","type":"address","internalType":"address"},
+        {"indexed":true,"name":"to","type":"address","internalType":"address"},
+        {"indexed":false,"name":"value","type":"uint256","internalType":"uint256"}
+      ]
+    },
+    {
+      "type": "event",
+      "name": "Approval",
+      "inputs": [
+        {"indexed":true,"name":"owner","type":"address","internalType":"address"},
+        {"indexed":true,"name":"spender","type":"address","internalType":"address"},
+        {"indexed":false,"name":"value","type":"uint256","internalType":"uint256"}
+      ]
+    }
+  ]
+}
+EOF
+```
+
+  </Fragment>
+</MethodTabs>
+
+## Validation rules
+
+The SDK fails fast if the request is malformed:
+
+| Sentinel error                      | Cause                                                                       |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| `watchers.ErrChannelIDRequired`     | The channel UUID is `uuid.Nil`.                                             |
+| `watchers.ErrChainSelectorRequired` | `ChainSelector` is empty or `"0"`.                                          |
+| `watchers.ErrAddressRequired`       | `Address` is empty.                                                         |
+| `watchers.ErrEventsRequired`        | `Events` is empty.                                                          |
+| `watchers.ErrABIRequired`           | `ABI` is empty.                                                             |
+| `watchers.ErrInvalidABIType`        | An entry has `Type != "event"`. The CREC API only accepts event ABIs today. |
+| `watchers.ErrEventNotInABI`         | One of `Events` is not declared in `ABI`.                                   |
+| `watchers.ErrWatcherNameTooShort`   | Name is shorter than 4 characters after trim.                               |
+
+These checks happen entirely client-side, so a failure does not consume API quota.
+
+## Wait for active
+
+```go
+active, err := client.Watchers.WaitForActive(ctx, channelID, w.WatcherId, 2*time.Minute)
+if err != nil {
+    return err
+}
+fmt.Println(active.Status) // -> active
+```
+
+The SDK polls every `Options.PollInterval` (default 2 s) and tolerates `404` for `Options.EventualConsistencyWindow` (default 2 s) immediately after creation. See [SDK Configuration](/crec/reference/sdk-configuration) to tune both.
+
+## Limitations
+
+- Only event ABIs are supported today. Function ABIs return `watchers.ErrInvalidABIType`.
+- Anonymous events are accepted (`Anonymous: true` field is preserved) but are uncommon and difficult to filter on later.
+- The `Inputs` you pass must match the on-chain event signature exactly, including parameter names, for the watcher to decode payloads correctly.
+
+## Next steps
+
+- [Poll and Search Events](/crec/guides/events/poll-and-search): consume what the watcher emits.
+- [Verify Event Signatures](/crec/guides/events/verify-signatures): cryptographically authenticate every emitted event.
+- [Manage Watcher Lifecycle](/crec/guides/watchers/manage-lifecycle): list, update, and archive.

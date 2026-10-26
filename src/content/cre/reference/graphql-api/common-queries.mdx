@@ -1,0 +1,787 @@
+---
+section: cre
+title: "Common Queries"
+date: Last Modified
+metadata:
+  description: "Copy-pasteable GraphQL query recipes for CRE workflows, deployments, and execution data, organized by task."
+  datePublished: "2026-08-31"
+  lastModified: "2026-08-31"
+---
+
+These recipes are organized around what you're trying to do, not around the GraphQL schema. Each one is a complete, runnable query. Replace placeholders such as `<WORKFLOW_UUID>` with real values, and see [Authentication](/cre/reference/graphql-api/authentication) for how to set the `Authorization` header.
+
+All examples below assume the request is sent as:
+
+```bash
+curl -X POST https://api.cre.chain.link/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <CRE_API_KEY>" \
+  -d '{"query": "<QUERY>", "variables": <VARIABLES>}'
+```
+
+## Organization & account
+
+### Get your account details
+
+Retrieve the account associated with the current API key or session. Use this to confirm which account and organization you're authenticated as.
+
+#### Query
+
+```graphql
+query GetAccountDetails {
+  getAccountDetails {
+    memberId
+    displayName
+    emailAddress
+    organizationId
+    memberStatus
+    createdAt
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "getAccountDetails": {
+      "memberId": "<MEMBER_ID>",
+      "displayName": "Jane Doe",
+      "emailAddress": "jane.doe@example.com",
+      "organizationId": "<ORGANIZATION_ID>",
+      "memberStatus": "JOINED",
+      "createdAt": "2026-01-15T09:00:00Z"
+    }
+  }
+}
+```
+
+#### Related
+
+- [`getAccountDetails`](/cre/reference/graphql-api/queries#getaccountdetails)
+- [`OrganizationAccount`](/cre/reference/graphql-api/objects#organizationaccount)
+
+### Get your organization details
+
+Retrieve the organization your account belongs to.
+
+#### Query
+
+```graphql
+query GetOrganization {
+  getOrganization {
+    organizationId
+    displayName
+    restrictionStatus
+    activeStatus
+  }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "getOrganization": {
+      "organizationId": "<ORGANIZATION_ID>",
+      "displayName": "Acme Corp",
+      "restrictionStatus": "FULL_ACCESS",
+      "activeStatus": "ACTIVE"
+    }
+  }
+}
+```
+
+#### Related
+
+- [`getOrganization`](/cre/reference/graphql-api/queries#getorganization)
+- [`Organization`](/cre/reference/graphql-api/objects#organization)
+
+## Workflows
+
+### List workflows
+
+List the workflows deployed for your organization. Use this to display a workflow inventory, or to find a workflow's `uuid` before querying its deployments or executions.
+
+#### Query
+
+```graphql
+query ListWorkflows($page: Page) {
+  workflows(input: { page: $page }) {
+    data {
+      uuid
+      name
+      workflowId
+      status
+      registeredAt
+      executionCount
+      executionCountByStatus {
+        success
+        failure
+      }
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "page": { "number": 0, "size": 20 }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflows": {
+      "data": [
+        {
+          "uuid": "<WORKFLOW_UUID>",
+          "name": "price-feed-monitor",
+          "workflowId": "<WORKFLOW_ID>",
+          "status": "ACTIVE",
+          "registeredAt": "2026-06-01T12:00:00Z",
+          "executionCount": 482,
+          "executionCountByStatus": { "success": 470, "failure": 12 }
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflows`](/cre/reference/graphql-api/queries#workflows)
+- [`Workflow`](/cre/reference/graphql-api/objects#workflow)
+- [Pagination](/cre/reference/graphql-api/pagination)
+
+### Find workflows by status or name
+
+Filter the workflow list by deployment status and/or a text search on the workflow name.
+
+#### Query
+
+```graphql
+query FindWorkflows($status: [WorkflowDeploymentStatus!], $search: String) {
+  workflows(input: { status: $status, search: $search }) {
+    data {
+      uuid
+      name
+      status
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "status": ["ACTIVE"],
+  "search": "price-feed"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflows": {
+      "data": [{ "uuid": "<WORKFLOW_UUID>", "name": "price-feed-monitor", "status": "ACTIVE" }],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflows`](/cre/reference/graphql-api/queries#workflows)
+- [`WorkflowDeploymentStatus`](/cre/reference/graphql-api/enums#workflowdeploymentstatus)
+
+### Get a workflow
+
+Retrieve a single workflow by its `uuid`.
+
+#### Query
+
+```graphql
+query GetWorkflow($uuid: String!, $from: Time!) {
+  workflow(input: { uuid: $uuid, from: $from }) {
+    data {
+      uuid
+      name
+      ownerAddress
+      status
+      registeredAt
+      executedAt
+      executionCount
+      executionCountByStatus {
+        success
+        failure
+      }
+      hasTeeExecutions
+      hasNonTeeExecutions
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "uuid": "<WORKFLOW_UUID>",
+  "from": "2026-08-01T00:00:00Z"
+}
+```
+
+`from` is required — it sets the start of the time window used to compute the workflow's aggregate fields (`executionCount`, `executionCountByStatus`, `creditUsed`).
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflow": {
+      "data": {
+        "uuid": "<WORKFLOW_UUID>",
+        "name": "price-feed-monitor",
+        "ownerAddress": "0x1234567890abcdef1234567890abcdef12345678",
+        "status": "ACTIVE",
+        "registeredAt": "2026-06-01T12:00:00Z",
+        "executedAt": "2026-08-31T11:45:00Z",
+        "executionCount": 482,
+        "executionCountByStatus": { "success": 470, "failure": 12 },
+        "hasTeeExecutions": false,
+        "hasNonTeeExecutions": true
+      }
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflow`](/cre/reference/graphql-api/queries#workflow)
+- [`Workflow`](/cre/reference/graphql-api/objects#workflow)
+
+### Get workflow activity over time
+
+Retrieve success and failure counts bucketed over a time range — useful for health charts and monitoring dashboards.
+
+#### Query
+
+```graphql
+query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
+  workflowActivity(input: { workflowUUID: $workflowUUID, from: $from, to: $to }) {
+    data {
+      from
+      to
+      successCount
+      failureCount
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUUID": "<WORKFLOW_UUID>",
+  "from": "2026-08-24T00:00:00Z",
+  "to": "2026-08-31T00:00:00Z"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowActivity": {
+      "data": [
+        { "from": "2026-08-24T00:00:00Z", "to": "2026-08-25T00:00:00Z", "successCount": 68, "failureCount": 1 },
+        { "from": "2026-08-25T00:00:00Z", "to": "2026-08-26T00:00:00Z", "successCount": 71, "failureCount": 0 }
+      ]
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowActivity`](/cre/reference/graphql-api/queries#workflowactivity)
+- [`WorkflowActivityRow`](/cre/reference/graphql-api/objects#workflowactivityrow)
+
+## Deployments
+
+### List deployments for a workflow
+
+Retrieve the deployment history for a workflow — every deploy/activate/pause action recorded against it.
+
+#### Query
+
+```graphql
+query WorkflowDeployments($workflowUUID: String!, $page: Page) {
+  workflowDeployments(input: { workflowUUID: $workflowUUID, page: $page }) {
+    data {
+      uuid
+      status
+      deployedAt
+      txHash
+      errorMessage
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUUID": "<WORKFLOW_UUID>",
+  "page": { "number": 0, "size": 10 }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowDeployments": {
+      "data": [
+        {
+          "uuid": "<DEPLOYMENT_UUID>",
+          "status": "ACTIVE",
+          "deployedAt": "2026-06-01T12:00:00Z",
+          "txHash": "0xabc123...",
+          "errorMessage": null
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowDeployments`](/cre/reference/graphql-api/queries#workflowdeployments)
+- [`WorkflowDeployment`](/cre/reference/graphql-api/objects#workflowdeployment)
+
+### Get a deployment
+
+Retrieve a single deployment by its `uuid`, including its binary and config artifact URLs.
+
+#### Query
+
+```graphql
+query WorkflowDeployment($uuid: String!) {
+  workflowDeployment(input: { uuid: $uuid }) {
+    data {
+      uuid
+      status
+      deployedAt
+      binaryURL
+      configURL
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "uuid": "<DEPLOYMENT_UUID>"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowDeployment": {
+      "data": {
+        "uuid": "<DEPLOYMENT_UUID>",
+        "status": "ACTIVE",
+        "deployedAt": "2026-06-01T12:00:00Z",
+        "binaryURL": "https://.../binary.wasm",
+        "configURL": "https://.../config.json"
+      }
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowDeployment`](/cre/reference/graphql-api/queries#workflowdeployment)
+- [`WorkflowDeployment`](/cre/reference/graphql-api/objects#workflowdeployment)
+
+## Executions
+
+### List recent workflow executions
+
+Retrieve the most recent executions for a workflow. Use this for execution history views or health monitoring.
+
+#### Query
+
+```graphql
+query WorkflowExecutions($workflowUuid: String, $page: Page) {
+  workflowExecutions(input: { workflowUuid: $workflowUuid, orderBy: { field: STARTED_AT, order: DESC }, page: $page }) {
+    data {
+      uuid
+      id
+      status
+      classifiedStatus
+      startedAt
+      finishedAt
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUuid": "<WORKFLOW_UUID>",
+  "page": { "number": 0, "size": 10 }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutions": {
+      "data": [
+        {
+          "uuid": "<EXECUTION_UUID>",
+          "id": "<EXECUTION_ID>",
+          "status": "SUCCESS",
+          "classifiedStatus": "SUCCESS",
+          "startedAt": "2026-08-31T11:45:00Z",
+          "finishedAt": "2026-08-31T11:45:02Z"
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions)
+- [`WorkflowExecution`](/cre/reference/graphql-api/objects#workflowexecution)
+- [Pagination](/cre/reference/graphql-api/pagination)
+
+### Find failed executions
+
+Filter executions by status to investigate recent failures.
+
+#### Query
+
+```graphql
+query FailedExecutions($workflowUuid: String, $status: [WorkflowExecutionStatus!]) {
+  workflowExecutions(input: { workflowUuid: $workflowUuid, status: $status }) {
+    data {
+      uuid
+      status
+      classifiedStatus
+      startedAt
+      errors {
+        error
+        count
+      }
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUuid": "<WORKFLOW_UUID>",
+  "status": ["FAILURE"]
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutions": {
+      "data": [
+        {
+          "uuid": "<EXECUTION_UUID>",
+          "status": "FAILURE",
+          "classifiedStatus": "USER_ERROR",
+          "startedAt": "2026-08-31T09:12:00Z",
+          "errors": [{ "error": "capability timeout", "count": 1 }]
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions)
+- [`WorkflowExecutionStatus`](/cre/reference/graphql-api/enums#workflowexecutionstatus)
+- [`ExecutionError`](/cre/reference/graphql-api/objects#executionerror)
+
+### Get executions within a time range
+
+Retrieve executions started between two timestamps — useful for incremental exports.
+
+#### Query
+
+```graphql
+query ExecutionsInRange($workflowUuid: String, $from: Time, $to: Time, $page: Page) {
+  workflowExecutions(input: { workflowUuid: $workflowUuid, from: $from, to: $to, page: $page }) {
+    data {
+      uuid
+      status
+      startedAt
+      finishedAt
+    }
+    count
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowUuid": "<WORKFLOW_UUID>",
+  "from": "2026-08-30T00:00:00Z",
+  "to": "2026-08-31T00:00:00Z",
+  "page": { "number": 0, "size": 100 }
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutions": {
+      "data": [
+        {
+          "uuid": "<EXECUTION_UUID>",
+          "status": "SUCCESS",
+          "startedAt": "2026-08-30T14:00:00Z",
+          "finishedAt": "2026-08-30T14:00:03Z"
+        }
+      ],
+      "count": 1
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutions`](/cre/reference/graphql-api/queries#workflowexecutions)
+- [Pagination](/cre/reference/graphql-api/pagination)
+
+### Get a single execution
+
+Retrieve full detail for one execution by its `uuid`.
+
+#### Query
+
+```graphql
+query GetExecution($uuid: String!) {
+  workflowExecution(input: { uuid: $uuid }) {
+    data {
+      uuid
+      id
+      workflowName
+      status
+      classifiedStatus
+      startedAt
+      finishedAt
+      executedInTee
+      errors {
+        error
+        count
+      }
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "uuid": "<EXECUTION_UUID>"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecution": {
+      "data": {
+        "uuid": "<EXECUTION_UUID>",
+        "id": "<EXECUTION_ID>",
+        "workflowName": "price-feed-monitor",
+        "status": "SUCCESS",
+        "classifiedStatus": "SUCCESS",
+        "startedAt": "2026-08-31T11:45:00Z",
+        "finishedAt": "2026-08-31T11:45:02Z",
+        "executedInTee": false,
+        "errors": null
+      }
+    }
+  }
+}
+```
+
+`workflowExecution.data` is nullable — it returns `null` if no execution matches the given `uuid`.
+
+#### Related
+
+- [`workflowExecution`](/cre/reference/graphql-api/queries#workflowexecution)
+- [`WorkflowExecution`](/cre/reference/graphql-api/objects#workflowexecution)
+
+## Observability
+
+### Get execution logs
+
+Retrieve the log lines emitted during an execution — the same data shown by `cre execution logs`.
+
+#### Query
+
+```graphql
+query ExecutionLogs($workflowExecutionUUID: String!) {
+  workflowExecutionLogs(input: { workflowExecutionUUID: $workflowExecutionUUID }) {
+    data {
+      nodeID
+      message
+      timestamp
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowExecutionUUID": "<EXECUTION_UUID>"
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutionLogs": {
+      "data": [
+        { "nodeID": "<NODE_ID>", "message": "trigger fired", "timestamp": "2026-08-31T11:45:00Z" },
+        { "nodeID": "<NODE_ID>", "message": "execution completed", "timestamp": "2026-08-31T11:45:02Z" }
+      ]
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutionLogs`](/cre/reference/graphql-api/queries#workflowexecutionlogs)
+- [`WorkflowExecutionLog`](/cre/reference/graphql-api/objects#workflowexecutionlog)
+
+### Get the capability event timeline for an execution
+
+Retrieve the per-capability event timeline for an execution — the same data shown by `cre execution events`. Optionally filter by capability or status.
+
+#### Query
+
+```graphql
+query ExecutionEvents($workflowExecutionUUID: String!, $capabilityID: String, $status: String) {
+  workflowExecutionEvents(
+    input: { workflowExecutionUUID: $workflowExecutionUUID, capabilityID: $capabilityID, status: $status }
+  ) {
+    data {
+      capabilityID
+      status
+      method
+      startedAt
+      finishedAt
+      errors {
+        error
+        count
+      }
+    }
+  }
+}
+```
+
+#### Variables
+
+```json
+{
+  "workflowExecutionUUID": "<EXECUTION_UUID>",
+  "capabilityID": null,
+  "status": null
+}
+```
+
+#### Response
+
+```json
+{
+  "data": {
+    "workflowExecutionEvents": {
+      "data": [
+        {
+          "capabilityID": "http-trigger@1.0.0",
+          "status": "COMPLETED",
+          "method": "GET",
+          "startedAt": "2026-08-31T11:45:00Z",
+          "finishedAt": "2026-08-31T11:45:01Z",
+          "errors": null
+        }
+      ]
+    }
+  }
+}
+```
+
+#### Related
+
+- [`workflowExecutionEvents`](/cre/reference/graphql-api/queries#workflowexecutionevents)
+- [`WorkflowExecutionEvent`](/cre/reference/graphql-api/objects#workflowexecutionevent)

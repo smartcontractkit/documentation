@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import { useEffect, useState } from "preact/hooks"
+import { useEffect, useState, useMemo } from "preact/hooks"
 import { Fragment, render } from "preact"
 import feedList from "./FeedList.module.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
@@ -18,12 +18,13 @@ import {
 import type { MarketPricingRiskProduct } from "../content/marketPricingRiskTerms.ts"
 import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
 import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
-import { isSharedSVR, isAaveSVR } from "~/features/feeds/utils/svrDetection.ts"
+import { getSvrType, type SvrFeedType } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 import {
   shouldHideAddress,
   shouldHideStreamFeedId,
-  BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES,
+  ALL_EXTENDED_HOURS_PROXY_ADDRESSES,
+  type ExtendedHoursCategory,
 } from "~/features/feeds/utils/feedVisibility.ts"
 import { DATA_STREAMS_CONTACT_URL, TOKENIZED_EQUITY_CONTACT_EMAIL } from "~/features/feeds/constants.ts"
 import {
@@ -31,8 +32,10 @@ import {
   getMarketStatusDocLink,
   getTradingHoursDocLink,
   isApacEquitiesStreamFeed,
+  getTwapWindowSeconds,
 } from "~/features/feeds/utils/feedMetadata.ts"
-import { getFeedTypeFlags } from "~/features/feeds/types.ts"
+import { isFeedIdAddressedNetwork } from "~/features/feeds/utils/feedIdAddressedNetworks.ts"
+import { getFeedTypeFlags, type SchemaFilterValue } from "~/features/feeds/types.ts"
 import { useFilteredFeedMetadata } from "~/features/feeds/hooks/useFilteredFeedMetadata.ts"
 
 const feedItems = monitoredFeeds.mainnet
@@ -55,10 +58,13 @@ const getMaxSubmissionValueBound = (
   try {
     const raw = BigInt(maxSubmissionValue)
     const divisor = BigInt(10) ** BigInt(decimals)
-    // Hide the badge if the decoded price exceeds $2.00 (fixed-point compare avoids
-    // float drift). The all-0xff unbounded sentinel decodes to ~9.578e44 and is filtered here.
-    if (raw > BigInt(2) * divisor) return null
     const wholePart = raw / divisor
+    // Hide the badge if the decoded price exceeds $1,000,000 (1M).
+    // This filters out the all-0xff unbounded sentinel that contracts use by default
+    // (which decodes to ~9.578e44) while still accommodating any real-world price cap
+    // across USD, ETH, EUR, and other quote currencies — the highest plausible cap
+    // for any stablecoin or pegged asset is well below $1M.
+    if (wholePart > BigInt(1_000_000)) return null
     const remainder = raw % divisor
     const price = Number(wholePart) + Number(remainder) / Number(divisor)
     return new Intl.NumberFormat("en-US", {
@@ -88,9 +94,9 @@ const getSchemaDefinitionKey = (metadata: any): string | undefined => {
   if (schemaVersion === "v3") {
     return feedType === "Crypto-DEX" ? "v3-dex" : "v3-crypto"
   }
+  if (schemaVersion === "v2") return "v2"
 
   if (feedType === "Crypto-DEX") return "v3-dex"
-  if (feedType === "Crypto" && metadata.docs?.productTypeCode !== "ExRate") return "v3-crypto"
 
   if (feedType === "Equities" || feedType === "Forex" || feedType === "Datalink") {
     return undefined
@@ -219,6 +225,7 @@ const RISK_TIER_SHORT_LABELS: Record<string, string> = {
   new: "New token",
   custom: "Custom",
   deprecating: "Deprecating",
+  unrated: "Unrated",
 }
 
 const normalizeRiskKey = (riskTier?: string | null) => riskTier?.toLowerCase().replace(/\s+/g, "") ?? ""
@@ -274,9 +281,14 @@ const RiskCell = ({
 }) => {
   const [tooltipPos, setTooltipPos] = useState<ReturnType<typeof getRiskTooltipPosition> | null>(null)
   const normalizedKey = normalizeRiskKey(riskTier)
-  const category = normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as CategoryKey] : undefined
-  const tooltipText = category ? getRiskTooltipText(normalizedKey as CategoryKey, product) : ""
-  const riskLink = category ? getRiskCategoryLink(normalizedKey as CategoryKey, product) : ""
+  // When no risk tier is available (e.g. no Supabase return), fall back to the
+  // "Unrated" category so the feed/stream is shown with the ⚪ circle instead of a dash.
+  const categoryKey = (normalizedKey ? FEED_CATEGORY_CONFIG[normalizedKey as CategoryKey] : undefined)
+    ? (normalizedKey as CategoryKey)
+    : "unrated"
+  const category = FEED_CATEGORY_CONFIG[categoryKey]
+  const tooltipText = getRiskTooltipText(categoryKey, product)
+  const riskLink = getRiskCategoryLink(categoryKey, product)
 
   useEffect(() => {
     if (!tooltipPos || typeof document === "undefined") return
@@ -306,14 +318,6 @@ const RiskCell = ({
       container.remove()
     }
   }, [tooltipPos, tooltipText])
-
-  if (!category) {
-    return (
-      <td className={tableStyles.riskCol}>
-        <span className={tableStyles.riskUnavailable}>—</span>
-      </td>
-    )
-  }
 
   const showTooltip = (event: Event) => {
     setTooltipPos(getRiskTooltipPosition(event.currentTarget as HTMLElement))
@@ -454,13 +458,15 @@ const DefaultTHead = ({
   networkName,
   dataFeedType,
   showRiskColumn = true,
+  isSvr = false,
 }: {
   showExtraDetails: boolean
   networkName: string
   dataFeedType: string
   showRiskColumn?: boolean
+  isSvr?: boolean
 }) => {
-  const isAptosNetwork = networkName === "Aptos Mainnet" || networkName === "Aptos Testnet"
+  const isAptosNetwork = isFeedIdAddressedNetwork(networkName)
   const isUSGovernmentMacroeconomicData = dataFeedType === "usGovernmentMacroeconomicData"
 
   return (
@@ -471,7 +477,7 @@ const DefaultTHead = ({
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Deviation</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Heartbeat</th>
         <th style={{ display: showExtraDetails ? "table-cell" : "none" }}>Dec</th>
-        <th>{isAptosNetwork ? "Feed ID and info" : "Address and info"}</th>
+        <th>{isSvr ? "Aggregator and info" : isAptosNetwork ? "Feed ID and info" : "Address and info"}</th>
       </tr>
     </thead>
   )
@@ -502,6 +508,7 @@ const DefaultTr = ({
   batchedCategoryData,
   dataFeedType,
   showRiskColumn = true,
+  isSvr = false,
 }) => {
   // Use the pre-computed finalCategory from enriched metadata
   // (already includes deprecating status and Supabase risk tier)
@@ -519,11 +526,11 @@ const DefaultTr = ({
   // should have its address hidden and show a contact email instead.
   const hideAddress = shouldHideAddress(metadata, finalTier)
 
-  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
-  const stablecoinBound =
-    metadata.docs?.stablecoinCapped === true
-      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
-      : null
+  // Stablecoin price-bound note: only shown for stablecoin feeds with a meaningful cap
+  const isStablecoin = metadata.docs?.assetSubClass === "Stablecoin"
+  const stablecoinBound = isStablecoin
+    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+    : null
 
   const label = isUSGovernmentMacroeconomicData ? "Category" : "Asset type"
   const value = isUSGovernmentMacroeconomicData
@@ -540,20 +547,12 @@ const DefaultTr = ({
           {metadata.secondaryProxyAddress && (
             <div style={{ marginTop: "5px" }}>
               <a
-                href={
-                  isAaveSVR(metadata)
-                    ? "/data-feeds/svr-feeds#aave-svr-feeds"
-                    : isSharedSVR(metadata)
-                      ? "/data-feeds/svr-feeds"
-                      : "/data-feeds/svr-feeds"
-                }
+                href="/data-feeds/svr-feeds"
                 target="_blank"
                 className={tableStyles.feedVariantBadge}
-                title={
-                  isAaveSVR(metadata) ? "Aave Dedicated SVR Feed" : isSharedSVR(metadata) ? " SVR Feed" : "SVR Feed"
-                }
+                title={`${getSvrType(metadata, network)} Feed`}
               >
-                {isAaveSVR(metadata) ? "Aave SVR" : isSharedSVR(metadata) ? "SVR" : "SVR"}
+                {getSvrType(metadata, network)}
               </a>
             </div>
           )}
@@ -568,14 +567,14 @@ const DefaultTr = ({
               </a>
             </div>
           )}
-          {BLENDED_PRECIOUS_METALS_PROXY_ADDRESSES.has(metadata.proxyAddress?.toLowerCase()) && (
+          {ALL_EXTENDED_HOURS_PROXY_ADDRESSES.has(metadata.proxyAddress?.toLowerCase()) && (
             <div style={{ marginTop: "5px" }}>
               <a
-                href="/data-feeds/blended-precious-metals-feeds"
+                href="/data-feeds/24-7-extended-hours-data-feeds"
                 className={tableStyles.feedVariantBadge}
-                title="24/7 Blended Precious Metals Feed"
+                title="24/7 Extended-Hours Feed"
               >
-                24/7 Blended Precious Metals
+                24/7 Extended Hours
               </a>
             </div>
           )}
@@ -614,26 +613,33 @@ const DefaultTr = ({
         <div>
           <dl className={tableStyles.listContainer}>
             <div className={tableStyles.definitionGroup}>
-              {metadata.secondaryProxyAddress && (
+              {metadata.secondaryProxyAddress && !isSvr && (
                 <dt>
                   <span className="label">Standard Proxy:</span>
                 </dt>
               )}
+              {isSvr && (
+                <dt>
+                  <span className="label">Aggregator:</span>
+                </dt>
+              )}
               <dd>
-                {hideAddress ? (
+                {hideAddress && !isSvr ? (
                   <HiddenAddressContact className={tableStyles.addressLink} />
                 ) : (
                   <div className={tableStyles.assetAddress}>
                     <button
                       className={clsx(tableStyles.copyBtn, "copy-iconbutton")}
-                      data-clipboard-text={metadata.proxyAddress ?? metadata.transmissionsAccount}
+                      data-clipboard-text={
+                        isSvr ? metadata.contractAddress : (metadata.proxyAddress ?? metadata.transmissionsAccount)
+                      }
                       onClick={(e) =>
                         handleClick(e, {
                           product: "FEEDS",
                           action: "feedId_copied",
                           extraInfo1: network.name,
                           extraInfo2: metadata.name,
-                          extraInfo3: metadata.proxyAddress,
+                          extraInfo3: isSvr ? metadata.contractAddress : metadata.proxyAddress,
                         })
                       }
                     >
@@ -641,10 +647,13 @@ const DefaultTr = ({
                     </button>
                     <a
                       className={tableStyles.addressLink}
-                      href={network.explorerUrl.replace("%s", metadata.proxyAddress ?? metadata.transmissionsAccount)}
+                      href={network.explorerUrl.replace(
+                        "%s",
+                        isSvr ? metadata.contractAddress : (metadata.proxyAddress ?? metadata.transmissionsAccount)
+                      )}
                       target="_blank"
                     >
-                      {metadata.proxyAddress ?? metadata.transmissionsAccount}
+                      {isSvr ? metadata.contractAddress : (metadata.proxyAddress ?? metadata.transmissionsAccount)}
                     </a>
                   </div>
                 )}
@@ -686,7 +695,7 @@ const DefaultTr = ({
                 <div className={tableStyles.separator} />
                 <div className={tableStyles.assetAddress}>
                   <dt>
-                    <span className="label">{isAaveSVR(metadata) ? "AAVE SVR Proxy:" : "SVR Proxy:"}</span>
+                    <span className="label">{getSvrType(metadata, network)} Proxy:</span>
                   </dt>
                   <dd>
                     {hideAddress ? (
@@ -719,7 +728,7 @@ const DefaultTr = ({
                     )}
                   </dd>
                 </div>
-                {isAaveSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "Aave-SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
@@ -729,9 +738,19 @@ const DefaultTr = ({
                     .
                   </div>
                 )}
-                {isSharedSVR(metadata) && !hideAddress && (
+                {getSvrType(metadata, network) === "SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
                     <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
+                    <a href="/data-feeds/svr-feeds" target="_blank">
+                      SVR Feeds
+                    </a>
+                    .
+                  </div>
+                )}
+                {getSvrType(metadata, network) === "SVR-Backup" && !hideAddress && (
+                  <div className={clsx(tableStyles.sharedCallout)}>
+                    <strong>🔗 SVR-Backup Feed:</strong> This is a legacy SVR proxy feed. New integrations should use
+                    the <strong>SVR</strong> feeds. Learn more about{" "}
                     <a href="/data-feeds/svr-feeds" target="_blank">
                       SVR Feeds
                     </a>
@@ -778,13 +797,13 @@ const SmartDataTr = ({ network, metadata, showExtraDetails, batchedCategoryData,
   // (already includes deprecating status and Supabase risk tier)
   const finalTier = metadata.finalCategory ?? null
 
-  // Stablecoin price-bound note: only when the source marks the feed as explicitly capped
-  const stablecoinBound =
-    metadata.docs?.stablecoinCapped === true
-      ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
-      : null
-
   const hideAddress = shouldHideAddress(metadata, finalTier)
+
+  // Stablecoin price-bound note for Stablecoin Stability Assessment feeds
+  const isStablecoinAssessment = metadata.docs?.assetClass === "Stablecoin Stability Assessment"
+  const stablecoinBound = isStablecoinAssessment
+    ? getMaxSubmissionValueBound(metadata.maxSubmissionValue, metadata.decimals)
+    : null
 
   return (
     <tr>
@@ -1364,8 +1383,11 @@ const streamsCategoryMap = {
 }
 
 export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) => {
-  const finalTier = metadata.finalCategory
   const isDeprecating = !!metadata.docs?.shutdownDate
+  // Deprecating streams always show the deprecating category, even when the
+  // stream is rendered from a path that doesn't enrich finalCategory (e.g. the
+  // deprecating streams page) or when no Supabase risk tier is available.
+  const finalTier = isDeprecating ? "deprecating" : metadata.finalCategory
   const hideFeedId = shouldHideStreamFeedId(metadata)
 
   // Temporary calculated stream detection until proper metadata tagging is implemented
@@ -1374,6 +1396,7 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
     metadata.docs?.productTypeCode === "ExRate" &&
     metadata.docs?.attributeType === "ExchangeRate" &&
     metadata.docs?.assetClass === "Tokenized Debt"
+  const schemaKey = getSchemaDefinitionKey(metadata)
 
   return (
     <tr>
@@ -1401,6 +1424,28 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 Datalink
               </a>
             )}
+            {schemaKey === "v2" && metadata.docs?.attributeType === "TWAP" && (
+              <a
+                href="/data-streams/reference/report-schema-v2#time-weighted-average-price-twap"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="Time-Weighted Average Price"
+              >
+                TWAP
+              </a>
+            )}
+            {(() => {
+              const twapWindow =
+                schemaKey === "v2" && metadata.docs?.attributeType === "TWAP"
+                  ? getTwapWindowSeconds(metadata)
+                  : undefined
+              if (!twapWindow) return null
+              return (
+                <span className={tableStyles.feedVariantBadge} title={`${twapWindow}-second TWAP window`}>
+                  {twapWindow}s
+                </span>
+              )
+            })()}
             {isCalculatedStream && (
               <a
                 href="/data-streams/concepts/calculated-streams"
@@ -1538,6 +1583,20 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 </dd>
               </div>
             ) : null}
+            {schemaKey === "v2" &&
+              metadata.docs?.attributeType === "TWAP" &&
+              (() => {
+                const twapWindow = getTwapWindowSeconds(metadata)
+                if (!twapWindow) return null
+                return (
+                  <div className={tableStyles.definitionGroup}>
+                    <dt>
+                      <span className="label">TWAP window:</span>
+                    </dt>
+                    <dd>{twapWindow} seconds</dd>
+                  </div>
+                )
+              })()}
             {streamsCategoryMap[metadata.feedCategory] ? (
               <div className={tableStyles.definitionGroup}>
                 <dt>
@@ -1559,7 +1618,6 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
               </div>
             ) : null}
             {(() => {
-              const schemaKey = getSchemaDefinitionKey(metadata)
               const schemaDef = schemaKey ? REPORT_SCHEMA_DEFINITIONS[schemaKey] : undefined
               if (!schemaDef || !schemaKey) return null
               return <SchemaInlineExpander schemaDef={schemaDef} schemaKey={schemaKey} metadata={metadata} />
@@ -1579,6 +1637,7 @@ export const MainnetTable = ({
   showOnlyDEXFeeds,
   showOnlyDatalinkFeeds,
   rwaSchemaFilter,
+  cryptoSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
   showApacEquitiesFeeds,
@@ -1593,6 +1652,9 @@ export const MainnetTable = ({
   paginate,
   searchValue,
   tokenizedEquityProvider,
+  forceExtendedHoursCategory,
+  isSvr,
+  svrTypeFilters,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1600,7 +1662,8 @@ export const MainnetTable = ({
   showOnlyMVRFeeds: boolean
   showOnlyDEXFeeds: boolean
   showOnlyDatalinkFeeds?: boolean
-  rwaSchemaFilter?: "all" | "v8" | "v11"
+  rwaSchemaFilter?: SchemaFilterValue
+  cryptoSchemaFilter?: SchemaFilterValue
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
   showApacEquitiesFeeds?: boolean
@@ -1615,6 +1678,9 @@ export const MainnetTable = ({
   paginate
   searchValue: string
   tokenizedEquityProvider?: string
+  forceExtendedHoursCategory?: ExtendedHoursCategory
+  isSvr?: boolean
+  svrTypeFilters?: Set<SvrFeedType>
 }) => {
   if (!network.metadata) return null
 
@@ -1637,12 +1703,23 @@ export const MainnetTable = ({
       showOnlyDatalinkFeeds,
       streamCategoryFilter,
       rwaSchemaFilter,
+      cryptoSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
+      extendedHoursCategory: forceExtendedHoursCategory,
     },
   })
 
-  const slicedFilteredMetadata = filteredMetadata.slice(firstAddr, lastAddr)
+  // Apply SVR type filters when in SVR mode
+  const typeFilteredMetadata = useMemo(() => {
+    if (!isSvr || !svrTypeFilters || svrTypeFilters.size === 0) return filteredMetadata
+    return filteredMetadata.filter((m) => {
+      const svrType = getSvrType(m, network)
+      return svrType && !svrTypeFilters.has(svrType)
+    })
+  }, [filteredMetadata, isSvr, svrTypeFilters, network])
+
+  const slicedFilteredMetadata = typeFilteredMetadata.slice(firstAddr, lastAddr)
 
   if (isBatchLoading) {
     return <p style="font-style: italic;">Loading...</p>
@@ -1657,7 +1734,7 @@ export const MainnetTable = ({
               <tr>
                 <td colSpan={isStreams ? 3 : 6} style={{ textAlign: "center" }}>
                   <img
-                    src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                    src="https://d2f70xi62kby8n.cloudfront.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
                   />
                   <h4>No results found</h4>
@@ -1695,6 +1772,7 @@ export const MainnetTable = ({
                         showExtraDetails={showExtraDetails}
                         batchedCategoryData={batchedCategoryData}
                         dataFeedType={dataFeedType}
+                        isSvr={isSvr}
                       />
                     )}
                   </>
@@ -1736,11 +1814,13 @@ export const TestnetTable = ({
   showOnlyDEXFeeds,
   showOnlyDatalinkFeeds,
   rwaSchemaFilter,
+  cryptoSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
   showApacEquitiesFeeds,
   tradingHoursFilter,
   tokenizedEquityProvider,
+  forceExtendedHoursCategory,
 }: {
   network: ChainNetwork
   showExtraDetails: boolean
@@ -1756,12 +1836,14 @@ export const TestnetTable = ({
   showOnlyMVRFeeds?: boolean
   showOnlyDEXFeeds?: boolean
   showOnlyDatalinkFeeds?: boolean
-  rwaSchemaFilter?: "all" | "v8" | "v11"
+  rwaSchemaFilter?: SchemaFilterValue
+  cryptoSchemaFilter?: SchemaFilterValue
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
   show24x5Feeds?: boolean
   showApacEquitiesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   tokenizedEquityProvider?: string
+  forceExtendedHoursCategory?: ExtendedHoursCategory
 }) => {
   if (!network.metadata) return null
 
@@ -1788,8 +1870,10 @@ export const TestnetTable = ({
       showOnlyDatalinkFeeds,
       streamCategoryFilter,
       rwaSchemaFilter,
+      cryptoSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
+      extendedHoursCategory: forceExtendedHoursCategory,
     },
   })
 
@@ -1810,7 +1894,7 @@ export const TestnetTable = ({
               <tr>
                 <td colSpan={getFeedTableColSpan(isStreams, showRiskColumn)} style={{ textAlign: "center" }}>
                   <img
-                    src="https://smartcontract.imgix.net/icons/null-search.svg?auto=compress%2Cformat"
+                    src="https://d2f70xi62kby8n.cloudfront.net/icons/null-search.svg?auto=compress%2Cformat"
                     style={{ height: "160px" }}
                   />
                   <h4>No results found</h4>

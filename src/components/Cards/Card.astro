@@ -1,0 +1,29 @@
+---
+import CardLink from "./CardLink.astro"
+import styles from "./cards.module.css"
+import type { ICard } from "./types"
+
+type Props = ICard
+
+const { title, description, links, personas } = Astro.props as Props
+const personaList = (personas ?? []).slice(0, 2)
+---
+
+<div class={styles.card}>
+  <p class={styles.cardTitle}>{title}</p>
+  <p>{description}</p>
+
+  {
+    personaList.length > 0 && (
+      <div class={styles.cardMeta}>
+        {personaList.map((persona) => (
+          <span class={styles.personaPill}>{persona}</span>
+        ))}
+      </div>
+    )
+  }
+
+  <div class={styles.links}>
+    {links && links.map((l) => <CardLink link={l} />)}
+  </div>
+</div>

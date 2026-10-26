@@ -5,9 +5,12 @@
 
 import { Sections } from "../content.config.ts"
 import { SIDEBAR_SECTIONS } from "./sidebarSections.ts"
+import { isSunsetSidebarSection } from "./sunset.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
+import { CCIP_V16_SIDEBAR_CONTENT } from "./sidebar/ccip-v1.ts"
 import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
-import type { ChainType } from "./types.js"
+import { CHAINLINK_PLATFORM_SECTION, getAccountOrganizationSection } from "./sidebar/chainlink-platform.ts"
+import type { ChainType, CcipVersion } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
@@ -22,6 +25,10 @@ import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/
  * @property children - Optional array of nested navigation items
  * @property isCollapsible - Optional flag to control if a section can be collapsed
  * @property chainTypes - Optional array of chain types this item belongs to (for chain-aware sections like CCIP)
+ * @property pageId - Optional identifier linking equivalent pages across versions and chains.
+ *   Items with the same pageId are treated as variants of the same page. Used by navigation
+ *   utilities for deterministic cross-version/chain switching.
+ * @property type - Optional discriminator. "separator" renders as a non-clickable label.
  */
 export type SectionContent = {
   title: string
@@ -30,6 +37,15 @@ export type SectionContent = {
   children?: SectionContent[]
   isCollapsible?: boolean
   chainTypes?: ChainType[]
+  pageId?: string
+  type?: "separator"
+  /**
+   * Optional flag to force the link to open in a new browser tab.
+   * Useful for reference/tool pages (e.g. CCIP Directory) that developers
+   * consult in parallel with the docs. Only affects leaf and parent links
+   * with a URL; ignored for separators.
+   */
+  openInNewTab?: boolean
 }
 
 /**
@@ -40,6 +56,15 @@ export type SectionEntry = {
   section: string
   contents: SectionContent[]
   parentSection?: string
+}
+
+/**
+ * Map of CCIP version → sidebar configuration.
+ * Used by navigation utilities for cross-version page lookup.
+ */
+export const CCIP_SIDEBARS: Record<CcipVersion, SectionEntry[]> = {
+  "v2.0": CCIP_SIDEBAR_CONTENT,
+  "v1.6": CCIP_V16_SIDEBAR_CONTENT,
 }
 
 /**
@@ -65,12 +90,16 @@ export type SectionEntry = {
  *   ]
  * }
  */
-export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
+/**
+ * Full left-nav trees, including sunset Functions and Automation.
+ * Use this on those pages. SITE menus use the filtered `SIDEBAR` export.
+ */
+export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry[]>> = {
   [SIDEBAR_SECTIONS.ACE]: [
     {
       section: "Chainlink ACE",
       contents: [
-        { title: "Overview", url: "ace" },
+        { title: "Overview", url: "ace/overview" },
         { title: "Beta Scope", url: "ace/beta-scope" },
         { title: "Supported Networks", url: "ace/supported-networks" },
         { title: "Release Notes", url: "ace/release-notes" },
@@ -80,7 +109,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       section: "Core Concepts",
       contents: [
         { title: "Architecture", url: "ace/concepts/architecture" },
+        { title: "Preventive vs Continuous Compliance", url: "ace/concepts/preventive-vs-continuous" },
         { title: "Key Terms", url: "ace/concepts/key-terms" },
+        { title: "Signing & Ownership Model", url: "ace/concepts/signing-ownership" },
+        { title: "Security Model", url: "ace/concepts/security" },
         {
           title: "Policy Management",
           url: "ace/concepts/policy-management",
@@ -93,7 +125,128 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
     {
       section: "Getting Started",
-      contents: [{ title: "Get Access", url: "ace/getting-started" }],
+      contents: [
+        { title: "Getting Started with ACE", url: "ace/getting-started" },
+        { title: "Account Setup", url: "ace/getting-started/account-setup" },
+        { title: "Policy Manager Quick Start", url: "ace/getting-started/policy-manager" },
+        { title: "Identity Manager Quick Start", url: "ace/getting-started/identity-manager" },
+      ],
+    },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.ACE),
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Policy Manager",
+          url: "ace/guides/policy-manager",
+          children: [
+            {
+              title: "Making Your Contract ACE-Compatible",
+              url: "ace/guides/policy-manager/contracts/ace-compatible",
+              children: [
+                {
+                  title: "Building a New Contract",
+                  url: "ace/guides/policy-manager/contracts/new-contract",
+                  children: [
+                    {
+                      title: "Building an ERC-20 Token",
+                      url: "ace/guides/policy-manager/contracts/erc20-token",
+                    },
+                    {
+                      title: "Building an ERC-3643 Token",
+                      url: "ace/guides/policy-manager/contracts/erc3643-token",
+                    },
+                  ],
+                },
+                {
+                  title: "Upgrading Existing Contracts",
+                  url: "ace/guides/policy-manager/contracts/upgrade-existing",
+                },
+                {
+                  title: "Custom Contract Types & Extractors",
+                  url: "ace/guides/policy-manager/contracts/custom-contract-types",
+                },
+                {
+                  title: "Security Considerations",
+                  url: "ace/guides/policy-manager/contracts/security-considerations",
+                },
+              ],
+            },
+            {
+              title: "Managing Policy Engines",
+              url: "ace/guides/policy-manager/manage-engines",
+            },
+            {
+              title: "Managing Targets",
+              url: "ace/guides/policy-manager/manage-targets",
+            },
+            {
+              title: "Managing Policies",
+              url: "ace/guides/policy-manager/manage-policies",
+            },
+            {
+              title: "Protecting Target Functions",
+              url: "ace/guides/policy-manager/manage-protections",
+            },
+            {
+              title: "Managing Data Validators",
+              url: "ace/guides/policy-manager/manage-data-validators",
+            },
+            {
+              title: "Protect CCIP Token Pools with ACE",
+              url: "ace/guides/policy-manager/ccip-token-pools",
+            },
+            {
+              title: "Custom Policies",
+              url: "ace/guides/policy-manager/custom-policies",
+            },
+            {
+              title: "Offchain Policies",
+              url: "ace/guides/policy-manager/offchain-policies",
+              children: [
+                {
+                  title: "Managing Offchain Policies (MVP)",
+                  url: "ace/guides/policy-manager/offchain-policies/manage-offchain-policies",
+                },
+                {
+                  title: "Requesting Offchain Permits",
+                  url: "ace/guides/policy-manager/offchain-policies/request-offchain-permits",
+                },
+                {
+                  title: "Granting Evaluation Access",
+                  url: "ace/guides/policy-manager/offchain-policies/grant-evaluation-access",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          title: "Identity Manager",
+          url: "ace/guides/identity-manager",
+          children: [
+            {
+              title: "Managing Registries",
+              url: "ace/guides/identity-manager/manage-registries",
+            },
+            {
+              title: "Managing Identities",
+              url: "ace/guides/identity-manager/manage-identities",
+            },
+            {
+              title: "Managing Credential Types",
+              url: "ace/guides/identity-manager/manage-credential-types",
+            },
+            {
+              title: "Managing Credentials",
+              url: "ace/guides/identity-manager/manage-credentials",
+            },
+            {
+              title: "External Registries",
+              url: "ace/guides/identity-manager/external-registries",
+            },
+          ],
+        },
+      ],
     },
     {
       section: "Reference",
@@ -115,6 +268,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                 {
                   title: "CredentialRegistryIdentityValidatorPolicy",
                   url: "ace/reference/policy-library/credential-registry-identity-validator-policy",
+                },
+                {
+                  title: "GroupedIdentityValidatorPolicy",
+                  url: "ace/reference/policy-library/grouped-identity-validator-policy",
                 },
                 { title: "IntervalPolicy", url: "ace/reference/policy-library/interval-policy" },
                 { title: "MaxPolicy", url: "ace/reference/policy-library/max-policy" },
@@ -141,9 +298,62 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "APIs",
+          url: "ace/reference/apis",
           children: [
-            { title: "Coordinator API", url: "ace/reference/api/coordinator" },
-            { title: "Reporting API", url: "ace/reference/api/reporting" },
+            {
+              title: "Coordinator API",
+              url: "api/ace/coordinator/docs",
+              openInNewTab: true,
+            },
+            {
+              title: "Evaluation API (MVP)",
+              url: "api/ace/evaluation/docs",
+              openInNewTab: true,
+            },
+            {
+              title: "Reporting API",
+              url: "api/ace/reporting/docs",
+              openInNewTab: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Active Monitoring",
+      contents: [
+        { title: "Overview", url: "ace/active-monitoring/overview" },
+        { title: "Quick Start", url: "ace/active-monitoring/quick-start" },
+        {
+          title: "Concepts",
+          children: [
+            { title: "How It Works", url: "ace/active-monitoring/concepts/how-it-works" },
+            { title: "Monitored Tokens", url: "ace/active-monitoring/concepts/monitored-tokens" },
+            { title: "Monitoring Rules", url: "ace/active-monitoring/concepts/monitoring-rules" },
+            { title: "Watchlist & Screening", url: "ace/active-monitoring/concepts/screening" },
+            { title: "Decisions & Audit Trail", url: "ace/active-monitoring/concepts/decisions-and-audit" },
+            { title: "Enforcement & Security", url: "ace/active-monitoring/concepts/enforcement-and-security" },
+          ],
+        },
+        {
+          title: "Guides",
+          url: "ace/active-monitoring/guides",
+          children: [
+            { title: "Prepare Your Token", url: "ace/active-monitoring/guides/prepare-your-token" },
+            { title: "Configure Screening", url: "ace/active-monitoring/guides/configure-screening" },
+            { title: "Manage Monitored Tokens", url: "ace/active-monitoring/guides/manage-monitored-tokens" },
+            { title: "Configure Monitoring Rules", url: "ace/active-monitoring/guides/configure-monitoring-rules" },
+            { title: "Manage the Watchlist", url: "ace/active-monitoring/guides/manage-watchlist" },
+            { title: "Review Decisions", url: "ace/active-monitoring/guides/review-decisions" },
+            { title: "Troubleshooting", url: "ace/active-monitoring/guides/troubleshooting" },
+            { title: "Rule Examples", url: "ace/active-monitoring/guides/rule-examples" },
+          ],
+        },
+        {
+          title: "Reference",
+          children: [
+            { title: "Active Monitoring API", url: "ace/active-monitoring/reference/api" },
+            { title: "Limits, Statuses & Values", url: "ace/active-monitoring/reference/limits-and-values" },
           ],
         },
       ],
@@ -155,7 +365,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "About CRE",
-          url: "cre",
+          url: "cre/overview",
         },
         {
           title: "Key Terms and Concepts",
@@ -169,6 +379,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Supported Networks",
           url: "cre/supported-networks",
           highlightAsCurrent: ["cre/supported-networks-ts", "cre/supported-networks-go"],
+        },
+        {
+          title: "Network Upgrades",
+          url: "cre/network-upgrades",
         },
         {
           title: "Support & Feedback",
@@ -261,6 +475,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               highlightAsCurrent: [
                 "cre/guides/workflow/using-triggers/evm-log-trigger-ts",
                 "cre/guides/workflow/using-triggers/evm-log-trigger-go",
+              ],
+            },
+            {
+              title: "Solana Log Trigger",
+              url: "cre/guides/workflow/using-triggers/solana-log-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/solana-log-trigger-ts",
+                "cre/guides/workflow/using-triggers/solana-log-trigger-go",
               ],
             },
             {
@@ -380,6 +602,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
             {
+              title: "Onchain Read",
+              url: "cre/guides/workflow/using-solana-client/onchain-read",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/onchain-read-ts",
+                "cre/guides/workflow/using-solana-client/onchain-read-go",
+              ],
+            },
+            {
               title: "Onchain Write",
               url: "cre/guides/workflow/using-solana-client/onchain-write",
               highlightAsCurrent: [
@@ -495,6 +725,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/workflow/using-randomness",
           highlightAsCurrent: ["cre/guides/workflow/using-randomness-ts", "cre/guides/workflow/using-randomness-go"],
         },
+        {
+          title: "Building a Reusable Library",
+          url: "cre/guides/workflow/building-a-library",
+          highlightAsCurrent: [
+            "cre/guides/workflow/building-a-library-ts",
+            "cre/guides/workflow/building-a-library-go",
+          ],
+        },
       ],
     },
     {
@@ -513,6 +751,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "cre/guides/operations/deploying-workflows",
           children: [
             {
+              title: "Requesting Deploy Access",
+              url: "cre/guides/operations/deploy-access",
+            },
+            {
+              title: "Linking Wallet Keys",
+              url: "cre/guides/operations/linking-wallet-keys",
+            },
+            {
               title: "Deploying to the Private Registry",
               url: "cre/guides/operations/deploying-to-private-registry",
               highlightAsCurrent: [
@@ -529,6 +775,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
               ],
             },
           ],
+        },
+        {
+          title: "Requesting Confidential Workflows Access",
+          url: "cre/guides/operations/confidential-workflows-access",
         },
         {
           title: "Activating & Pausing Workflows",
@@ -568,52 +818,17 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.CRE),
     {
-      section: "Account & Organization",
+      section: "CLI Setup",
       contents: [
         {
-          title: "Account",
-          url: "cre/account",
-          children: [
-            {
-              title: "Creating Your Account",
-              url: "cre/account/creating-account",
-            },
-            {
-              title: "Logging in with the CLI",
-              url: "cre/account/cli-login",
-            },
-            {
-              title: "Managing Authentication",
-              url: "cre/account/managing-auth",
-            },
-            {
-              title: "Requesting Deploy Access",
-              url: "cre/account/deploy-access",
-            },
-            {
-              title: "Requesting Confidential Workflows Access",
-              url: "cre/account/confidential-workflows-access",
-            },
-          ],
+          title: "Logging in with the CLI",
+          url: "cre/guides/cli/cli-login",
         },
         {
-          title: "Organization",
-          url: "cre/organization",
-          children: [
-            {
-              title: "Understanding Organizations",
-              url: "cre/organization/understanding-organizations",
-            },
-            {
-              title: "Linking Wallet Keys",
-              url: "cre/organization/linking-keys",
-            },
-            {
-              title: "Inviting Team Members",
-              url: "cre/organization/inviting-members",
-            },
-          ],
+          title: "Managing Authentication",
+          url: "cre/guides/cli/managing-auth",
         },
       ],
     },
@@ -623,7 +838,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Overview", url: "cre/capabilities" },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
         { title: "HTTP", url: "cre/capabilities/http" },
-        { title: "Solana Write", url: "cre/capabilities/solana-write" },
+        { title: "Solana Read & Write", url: "cre/capabilities/solana-read-write" },
         { title: "Triggers", url: "cre/capabilities/triggers" },
       ],
     },
@@ -754,6 +969,14 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
                     "cre/reference/sdk/triggers/evm-log-trigger-go",
                   ],
                 },
+                {
+                  title: "Solana Log Trigger",
+                  url: "cre/reference/sdk/triggers/solana-log-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/solana-log-trigger-ts",
+                    "cre/reference/sdk/triggers/solana-log-trigger-go",
+                  ],
+                },
               ],
             },
             {
@@ -798,6 +1021,21 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
           ],
         },
+        {
+          title: "GraphQL API",
+          url: "cre/reference/graphql-api",
+          children: [
+            { title: "Authentication", url: "cre/reference/graphql-api/authentication" },
+            { title: "Quickstart", url: "cre/reference/graphql-api/quickstart" },
+            { title: "Common Queries", url: "cre/reference/graphql-api/common-queries" },
+            { title: "Query Reference", url: "cre/reference/graphql-api/queries" },
+            { title: "Object Reference", url: "cre/reference/graphql-api/objects" },
+            { title: "Enum Reference", url: "cre/reference/graphql-api/enums" },
+            { title: "Input Reference", url: "cre/reference/graphql-api/inputs" },
+            { title: "Pagination", url: "cre/reference/graphql-api/pagination" },
+            { title: "Errors & Rate Limits", url: "cre/reference/graphql-api/errors" },
+          ],
+        },
       ],
     },
     {
@@ -825,15 +1063,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     {
       section: "Chainlink CRE Connect",
       contents: [
-        { title: "Overview", url: "crec" },
+        { title: "Overview", url: "crec/overview" },
+        { title: "Private Beta", url: "crec/private-beta" },
         { title: "Supported Networks", url: "crec/supported-networks" },
         { title: "Release Notes", url: "crec/release-notes" },
       ],
     },
     {
       section: "Getting Started",
-      contents: [{ title: "Get Access", url: "crec/getting-started" }],
+      contents: [
+        { title: "Prerequisites", url: "crec/getting-started/prerequisites" },
+        { title: "SDK Installation", url: "crec/getting-started/sdk-installation" },
+        { title: "Authentication", url: "crec/getting-started/authentication" },
+        { title: "Quickstart: Watch On-Chain Events", url: "crec/getting-started/quickstart-watch-events" },
+        { title: "Quickstart: Send Your First Operation", url: "crec/getting-started/quickstart-send-operation" },
+      ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.CREC),
     {
       section: "Concepts",
       contents: [
@@ -842,19 +1088,206 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         { title: "Watchers", url: "crec/concepts/watchers" },
         { title: "Verifiable Events", url: "crec/concepts/verifiable-events" },
         { title: "Event Verification", url: "crec/concepts/event-verification" },
-        { title: "Operations & Transactions", url: "crec/concepts/operations" },
-        { title: "EIP-712 Signing", url: "crec/concepts/eip712-signing" },
-        { title: "Smart Accounts", url: "crec/concepts/smart-accounts" },
-        { title: "Account Abstraction & Gas Sponsorship", url: "crec/concepts/account-abstraction" },
         { title: "Confidence Levels", url: "crec/concepts/confidence-levels" },
+        { title: "Smart Accounts", url: "crec/concepts/smart-accounts" },
+        { title: "Operations & Transactions", url: "crec/concepts/operations" },
+        { title: "Draft Operations", url: "crec/concepts/drafts" },
+        { title: "Multi-Event Finality", url: "crec/concepts/multi-event-finality" },
+        { title: "EIP-712 Signing", url: "crec/concepts/eip712-signing" },
+        { title: "Account Abstraction & Gas Sponsorship", url: "crec/concepts/account-abstraction" },
+        { title: "Chain Queries", url: "crec/concepts/queries" },
         { title: "Extensions", url: "crec/concepts/extensions" },
+      ],
+    },
+    {
+      section: "Guides",
+      contents: [
+        {
+          title: "Channels",
+          children: [
+            {
+              title: "Create and Manage Channels",
+              url: "crec/guides/channels/manage-channels",
+            },
+          ],
+        },
+        {
+          title: "Watchers",
+          children: [
+            {
+              title: "Create a Watcher with a Predefined Service",
+              url: "crec/guides/watchers/create-with-service",
+            },
+            {
+              title: "Create a Watcher with a Custom ABI",
+              url: "crec/guides/watchers/create-with-abi",
+            },
+            {
+              title: "Manage Watcher Lifecycle",
+              url: "crec/guides/watchers/manage-lifecycle",
+            },
+          ],
+        },
+        {
+          title: "Events",
+          children: [
+            {
+              title: "Poll and Search Events",
+              url: "crec/guides/events/poll-and-search",
+            },
+            {
+              title: "Verify Event Signatures",
+              url: "crec/guides/events/verify-signatures",
+            },
+            {
+              title: "Decode Event Data",
+              url: "crec/guides/events/decode-data",
+            },
+          ],
+        },
+        {
+          title: "Operations",
+          children: [
+            {
+              title: "Build and Sign Operations",
+              url: "crec/guides/operations/build-and-sign",
+            },
+            {
+              title: "Draft Operations",
+              url: "crec/guides/operations/drafts",
+            },
+            {
+              title: "Submit and Track Operations",
+              url: "crec/guides/operations/submit-and-track",
+            },
+            {
+              title: "Batch Transactions",
+              url: "crec/guides/operations/batch-transactions",
+            },
+            {
+              title: "Signing Transparency",
+              url: "crec/guides/operations/signing-transparency",
+            },
+          ],
+        },
+        {
+          title: "Queries",
+          children: [
+            {
+              title: "Execute a Chain Query",
+              url: "crec/guides/queries/execute-a-query",
+            },
+          ],
+        },
+        {
+          title: "Wallets",
+          children: [
+            {
+              title: "Create and Manage Wallets",
+              url: "crec/guides/wallets/create-and-manage",
+            },
+            {
+              title: "Manage Wallet Signers",
+              url: "crec/guides/wallets/manage-signers",
+            },
+          ],
+        },
+        {
+          title: "Signers",
+          children: [
+            {
+              title: "Local (ECDSA) Signer",
+              url: "crec/guides/signers/local",
+            },
+            {
+              title: "AWS KMS Signer",
+              url: "crec/guides/signers/aws-kms",
+            },
+            {
+              title: "HashiCorp Vault Signer",
+              url: "crec/guides/signers/hashicorp-vault",
+            },
+            {
+              title: "Fireblocks Signer",
+              url: "crec/guides/signers/fireblocks",
+            },
+            {
+              title: "Privy Signer",
+              url: "crec/guides/signers/privy",
+            },
+            {
+              title: "Implement a Custom Signer",
+              url: "crec/guides/signers/custom",
+            },
+          ],
+        },
       ],
     },
     {
       section: "Extensions",
       contents: [
-        { title: "Overview", url: "crec/extensions" },
-        { title: "DTA (Digital Transfer Agent)", url: "crec/extensions/dta" },
+        {
+          title: "Extensions Overview",
+          url: "crec/extensions",
+        },
+        {
+          title: "DTA (Digital Transfer Agent)",
+          url: "crec/extensions/dta",
+          children: [
+            {
+              title: "DTA Subscriptions and Redemptions",
+              url: "crec/extensions/dta/subscriptions-redemptions",
+            },
+            {
+              title: "DTA Fund and Distributor Management",
+              url: "crec/extensions/dta/fund-and-distributors",
+            },
+            {
+              title: "DTA Events",
+              url: "crec/extensions/dta/events",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      section: "Reference",
+      contents: [
+        {
+          title: "REST API Reference",
+          url: "crec/reference/rest-api",
+          children: [
+            {
+              title: "REST API Explorer (Swagger)",
+              url: "api/crec/docs",
+              openInNewTab: true,
+            },
+          ],
+        },
+        {
+          title: "Go SDK Reference",
+          url: "crec/reference/go-sdk",
+        },
+        {
+          title: "SDK Configuration Options",
+          url: "crec/reference/sdk-configuration",
+        },
+        {
+          title: "Lifecycles",
+          url: "crec/reference/lifecycles",
+        },
+        {
+          title: "Event Types and Payloads",
+          url: "crec/reference/event-payloads",
+        },
+        {
+          title: "Error Handling",
+          url: "crec/reference/error-handling",
+        },
+        {
+          title: "Service Limits",
+          url: "crec/reference/service-limits",
+        },
       ],
     },
   ],
@@ -864,7 +1297,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Overview",
-          url: "data-feeds",
+          url: "data-feeds/overview",
         },
         {
           title: "Getting Started",
@@ -918,7 +1351,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             },
             { title: "Rate and Volatility Feeds", url: "data-feeds/rates-feeds" },
             { title: "L2 Sequencer Uptime Feeds", url: "data-feeds/l2-sequencer-feeds" },
-            { title: "24/7 Blended Precious Metals Feeds", url: "data-feeds/blended-precious-metals-feeds" },
+            { title: "24/7 Extended-Hours Data Feeds", url: "data-feeds/24-7-extended-hours-data-feeds" },
             { title: "Self-Managed Feeds", url: "data-feeds/self-managed-feeds" },
           ],
         },
@@ -932,7 +1365,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Data+Feeds",
+          url: "https://docs.chain.link/changelog?product=Data+Feeds",
         },
       ],
     },
@@ -1023,6 +1456,23 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Using Data Feeds Onchain",
           url: "data-feeds/solana/using-data-feeds-solana",
+        },
+      ],
+    },
+    {
+      section: "Stellar Guides",
+      contents: [
+        {
+          title: "Data Feeds on Stellar",
+          url: "data-feeds/stellar",
+        },
+        {
+          title: "Using Data Feeds Offchain",
+          url: "data-feeds/stellar/using-data-feeds-off-chain",
+        },
+        {
+          title: "Using Data Feeds Onchain",
+          url: "data-feeds/stellar/using-data-feeds-on-chain",
         },
       ],
     },
@@ -1131,10 +1581,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "architecture-overview/architecture-overview?parent=dataFeeds",
           children: [
             {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=dataFeeds",
-            },
-            {
               title: "Decentralized Data Model",
               url: "architecture-overview/architecture-decentralized-model?parent=dataFeeds",
             },
@@ -1145,12 +1591,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=dataFeeds",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=dataFeeds" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataFeeds" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=dataFeeds",
         },
         {
           title: "Integrating EVM Networks",
@@ -1169,7 +1611,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       contents: [
         {
           title: "Overview",
-          url: "data-streams",
+          url: "data-streams/overview",
         },
         {
           title: "Sign Up for Data Streams",
@@ -1192,15 +1634,20 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/billing",
         },
         {
+          title: "Rate Limits and Fair Use Policy",
+          url: "data-streams/rate-limits",
+        },
+        {
           title: "Data Sources",
           url: "data-streams/data-sources",
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Data+Streams",
+          url: "https://docs.chain.link/changelog?product=Data+Streams",
         },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.DATA_STREAMS),
     {
       section: "Streams & Report Schemas",
       contents: [
@@ -1212,6 +1659,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           title: "Cryptocurrency",
           url: "data-streams/crypto-streams",
           children: [
+            {
+              title: "Report Schema v2 (Crypto Standard)",
+              url: "data-streams/reference/report-schema-v2",
+            },
             {
               title: "Report Schema v3 (Crypto Advanced)",
               url: "data-streams/reference/report-schema-v3",
@@ -1341,6 +1792,10 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "data-streams/architecture",
         },
         {
+          title: "How Report Timestamps Work",
+          url: "data-streams/how-report-timestamps-work",
+        },
+        {
           title: "Best Practices",
           url: "data-streams/concepts/best-practices",
         },
@@ -1398,6 +1853,12 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
             {
               title: "API Reference",
               url: "data-streams/reference/data-streams-api/interface-api",
+              children: [
+                {
+                  title: "Discovery Endpoint",
+                  url: "data-streams/reference/data-streams-api/discovery-endpoint",
+                },
+              ],
             },
             {
               title: "WebSocket Reference",
@@ -1489,30 +1950,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview?parent=dataStreams",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=dataStreams",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=dataStreams",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=dataStreams",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=dataStreams",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=dataStreams" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=dataStreams" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=dataStreams",
         },
         {
           title: "Integrating EVM Networks",
@@ -1559,7 +1998,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Automation",
+          url: "https://docs.chain.link/changelog?product=Automation",
         },
       ],
     },
@@ -1698,30 +2137,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview?parent=automation",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=automation",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=automation",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=automation",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=automation",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=automation" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=automation" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=automation",
         },
         {
           title: "Integrating EVM Networks",
@@ -1764,13 +2181,17 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Functions",
+          url: "https://docs.chain.link/changelog?product=Functions",
         },
       ],
     },
     {
       section: "Guides",
       contents: [
+        {
+          title: "Cancel a Subscription and Withdraw Funds",
+          url: "chainlink-functions/guides/cancel-subscription",
+        },
         {
           title: "Simple Computation",
           url: "chainlink-functions/tutorials/simple-computation",
@@ -1911,30 +2332,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview?parent=chainlinkFunctions",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=chainlinkFunctions",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=chainlinkFunctions",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=chainlinkFunctions",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=chainlinkFunctions",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=chainlinkFunctions" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=chainlinkFunctions" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=chainlinkFunctions",
         },
         {
           title: "Integrating EVM Networks",
@@ -1985,7 +2384,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=VRF",
+          url: "https://docs.chain.link/changelog?product=VRF",
         },
       ],
     },
@@ -2024,19 +2423,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         {
           title: "Get a random number with direct funding",
           url: "vrf/v2-5/direct-funding/get-a-random-number",
-        },
-      ],
-    },
-    {
-      section: "VRF V2 [DEPRECATED]",
-      contents: [
-        {
-          title: "VRF V2 Subscription Method",
-          url: "vrf/v2/subscription",
-        },
-        {
-          title: "VRF V2 Direct Funding Method",
-          url: "vrf/v2/direct-funding",
         },
       ],
     },
@@ -2092,30 +2478,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview?parent=vrf",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model?parent=vrf",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model?parent=vrf",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting?parent=vrf",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications?parent=vrf",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help?parent=vrf" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources?parent=vrf" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help?parent=vrf",
         },
         {
           title: "Integrating EVM Networks",
@@ -2128,7 +2492,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
-  [SIDEBAR_SECTIONS.CCIP]: CCIP_SIDEBAR_CONTENT,
+  [SIDEBAR_SECTIONS.CCIP]: CCIP_V16_SIDEBAR_CONTENT,
+
   [SIDEBAR_SECTIONS.CHAINLINK_LOCAL]: [
     {
       section: "Chainlink Local",
@@ -2155,15 +2520,15 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-local/build/ccip/foundry",
           children: [
             {
-              title: "Using the CCIP Local Simulator",
+              title: "Using the Chainlink Local Simulator",
               url: "chainlink-local/build/ccip/foundry/local-simulator",
             },
             {
-              title: "Using the CCIP Local Simulator in forked environments",
+              title: "Using the Chainlink Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
             },
             {
-              title: "Using the CCIP Local Simulator to fork mainnets",
+              title: "Using the Chainlink Local Simulator to fork mainnets",
               url: "chainlink-local/build/ccip/foundry/forking-mainnets",
             },
             {
@@ -2181,11 +2546,11 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-local/build/ccip/hardhat",
           children: [
             {
-              title: "Using the CCIP Local Simulator",
+              title: "Using the Chainlink Local Simulator",
               url: "chainlink-local/build/ccip/hardhat/local-simulator",
             },
             {
-              title: "Using the CCIP Local Simulator in forked environments",
+              title: "Using the Chainlink Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/hardhat/local-simulator-fork",
             },
           ],
@@ -2195,7 +2560,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           url: "chainlink-local/build/ccip/remix",
           children: [
             {
-              title: "Using the CCIP Local Simulator",
+              title: "Using the Chainlink Local Simulator",
               url: "chainlink-local/build/ccip/remix/local-simulator",
             },
           ],
@@ -2266,7 +2631,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
         {
           title: "Release Notes",
-          url: "https://dev.chain.link/changelog?product=Nodes",
+          url: "https://docs.chain.link/changelog?product=Nodes",
         },
       ],
     },
@@ -2366,74 +2731,6 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
         },
       ],
     },
-    {
-      section: "External Initiators",
-      contents: [
-        {
-          title: "Introduction",
-          url: "chainlink-nodes/external-initiators/external-initiators-introduction",
-        },
-        {
-          title: "Building External Initiators",
-          url: "chainlink-nodes/external-initiators/building-external-initiators",
-        },
-        {
-          title: "Adding External Initiators to Nodes",
-          url: "chainlink-nodes/external-initiators/external-initiators-in-nodes",
-        },
-      ],
-    },
-    {
-      section: "Connect to Any API",
-      contents: [
-        {
-          title: "Overview",
-          url: "any-api/introduction",
-        },
-        {
-          title: "Getting Started",
-          url: "any-api/getting-started",
-        },
-        {
-          title: "Make a GET Request",
-          url: "any-api/get-request/introduction",
-          children: [
-            {
-              title: "Single Word Response",
-              url: "any-api/get-request/examples/single-word-response",
-            },
-            {
-              title: "Multi-Variable Responses",
-              url: "any-api/get-request/examples/multi-variable-responses",
-            },
-            {
-              title: "Array Response",
-              url: "any-api/get-request/examples/array-response",
-            },
-            {
-              title: "Large Responses",
-              url: "any-api/get-request/examples/large-responses",
-            },
-            {
-              title: "Existing Job Request",
-              url: "any-api/get-request/examples/existing-job-request",
-            },
-          ],
-        },
-        {
-          title: "Find Existing Jobs",
-          url: "any-api/find-oracle",
-        },
-        {
-          title: "Testnet Oracles",
-          url: "any-api/testnet-oracles",
-        },
-        {
-          title: "API Reference",
-          url: "any-api/api-reference",
-        },
-      ],
-    },
   ],
   [SIDEBAR_SECTIONS.GLOBAL]: [
     AI_AGENT_RESOURCES_SECTION,
@@ -2489,30 +2786,8 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
           ],
         },
         {
-          title: "Chainlink Architecture",
-          url: "architecture-overview/architecture-overview",
-          children: [
-            {
-              title: "Basic Request Model",
-              url: "architecture-overview/architecture-request-model",
-            },
-            {
-              title: "Decentralized Data Model",
-              url: "architecture-overview/architecture-decentralized-model",
-            },
-            {
-              title: "Offchain Reporting",
-              url: "architecture-overview/off-chain-reporting",
-            },
-          ],
-        },
-        {
-          title: "Developer Communications",
-          url: "resources/developer-communications",
-          children: [
-            { title: "Getting Help", url: "resources/getting-help" },
-            { title: "Hackathon Resources", url: "resources/hackathon-resources" },
-          ],
+          title: "Getting Help",
+          url: "resources/getting-help",
         },
         {
           title: "Integrating EVM Networks",
@@ -2525,6 +2800,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
       ],
     },
   ],
+  [SIDEBAR_SECTIONS.CHAINLINK_PLATFORM]: [CHAINLINK_PLATFORM_SECTION],
   [SIDEBAR_SECTIONS.LEGACY]: [
     {
       section: "VRF V2 Subscription Method [DEPRECATED]",
@@ -2765,3 +3041,7 @@ export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = {
     },
   ],
 }
+
+export const SIDEBAR: Partial<Record<Sections, SectionEntry[]>> = Object.fromEntries(
+  Object.entries(SIDEBAR_WITH_SUNSET_PRODUCTS).filter(([section]) => !isSunsetSidebarSection(section))
+) as Partial<Record<Sections, SectionEntry[]>>

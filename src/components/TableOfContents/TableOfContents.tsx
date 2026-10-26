@@ -7,25 +7,54 @@ import { shouldUpdateToc } from "./tocStore.ts"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { useStore } from "@nanostores/preact"
 
+/**
+ * Drops headings that belong to another product's section. On shared platform
+ * pages the product context lives in `?parent=`, so this can only run client-side.
+ */
+function filterHeadingsForProduct(headings: MarkdownHeading[]): MarkdownHeading[] {
+  if (typeof window === "undefined") return headings
+
+  const parent = new URLSearchParams(window.location.search).get("parent")
+  if (!parent) return headings
+
+  return headings.filter((heading) => {
+    const section = document.getElementById(heading.slug)?.closest<HTMLElement>("[data-product-section]")
+    if (!section) return true
+    return section.dataset.productShared === "true" || section.dataset.productSection === parent
+  })
+}
+
 const TableOfContents: FunctionalComponent<{
   initialHeadings: MarkdownHeading[]
   onUpdateActiveTitle?: (title: string) => void
 }> = ({ initialHeadings, onUpdateActiveTitle }) => {
   const $shouldUpdateToc = useStore(shouldUpdateToc)
 
-  const [headings, setHeadings] = useState<MarkdownHeading[]>(initialHeadings)
+  const [headings, setHeadings] = useState<MarkdownHeading[]>(() => filterHeadingsForProduct(initialHeadings))
   const [activeIds, setActiveIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    // Only get top-level headers, don't get nested component headers
-    const elements = document.querySelectorAll("article section > :where(h1, h2, h3, h4)")
+    const elements = document.querySelectorAll(
+      [
+        "article section > :where(h1, h2, h3, h4)",
+        "article [data-product-section] > :where(h1, h2, h3, h4)",
+        "article astro-anchored-accordion[data-toc-depth]",
+        "article astro-anchored-accordion :where(h1, h2, h3, h4)",
+      ].join(", ")
+    )
     const newHeadings: MarkdownHeading[] = []
+    const parent = new URLSearchParams(window.location.search).get("parent")
 
     elements.forEach((e) => {
-      const depth = Number(e.nodeName.at(1))
+      const el = e as HTMLElement
+      const productSection = el.closest<HTMLElement>("[data-product-section]")
+      const isShared = productSection?.dataset.productShared === "true"
+      if (parent && productSection && !isShared && productSection.dataset.productSection !== parent) return
+
+      const depth = Number(e.nodeName.at(1)) || Number(el.dataset?.tocDepth)
       const slug = e.id
-      const text = e.textContent
-      if (text) {
+      const text = el.dataset?.tocText || e.textContent
+      if (depth && slug && text) {
         newHeadings.push({
           depth,
           slug,
@@ -46,8 +75,13 @@ const TableOfContents: FunctionalComponent<{
           const { id, firstElementChild: first } = target
           if (isIntersecting) {
             newIds.add(id)
-            if (onUpdateActiveTitle && first?.textContent && ["H1", "H2"].includes(first.nodeName)) {
-              onUpdateActiveTitle(first.id === "overview" ? "Overview" : first.textContent)
+            if (onUpdateActiveTitle) {
+              const tocText = (target as HTMLElement).dataset?.tocText
+              if (tocText) {
+                onUpdateActiveTitle(tocText)
+              } else if (first?.textContent && ["H1", "H2"].includes(first.nodeName)) {
+                onUpdateActiveTitle(first.id === "overview" ? "Overview" : first.textContent)
+              }
             }
           } else {
             newIds.delete(id)

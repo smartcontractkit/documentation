@@ -5,6 +5,7 @@ import type { FeedCategoryData } from "../components/useBatchedFeedCategories.ts
 import { getFeedCategoryFromBatch, getNetworkIdentifier } from "../components/useBatchedFeedCategories.ts"
 import { getStreamCategoryFromBatch } from "../components/useBatchedStreamCategories.ts"
 import { StreamsNetworksData } from "../data/StreamsNetworksData.ts"
+import { isFeedIdAddressedNetwork } from "./feedIdAddressedNetworks.ts"
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type FeedMetadata = any
@@ -19,12 +20,18 @@ export function normalizeSearchText(value?: string | null): string {
   return (value ?? "").toLowerCase().replaceAll(" ", "")
 }
 
+/** Product-tier tokens in docs.schema that map to a report schema version. */
+const SCHEMA_ALIASES: Record<string, string> = {
+  Premium: "v3",
+}
+
 /**
  * Resolve RWA stream schema version from docs.schema or clicProductName suffix.
  * Shared by feed visibility, stream filters, and table rendering.
  */
 export function getSchemaVersion(feed: FeedMetadata): string | undefined {
-  if (feed.docs?.schema) return feed.docs.schema
+  const schema = feed.docs?.schema
+  if (schema) return SCHEMA_ALIASES[schema] ?? schema
 
   const clicProductName = feed.docs?.clicProductName
   if (!clicProductName) return undefined
@@ -32,6 +39,8 @@ export function getSchemaVersion(feed: FeedMetadata): string | undefined {
   const match = clicProductName.match(/-0(\d{2})$/)
   if (!match) return undefined
 
+  if (match[1] === "02") return "v2"
+  if (match[1] === "03") return "v3"
   if (match[1] === "04" || match[1] === "08") return "v8"
   if (match[1] === "09") return "v9"
   if (match[1] === "11") return "v11"
@@ -40,8 +49,7 @@ export function getSchemaVersion(feed: FeedMetadata): string | undefined {
 }
 
 export function getFeedContractAddress(network: ChainNetwork, metadata: FeedMetadata): string | undefined {
-  const isAptos = network.name.toLowerCase().includes("aptos")
-  if (isAptos) return metadata.proxyAddress ?? undefined
+  if (isFeedIdAddressedNetwork(network.name)) return metadata.proxyAddress ?? undefined
   return metadata.contractAddress ?? metadata.proxyAddress ?? undefined
 }
 
@@ -71,7 +79,14 @@ export function enrichFeedWithCategory(
       ? getFeedCategoryFromBatch(batchedCategoryData, contractAddress, networkIdentifier).final
       : null
 
-  const finalCategory = resolveFeedCategory(batchFinal, metadata.docs?.shutdownDate, metadata.feedCategory)
+  // Feed-ID-addressed networks (Aptos/Stellar) are not in Supabase yet, so fall
+  // back to the RDD feedCategory for any category, not just "new"/"custom".
+  const finalCategory = resolveFeedCategory(
+    batchFinal,
+    metadata.docs?.shutdownDate,
+    metadata.feedCategory,
+    isFeedIdAddressedNetwork(network.name)
+  )
 
   return { ...metadata, finalCategory }
 }
@@ -146,7 +161,7 @@ export function matches24x5StreamFilter(
 }
 
 /** APAC exchange market-hours tags as they appear in the RDD `docs.marketHours` field. */
-const APAC_MARKET_HOURS_TAGS = new Set(["Tokyo", "Seoul", "Taiwan", "Taipei", "Shanghai", "Shenzhen"])
+const APAC_MARKET_HOURS_TAGS = new Set(["Tokyo", "Seoul", "Taiwan", "Taipei", "Shanghai", "Shenzhen", "HK"])
 
 export function isApacEquitiesStreamFeed(metadata: FeedMetadata): boolean {
   const feedType = metadata.feedType || metadata.docs?.feedType
@@ -279,4 +294,27 @@ export function mergeStreamEnvironmentAvailability(feedAvailability: { mainnet: 
     mainnet: feedAvailability.mainnet || verifierAvailability.mainnet,
     testnet: feedAvailability.testnet || verifierAvailability.testnet,
   }
+}
+
+/** Extract the TWAP window length (in seconds) from stream metadata, if present. */
+export function getTwapWindowSeconds(metadata: FeedMetadata): number | undefined {
+  const clicProductName = metadata.docs?.clicProductName
+  if (typeof clicProductName === "string") {
+    const match = clicProductName.match(/-TWAP-(\d+)s-/i)
+    if (match) {
+      const seconds = Number.parseInt(match[1], 10)
+      if (!Number.isNaN(seconds)) return seconds
+    }
+  }
+
+  const name = metadata.name || metadata.docs?.clicProductName
+  if (typeof name === "string") {
+    const match = name.match(/-TWAP-(\d+)s/i)
+    if (match) {
+      const seconds = Number.parseInt(match[1], 10)
+      if (!Number.isNaN(seconds)) return seconds
+    }
+  }
+
+  return undefined
 }

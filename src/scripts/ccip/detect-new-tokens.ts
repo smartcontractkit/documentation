@@ -26,6 +26,7 @@ import pino from "pino"
 import type { TokensConfig, LanesConfig, ChainsConfig } from "../../config/data/ccip/types.ts"
 import { Environment, Version } from "../../config/data/ccip/types.ts"
 import { loadReferenceData } from "../../config/data/ccip/data.ts"
+import { getSupportedTokenKeys } from "../../config/data/ccip/utils.ts"
 import { getTokenIconUrl } from "../../features/utils/index.ts"
 import { randomUUID } from "crypto"
 import os from "os"
@@ -1189,9 +1190,7 @@ function buildTokenSupportMap(tokensData: TokensConfig, lanesData: LanesConfig):
   Object.keys(lanesData).forEach((sourceChain) => {
     Object.keys(lanesData[sourceChain]).forEach((destChain) => {
       const lane = `${sourceChain}-to-${destChain}`
-      const supportedTokens = lanesData[sourceChain][destChain].supportedTokens || {}
-
-      Object.keys(supportedTokens).forEach((tokenSymbol) => {
+      getSupportedTokenKeys(lanesData[sourceChain][destChain].supportedTokens).forEach((tokenSymbol) => {
         if (tokenSupport[tokenSymbol]) {
           tokenSupport[tokenSymbol].lanes.push(lane)
         }

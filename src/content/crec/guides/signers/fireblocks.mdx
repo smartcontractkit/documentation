@@ -1,0 +1,128 @@
+---
+section: crec
+title: "Fireblocks Signer"
+date: Last Modified
+metadata:
+  description: "Sign Chainlink CRE Connect operations through Fireblocks custody: supports raw-hash signing and EIP-712 typed-data signing with full policy-engine visibility."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+The Fireblocks signer (`github.com/smartcontractkit/crec-sdk/transact/signer/fireblocks`) drives a Fireblocks vault account through the Fireblocks REST API. Two flows are supported:
+
+- **`Sign(ctx, hash)`**: creates a `RAW` signing operation. Fireblocks signs the digest opaquely.
+- **`SignTypedData(ctx, td)`**: creates a `TYPED_MESSAGE` operation with the full EIP-712 typed data, so the Fireblocks policy engine and approvers can see what they are authorising.
+
+Both return an Ethereum-canonical 65-byte `(r, s, v)` signature.
+
+## Prerequisites
+
+- Fireblocks API key.
+- RSA private key (PEM-encoded) for signing JWT requests to the Fireblocks API.
+- A vault account ID containing the secp256k1 signing key.
+- An asset ID (e.g. `ETH`, `ETH_TEST5` for Sepolia, etc.).
+- IAM/policy: the API user has rights to create signing operations on the target vault account.
+
+## Construct the signer
+
+### Explicit parameters
+
+```go
+import "github.com/smartcontractkit/crec-sdk/transact/signer/fireblocks"
+
+privateKeyPEM := os.Getenv("FIREBLOCKS_RSA_PEM") // -----BEGIN RSA PRIVATE KEY-----...
+
+s, err := fireblocks.NewSigner(
+    os.Getenv("FIREBLOCKS_API_KEY"),
+    privateKeyPEM,
+    "0",      // vault account ID
+    "ETH",    // asset ID
+    fireblocks.WithTimeout(60*time.Second),
+    fireblocks.WithPollingInterval(500*time.Millisecond),
+)
+```
+
+### From environment
+
+```go
+s, err := fireblocks.NewSignerFromEnv()
+```
+
+Reads:
+
+| Variable                      | Required | Notes                                                                               |
+| ----------------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `FIREBLOCKS_API_KEY`          | yes      | API key.                                                                            |
+| `FIREBLOCKS_API_SECRET`       | yes      | Inline PEM **or** path to a PEM file.                                               |
+| `FIREBLOCKS_VAULT_ACCOUNT_ID` | yes      | E.g. `"0"`.                                                                         |
+| `FIREBLOCKS_ASSET_ID`         | yes      | E.g. `ETH`, `ETH_TEST5`.                                                            |
+| `FIREBLOCKS_BASE_URL`         | no       | Defaults to `https://api.fireblocks.io`; set to the sandbox URL during development. |
+
+## Derive the signer's address
+
+The signer's secp256k1 address is the EVM address Fireblocks reports for that `(vault account, asset)` pair. Read it once from the Fireblocks console (or via the Fireblocks SDK) and add it to `AllowedEcdsaSigners` when you provision the wallet; see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
+
+## Sign with `Sign` (RAW)
+
+```go
+opHash, sig, err := client.Transact.SignOperation(ctx, op, s, chainSelector)
+```
+
+Internally `Sign(ctx, hash)`:
+
+1. POSTs `/v1/transactions` with `operation: "RAW"` and the digest in the message body.
+2. Polls `/v1/transactions/{id}` every `pollingInterval` (default 500 ms) until the operation reaches a terminal status.
+3. Extracts the `(r, s)` from the signed message and reconstructs the recovery byte `v` so the signature recovers to the vault's public key.
+4. Returns the 65-byte `(r ∥ s ∥ v)` signature.
+
+If the operation reaches `REJECTED`, `CANCELLED`, `FAILED`, or `BLOCKED`, `Sign` returns a wrapped error containing the Fireblocks status string. If `timeout` (default 60 s) elapses first, `Sign` returns `context.DeadlineExceeded`-style error.
+
+## Sign with `SignTypedData` (recommended for human-approved flows)
+
+```go
+import "github.com/smartcontractkit/crec-sdk/transact/signer"
+
+td := &signer.TypedData{
+    Types: map[string][]signer.TypedDataField{
+        "EIP712Domain": {
+            {Name: "name", Type: "string"},
+            {Name: "version", Type: "string"},
+            {Name: "chainId", Type: "uint256"},
+            {Name: "verifyingContract", Type: "address"},
+        },
+        "Operation": { /* ... */ },
+        "Transaction": { /* ... */ },
+    },
+    PrimaryType: "Operation",
+    Domain: signer.TypedDataDomain{
+        Name: "CLLSmartAccount", Version: "1", ChainID: 1,
+        VerifyingContract: op.Account.Hex(),
+    },
+    Message: map[string]any{ /* ... build from op.EIP712Message() ... */ },
+}
+
+sig, err := s.SignTypedData(ctx, td)
+```
+
+Fireblocks uses its `TYPED_MESSAGE` operation, so the policy engine and approvers see the full structured payload (domain, primary type, message fields), not an opaque hash. This is what you want any time a human is approving the operation.
+
+The CRE Connect SDK's `Transact.SignOperation` always calls `Sign(ctx, hash)`. To opt into `SignTypedData`, build a `signer.TypedData` document yourself (you can derive the fields from `op.TypedData(chainSelector)` and `op.EIP712Message()` in `crec-sdk/transact/types`, then translate them into `signer.TypedData` / `signer.TypedDataDomain`), call `s.SignTypedData(ctx, td)`, and pass the resulting signature to `Transact.SendSignedOperation`.
+
+## Operational notes
+
+- **Latency.** Fireblocks operations are asynchronous. Each `SignOperation` polls Fireblocks every `pollingInterval` (default 500ms) until the transaction reaches a terminal status; total latency is therefore set by Fireblocks itself and any approval policy / 3rd-party screening attached to your vault.
+- **Status terminology.** Fireblocks statuses (`PENDING_SIGNATURE`, `PENDING_AUTHORIZATION`, `BROADCASTING`, `COMPLETED`, etc.) are independent from the CRE Connect operation status. The Fireblocks signer only returns control once the **signing** is done; it does **not** broadcast the resulting transaction. CRE Connect handles the on-chain submission.
+- **Policy engine.** Build allow-lists in Fireblocks for `(asset, contract address)` pairs your service needs to call. Reject operations early at Fireblocks rather than at the Smart Account.
+- **Sandbox.** Use `WithBaseURL("https://sandbox-api.fireblocks.io")` for the Fireblocks sandbox during development.
+
+<Aside type="caution" title="Protect the RSA API key">
+  The Fireblocks RSA private key authenticates **every** request and should be treated like a master credential. Store
+  it in a secrets manager and rotate per Fireblocks' guidance.
+</Aside>
+
+## Next steps
+
+- [Signing Transparency](/crec/guides/operations/signing-transparency): feed the same typed data into your audit log.
+- [Privy Signer](/crec/guides/signers/privy): alternative for embedded user wallets.

@@ -54,6 +54,7 @@ import {
   getNetwork,
   encodeCallMsg,
   bytesToHex,
+  handler,
   LAST_FINALIZED_BLOCK_NUMBER,
   type Runtime,
   Runner,
@@ -119,7 +120,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 const initWorkflow = (config: Config) => {
   const cron = new CronCapability()
   return [
-    cron.handler(
+    handler(
       cron.trigger({
         schedule: "*/10 * * * * *", // Every 10 seconds
       }),
@@ -167,6 +168,11 @@ When calling `callContract()`, you can specify which block to read from:
 - **`LAST_FINALIZED_BLOCK_NUMBER`**: Read from the last finalized block (recommended for production)
 - **`LATEST_BLOCK_NUMBER`**: Read from the latest block
 - **Custom block number**: Use a `BigIntJson` object for custom finality depths or historical queries
+
+<Aside type="caution" title="Safe and finalized reads are unreliable on some chains">
+  Safe and finalized reads are not reliably supported on some chains. See [Finality and Confidence
+  Levels](/cre/concepts/finality-ts#using-confidence-levels) for the current list before relying on `FINALIZED` reads.
+</Aside>
 
 ```typescript
 import { LAST_FINALIZED_BLOCK_NUMBER, LATEST_BLOCK_NUMBER } from "@chainlink/cre-sdk"
@@ -305,6 +311,7 @@ import {
   getNetwork,
   encodeCallMsg,
   bytesToHex,
+  handler,
   LAST_FINALIZED_BLOCK_NUMBER,
   type Runtime,
   Runner,
@@ -363,7 +370,7 @@ const onCronTrigger = (runtime: Runtime<Config>): string => {
 const initWorkflow = (config: Config) => {
   const cron = new CronCapability()
   return [
-    cron.handler(
+    handler(
       cron.trigger({
         schedule: "*/10 * * * * *",
       }),

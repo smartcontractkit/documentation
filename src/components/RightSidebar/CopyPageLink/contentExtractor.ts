@@ -34,6 +34,7 @@ const DEFAULT_CONFIG: ExtractionConfig = {
     "button",
     ".copy-iconbutton",
     ".copy-code-button",
+    "[data-copy-exclude]",
 
     // Sidebar and TOC
     ".sidebar",

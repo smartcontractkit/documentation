@@ -1,6 +1,7 @@
 /** @jsxImportSource preact */
 import { useEffect } from "preact/compat"
 import { normalizeTechnologyName } from "@features/utils/index.ts"
+import { getNetworkIconUrl } from "~/config/data/ccip/data.ts"
 
 // List of valid network names that should have icons
 const VALID_NETWORKS = ["Arbitrum", "Avalanche", "BASE", "Celo", "Ethereum", "OP", "Polygon", "Soneium", "ZKSync"]
@@ -30,11 +31,11 @@ export default function NetworkIcons() {
 
       // Get the normalized technology name for the icon path
       const normalizedTech = normalizeTechnologyName(technology)
-      const iconPath = `/assets/chains/${normalizedTech}.svg`
+      const iconPath = getNetworkIconUrl(normalizedTech)
 
       // Create the icon element
       const icon = document.createElement("img")
-      icon.src = iconPath
+      icon.src = iconPath || ""
       icon.alt = `${technology} icon`
       icon.style.width = "24px"
       icon.style.height = "24px"

@@ -1,0 +1,160 @@
+---
+section: ace
+title: "Building an ERC-3643 Compliance Token"
+date: Last Modified
+metadata:
+  description: "Build and deploy an ERC-3643 (T-REX) compliant token using Chainlink ACE's Cross-Chain Identity instead of ONCHAINID: key differences, frozen token behavior, and when to choose ERC-3643."
+  datePublished: "2026-03-31"
+  lastModified: "2026-03-31"
+---
+
+import { Aside } from "@components"
+
+The `ComplianceTokenERC3643` implements the [ERC-3643 (T-REX)](https://eips.ethereum.org/EIPS/eip-3643) `IToken` interface but replaces the canonical T-REX identity and compliance systems with ACE equivalents. It inherits `PolicyProtectedUpgradeable`, is deployed behind a proxy, and routes all state-changing functions through a PolicyEngine.
+
+For a comparison with the ERC-20 variant and guidance on which to choose, see [Building a New Contract](/ace/guides/policy-manager/contracts/new-contract#choosing-between-erc-20-and-erc-3643).
+
+## What makes it ACE-compatible
+
+The token satisfies all the requirements described in [Making Your Contract ACE-Compatible](/ace/guides/policy-manager/contracts/ace-compatible):
+
+1. **Inherits `PolicyProtectedUpgradeable`** — The contract calls `__PolicyProtected_init` during initialization, which sets the contract owner and connects it to a PolicyEngine.
+1. **All state-changing functions are policy-protected** — Every function that modifies state carries the `runPolicy` modifier. The PolicyEngine evaluates all attached policies before the function body executes.
+1. **ERC-7201 namespaced storage** — All token state lives in a dedicated `ComplianceTokenStoreERC3643` storage struct, following the [ERC-7201](https://eips.ethereum.org/EIPS/eip-7201) pattern for safe upgradeable storage.
+
+## How it differs from canonical T-REX
+
+This implementation keeps the `IToken` interface that T-REX tooling and auditors expect, but swaps out the two internal subsystems for ACE equivalents:
+
+### Identity: ACE Cross-Chain Identity replaces ONCHAINID
+
+The canonical T-REX stack uses ONCHAINID for on-chain identity claims. This implementation replaces it with ACE's [Cross-Chain Identity](/ace/concepts/cross-chain-identity) infrastructure (IdentityRegistry and CredentialRegistry). The legacy interface stubs remain to satisfy `IToken` but are not functional:
+
+- `identityRegistry()` returns `address(0)`.
+- `onchainID()` returns `address(0)`.
+- `setIdentityRegistry()` reverts with "Not implemented".
+- `setOnchainID()` reverts with "Not implemented".
+
+Identity verification is handled through ACE policies that validate credentials against the IdentityRegistry and CredentialRegistry.
+
+### Compliance: ACE Policy Management replaces ModularCompliance
+
+The canonical T-REX stack uses `ModularCompliance` for transfer rules. This implementation replaces it with ACE's [Policy Management](/ace/concepts/policy-management) system, where compliance rules are defined as policies attached to the PolicyEngine. The legacy stub remains:
+
+- `compliance()` returns `address(0)`.
+- `setCompliance()` reverts with "Not implemented".
+
+### Wallet recovery not implemented
+
+- `recoveryAddress()` reverts with "Not implemented". Wallet recovery is not supported in this implementation.
+
+## Protected functions
+
+Every state-changing function on the token is policy-protected with [`runPolicy`](/ace/concepts/policy-management#the-policy-execution-flow), which intercepts each call and routes it through the PolicyEngine. The engine evaluates all attached policies before the function body executes. Functions that interact with user balances also carry the `whenNotPaused` modifier, which checks the token's pause state before proceeding.
+
+### Transfers
+
+| Function                           | Modifiers                    | Description                                                                                                                                   |
+| ---------------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `transfer(to, amount)`             | `whenNotPaused`, `runPolicy` | Transfer tokens from the caller to another address. Checks that neither wallet is frozen and that the sender has sufficient unfrozen balance. |
+| `transferFrom(from, to, amount)`   | `whenNotPaused`, `runPolicy` | Transfer tokens on behalf of another address using an allowance. Same frozen and balance checks as `transfer`.                                |
+| `forcedTransfer(from, to, amount)` | `runPolicy`                  | Administrative transfer that auto-unfreezes tokens if the unfrozen balance is insufficient.                                                   |
+
+### Allowances
+
+| Function                                      | Modifiers                    | Description                     |
+| --------------------------------------------- | ---------------------------- | ------------------------------- |
+| `approve(spender, amount)`                    | `whenNotPaused`, `runPolicy` | Set an allowance for a spender. |
+| `increaseAllowance(spender, addedValue)`      | `whenNotPaused`, `runPolicy` | Increase an existing allowance. |
+| `decreaseAllowance(spender, subtractedValue)` | `whenNotPaused`, `runPolicy` | Decrease an existing allowance. |
+
+### Minting and burning
+
+| Function                    | <div style="width: 100px;">Modifiers</div> | Description                                                                                    |
+| --------------------------- | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| `mint(to, amount)`          | `runPolicy`                                | Create new tokens and assign them to an address.                                               |
+| `burn(userAddress, amount)` | `runPolicy`                                | Destroy tokens from an address. Auto-unfreezes tokens if the unfrozen balance is insufficient. |
+
+### Freezing
+
+| Function                                     | <div style="width: 100px;">Modifiers</div> | Description                                                                                                     |
+| -------------------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| `setAddressFrozen(userAddress, freeze)`      | `runPolicy`                                | Freeze or unfreeze an entire address. A frozen address cannot send or receive tokens through regular transfers. |
+| `freezePartialTokens(userAddress, amount)`   | `runPolicy`                                | Freeze a specific amount of tokens on an account.                                                               |
+| `unfreezePartialTokens(userAddress, amount)` | `runPolicy`                                | Unfreeze a previously frozen amount on an account.                                                              |
+
+### Token administration
+
+| Function            | Modifiers   | Description                                                      |
+| ------------------- | ----------- | ---------------------------------------------------------------- |
+| `pause()`           | `runPolicy` | Pause the token. All functions with `whenNotPaused` will revert. |
+| `unpause()`         | `runPolicy` | Unpause the token.                                               |
+| `setName(name)`     | `runPolicy` | Update the token name.                                           |
+| `setSymbol(symbol)` | `runPolicy` | Update the token symbol.                                         |
+
+## Frozen token behavior
+
+`ComplianceTokenERC3643` uses an **automatic unfreezing** model, following the standard T-REX approach. There are two independent freeze mechanisms:
+
+- **Address freeze** — A boolean flag (`frozen[address]`) that blocks an address from sending or receiving tokens through regular `transfer` and `transferFrom` calls.
+- **Partial token freeze** — A numeric amount (`frozenTokens[address]`) that restricts how many of an account's tokens can be moved. Available balance = total balance - frozen tokens.
+
+Regular transfers check both: the wallet must not be address-frozen, and the transfer amount must not exceed the unfrozen balance.
+
+**Administrative operations auto-unfreeze.** When `forcedTransfer` or `burn` is called and the unfrozen balance is insufficient, the contract automatically reduces `frozenTokens` by the shortfall and emits a `TokensUnfrozen` event. This means administrative actions are never blocked by partial frozen status — the admin has already decided the operation is necessary.
+
+<Aside type="tip" title="ERC-20 handles this differently">
+  The [ERC-20 compliance token](/ace/guides/policy-manager/contracts/erc20-token) uses strict preservation — frozen
+  tokens remain frozen during all operations, and an admin must explicitly unfreeze before burning or
+  force-transferring. See [Building a New
+  Contract](/ace/guides/policy-manager/contracts/new-contract#frozen-token-behavior-explained) for a detailed
+  comparison.
+</Aside>
+
+## Built-in pause
+
+The token includes a built-in `pause`/`unpause` mechanism. Both functions are policy-protected. When paused, all functions carrying the `whenNotPaused` modifier revert — this includes `transfer`, `transferFrom`, `approve`, `increaseAllowance`, and `decreaseAllowance`.
+
+Administrative functions (`mint`, `burn`, `forcedTransfer`, freeze operations) do **not** carry `whenNotPaused` and remain callable while the token is paused.
+
+<Aside type="note" title="ERC-20 uses a PausePolicy instead">
+  The ERC-20 compliance token does not have a built-in pause mechanism. To add pause functionality to an ERC-20 token,
+  attach a PausePolicy to the relevant functions through the PolicyEngine.
+</Aside>
+
+## Batch operations
+
+The ERC-3643 token supports batch operations for managing large numbers of holders efficiently:
+
+- `batchTransfer` — Transfer to multiple recipients in a single transaction.
+- `batchForcedTransfer` — Force-transfer between multiple address pairs.
+- `batchMint` — Mint to multiple recipients.
+- `batchBurn` — Burn from multiple addresses.
+- `batchSetAddressFrozen` — Freeze or unfreeze multiple addresses.
+- `batchFreezePartialTokens` — Freeze token amounts on multiple accounts.
+- `batchUnfreezePartialTokens` — Unfreeze token amounts on multiple accounts.
+
+Each batch function delegates to its single-item counterpart in a loop, so every individual operation goes through `runPolicy` independently.
+
+## Storage layout
+
+All token state is stored in `ComplianceTokenStoreERC3643`, which uses ERC-7201 namespaced storage at a deterministic slot:
+
+| Field           | Type                                              | Description                       |
+| --------------- | ------------------------------------------------- | --------------------------------- |
+| `tokenName`     | `string`                                          | Token name.                       |
+| `tokenSymbol`   | `string`                                          | Token symbol.                     |
+| `tokenDecimals` | `uint8`                                           | Decimal precision for display.    |
+| `tokenPaused`   | `bool`                                            | Whether the token is paused.      |
+| `totalSupply`   | `uint256`                                         | Total supply of tokens.           |
+| `balances`      | `mapping(address => uint256)`                     | Per-account token balances.       |
+| `allowances`    | `mapping(address => mapping(address => uint256))` | Per-account spender allowances.   |
+| `frozen`        | `mapping(address => bool)`                        | Per-account address freeze flag.  |
+| `frozenTokens`  | `mapping(address => uint256)`                     | Per-account frozen token amounts. |
+
+## Reference implementation
+
+The full source code for the ERC-3643 compliance token:
+
+- [ComplianceTokenERC3643.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/tokens/erc-3643/src/ComplianceTokenERC3643.sol) — Token contract implementing the `IToken` interface with ACE policy protection.
+- [ComplianceTokenStoreERC3643.sol](https://github.com/smartcontractkit/chainlink-ace/blob/main/packages/tokens/erc-3643/src/ComplianceTokenStoreERC3643.sol) — ERC-7201 namespaced storage layout.

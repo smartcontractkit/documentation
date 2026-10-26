@@ -90,6 +90,8 @@ export type SupportedTechnology =
 
 export type ChainType = "evm" | "solana" | "aptos" | "sui" | "canton" | "ton" | "tron" | "stellar" | "starknet"
 
+export type CcipVersion = "v2.0" | "v1.6"
+
 export type ChainFamily = "evm" | "aptos" | "sui" | "solana" | "tron" | "canton" | "ton" | "stellar" | "starknet"
 
 export type SupportedChain =
@@ -121,6 +123,7 @@ export type SupportedChain =
   | "BLAST_SEPOLIA"
   | "CELO_MAINNET"
   | "CELO_ALFAJORES"
+  | "CELO_SEPOLIA"
   | "SCROLL_MAINNET"
   | "SCROLL_SEPOLIA"
   | "LINEA_MAINNET"
@@ -179,6 +182,7 @@ export type SupportedChain =
   | "LENS_MAINNET"
   | "BERACHAIN_MAINNET"
   | "BERACHAIN_BARTIO"
+  | "BERACHAIN_BEPOLIA"
   | "HYPEREVM_MAINNET"
   | "HYPEREVM_TESTNET"
   | "MERLIN_TESTNET"
@@ -229,6 +233,8 @@ export type SupportedChain =
   | "ROOTSTOCK_MAINNET"
   | "GRAVITY_MAINNET"
   | "GRAVITY_TESTNET"
+  | "GRAVITY_MAINNET_2"
+  | "GRAVITY_TESTNET_LONGEVITY"
   | "ETHERLINK_TESTNET"
   | "ETHERLINK_MAINNET"
   | "OPBNB_MAINNET"
@@ -255,6 +261,7 @@ export type SupportedChain =
   | "BITTENSOR_MAINNET"
   | "EVERCLEAR_MAINNET"
   | "AB_CHAIN_MAINNET"
+  | "AB_CHAIN_TESTNET"
   | "MONAD_MAINNET"
   | "NEXON_HENESYS_MAINNET"
   | "PHAROS_ATLANTIC_TESTNET"
@@ -263,10 +270,13 @@ export type SupportedChain =
   | "MORPH_HOODI_TESTNET"
   | "JOVAY_MAINNET"
   | "JOVAY_TESTNET"
+  | "MOVA_MAINNET"
+  | "MOVA_TESTNET"
   | "STABLE_MAINNET"
   | "TEMPO_TESTNET"
   | "TEMPO_TESTNET_MODERATO"
   | "TEMPO_MAINNET"
+  | "ARC_NETWORK_MAINNET"
   | "ARC_NETWORK_TESTNET"
   | "DOGE_OS_CHIKYU_TESTNET"
   | "ADI_NETWORK_AB_TESTNET"
@@ -280,6 +290,7 @@ export type SupportedChain =
   | "CANTON_TESTNET"
   | "CANTON_MAINNET"
   | "CREDITCOIN_MAINNET"
+  | "CREDITCOIN_TESTNET"
 
 export type ExplorerInfo = {
   baseUrl: string

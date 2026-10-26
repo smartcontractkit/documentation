@@ -1,0 +1,141 @@
+---
+section: cre
+title: "Authentication"
+date: Last Modified
+metadata:
+  description: "Authenticate requests to the CRE GraphQL API using an API key and the Authorization header."
+  datePublished: "2026-08-31"
+  lastModified: "2026-10-02"
+---
+
+import { Aside } from "@components"
+
+Every request to the CRE GraphQL API must include an `Authorization` header carrying a CRE API key.
+
+<Aside type="note" title="Deploy access required">
+  Creating an API key requires your account to have deploy access approval. Run `cre account access` with the CRE CLI to
+  check your status or submit a request. See [Requesting Deploy Access](/cre/guides/operations/deploy-access).
+</Aside>
+
+## Creating an API key
+
+API keys for CRE are created from [app.chain.link](https://app.chain.link), not from the GraphQL API itself.
+
+<Aside type="note" title="To create an API key for CRE">
+- You must be the organization **Owner**
+  
+  **OR** 
+  
+- Have the CRE **Admin** role.
+
+For information about role-based access, see [RBAC](/chainlink-platform/rbac?parent=cre#cre). To invite team members and assign roles, see [Invite members](/chainlink-platform/inviting-team-members?parent=cre).
+
+</Aside>
+
+1. [Create an account](/chainlink-platform/creating-an-account?parent=cre) or sign in to <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a>.
+1. Click on your account's icon in the top-right corner of the navbar and go to **Org settings** to open the **Organization** page, then navigate to the **API Keys** tab.
+1. Click **Create API Key** and enter a name for the key.
+1. In the **API Scope** section, expand the **CRE** accordion and grant the key the permissions that the CLI uses. For the Organization permission, expand the **Chainlink Platform** accordion.
+
+   | Name                  | Action | Permission ID                              |
+   | --------------------- | ------ | ------------------------------------------ |
+   | Workflow              | Read   | `cre:workflow:read`                        |
+   | Workflow              | Write  | `cre:workflow:write/private_registry`      |
+   | Workflow artifact     | Read   | `cre:workflow:artifact:read`               |
+   | Workflow artifact     | Write  | `cre:workflow:artifact:write`              |
+   | Owner address linking | Write  | `platform:owner_address:linking:write/cre` |
+
+   See [API Keys](/chainlink-platform/api-keys?parent=cre#cre) for the full list of permissions available for CRE.
+
+1. Click **Create API Key**, then copy the key and click **Done**. The API key is displayed only once.
+
+This is the same key used for `CRE_API_KEY` with the CRE CLI. For the full walkthrough, see [API key authentication](/cre/reference/cli/authentication#api-key-authentication) in the CLI reference.
+
+<Aside type="caution" title="Keep your API key secure">
+  Treat your API key like a password. Do not commit it to version control, share it in plain text, or feed it to an
+  agent via prompt. Store it in your application's or CI/CD platform's secret management.
+</Aside>
+
+## Sending the API key
+
+Send the key in the `Authorization` header using the `Apikey` scheme — **not** `Bearer`:
+
+```http
+Authorization: Apikey <CRE_API_KEY>
+```
+
+### cURL
+
+```bash
+curl -X POST \
+  https://api.cre.chain.link/graphql \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Apikey <CRE_API_KEY>" \
+  -d '{
+    "query": "query { getAccountDetails { memberId displayName emailAddress } }"
+  }'
+```
+
+### TypeScript
+
+```typescript
+const response = await fetch("https://api.cre.chain.link/graphql", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Apikey ${process.env.CRE_API_KEY}`,
+  },
+  body: JSON.stringify({
+    query: `query { getAccountDetails { memberId displayName emailAddress } }`,
+  }),
+})
+
+const result = await response.json()
+```
+
+### Go
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+)
+
+func main() {
+	reqBody, _ := json.Marshal(map[string]string{
+		"query": `query { getAccountDetails { memberId displayName emailAddress } }`,
+	})
+
+	req, err := http.NewRequest("POST", "https://api.cre.chain.link/graphql", bytes.NewBuffer(reqBody))
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Apikey "+os.Getenv("CRE_API_KEY"))
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+
+	var result map[string]any
+	json.NewDecoder(resp.Body).Decode(&result)
+	fmt.Println(result)
+}
+```
+
+## Invalid or missing credentials
+
+If the `Authorization` header is missing, malformed, or carries an invalid or expired key, the request fails authentication. See [Errors & Rate Limits](/cre/reference/graphql-api/errors#authentication-errors) for how to detect and handle this in your client — check both the HTTP status code and the response body's `errors` array, since either can carry the failure.
+
+## Related
+
+- [Quickstart](/cre/reference/graphql-api/quickstart)
+- [Requesting Deploy Access](/cre/guides/operations/deploy-access)
+- [CLI: API key authentication](/cre/reference/cli/authentication#api-key-authentication)

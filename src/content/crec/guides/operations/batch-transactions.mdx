@@ -1,0 +1,139 @@
+---
+section: crec
+title: "Batch Multiple Transactions"
+date: Last Modified
+metadata:
+  description: "Group multiple Transactions into one Chainlink CRE Connect Operation so they execute atomically (all-or-nothing) under a single EIP-712 signature."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+A CRE Connect operation can carry **any number of transactions**. The Smart Account executes them in order under a single signature; if any sub-call reverts, the entire operation reverts and the on-chain state is rolled back.
+
+## When batching matters
+
+| Pattern                    | Why batch                                                      |
+| -------------------------- | -------------------------------------------------------------- |
+| `approve` + `transferFrom` | Avoids the two-tx race where a user front-runs your transfer.  |
+| `wrap` + `swap` + `unwrap` | All three legs revert together if any fails: no stranded WETH. |
+| Multi-recipient airdrop    | One signature, one fee, one inclusion guarantee.               |
+| Multi-asset rebalance      | Atomic invariants across positions.                            |
+
+## Build the batch
+
+Each leg is a `types.Transaction`. Append them in execution order:
+
+```go
+import (
+    "math/big"
+    "github.com/ethereum/go-ethereum/common"
+    "github.com/ethereum/go-ethereum/common/hexutil"
+    "github.com/smartcontractkit/crec-sdk/transact/types"
+)
+
+approveData, _ := erc20ABI.Pack("approve", spender, amount)
+transferData, _ := vaultABI.Pack("deposit", amount)
+
+op := &types.Operation{
+    ID:       big.NewInt(time.Now().Unix()),
+    Account:  smartAccount,
+    Deadline: big.NewInt(time.Now().Add(5 * time.Minute).Unix()),
+    Transactions: []types.Transaction{
+        {
+            To:    tokenAddr,
+            Value: big.NewInt(0),
+            Data:  hexutil.Bytes(approveData),
+        },
+        {
+            To:    vaultAddr,
+            Value: big.NewInt(0),
+            Data:  hexutil.Bytes(transferData),
+        },
+    },
+}
+```
+
+Sign and submit exactly as you would a single-transaction operation:
+
+```go
+opr, err := client.Transact.ExecuteOperation(ctx, channelID, signer, op, chainSelector)
+```
+
+The Smart Account will:
+
+1. Verify the signature against `op.Account`.
+2. Check `op.Deadline > block.timestamp`.
+3. Check `op.ID` has not been used before.
+4. Loop over `op.Transactions` and `call(to, value, data)` for each.
+5. Revert atomically if any sub-call reverts.
+
+## Sending native value
+
+Each transaction can carry its own `value`. The total `sum(value)` must be available on the Smart Account at execution time:
+
+```go
+op.Transactions = []types.Transaction{
+    {To: alice, Value: big.NewInt(1e17), Data: nil}, // 0.1 ETH
+    {To: bob,   Value: big.NewInt(1e17), Data: nil}, // 0.1 ETH
+}
+```
+
+For pure transfers `Data` can be empty. Top up the Smart Account first if it does not hold the funds; see [Wallets: Create and Manage](/crec/guides/wallets/create-and-manage).
+
+## Order matters
+
+Transactions execute in the order they appear in `Transactions`. CRE Connect does not re-order, dedupe, or merge them.
+
+<Aside type="note" title="No partial success">
+  A batched operation is all-or-nothing. There is no way to mark one leg as "best effort": if you need that semantics,
+  submit two separate operations.
+</Aside>
+
+## Operation ID rules still apply
+
+`op.ID` is a per-account nonce. A batched operation uses **one** ID; the Smart Account does not increment one ID per leg. After confirmation the ID is consumed and cannot be reused.
+
+If you use `time.Now().Unix()` as the ID and submit two operations within the same second, the second submission will be rejected (`already exists` from the API or `nonce reused` from the Smart Account). Bump by one second or use a different scheme:
+
+```go
+op.ID = new(big.Int).SetInt64(time.Now().UnixNano()) // higher resolution
+```
+
+## Gas considerations
+
+The DON pays gas: there's no per-leg gas limit you need to set. However, every leg in the batch is executed inside a single transaction by the Smart Account, so the combined gas usage of all legs must fit in a single block on the destination chain. If a batch is too large, the operation fails at execution time with the failure reason on the `operation.status` event. There is no enforced cap from the SDK or API; size your batches against the per-block gas limit of each network you target.
+
+## Example: ERC-20 approve-then-deposit
+
+```go
+const erc20Json = `[{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"value","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"}]`
+const vaultJson = `[{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"deposit","outputs":[],"stateMutability":"nonpayable","type":"function"}]`
+
+erc20, _ := abi.JSON(strings.NewReader(erc20Json))
+vault, _ := abi.JSON(strings.NewReader(vaultJson))
+
+amount := big.NewInt(1_000_000) // 1 USDC
+approveCalldata, _ := erc20.Pack("approve", vaultAddr, amount)
+depositCalldata, _ := vault.Pack("deposit", amount)
+
+op := &types.Operation{
+    ID:       big.NewInt(time.Now().Unix()),
+    Account:  smartAccount,
+    Deadline: big.NewInt(0),
+    Transactions: []types.Transaction{
+        {To: usdcAddr, Value: big.NewInt(0), Data: hexutil.Bytes(approveCalldata)},
+        {To: vaultAddr, Value: big.NewInt(0), Data: hexutil.Bytes(depositCalldata)},
+    },
+}
+
+opr, err := client.Transact.ExecuteOperation(ctx, channelID, signer, op, chainSelector)
+```
+
+If the vault `deposit` reverts (e.g. balance check fails), the `approve` is rolled back too: the `allowance` returns to its prior value.
+
+## Next steps
+
+- [Submit and Track Operations](/crec/guides/operations/submit-and-track): drive the batch through to `confirmed`.
+- [Signing Transparency](/crec/guides/operations/signing-transparency): make multi-leg signatures auditable.

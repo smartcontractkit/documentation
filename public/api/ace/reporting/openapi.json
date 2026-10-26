@@ -1,0 +1,2918 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Chainlink ACE Reporting API",
+    "version": "1.0.0",
+    "description": "Read-only API for querying onchain state, transaction history, policy configurations, identities, and credentials"
+  },
+  "servers": [
+    {
+      "url": "https://ace.api.chain.link/v1/reporting",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ],
+  "x-constants": {
+    "address": "0x1234567890123456789012345678901234567890",
+    "eth_sepolia_chain_selector": "16015286601757825753",
+    "timestamp": "2024-05-17T00:00:00Z",
+    "block_number": 19876543,
+    "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+    "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+    "bytes32": "0xaabbccdd00112233aabbccdd00112233aabbccdd00112233aabbccdd00112233",
+    "method_selector": "0xa9059cbb",
+    "hex_bytes": "0x7b226e616d65223a22416c696365227d",
+    "error_bad_request": {
+      "message": "Invalid request parameters",
+      "code": "BAD_REQUEST"
+    },
+    "error_not_found": {
+      "message": "Resource not found",
+      "code": "NOT_FOUND"
+    },
+    "error_internal": {
+      "message": "Internal server error",
+      "code": "INTERNAL_ERROR"
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "operationId": "getHealth",
+        "tags": ["Health Check"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "example": {
+                  "status": "ok"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policies": {
+      "get": {
+        "summary": "List policies",
+        "description": "Retrieve a list of policies. Returns state as of the specified time.",
+        "operationId": "listPolicies",
+        "tags": ["Policies"],
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "description": "Show policies active as of given time (ISO 8601 format). Returns historical state.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-05-17T00:00:00Z"
+            }
+          },
+          {
+            "name": "policy_engine_address",
+            "in": "query",
+            "description": "Filter by policy engine address",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "owner",
+            "in": "query",
+            "description": "Filter by owner address",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "chain_selector",
+            "in": "query",
+            "description": "Filter by chain selector (uint64)",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "include_policy_details",
+            "in": "query",
+            "description": "Include policy state JSON in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results per page",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PageSize"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AdminOrgId"
+          },
+          {
+            "name": "page_token",
+            "in": "query",
+            "description": "Token for pagination",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of policies",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyListResponse"
+                },
+                "example": {
+                  "policies": [
+                    {
+                      "chain_selector": "16015286601757825753",
+                      "address": "0x1234567890123456789012345678901234567890",
+                      "owner": "0x1234567890123456789012345678901234567890",
+                      "name": "Policy A",
+                      "description": "Description for Policy A",
+                      "policy_engine_address": "0x1234567890123456789012345678901234567890",
+                      "version": 1,
+                      "state": null,
+                      "effective_from": "2024-05-17T00:00:00Z",
+                      "effective_to": null,
+                      "block_number": 19876543,
+                      "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                      "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                    }
+                  ],
+                  "next_page_token": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policies/{chain_selector}/{address}": {
+      "get": {
+        "summary": "Get policy by chain and address",
+        "description": "Retrieve a specific policy by its chain selector and address at a given point in time. Returns the policy version that was active at the specified as_of time.",
+        "operationId": "getPolicy",
+        "tags": ["Policies"],
+        "parameters": [
+          {
+            "name": "chain_selector",
+            "in": "path",
+            "required": true,
+            "description": "Chain selector where the policy is deployed",
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "Policy contract address",
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "description": "Show policy state as of given time (ISO 8601 format). Returns historical state.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-05-17T00:00:00Z"
+            }
+          },
+          {
+            "name": "include_policy_details",
+            "in": "query",
+            "description": "Include policy state JSON in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Policy details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyData"
+                },
+                "example": {
+                  "chain_selector": "16015286601757825753",
+                  "address": "0x1234567890123456789012345678901234567890",
+                  "owner": "0x1234567890123456789012345678901234567890",
+                  "name": "Policy A",
+                  "description": "Description for Policy A",
+                  "policy_engine_address": "0x1234567890123456789012345678901234567890",
+                  "version": 1,
+                  "state": null,
+                  "effective_from": "2024-05-17T00:00:00Z",
+                  "effective_to": null,
+                  "block_number": 19876543,
+                  "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                  "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Policy not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Resource not found",
+                  "code": "NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/policies/{chain_selector}/{address}/versions/{version}": {
+      "get": {
+        "summary": "Get specific policy version",
+        "description": "Retrieve a specific version of a policy (version can be numeric or \"latest\")",
+        "operationId": "getPolicyVersion",
+        "tags": ["Policies"],
+        "parameters": [
+          {
+            "name": "chain_selector",
+            "in": "path",
+            "required": true,
+            "description": "Chain selector where the policy is deployed",
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "Policy contract address",
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "description": "Version number or \"latest\"",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Policy version",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PolicyData"
+                },
+                "example": {
+                  "chain_selector": "16015286601757825753",
+                  "address": "0x1234567890123456789012345678901234567890",
+                  "owner": "0x1234567890123456789012345678901234567890",
+                  "name": "Policy A",
+                  "description": "Description for Policy A",
+                  "policy_engine_address": "0x1234567890123456789012345678901234567890",
+                  "version": 1,
+                  "state": null,
+                  "effective_from": "2024-05-17T00:00:00Z",
+                  "effective_to": null,
+                  "block_number": 19876543,
+                  "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                  "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Policy or version not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Resource not found",
+                  "code": "NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/identities": {
+      "get": {
+        "summary": "List identities",
+        "description": "Retrieve a list of identities with various filters.\n- Filter by wallet address to find which identity owns it\n- Filter by identity registry to see all identities in a registry\n- Filter by credential type to find identities with specific credentials\n- Filter by credential registry to see identities with credentials from that registry\n",
+        "operationId": "listIdentities",
+        "tags": ["Identities"],
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "description": "Show identities active as of given time (ISO 8601 format). Returns historical state.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-05-17T00:00:00Z"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "description": "Filter by wallet address (find identity that owns this address)",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "identity_registry",
+            "in": "query",
+            "description": "Filter by identity registry address",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "credential_registry",
+            "in": "query",
+            "description": "Filter by credential registry address (find identities with credentials from this registry)",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "credential_type_id",
+            "in": "query",
+            "description": "Filter by credential type ID (find identities with this credential type)",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Bytes32"
+            }
+          },
+          {
+            "name": "chain_selector",
+            "in": "query",
+            "description": "Filter by chain selector",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "include_credential_details",
+            "in": "query",
+            "description": "Include full credential data for each identity",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results per page",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PageSize"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AdminOrgId"
+          },
+          {
+            "name": "page_token",
+            "in": "query",
+            "description": "Token for pagination",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of identities",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityListResponse"
+                },
+                "example": {
+                  "identities": [
+                    {
+                      "ccid": "0xaabbccdd00112233aabbccdd00112233aabbccdd00112233aabbccdd00112233",
+                      "registries": [
+                        {
+                          "registry_address": "0x1234567890123456789012345678901234567890",
+                          "chain_selector": "16015286601757825753",
+                          "addresses": [
+                            {
+                              "address": "0x1234567890123456789012345678901234567890",
+                              "effective_from": "2024-05-17T00:00:00Z",
+                              "effective_to": null,
+                              "block_number": 19876543,
+                              "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                              "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                            }
+                          ],
+                          "block_timestamp": "2024-05-17T00:00:00Z",
+                          "block_number": 19876543,
+                          "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                          "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                        }
+                      ],
+                      "credentials": [
+                        {
+                          "credential_type_id": "0xaabbccdd00112233aabbccdd00112233aabbccdd00112233aabbccdd00112233",
+                          "credential_registry": {
+                            "address": "0x1234567890123456789012345678901234567890",
+                            "chain_selector": "16015286601757825753",
+                            "block_timestamp": "2024-05-17T00:00:00Z",
+                            "block_number": 19876543,
+                            "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                            "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                          },
+                          "expires_at": null,
+                          "credential_data": "0x7b226e616d65223a22416c696365227d",
+                          "effective_from": "2024-05-17T00:00:00Z",
+                          "effective_to": null,
+                          "block_number": 19876543,
+                          "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                          "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                        }
+                      ]
+                    }
+                  ],
+                  "next_page_token": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/identities/{ccid}": {
+      "get": {
+        "summary": "Get identity by CCID",
+        "description": "Retrieve a specific identity by its Cross-Chain ID (CCID).\nReturns the full identity with all registries, addresses, and optionally credentials.\n",
+        "operationId": "getIdentityByCCID",
+        "tags": ["Identities"],
+        "parameters": [
+          {
+            "name": "ccid",
+            "in": "path",
+            "required": true,
+            "description": "Cross-Chain ID (CCID) - 66 character hex string",
+            "schema": {
+              "$ref": "#/components/schemas/Bytes32"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "description": "Show identity state as of given time (ISO 8601 format). Returns historical state.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-05-17T00:00:00Z"
+            }
+          },
+          {
+            "name": "include_credential_details",
+            "in": "query",
+            "description": "Include full credential data",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Identity details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdentityData"
+                },
+                "example": {
+                  "ccid": "0xaabbccdd00112233aabbccdd00112233aabbccdd00112233aabbccdd00112233",
+                  "registries": [
+                    {
+                      "registry_address": "0x1234567890123456789012345678901234567890",
+                      "chain_selector": "16015286601757825753",
+                      "addresses": [
+                        {
+                          "address": "0x1234567890123456789012345678901234567890",
+                          "effective_from": "2024-05-17T00:00:00Z",
+                          "effective_to": null,
+                          "block_number": 19876543,
+                          "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                          "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                        }
+                      ],
+                      "block_timestamp": "2024-05-17T00:00:00Z",
+                      "block_number": 19876543,
+                      "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                      "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                    }
+                  ],
+                  "credentials": [
+                    {
+                      "credential_type_id": "0xaabbccdd00112233aabbccdd00112233aabbccdd00112233aabbccdd00112233",
+                      "credential_registry": {
+                        "address": "0x1234567890123456789012345678901234567890",
+                        "chain_selector": "16015286601757825753",
+                        "block_timestamp": "2024-05-17T00:00:00Z",
+                        "block_number": 19876543,
+                        "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                        "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                      },
+                      "expires_at": null,
+                      "credential_data": "0x7b226e616d65223a22416c696365227d",
+                      "effective_from": "2024-05-17T00:00:00Z",
+                      "effective_to": null,
+                      "block_number": 19876543,
+                      "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                      "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Identity not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Resource not found",
+                  "code": "NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/targets": {
+      "get": {
+        "summary": "List targets",
+        "description": "Retrieve a list of targets (contracts protected by policy engines).\n- Filter by policy engine address to see targets attached to a specific engine\n- Filter by chain selector to see targets on a specific chain\n- Use include_policy_details to get full policy configuration for each target\n",
+        "operationId": "listTargets",
+        "tags": ["Targets"],
+        "parameters": [
+          {
+            "name": "as_of",
+            "in": "query",
+            "description": "Show targets active as of given time (ISO 8601 format). Returns historical state.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-05-17T00:00:00Z"
+            }
+          },
+          {
+            "name": "policy_engine_address",
+            "in": "query",
+            "description": "Filter by policy engine address",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "chain_selector",
+            "in": "query",
+            "description": "Filter by chain selector",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "include_policy_details",
+            "in": "query",
+            "description": "Include policy state JSON in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results per page",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PageSize"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AdminOrgId"
+          },
+          {
+            "name": "page_token",
+            "in": "query",
+            "description": "Token for pagination",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of targets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetListResponse"
+                },
+                "example": {
+                  "targets": [
+                    {
+                      "chain_selector": "16015286601757825753",
+                      "address": "0x1234567890123456789012345678901234567890",
+                      "policy_engines": [
+                        {
+                          "policy_engine_address": "0x1234567890123456789012345678901234567890",
+                          "attached_at": "2024-05-17T00:00:00Z",
+                          "detached_at": null,
+                          "engine_default_behavior": "ALLOW",
+                          "target_default_behavior": "ALLOW",
+                          "protected_methods": [
+                            {
+                              "method_selector": "0xa9059cbb",
+                              "extractor": {
+                                "address": "0x1234567890123456789012345678901234567890",
+                                "effective_from": "2024-05-17T00:00:00Z",
+                                "effective_to": null,
+                                "block_number": 19876543,
+                                "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                                "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                              },
+                              "policies": [
+                                {
+                                  "policy_address": "0x1234567890123456789012345678901234567890",
+                                  "policy_name": "Policy A",
+                                  "parameter_names": ["amount", "recipient"],
+                                  "mapper": null,
+                                  "version": 1,
+                                  "state": null,
+                                  "effective_from": "2024-05-17T00:00:00Z",
+                                  "effective_to": null,
+                                  "block_number": 19876543,
+                                  "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                                  "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                                }
+                              ]
+                            }
+                          ],
+                          "block_number": 19876543,
+                          "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                          "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                        }
+                      ]
+                    }
+                  ],
+                  "next_page_token": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/targets/{chain_selector}/{address}": {
+      "get": {
+        "summary": "Get target by chain and address",
+        "description": "Retrieve a specific target by its chain selector and address.\nReturns the target with all policy engine attachments and their configurations.\n",
+        "operationId": "getTarget",
+        "tags": ["Targets"],
+        "parameters": [
+          {
+            "name": "chain_selector",
+            "in": "path",
+            "required": true,
+            "description": "Chain selector where the target is deployed",
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "address",
+            "in": "path",
+            "required": true,
+            "description": "Target contract address",
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "description": "Show target state as of given time (ISO 8601 format). Returns historical state.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-05-17T00:00:00Z"
+            }
+          },
+          {
+            "name": "include_policy_details",
+            "in": "query",
+            "description": "Include policy state JSON in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Target details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TargetData"
+                },
+                "example": {
+                  "chain_selector": "16015286601757825753",
+                  "address": "0x1234567890123456789012345678901234567890",
+                  "policy_engines": [
+                    {
+                      "policy_engine_address": "0x1234567890123456789012345678901234567890",
+                      "attached_at": "2024-05-17T00:00:00Z",
+                      "detached_at": null,
+                      "engine_default_behavior": "ALLOW",
+                      "target_default_behavior": "ALLOW",
+                      "protected_methods": [
+                        {
+                          "method_selector": "0xa9059cbb",
+                          "extractor": {
+                            "address": "0x1234567890123456789012345678901234567890",
+                            "effective_from": "2024-05-17T00:00:00Z",
+                            "effective_to": null,
+                            "block_number": 19876543,
+                            "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                            "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                          },
+                          "policies": [
+                            {
+                              "policy_address": "0x1234567890123456789012345678901234567890",
+                              "policy_name": "Policy A",
+                              "parameter_names": ["amount", "recipient"],
+                              "mapper": null,
+                              "version": 1,
+                              "state": null,
+                              "effective_from": "2024-05-17T00:00:00Z",
+                              "effective_to": null,
+                              "block_number": 19876543,
+                              "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                              "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                            }
+                          ]
+                        }
+                      ],
+                      "block_number": 19876543,
+                      "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                      "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Target not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Resource not found",
+                  "code": "NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions": {
+      "get": {
+        "summary": "List transactions",
+        "description": "Retrieve a paginated list of transactions that triggered at least one\nACE policy engine evaluation (PolicyRunComplete event). Only transactions\nbelonging to the caller's organization are returned. Setup-only\ntransactions (e.g. IdentityRegistered) that did not produce a policy\nrun are excluded.\n\nSort contract:\n- `sort` must include both `chain_selector` and `block_number` (comma-separated)\n- Only `block_number` supports a direction prefix (`-` for descending, `+` or no prefix for ascending)\n- Valid values: `chain_selector,block_number`, `chain_selector,-block_number`\n- Default: `chain_selector,-block_number` (newest first within each chain)\n",
+        "operationId": "listTransactions",
+        "tags": ["Transactions"],
+        "parameters": [
+          {
+            "name": "chain_selector",
+            "in": "query",
+            "description": "Filter by chain selector",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Inclusive lower bound on block_timestamp (ISO 8601 format)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Inclusive upper bound on block_timestamp (ISO 8601 format)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-31T23:59:59Z"
+            }
+          },
+          {
+            "name": "from_address",
+            "in": "query",
+            "description": "Filter by sender address",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "to_address",
+            "in": "query",
+            "description": "Filter by recipient address",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "target_contract_address",
+            "in": "query",
+            "description": "Filter by target contract address (contract must be integrated with ACE)",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "function_selector",
+            "in": "query",
+            "description": "Filter by function selector (4-byte hex, e.g. 0xa9059cbb)",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/MethodSelector"
+            }
+          },
+          {
+            "name": "policy_address",
+            "in": "query",
+            "description": "Filter by policy contract address that evaluated the transaction",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "policy_engine_address",
+            "in": "query",
+            "description": "Filter by policy engine address that evaluated the transaction",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "include_policy_details",
+            "in": "query",
+            "description": "Include policy state JSON in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort order for results. Must include both chain_selector and block_number (comma-separated).\nOnly block_number supports a direction prefix (- for descending, + or no prefix for ascending).\nValid values: chain_selector,block_number or chain_selector,-block_number.\nDefault: chain_selector,-block_number\n",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "chain_selector,-block_number",
+              "example": "chain_selector,-block_number"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "description": "Number of results per page",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PageSize"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AdminOrgId"
+          },
+          {
+            "name": "page_token",
+            "in": "query",
+            "description": "Token for pagination",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of transactions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionListResponse"
+                },
+                "example": {
+                  "transactions": [
+                    {
+                      "chain_selector": "16015286601757825753",
+                      "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+                      "block_number": 19876543,
+                      "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                      "block_timestamp": "2024-05-17T00:00:00Z",
+                      "from_address": "0x1234567890123456789012345678901234567890",
+                      "to_address": "0x1234567890123456789012345678901234567890",
+                      "value": "0",
+                      "data": "0x7b226e616d65223a22416c696365227d",
+                      "gas_used": 85000,
+                      "gas_limit": 100000,
+                      "gas_price": "20000000000",
+                      "gas_fee_cap": "25000000000",
+                      "gas_tip_cap": "1000000000",
+                      "effective_gas_price": "20000000000",
+                      "cumulative_gas_used": 500000,
+                      "tx_type": 2,
+                      "revert_reason": null,
+                      "l1_gas_used": null,
+                      "l1_fee": null,
+                      "policy_runs": [
+                        {
+                          "on_chain": {
+                            "target_contract_address": "0x1234567890123456789012345678901234567890",
+                            "engine_address": "0x1234567890123456789012345678901234567890",
+                            "method": {
+                              "selector": "0xa9059cbb"
+                            },
+                            "policies": [
+                              {
+                                "address": "0x1234567890123456789012345678901234567890",
+                                "version": 1,
+                                "name": "Policy A",
+                                "mapper_address": null,
+                                "policy_state": null
+                              }
+                            ],
+                            "params": {
+                              "amount": 1000,
+                              "recipient": "0x1234567890123456789012345678901234567890"
+                            },
+                            "context": null,
+                            "engine_default_behavior": "ALLOW",
+                            "target_default_behavior": "ALLOW",
+                            "extractor_address": "0x1234567890123456789012345678901234567890",
+                            "log_index": 0
+                          }
+                        }
+                      ]
+                    }
+                  ],
+                  "next_page_token": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/permits": {
+      "get": {
+        "summary": "List stored permits",
+        "description": "Paginated list of stored on-chain permits. Only permits for policies\nbelonging to the caller's organization are returned.\n",
+        "operationId": "listPermits",
+        "tags": ["Permits"],
+        "parameters": [
+          {
+            "name": "chain_selector",
+            "in": "query",
+            "description": "Filter by chain selector",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "policy_address",
+            "in": "query",
+            "description": "Filter by policy contract address that stored the permit",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "permit_id",
+            "in": "query",
+            "description": "Filter by permit ID (lowercase 0x-prefixed bytes32)",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/Bytes32"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Inclusive lower bound on block_timestamp (ISO 8601)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Inclusive upper bound on block_timestamp (ISO 8601)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-31T23:59:59Z"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort order. Must include both chain_selector and block_number (comma-separated).\nOnly block_number supports a direction prefix (- for descending, + or no prefix for ascending).\nValid values: chain_selector,block_number or chain_selector,-block_number.\nDefault: chain_selector,-block_number\n",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "chain_selector,-block_number",
+              "example": "chain_selector,-block_number"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PageSize"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AdminOrgId"
+          },
+          {
+            "name": "page_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Stored permits (may be empty)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermitListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Policy not found for the caller on this chain, when policy_address is set",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Resource not found",
+                  "code": "NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/registry-usage/events": {
+      "get": {
+        "summary": "List IDV registry usage events",
+        "description": "Paginated list of proven registry usage. The caller must own the requested registry for the given chain.\n\nSort contract (same as /transactions):\n- `sort` must include both `chain_selector` and `block_number` (comma-separated)\n- Only `block_number` supports a direction prefix (`-` for descending, `+` or no prefix for ascending)\n- Valid values: `chain_selector,block_number`, `chain_selector,-block_number`\n- Default: `chain_selector,-block_number`\n",
+        "operationId": "listRegistryUsageEvents",
+        "tags": ["Registry usage"],
+        "parameters": [
+          {
+            "name": "registry_type",
+            "in": "query",
+            "required": true,
+            "description": "Whether the caller's registry filter is a credential or identity registry address",
+            "schema": {
+              "$ref": "#/components/schemas/RegistryType"
+            }
+          },
+          {
+            "name": "chain_selector",
+            "in": "query",
+            "required": true,
+            "description": "Chain selector where the registry and runs are evaluated",
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "registry_address",
+            "in": "query",
+            "required": true,
+            "description": "Registry contract address owned by the caller for this chain",
+            "schema": {
+              "$ref": "#/components/schemas/EvmAddress"
+            }
+          },
+          {
+            "name": "ccid",
+            "in": "query",
+            "required": false,
+            "description": "Optional filter — only return rows for this CCID (lowercase 0x-prefixed bytes32)",
+            "schema": {
+              "$ref": "#/components/schemas/Bytes32"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Inclusive lower bound on policy run block_timestamp (ISO 8601)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Inclusive upper bound on policy run block_timestamp (ISO 8601)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2024-01-31T23:59:59Z"
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Sort order. Must include both chain_selector and block_number (comma-separated).\nOnly block_number supports a direction prefix (- for descending, + or no prefix for ascending).\nValid values: chain_selector,block_number or chain_selector,-block_number.\nDefault: chain_selector,-block_number\n",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "chain_selector,-block_number",
+              "example": "chain_selector,-block_number"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/PageSize"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AdminOrgId"
+          },
+          {
+            "name": "page_token",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registry usage events (may be empty)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistryUsageEventListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Registry not found for the caller on this chain, or not owned by the caller",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Resource not found",
+                  "code": "NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions/{chain_selector}/{tx_hash}": {
+      "get": {
+        "summary": "Get transaction by chain selector and hash",
+        "description": "Retrieve a specific transaction by its chain selector and transaction hash.\nThe transaction must have triggered at least one ACE policy engine\nevaluation (PolicyRunComplete event) within the caller's organization;\notherwise a 404 is returned. Setup-only transactions\n(e.g. IdentityRegistered) are not accessible through this endpoint.\n",
+        "operationId": "getTransaction",
+        "tags": ["Transactions"],
+        "parameters": [
+          {
+            "name": "chain_selector",
+            "in": "path",
+            "required": true,
+            "description": "Chain selector where the transaction was executed",
+            "schema": {
+              "$ref": "#/components/schemas/ChainSelector"
+            }
+          },
+          {
+            "name": "tx_hash",
+            "in": "path",
+            "required": true,
+            "description": "Transaction hash",
+            "schema": {
+              "$ref": "#/components/schemas/TransactionHash"
+            }
+          },
+          {
+            "name": "include_policy_details",
+            "in": "query",
+            "description": "Include policy state JSON in the response",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionData"
+                },
+                "example": {
+                  "chain_selector": "16015286601757825753",
+                  "tx_hash": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+                  "block_number": 19876543,
+                  "block_hash": "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890",
+                  "block_timestamp": "2024-05-17T00:00:00Z",
+                  "from_address": "0x1234567890123456789012345678901234567890",
+                  "to_address": "0x1234567890123456789012345678901234567890",
+                  "value": "0",
+                  "data": "0x7b226e616d65223a22416c696365227d",
+                  "gas_used": 85000,
+                  "gas_limit": 100000,
+                  "gas_price": "20000000000",
+                  "gas_fee_cap": "25000000000",
+                  "gas_tip_cap": "1000000000",
+                  "effective_gas_price": "20000000000",
+                  "cumulative_gas_used": 500000,
+                  "tx_type": 2,
+                  "revert_reason": null,
+                  "l1_gas_used": null,
+                  "l1_fee": null,
+                  "policy_runs": [
+                    {
+                      "on_chain": {
+                        "target_contract_address": "0x1234567890123456789012345678901234567890",
+                        "engine_address": "0x1234567890123456789012345678901234567890",
+                        "method": {
+                          "selector": "0xa9059cbb"
+                        },
+                        "policies": [
+                          {
+                            "address": "0x1234567890123456789012345678901234567890",
+                            "version": 1,
+                            "name": "Policy A",
+                            "mapper_address": null,
+                            "policy_state": null
+                          }
+                        ],
+                        "params": {
+                          "amount": 1000,
+                          "recipient": "0x1234567890123456789012345678901234567890"
+                        },
+                        "context": null,
+                        "engine_default_behavior": "ALLOW",
+                        "target_default_behavior": null,
+                        "extractor_address": "0x1234567890123456789012345678901234567890",
+                        "log_index": 0
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Invalid request parameters",
+                  "code": "BAD_REQUEST"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Transaction not found or has no policy engine evaluations in this organization",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Resource not found",
+                  "code": "NOT_FOUND"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "message": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Blockhash": {
+        "type": "string",
+        "pattern": "^0x[a-fA-F0-9]{64}$",
+        "description": "Block hash (0x followed by 64 hex characters)"
+      },
+      "Bytes32": {
+        "type": "string",
+        "pattern": "^0x[a-fA-F0-9]{64}$",
+        "description": "32-byte hex string (0x followed by 64 hex characters)",
+        "example": "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      },
+      "ChainSelector": {
+        "type": "string",
+        "pattern": "^[0-9]{1,20}$",
+        "description": "Chain selector represented as a string to avoid JavaScript number precision loss (values can exceed 2^53). The underlying type is uint64.\n",
+        "example": "5009297550715157269"
+      },
+      "CredentialData": {
+        "type": "object",
+        "description": "Credential associated with an identity",
+        "properties": {
+          "credential_type_id": {
+            "$ref": "#/components/schemas/Bytes32",
+            "description": "Type identifier for this credential (e.g., KYC_VERIFIED, ACCREDITED_INVESTOR)"
+          },
+          "credential_registry": {
+            "$ref": "#/components/schemas/CredentialRegistryInfo",
+            "description": "The credential registry that issued this credential"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this credential expires (null if never expires)"
+          },
+          "credential_data": {
+            "$ref": "#/components/schemas/HexBytes",
+            "nullable": true,
+            "description": "Hex-encoded credential data"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this credential became active"
+          },
+          "effective_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this credential was revoked (null if still active)"
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number when this credential was created"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash when this credential was created"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash that created this credential"
+          }
+        },
+        "required": [
+          "credential_type_id",
+          "credential_registry",
+          "effective_from",
+          "block_number",
+          "block_hash",
+          "tx_hash"
+        ]
+      },
+      "CredentialRegistryInfo": {
+        "type": "object",
+        "description": "Information about a credential registry",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Credential registry contract address"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector",
+            "description": "Chain selector where the registry is deployed"
+          },
+          "block_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Block timestamp when this registry was created"
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number when this registry was created"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash when this registry was created"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash that created this registry"
+          }
+        },
+        "required": ["address", "chain_selector", "block_timestamp", "block_number", "block_hash", "tx_hash"]
+      },
+      "DataValidatorEvaluation": {
+        "type": "object",
+        "description": "State of a data validator contract at the time of a policy run evaluation.",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Data validator contract address"
+          },
+          "version": {
+            "type": "integer",
+            "description": "Config version active at the evaluation block"
+          },
+          "state": {
+            "$ref": "#/components/schemas/DataValidatorState",
+            "nullable": true,
+            "description": "Decoded data validator configuration active at the evaluation block. Null unless include_policy_details=true or state unavailable.\n"
+          }
+        },
+        "required": ["address", "version"]
+      },
+      "DataValidatorState": {
+        "type": "object",
+        "description": "Decoded data validator configuration as JSON. Structure varies by validator implementation and is passed through from the coordinator config log.\n",
+        "additionalProperties": true,
+        "example": {
+          "allowlist": [
+            {
+              "item": "US"
+            }
+          ],
+          "denylist": [
+            {
+              "item": "IR"
+            }
+          ]
+        }
+      },
+      "DefaultBehavior": {
+        "type": "string",
+        "enum": ["ALLOW", "DENY"],
+        "description": "Default behavior when no policy explicitly allows or denies"
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Human-readable error message"
+          },
+          "code": {
+            "type": "string",
+            "description": "Machine-readable error code (e.g., BAD_REQUEST, NOT_FOUND, INTERNAL_ERROR)"
+          },
+          "request_id": {
+            "type": "string",
+            "description": "Unique request identifier (OTEL trace ID). Include this value when contacting support to help locate the request in logs and traces.\n",
+            "nullable": true
+          }
+        },
+        "required": ["message", "code"]
+      },
+      "EvmAddress": {
+        "type": "string",
+        "pattern": "^0x[a-fA-F0-9]{40}$",
+        "description": "EVM address (0x followed by 40 hex characters)"
+      },
+      "ExtractorInfo": {
+        "type": "object",
+        "description": "Extractor contract configuration with block metadata",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Extractor contract address"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this extractor became active"
+          },
+          "effective_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this extractor was replaced (null if still active)"
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number when this extractor was set"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash when this extractor was set"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash that set this extractor"
+          }
+        },
+        "required": ["address", "effective_from", "block_number", "block_hash", "tx_hash"]
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          }
+        },
+        "required": ["status"]
+      },
+      "HexBytes": {
+        "type": "string",
+        "pattern": "^0x[a-fA-F0-9]*$",
+        "description": "Hex-encoded bytes (0x followed by hex characters)",
+        "example": "0x7b226e616d65223a22416c696365227d"
+      },
+      "IdentityAddressInfo": {
+        "type": "object",
+        "description": "A wallet address registered to an identity in a specific registry",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Wallet address"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this address registration became active"
+          },
+          "effective_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this address registration was removed (null if still active)"
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number when this registration was created"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash when this registration was created"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash that created this registration"
+          }
+        },
+        "required": ["address", "effective_from", "block_number", "block_hash", "tx_hash"]
+      },
+      "IdentityData": {
+        "type": "object",
+        "description": "Identity representation with nested structure. A CCID (Cross-Chain ID) can be registered\nin multiple identity registries (across different chains) and can have multiple wallet\naddresses within each registry. Credentials are associated with the CCID itself.\n",
+        "properties": {
+          "org_id": {
+            "type": "string",
+            "description": "Organization that owns this identity. Present only for admin cross-org queries."
+          },
+          "ccid": {
+            "$ref": "#/components/schemas/Bytes32",
+            "description": "Cross-Chain ID - unique identifier for the identity"
+          },
+          "registries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentityRegistryEntry"
+            },
+            "description": "Identity registries where this CCID is registered (across chains)"
+          },
+          "credentials": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CredentialData"
+            },
+            "description": "Credentials associated with this identity (null if include_credential_details=false)",
+            "nullable": true
+          }
+        },
+        "required": ["ccid", "registries"]
+      },
+      "IdentityListResponse": {
+        "type": "object",
+        "description": "Paginated list of identities. When no identities match the given filters, an empty array is returned with a 200 status (not 404).\n",
+        "properties": {
+          "identities": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentityData"
+            }
+          },
+          "next_page_token": {
+            "type": "string",
+            "description": "Opaque token to retrieve the next page of results. Null or absent when there are no more results. Pass this value as the page_token query parameter to fetch the next page.\n",
+            "nullable": true
+          }
+        },
+        "required": ["identities"]
+      },
+      "IdentityRegistryEntry": {
+        "type": "object",
+        "description": "Entry for a CCID within a specific identity registry",
+        "properties": {
+          "registry_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Identity registry contract address"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector",
+            "description": "Chain selector where the registry is deployed"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IdentityAddressInfo"
+            },
+            "description": "Wallet addresses registered for this CCID in this registry"
+          },
+          "block_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Block timestamp when this registry was created"
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number when this registry was created"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash when this registry was created"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash that created this registry"
+          }
+        },
+        "required": [
+          "registry_address",
+          "chain_selector",
+          "addresses",
+          "block_timestamp",
+          "block_number",
+          "block_hash",
+          "tx_hash"
+        ]
+      },
+      "MapperInfo": {
+        "type": "object",
+        "description": "Mapper contract configuration with block metadata",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Mapper contract address"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this mapper became active"
+          },
+          "effective_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this mapper was replaced (null if still active)"
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number when this mapper was set"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash when this mapper was set"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash that set this mapper"
+          }
+        },
+        "required": ["address", "effective_from", "block_number", "block_hash", "tx_hash"]
+      },
+      "MethodPolicy": {
+        "type": "object",
+        "description": "A policy attached to a protected method.\nNote: A policy only appears in this list if it has an active version at the as_of time.\nPolicies without versions are not included.\n",
+        "properties": {
+          "policy_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Policy contract address"
+          },
+          "policy_name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Human-readable policy name (null if not set)"
+          },
+          "parameter_names": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Parameter names this policy expects from the extractor (derived from policyParameterNames in contract)"
+          },
+          "mapper": {
+            "$ref": "#/components/schemas/MapperInfo",
+            "nullable": true,
+            "description": "Mapper configuration for this policy (null if not configured)"
+          },
+          "version": {
+            "type": "integer",
+            "description": "Policy version number (as of the requested as_of time)"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PolicyState",
+            "nullable": true,
+            "description": "Policy state/configuration (null if include_policy_details=false)"
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this policy version became active"
+          },
+          "effective_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this policy version was superseded (null if current version)"
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number when this policy version was created"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash when this policy version was created"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash that created this policy version"
+          }
+        },
+        "required": [
+          "policy_address",
+          "parameter_names",
+          "version",
+          "effective_from",
+          "block_number",
+          "block_hash",
+          "tx_hash"
+        ]
+      },
+      "MethodSelector": {
+        "type": "string",
+        "pattern": "^0x[a-fA-F0-9]{8}$",
+        "description": "4-byte function selector (0x followed by 8 hex characters)",
+        "example": "0xa9059cbb"
+      },
+      "OnChainPolicyRunData": {
+        "type": "object",
+        "description": "On-chain ACE policy engine evaluation details for a single PolicyRunComplete event",
+        "properties": {
+          "org_id": {
+            "type": "string",
+            "description": "Organization that owns this policy run. Present only for admin cross-org queries."
+          },
+          "target_contract_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Target contract address that was evaluated"
+          },
+          "engine_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Policy engine address that performed the evaluation"
+          },
+          "method": {
+            "$ref": "#/components/schemas/PolicyRunMethod",
+            "description": "Function method that was evaluated"
+          },
+          "policies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyRunPolicyDetail"
+            },
+            "nullable": true,
+            "description": "Policies attached to this selector at evaluation time (null if no policies exist)"
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": true,
+            "nullable": true,
+            "description": "Parameters extracted from the transaction calldata by the extractor"
+          },
+          "context": {
+            "type": "string",
+            "nullable": true,
+            "description": "Additional context from the evaluation"
+          },
+          "engine_default_behavior": {
+            "$ref": "#/components/schemas/DefaultBehavior",
+            "description": "Engine-level default behavior at time of evaluation"
+          },
+          "target_default_behavior": {
+            "$ref": "#/components/schemas/DefaultBehavior",
+            "nullable": true,
+            "description": "Target-level default behavior at time of evaluation (null if unavailable)"
+          },
+          "extractor_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "nullable": true,
+            "description": "Extractor contract address active at time of evaluation (null if no extractor set for this selector)"
+          },
+          "log_index": {
+            "type": "integer",
+            "description": "Log index of the evaluation event within the block"
+          }
+        },
+        "required": ["target_contract_address", "engine_address", "engine_default_behavior", "method", "log_index"]
+      },
+      "PageSize": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100,
+        "default": 20,
+        "description": "Maximum number of results to return per page (1-100, default 20). The actual number of results may be less than page_size if fewer results remain. When next_page_token is null in the response, there are no more results.\n"
+      },
+      "PermitListResponse": {
+        "type": "object",
+        "required": ["permits"],
+        "properties": {
+          "permits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StoredPermit"
+            }
+          },
+          "next_page_token": {
+            "type": "string",
+            "nullable": true,
+            "description": "Opaque pagination token; absent or null when no more pages."
+          }
+        }
+      },
+      "PolicyData": {
+        "type": "object",
+        "properties": {
+          "org_id": {
+            "type": "string",
+            "description": "Organization that owns this policy. Present only for admin cross-org queries."
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "address": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Human-readable policy name (null if not set)"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Policy description (null if not set)"
+          },
+          "policy_engine_address": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "version": {
+            "type": "integer",
+            "description": "Version number (latest unless as_of is specified)"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PolicyState",
+            "description": "Policy state (null if include_policy_details=false)",
+            "nullable": true
+          },
+          "effective_from": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this policy version became active"
+          },
+          "effective_to": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this policy version was superseded (null if current version)"
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number when this version was created"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash when this version was created"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash that created this version"
+          }
+        },
+        "required": [
+          "chain_selector",
+          "address",
+          "owner",
+          "policy_engine_address",
+          "version",
+          "effective_from",
+          "block_number",
+          "block_hash",
+          "tx_hash"
+        ]
+      },
+      "PolicyListResponse": {
+        "type": "object",
+        "description": "Paginated list of policies. When no policies match the given filters, an empty array is returned with a 200 status (not 404).\n",
+        "properties": {
+          "policies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PolicyData"
+            }
+          },
+          "next_page_token": {
+            "type": "string",
+            "description": "Opaque token to retrieve the next page of results. Null or absent when there are no more results. Pass this value as the page_token query parameter to fetch the next page.\n",
+            "nullable": true
+          }
+        },
+        "required": ["policies"]
+      },
+      "PolicyRunCredentialSource": {
+        "type": "object",
+        "description": "A credential source configured on a validator policy at the time of a policy run.",
+        "properties": {
+          "identity_registry": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Identity registry address"
+          },
+          "credential_registry": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Credential registry address"
+          },
+          "credential_type_id": {
+            "$ref": "#/components/schemas/Bytes32",
+            "nullable": true,
+            "description": "Credential type ID (null when not restricted to a specific type)"
+          },
+          "data_validator": {
+            "$ref": "#/components/schemas/DataValidatorEvaluation",
+            "nullable": true,
+            "description": "Data validator state at time of evaluation; null when no validator is configured for this source."
+          }
+        },
+        "required": ["identity_registry", "credential_registry"]
+      },
+      "PolicyRunMethod": {
+        "type": "object",
+        "description": "Function method information for a policy run",
+        "properties": {
+          "selector": {
+            "$ref": "#/components/schemas/MethodSelector",
+            "description": "4-byte function selector (e.g. 0xa9059cbb)"
+          }
+        },
+        "required": ["selector"]
+      },
+      "PolicyRunPolicyDetail": {
+        "type": "object",
+        "description": "Details of a single policy attached to the evaluated selector at the time of the policy run.\nNote: per-policy individual result (ALLOWED/DENIED/CONTINUE), denial_reason, and mapped_params\nare not available from the on-chain PolicyRunComplete event.\n",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Policy contract address"
+          },
+          "version": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Policy version active at time of evaluation"
+          },
+          "name": {
+            "type": "string",
+            "nullable": true,
+            "description": "Human-readable policy name (null if not set)"
+          },
+          "mapper_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "nullable": true,
+            "description": "Mapper contract address active at time of evaluation (null if not configured)"
+          },
+          "policy_state": {
+            "$ref": "#/components/schemas/PolicyState",
+            "nullable": true,
+            "description": "Policy state/configuration at time of evaluation (null if include_policy_details=false or unavailable)"
+          },
+          "credential_sources": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "$ref": "#/components/schemas/PolicyRunCredentialSource"
+            },
+            "description": "Credential sources configured on this policy at evaluation time. Present only for CredentialRegistryIdentityValidatorPolicy and GroupedIdentityValidatorPolicy; null for all other policy types. data_validator.state within each source is populated only when include_policy_details=true.\n"
+          }
+        },
+        "required": ["address"]
+      },
+      "PolicyState": {
+        "type": "object",
+        "description": "Policy state as JSON. Structure varies by policy type and is passed through from the on-chain policy contract. Field names within the state object are determined by the smart contract and may use camelCase (e.g., maxAmount) rather than the snake_case convention used by the rest of this API.\n",
+        "additionalProperties": true,
+        "example": {
+          "maxAmount": 10000,
+          "minAmount": 100
+        }
+      },
+      "ProtectedMethod": {
+        "type": "object",
+        "description": "A method on the target contract that is protected by policies",
+        "properties": {
+          "method_selector": {
+            "$ref": "#/components/schemas/MethodSelector",
+            "description": "4-byte function selector (e.g., 0xa9059cbb for transfer)"
+          },
+          "extractor": {
+            "$ref": "#/components/schemas/ExtractorInfo",
+            "nullable": true,
+            "description": "Extractor configuration for this selector (null if not configured)"
+          },
+          "policies": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MethodPolicy"
+            },
+            "description": "Policies attached to this method (order is significant - evaluated in order). Empty array if no policies configured."
+          }
+        },
+        "required": ["method_selector", "policies"]
+      },
+      "RegistryType": {
+        "type": "string",
+        "enum": ["credential", "identity"],
+        "description": "Registry tenancy type for the registry_address filter"
+      },
+      "RegistryUsageEvent": {
+        "type": "object",
+        "description": "One proven IDV registry usage from a PolicyRunComplete-backed run. consumer_org_id is omitted.\n",
+        "required": [
+          "registry_type",
+          "registry_address",
+          "chain_selector",
+          "ccid",
+          "tx_hash",
+          "block_number",
+          "block_hash",
+          "block_timestamp",
+          "log_index",
+          "target_contract_address",
+          "policy_engine_address",
+          "function_selector"
+        ],
+        "properties": {
+          "org_id": {
+            "type": "string",
+            "description": "Organization that owns this registry. Present only for admin cross-org queries."
+          },
+          "registry_type": {
+            "$ref": "#/components/schemas/RegistryType"
+          },
+          "registry_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Registry address from the request filter (lowercase)"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "ccid": {
+            "$ref": "#/components/schemas/Bytes32",
+            "description": "Lowercase hex bytes32 (0x-prefixed); aligns with reporting CCID conventions."
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash"
+          },
+          "block_number": {
+            "type": "integer"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash"
+          },
+          "block_timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "log_index": {
+            "type": "integer",
+            "description": "Policy run / PolicyRunComplete log index (disambiguate multiple runs per tx)."
+          },
+          "target_contract_address": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "policy_engine_address": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "function_selector": {
+            "$ref": "#/components/schemas/MethodSelector"
+          },
+          "matched_policy_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Policy whose policy_versions.state contained the matching credentialSources element."
+          },
+          "matched_identity_registry": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "matched_credential_registry": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "credential_type_ids": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Bytes32"
+            },
+            "description": "Credential type IDs declared on the matched policy credential source(s) for this identity registry / credential registry pair. PolicyRunComplete does not carry the specific credential type that satisfied validation, so all acceptable credential types are listed at the time of the policy run.\n"
+          }
+        }
+      },
+      "RegistryUsageEventListResponse": {
+        "type": "object",
+        "required": ["events"],
+        "properties": {
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RegistryUsageEvent"
+            }
+          },
+          "next_page_token": {
+            "type": "string",
+            "nullable": true,
+            "description": "Opaque pagination token; absent or null when no more pages."
+          }
+        }
+      },
+      "StoredPermit": {
+        "type": "object",
+        "description": "One PermitStored event for metering off-chain workflow permits.",
+        "required": [
+          "permit_id",
+          "policy_address",
+          "chain_selector",
+          "tx_hash",
+          "block_number",
+          "block_hash",
+          "block_timestamp",
+          "log_index"
+        ],
+        "properties": {
+          "org_id": {
+            "type": "string",
+            "description": "Organization that owns this permit's policy. Present only for admin cross-org queries."
+          },
+          "permit_id": {
+            "$ref": "#/components/schemas/Bytes32"
+          },
+          "policy_address": {
+            "$ref": "#/components/schemas/EvmAddress"
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash"
+          },
+          "block_number": {
+            "type": "integer"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash"
+          },
+          "block_timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "log_index": {
+            "type": "integer",
+            "description": "PermitStored log index within the block."
+          }
+        }
+      },
+      "TargetData": {
+        "type": "object",
+        "description": "Target contract representation. A target is a contract protected by one or more policy engines.\nEach target can be attached to multiple policy engines, and each attachment can have\nprotected methods with associated policies.\n",
+        "properties": {
+          "org_id": {
+            "type": "string",
+            "description": "Organization that owns this target. Present only for admin cross-org queries."
+          },
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector",
+            "description": "Chain selector where the target is deployed"
+          },
+          "address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Target contract address"
+          },
+          "policy_engines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TargetPolicyEngineAttachment"
+            },
+            "description": "Policy engines this target is attached to"
+          }
+        },
+        "required": ["chain_selector", "address", "policy_engines"]
+      },
+      "TargetListResponse": {
+        "type": "object",
+        "description": "Paginated list of targets. When no targets match the given filters, an empty array is returned with a 200 status (not 404).\n",
+        "properties": {
+          "targets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TargetData"
+            }
+          },
+          "next_page_token": {
+            "type": "string",
+            "description": "Opaque token to retrieve the next page of results. Null or absent when there are no more results. Pass this value as the page_token query parameter to fetch the next page.\n",
+            "nullable": true
+          }
+        },
+        "required": ["targets"]
+      },
+      "TargetPolicyEngineAttachment": {
+        "type": "object",
+        "description": "Information about a target's attachment to a policy engine",
+        "properties": {
+          "policy_engine_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Policy engine contract address"
+          },
+          "attached_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "When this target was attached to the policy engine"
+          },
+          "detached_at": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "When this target was detached (null if still attached)"
+          },
+          "engine_default_behavior": {
+            "$ref": "#/components/schemas/DefaultBehavior",
+            "description": "Engine-level default behavior when no policy matches (ALLOW or DENY)"
+          },
+          "target_default_behavior": {
+            "$ref": "#/components/schemas/DefaultBehavior",
+            "description": "Target-level default behavior override (null if not configured)",
+            "nullable": true
+          },
+          "protected_methods": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProtectedMethod"
+            },
+            "description": "Methods protected by policies (null if no methods configured)",
+            "nullable": true
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number when this attachment was created"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash when this attachment was created"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash that created this attachment"
+          }
+        },
+        "required": [
+          "policy_engine_address",
+          "attached_at",
+          "engine_default_behavior",
+          "block_number",
+          "block_hash",
+          "tx_hash"
+        ]
+      },
+      "TransactionData": {
+        "type": "object",
+        "description": "On-chain transaction that triggered at least one ACE policy engine\nevaluation (PolicyRunComplete event). Every returned transaction is\nguaranteed to have one or more policy runs. Policy state detail is\nincluded only when include_policy_details=true.\n",
+        "properties": {
+          "chain_selector": {
+            "$ref": "#/components/schemas/ChainSelector",
+            "description": "Chain selector where the transaction was executed"
+          },
+          "tx_hash": {
+            "$ref": "#/components/schemas/TransactionHash",
+            "description": "Transaction hash"
+          },
+          "block_number": {
+            "type": "integer",
+            "description": "Block number containing the transaction"
+          },
+          "block_hash": {
+            "$ref": "#/components/schemas/Blockhash",
+            "description": "Block hash containing the transaction"
+          },
+          "block_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of the block containing the transaction"
+          },
+          "from_address": {
+            "$ref": "#/components/schemas/EvmAddress",
+            "description": "Sender address"
+          },
+          "to_address": {
+            "type": "string",
+            "nullable": true,
+            "description": "Recipient address (null for contract creation transactions)"
+          },
+          "value": {
+            "type": "string",
+            "description": "Transaction value in wei (as string to avoid precision loss)"
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "description": "Transaction input data (hex-encoded)"
+          },
+          "gas_used": {
+            "type": "integer",
+            "description": "Gas consumed by the transaction"
+          },
+          "gas_limit": {
+            "type": "integer",
+            "description": "Gas limit set for the transaction"
+          },
+          "gas_price": {
+            "type": "string",
+            "nullable": true,
+            "description": "Gas price in wei (as string)"
+          },
+          "gas_fee_cap": {
+            "type": "string",
+            "nullable": true,
+            "description": "Maximum fee per gas (EIP-1559, as string)"
+          },
+          "gas_tip_cap": {
+            "type": "string",
+            "nullable": true,
+            "description": "Maximum priority fee per gas (EIP-1559, as string)"
+          },
+          "effective_gas_price": {
+            "type": "string",
+            "nullable": true,
+            "description": "Effective gas price in wei (as string)"
+          },
+          "cumulative_gas_used": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Cumulative gas used in the block up to this transaction"
+          },
+          "tx_type": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Transaction type (0=legacy, 1=access list, 2=EIP-1559)"
+          },
+          "revert_reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Revert reason if transaction reverted (null if succeeded or not available)"
+          },
+          "l1_gas_used": {
+            "type": "integer",
+            "nullable": true,
+            "description": "L1 gas used (for L2 chains, null otherwise)"
+          },
+          "l1_fee": {
+            "type": "string",
+            "nullable": true,
+            "description": "L1 fee in wei (for L2 chains, as string, null otherwise)"
+          },
+          "policy_runs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionPolicyRunData"
+            },
+            "description": "ACE policy engine evaluations (PolicyRunComplete events) for this transaction"
+          }
+        },
+        "required": [
+          "chain_selector",
+          "tx_hash",
+          "block_number",
+          "block_hash",
+          "block_timestamp",
+          "from_address",
+          "value",
+          "gas_used",
+          "gas_limit",
+          "policy_runs"
+        ]
+      },
+      "TransactionHash": {
+        "type": "string",
+        "pattern": "^0x[a-fA-F0-9]{64}$",
+        "description": "Transaction hash (0x followed by 64 hex characters)"
+      },
+      "TransactionListResponse": {
+        "type": "object",
+        "properties": {
+          "transactions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransactionData"
+            }
+          },
+          "next_page_token": {
+            "type": "string",
+            "description": "Opaque token to retrieve the next page of results. Null or absent when there are no more results. Pass this value as the page_token query parameter to fetch the next page.\n",
+            "nullable": true
+          }
+        },
+        "required": ["transactions"]
+      },
+      "TransactionPolicyRunData": {
+        "type": "object",
+        "description": "A policy engine evaluation for a transaction. Contains nested on-chain evaluation\ndetails. Off-chain evaluation is not yet implemented.\n",
+        "properties": {
+          "on_chain": {
+            "$ref": "#/components/schemas/OnChainPolicyRunData",
+            "description": "On-chain policy engine evaluation details"
+          }
+        },
+        "required": ["on_chain"]
+      }
+    },
+    "parameters": {
+      "AdminOrgId": {
+        "name": "org_id",
+        "in": "query",
+        "description": "Admin-only filter to scope results to a specific organization. Ignored for tenant requests.",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "example": "org_SD46LSQkJbnaiBTg"
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization",
+        "description": "API key authentication. Format: `Apikey <api-key>`"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Health Check"
+    },
+    {
+      "name": "Policies"
+    },
+    {
+      "name": "Identities"
+    },
+    {
+      "name": "Targets"
+    },
+    {
+      "name": "Transactions"
+    },
+    {
+      "name": "Permits"
+    },
+    {
+      "name": "Registry usage"
+    }
+  ]
+}

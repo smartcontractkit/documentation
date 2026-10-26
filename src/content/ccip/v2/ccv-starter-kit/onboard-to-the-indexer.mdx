@@ -1,0 +1,59 @@
+---
+section: ccip
+date: Last Modified
+title: "Onboard to the CCIP indexer"
+metadata:
+  description: "Request CCIP indexer onboarding so the default executor runs your messages automatically: prove your committee, then send the resolver address, aggregator endpoints, and chains in scope."
+  excerpt: "CCV indexer onboarding, self-execution, prove committee, aggregator endpoint, resolver address, chains in scope"
+  datePublished: "2026-09-25"
+  lastModified: "2026-09-27"
+whatsnext:
+  "Scale to a committee": "/ccip/ccv-starter-kit/how-to/scale-to-a-committee"
+  "Operate: day 2": "/ccip/ccv-starter-kit/operate-day-2"
+---
+
+import { CopyText } from "@components"
+
+Onboarding registers your committee's aggregator endpoints with the CCIP indexer. Once you are onboarded, the
+indexer reads your attestations and the default executor runs your messages automatically. It is optional,
+because executing a message on the destination chain is permissionless and you can always execute your own; but
+until you onboard, that is the only way your messages get executed, since nothing reads your aggregators for you
+yet.
+
+## Onboarding prerequisites
+
+- Size the committee for production. An undersized committee, or one with no redundancy, is not onboarded;
+  see [Scale to a committee](/ccip/ccv-starter-kit/how-to/scale-to-a-committee).
+- Expose every aggregator read endpoint publicly, with no authentication: over TLS, on a stable hostname, with
+  no API key and no IP allowlist. Standard WAF or DDoS protection is acceptable if it does not block legitimate
+  public reads. Keep each endpoint responsive: the indexer reads with a 10-second per-request timeout and
+  retries, so answer well under 10 seconds. The off-chain kit's
+  [onboarding requirements](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#9-getting-onboarded-into-the-ccip-indexer)
+  documentation has the full bar.
+- Prove the committee by sending a message that requires your CCV and executing it yourself. For EVM, follow
+  [Test your setup](/ccip/ccv-starter-kit/evm/test-your-setup). Repeat the execution against each aggregator
+  endpoint you will register, not just one. The off-chain kit's
+  [self-execution validation](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#94-validate-your-committee-by-self-executing-a-message)
+  documentation walks through it.
+
+## Request onboarding
+
+Email <CopyText text="clusersupport@smartcontract.com" /> with:
+
+- a display name for your CCV, and optionally a logo URL,
+- a website and a primary contact,
+- your resolver address and the chains it is deployed on (the address is the same on every chain),
+- every aggregator read endpoint URL in the committee.
+
+Send the endpoint list again whenever you add or remove an aggregator. The indexer identifies each endpoint by
+its hostname, so keep hostnames stable and re-register any that change. The off-chain kit's
+[onboarding documentation](https://github.com/smartcontractkit/chainlink-ccv-starter-kit/blob/main/RUNBOOK.md#9-getting-onboarded-into-the-ccip-indexer)
+has the full requirements, including the response times the indexer expects.
+
+## After onboarding
+
+The indexer reads your aggregators, the default executor runs your messages, and the public CCIP API reports
+your verifier entry instead of `UNKNOWN`. Keep your aggregators reachable: the indexer retries each message for up to one hour, and if all of
+your aggregators stay unreachable past that window, it stops and the default executor never runs those messages.
+The attestations are still in your aggregators, so recover those messages the same way you tested: execute them
+yourself.

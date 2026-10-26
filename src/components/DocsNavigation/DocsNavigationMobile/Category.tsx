@@ -1,17 +1,18 @@
 import React from "react"
-import { ProductItem, SubProducts, SubProductItem } from "../../Header/Nav/config.ts"
+import { ProductItem } from "../../Header/Nav/config.ts"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import styles from "./category.module.css"
 import { isMatchedPath } from "../../Header/Nav/isMatchedPath.ts"
 
 type ListItemProps = {
   item: ProductItem
-  onProductClick: (subProducts: SubProducts) => void
+  onProductClick: (product: ProductItem) => void
   currentPath: string
 }
 
 const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
-  ({ item: { label, icon, href, subProducts, divider = false }, onProductClick, currentPath }, forwardedRef) => {
+  ({ item, onProductClick, currentPath }, forwardedRef) => {
+    const { label, icon, href, subProducts, divider = false } = item
     const itemComponent = (
       <>
         {icon && <img height={20} width={20} src={icon} />}
@@ -21,23 +22,8 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
       </>
     )
 
-    const handleProductClick = () => {
-      const subProductItems = subProducts as unknown as SubProductItem[]
-      const mappedSubProducts: SubProducts = {
-        label,
-        items: subProductItems.map((subProductItem) => ({
-          label: subProductItem.label,
-          href: subProductItem.href || "#",
-          pages: subProductItem.items.map((item) => ({
-            label: item.label,
-            href: item.href || "/",
-            children: item.children || [],
-          })),
-        })),
-      }
-      onProductClick(mappedSubProducts)
-    }
-
+    // The tree for this product is resolved centrally in DocsPickerMobile (CCIP is versioned), so we
+    // just hand back the product identity here — never a pre-built static tree.
     return subProducts ? (
       <button
         className={clsx(styles.link, "product-link", {
@@ -45,7 +31,7 @@ const Item = React.forwardRef<HTMLAnchorElement, ListItemProps>(
           [styles.divider]: divider,
         })}
         style={{ marginTop: "var(--space-0x)" }}
-        onClick={handleProductClick}
+        onClick={() => onProductClick(item)}
         data-testid="sub-product-navigation-trigger-mobile"
       >
         {itemComponent}
@@ -67,7 +53,7 @@ Item.displayName = "Item"
 type CategoryProps = {
   label?: string
   items: ProductItem[]
-  onProductClick: (subProducts: SubProducts) => void
+  onProductClick: (product: ProductItem) => void
   currentPath: string
 }
 

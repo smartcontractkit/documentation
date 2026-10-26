@@ -1,5 +1,5 @@
 import { memo } from "react"
-import "./NetworkCard.css"
+import Card from "./Card.tsx"
 
 interface NetworkCardProps {
   name: string
@@ -9,17 +9,9 @@ interface NetworkCardProps {
 }
 
 const NetworkCard = memo(function NetworkCard({ name, totalLanes, totalTokens, logo }: NetworkCardProps) {
-  return (
-    <div className="network-card__container">
-      <img src={logo} alt="" loading="lazy" />
-      <div>
-        <h3>{name}</h3>
-        <p>
-          {totalLanes} {totalLanes > 1 ? "lanes" : "lane"} | {totalTokens} {totalTokens > 1 ? "tokens" : "token"}
-        </p>
-      </div>
-    </div>
-  )
+  const subtitle = `${totalLanes} ${totalLanes === 1 ? "lane" : "lanes"} | ${totalTokens} ${totalTokens === 1 ? "token" : "tokens"}`
+
+  return <Card logo={<img src={logo} alt="" loading="lazy" />} title={name} subtitle={subtitle} />
 })
 
 export default NetworkCard

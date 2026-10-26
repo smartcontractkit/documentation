@@ -1,0 +1,102 @@
+---
+section: crec
+title: "Service Limits"
+date: Last Modified
+metadata:
+  description: "Per-resource limits enforced by the CRE Connect API: maximum signers per wallet, name lengths, list pagination, and rate-limit guidance."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside } from "@components"
+
+This page lists the hard and soft limits that apply to CRE Connect resources. All hard limits are enforced server-side and are reflected in the OpenAPI specification ([`/api/crec/openapi.json`](/api/crec/openapi.json)); rate limits and per-environment quotas are negotiated with the Chainlink team.
+
+## Wallet (Smart Account) limits
+
+Enforced via the OpenAPI `RSASignersList` and `ECDSASignersList` schemas (`maxItems: 10`, `minItems: 0`, `uniqueItems: true`).
+
+| Limit                              | Value       | Notes                                               |
+| ---------------------------------- | ----------- | --------------------------------------------------- |
+| `allowed_ecdsa_signers` per wallet | **0–10**    | Unique 42-character `0x` Ethereum addresses.        |
+| `allowed_rsa_signers` per wallet   | **0–10**    | Unique RSA public keys (`{e, n}` hex).              |
+| RSA modulus minimum                | 2048 bits   | `n` must be hex of ≥ 256 bytes.                     |
+| RSA exponent                       | 2–17 bytes  | `e` is hex; common values are `0x010001` (= 65537). |
+| Wallet `name`                      | 1–255 chars | Non-blank.                                          |
+| Wallet `description`               | 1–255 chars | Non-blank.                                          |
+
+A wallet's signer set is **fixed at creation time**. To rotate signers today, archive the old wallet and provision a new one with the updated lists; see [Manage Signers](/crec/guides/wallets/manage-signers).
+
+## Watcher limits
+
+| Limit                        | Value           | Notes                                                      |
+| ---------------------------- | --------------- | ---------------------------------------------------------- |
+| Watcher `name`               | 4–255 chars     | Validated by the SDK (`ErrWatcherNameTooShort`).           |
+| Service watchers per channel | per-environment | Soft limit: contact support to raise.                      |
+| ABI watchers per channel     | per-environment | Soft limit.                                                |
+| Events list per ABI watcher  | 1+              | At least one event must be supplied (`ErrEventsRequired`). |
+| ABI types accepted           | only `event`    | `ErrInvalidABIType` for any other ABI fragment.            |
+
+## Channel limits
+
+| Limit                               | Value       | Notes                                                     |
+| ----------------------------------- | ----------- | --------------------------------------------------------- |
+| Channel `name`                      | 1–255 chars | Non-blank.                                                |
+| Channel `description`               | 1–255 chars | Non-blank.                                                |
+| Active watchers required to archive | 0           | A channel cannot be archived while any watcher is active. |
+
+## Operation limits
+
+| Limit                      | Value                                                  | Notes                                                                                    |
+| -------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Transactions per operation | 1–16                                                   | At least one transaction (`ErrAtLeastOneTransactionRequired`).                           |
+| `wallet_operation_id`      | unique per (wallet, chain) among non-terminal statuses | Enforces single-use idempotency. Can be reused after `cancelled` / `expired` / `failed`. |
+| Deadline                   | non-negative `int64`                                   | `ErrInvalidDeadline` for negative or overflowing values. `0` = no expiration.            |
+| Deadline buffer            | 60 seconds                                             | Server rejects finalize 60s before on-chain deadline to allow relay time.                |
+
+<Aside type="note" title="Draft operations">
+  Draft operations (created without a signature) follow the same limits. The `deadline` field is part of the EIP-712
+  signed payload, so it cannot be changed after creation. See [Draft Operations](/crec/concepts/drafts).
+</Aside>
+
+## Query limits
+
+| Limit           | Value                                 | Notes                                                              |
+| --------------- | ------------------------------------- | ------------------------------------------------------------------ |
+| Default TTL     | 5 minutes                             | Queries expire if no terminal callback arrives within this window. |
+| Metadata size   | max 16 KB                             | Optional `metadata` field on query create.                         |
+| `from_address`  | optional                              | Defaults to zero address (`0x0000…0000`) if omitted.               |
+| Block selection | `latest`, `finalized`, `block_number` | Note: `safe` is not available for queries (only for watchers).     |
+
+## Pagination
+
+All listing endpoints (`/wallets`, `/channels`, `/channels/{id}/watchers`, `/channels/{id}/operations`, `/channels/{id}/queries`, `/channels/{id}/events`) accept `limit` and either `offset` or a time-based cursor. Per-page maxima are enforced server-side; the response always includes `has_more: bool` so applications can paginate without knowing the cap. Refer to the [interactive REST reference](/api/crec/docs) for each endpoint's exact `limit` parameter and any server-side cap.
+
+## Rate limits
+
+<Aside type="note" title="Per-org rate limits">
+  Per-organisation rate limits are configured on the backend on a per-environment basis. The exact requests-per-second
+  budget for your organisation is communicated during onboarding.
+</Aside>
+
+When you exceed a rate limit, the API returns `429 Too Many Requests`. The Go SDK's watcher polling helpers (`WaitForActive` / `WaitForArchived`) classify `429` as transient and continue to the next poll tick; for every other endpoint the SDK does not retry: implement your own retry logic. See [Error Handling](/crec/reference/error-handling) for the full classification.
+
+## Connectivity limits
+
+| Limit                | Value                   | Notes                                                                                                                                                                |
+| -------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| HTTP request timeout | none unless you set one | When you don't pass `crec.WithHTTPClient`, the SDK uses Go's `http.DefaultClient`, which has no timeout. Provide an `*http.Client` with `Timeout` set in production. |
+| WebSocket support    | not currently exposed   | All event delivery is over HTTP polling.                                                                                                                             |
+
+## Cryptographic limits
+
+| Limit                          | Value                  | Notes                                                                                                                                                      |
+| ------------------------------ | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DefaultMinRequiredSignatures` | 4                      | F+1 where F = 3 (production DON BFT). Don't raise; see [SDK Configuration](/crec/reference/sdk-configuration#witheventverificationmin-int-signers-string). |
+| `DefaultValidSigners`          | 10 production DON keys | Override with `WithEventVerification` for non-production environments.                                                                                     |
+
+## See also
+
+- [REST API Reference](/crec/reference/rest-api): endpoint contracts.
+- [Error Handling](/crec/reference/error-handling): what to do when you hit a limit.
+- [SDK Configuration](/crec/reference/sdk-configuration): tunables that adjust client-side behaviour around limits.

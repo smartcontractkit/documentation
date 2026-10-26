@@ -1,0 +1,130 @@
+---
+section: crec
+title: "Lifecycles"
+date: Last Modified
+metadata:
+  description: "Canonical state machines for watchers, wallets, and operations: every status value, valid transitions, and the events that signal them."
+  datePublished: "2026-05-01"
+  lastModified: "2026-08-31"
+---
+
+import { Aside, ClickToZoom } from "@components"
+
+CRE Connect resources move through well-defined state machines. This page lists every status value (taken verbatim from the OpenAPI spec) and shows how each resource transitions in response to API calls and backend events.
+
+## Watcher lifecycle
+
+`WatcherStatus`:
+
+| State            | Reachable via                                                                 | Notes                                                        |
+| ---------------- | ----------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `pending`        | `POST /channels/{id}/watchers` returns this immediately.                      | Backend is provisioning the watcher.                         |
+| `active`         | Backend transition once provisioning completes.                               | Watcher is observing the chain.                              |
+| `failed`         | Backend transition.                                                           | Provisioning or runtime failure.                             |
+| `archiving`      | `PATCH /channels/{id}/watchers/{id}` with `status: archived` (returns `202`). | Async tear-down.                                             |
+| `archived`       | Backend transition once tear-down completes.                                  | Terminal.                                                    |
+| `archive_failed` | Backend transition.                                                           | Returned via the `WatcherEventStatus` enum on event filters. |
+
+<ClickToZoom src="/images/crec/ref-watcher-lifecycle.png" />
+
+Subscribe to `watcher.status` events to receive a transition payload (`WatcherStatusPayload`) for every move.
+
+## Wallet (Smart Account) lifecycle
+
+`WalletStatus`:
+
+| State       | Reachable via                                  | Notes                                      |
+| ----------- | ---------------------------------------------- | ------------------------------------------ |
+| `pending`   | `POST /wallets` returns this.                  | Backend has accepted the request.          |
+| `deploying` | Backend transition.                            | On-chain deploy submitted.                 |
+| `deployed`  | Backend transition.                            | Smart Account deployed; address is stable. |
+| `failed`    | Backend transition.                            | Deploy failure.                            |
+| `archived`  | `PATCH /wallets/{id}` with `status: archived`. | Wallet is hidden from default listings.    |
+
+<ClickToZoom src="/images/crec/ref-wallet-lifecycle.png" />
+
+Subscribe to `wallet.status` events for a stream of wallet transitions (`WalletStatusPayload`).
+
+<Aside type="note" title="Archived wallets are hidden by default">
+  List endpoints exclude <code>archived</code> wallets unless you explicitly include the <code>archived</code> status in
+  the
+  <code>status</code> filter. The same applies to channels and watchers.
+</Aside>
+
+## Operation lifecycle
+
+`OperationStatus`:
+
+| State               | Reachable via                                                          | Notes                                                                                                                                          |
+| ------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pending_signature` | `POST /channels/{id}/operations` (no signature).                       | Draft operation awaiting finalization. Not relayed to the chain. See [Drafts](/crec/concepts/drafts).                                          |
+| `accepted`          | `POST /channels/{id}/operations` (with signature) or `PATCH` finalize. | Backend has accepted the operation and enqueued it for relay.                                                                                  |
+| `sending`           | Backend transition.                                                    | Picked up by the worker.                                                                                                                       |
+| `sent`              | Backend transition.                                                    | Submitted to the chain mempool.                                                                                                                |
+| `broadcasting`      | Backend transition.                                                    | Awaiting block inclusion.                                                                                                                      |
+| `confirmed_latest`  | Backend transition.                                                    | Operation included on chain at `latest` confidence. May still be reorganized. See [Multi-Event Finality](/crec/concepts/multi-event-finality). |
+| `confirmed_safe`    | Backend transition.                                                    | Operation included on chain at `safe` confidence. Reorg very unlikely.                                                                         |
+| `confirmed`         | Backend transition.                                                    | Operation included on chain at `finalized` confidence. Cannot be reorganized.                                                                  |
+| `failed`            | Backend transition.                                                    | Permanent failure (revert, gas, …).                                                                                                            |
+| `cancelled`         | `PATCH /channels/{id}/operations/{id}` (cancel).                       | Draft was cancelled before signing. Terminal.                                                                                                  |
+| `expired`           | Background scanner or inline during finalize.                          | Deadline elapsed before the operation was finalized or confirmed. Terminal.                                                                    |
+
+<ClickToZoom src="/images/crec/ref-operation-lifecycle.png" />
+
+Subscribe to `operation.status` events to track every operation through to a terminal state (`OperationStatusPayload`). Terminal states are: `confirmed`, `failed`, `cancelled`, `expired`.
+
+<Aside type="note" title="Draft lifecycle events are not DON-verified">
+  `pending_signature`, `cancelled`, and `expired` events are operational notifications produced by the CRE Connect
+  backend: they do not carry OCR proofs. Only `confirmed_latest`, `confirmed_safe`, and `confirmed` events are
+  DON-verified and can be authenticated with `events.Client.VerifyOperationStatus`.
+</Aside>
+
+## Query lifecycle
+
+`QueryStatus`:
+
+| State       | Reachable via                               | Notes                                                            |
+| ----------- | ------------------------------------------- | ---------------------------------------------------------------- |
+| `accepted`  | `POST /channels/{id}/queries` returns this. | Query created and persisted; job enqueued for dispatch.          |
+| `sending`   | Backend transition.                         | Dispatch worker is actively sending to the CRE gateway.          |
+| `sent`      | Backend transition.                         | Successfully dispatched to CRE gateway; awaiting DON callback.   |
+| `completed` | Backend transition.                         | DON returned a successful result with OCR proof. Terminal.       |
+| `failed`    | Backend transition.                         | DON returned an error, or dispatch failed permanently. Terminal. |
+| `expired`   | Backend transition.                         | TTL elapsed before a terminal callback arrived. Terminal.        |
+
+<ClickToZoom src="/images/crec/ref-query-lifecycle.png" />
+
+Subscribe to `query.status` events to track queries through to a terminal state. Terminal `completed` and `failed` events carry OCR proofs and can be verified with `events.Client.VerifyQueryStatus`. See [Chain Queries](/crec/concepts/queries).
+
+## Event types
+
+The `EventType` enum drives the `events.search` and `events.poll` endpoints:
+
+| `EventType`        | Payload struct           | Emitted when                                         |
+| ------------------ | ------------------------ | ---------------------------------------------------- |
+| `operation.status` | `OperationStatusPayload` | An operation moves between `OperationStatus` values. |
+| `query.status`     | `QueryStatusPayload`     | A chain query moves between `QueryStatus` values.    |
+| `watcher.status`   | `WatcherStatusPayload`   | A watcher moves between `WatcherStatus` values.      |
+| `watcher.event`    | `WatcherEventPayload`    | A subscribed contract event is observed on chain.    |
+| `wallet.status`    | `WalletStatusPayload`    | A wallet moves between `WalletStatus` values.        |
+
+`watcher.event` payloads are **cryptographically verifiable** with `events.Client.Verify`. `operation.status` events at `confirmed_latest`, `confirmed_safe`, and `confirmed` are also DON-verified via `events.Client.VerifyOperationStatus`. Terminal `query.status` events (`completed`, `failed`) are DON-verified via `events.Client.VerifyQueryStatus`. Non-terminal status events and draft lifecycle events (`pending_signature`, `cancelled`, `expired`) are operational notifications without OCR proofs.
+
+## Polling vs subscribing
+
+For lifecycle state, you have two options:
+
+1. **Re-fetching the resource**: call `GET /channels/{id}/operations/{id}` (or the equivalent for watchers / wallets) on each tick.
+2. **Polling the events stream**: call `GET /channels/{id}/events` with the appropriate `type` filter and a stable cursor, and consume the lifecycle events as they appear on the channel.
+
+See [Submit and Track Operations](/crec/guides/operations/submit-and-track) and [Poll and Search Events](/crec/guides/events/poll-and-search) for examples of both patterns.
+
+## Confidence levels and `confirmed`
+
+An `operation.status` event reaches `confirmed_latest`, then `confirmed_safe`, then `confirmed` as the underlying transaction's block matures through [confidence levels](/crec/concepts/confidence-levels). On testnets, only `latest` may be active, making `confirmed_latest` the terminal status. On mainnets, the full ladder runs to `confirmed`. See [Multi-Event Finality](/crec/concepts/multi-event-finality) for the complete progression and reorg handling.
+
+## See also
+
+- [REST API Reference](/crec/reference/rest-api): endpoint contract.
+- [Event Payloads](/crec/reference/event-payloads): full schema for each `Event_Payload`.
+- [Error Handling](/crec/reference/error-handling): what each `failed` state means and which retries apply.

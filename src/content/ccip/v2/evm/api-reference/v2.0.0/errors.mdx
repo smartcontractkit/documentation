@@ -1,0 +1,243 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP v2.0.0 Errors API Reference"
+metadata:
+  description: "Reference for custom errors used across Chainlink CCIP v2.0.0 EVM contracts."
+  version: "2.0.0"
+---
+
+This page lists custom errors across CCIP contracts.
+
+Use it to:
+
+- map revert selectors to error names
+- identify failure causes
+- locate the originating contract
+
+Use the linked contract pages for full context on where and how each error occurs.
+
+## Error selectors
+
+| Selector   | Error                                             | Contract        |
+| ---------- | ------------------------------------------------- | --------------- |
+| 0xd7f73334 | InvalidRouter(address)                            | CCIPReceiver    |
+| 0xd2316ede | OnlyOffRamp()                                     | Router          |
+| 0xae236d9c | UnsupportedDestinationChain(uint64)               | Router          |
+| 0x07da6ee6 | InsufficientFeeTokenAmount()                      | Router / OnRamp |
+| 0x1841b4e1 | InvalidMsgValue()                                 | Router          |
+| 0x49647790 | OffRampMismatch(uint64,address)                   | Router          |
+| 0xe417b80b | FailedToSendValue()                               | Router          |
+| 0xc1483715 | BadARMSignal()                                    | Router          |
+| 0x5cf04449 | CannotSendZeroTokens()                            | OnRamp          |
+| 0x83c758a6 | DestinationChainNotSupportedByCCV(address,uint64) | OnRamp          |
+| 0xbf16aab6 | UnsupportedToken(address)                         | OnRamp          |
+| 0xbff66cef | DestinationChainNotSupported(uint64)              | OnRamp          |
+| 0xed053c59 | SourceChainNotEnabled(uint64)                     | OffRamp         |
+| 0x403b06ae | OptionalCCVQuorumNotReached(uint256,uint256)      | OffRamp         |
+| 0x88f80aa2 | InvalidVerifierResultsLength(uint256,uint256)     | OffRamp         |
+| 0x0a8d6e8c | ReceiverError(bytes)                              | OffRamp         |
+| 0x9fe2f95a | TokenHandlingError(address,bytes)                 | OffRamp         |
+
+## Router
+
+### UnsupportedDestinationChain(uint64 chainSelector)
+
+Selector: 0xae236d9c  
+When: Destination chain is not configured  
+Contract: [Router](/ccip/evm/api-reference/v2.0.0/router)
+
+```solidity
+error UnsupportedDestinationChain(uint64 chainSelector);
+```
+
+### InsufficientFeeTokenAmount()
+
+Selector: 0x07da6ee6
+When: Provided fee is too low
+Contract: [Router](/ccip/evm/api-reference/v2.0.0/router)
+
+```solidity
+error InsufficientFeeTokenAmount();
+```
+
+### InvalidMsgValue()
+
+Selector: 0x1841b4e1
+When: Native value is provided incorrectly
+Contract: [Router](/ccip/evm/api-reference/v2.0.0/router)
+
+```solidity
+error InvalidMsgValue();
+```
+
+### OnlyOffRamp()
+
+Selector: 0xd2316ede
+When: Unauthorized caller invokes `routeMessage`
+Contract: [Router](/ccip/evm/api-reference/v2.0.0/router)
+
+```solidity
+error OnlyOffRamp();
+```
+
+### OffRampMismatch(uint64 chainSelector, address offRamp)
+
+Selector: 0x49647790
+When: Removing a non-existent OffRamp
+Contract: [Router](/ccip/evm/api-reference/v2.0.0/router)
+
+```solidity
+error OffRampMismatch(uint64 chainSelector, address offRamp);
+```
+
+### FailedToSendValue()
+
+Selector: 0xe417b80b
+When: Native transfer fails
+Contract: [Router](/ccip/evm/api-reference/v2.0.0/router)
+
+```solidity
+error FailedToSendValue();
+```
+
+### BadARMSignal()
+
+Selector: 0xc1483715
+When: RMN signals unsafe state
+Contract: [Router](/ccip/evm/api-reference/v2.0.0/router)
+
+```solidity
+error BadARMSignal();
+```
+
+## CCIPReceiver
+
+### InvalidRouter(address router)
+
+Selector: 0xd7f73334
+When: Non-router calls `ccipReceive`
+Contract: [CCIPReceiver](/ccip/evm/api-reference/v2.0.0/ccip-receiver)
+
+```solidity
+error InvalidRouter(address router);
+```
+
+## OnRamp
+
+### CannotSendZeroTokens()
+
+Selector: 0x5cf04449
+When: Attempting to send zero tokens
+Contract: [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+
+```solidity
+error CannotSendZeroTokens();
+```
+
+### DestinationChainNotSupportedByCCV(address ccvAddress, uint64 destChainSelector)
+
+Selector: 0x83c758a6
+When: CCV does not support the destination chain
+Contract: [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+
+```solidity
+error DestinationChainNotSupportedByCCV(address ccvAddress, uint64 destChainSelector);
+```
+
+### UnsupportedToken(address token)
+
+Selector: 0xbf16aab6
+When: Token is not supported for transfer
+Contract: [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+
+```solidity
+error UnsupportedToken(address token);
+```
+
+### DestinationChainNotSupported(uint64 destChainSelector)
+
+Selector: 0xbff66cef
+When: Destination chain is not supported
+Contract: [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+
+```solidity
+error DestinationChainNotSupported(uint64 destChainSelector);
+```
+
+### InsufficientFeeTokenAmount()
+
+Selector: 0x07da6ee6
+When: Provided fee is too low
+Contract: [OnRamp](/ccip/evm/api-reference/v2.0.0/onramp)
+
+```solidity
+error InsufficientFeeTokenAmount();
+```
+
+## OffRamp
+
+### SourceChainNotEnabled(uint64 sourceChainSelector)
+
+Selector: 0xed053c59
+When: Message is received from an unsupported source chain
+Contract: [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+
+```solidity
+error SourceChainNotEnabled(uint64 sourceChainSelector);
+```
+
+### OptionalCCVQuorumNotReached(uint256 wanted, uint256 got)
+
+Selector: 0x403b06ae
+When: Not enough optional CCVs validated the message
+Contract: [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+
+```solidity
+error OptionalCCVQuorumNotReached(uint256 wanted, uint256 got);
+```
+
+### InvalidVerifierResultsLength(uint256 expected, uint256 got)
+
+Selector: 0x88f80aa2
+When: Verifier result length mismatch
+Contract: [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+
+```solidity
+error InvalidVerifierResultsLength(uint256 expected, uint256 got);
+```
+
+### ReceiverError(bytes err)
+
+Selector: 0x0a8d6e8c
+When: Receiver contract reverts during execution
+Contract: [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+
+```solidity
+error ReceiverError(bytes err);
+```
+
+### TokenHandlingError(address target, bytes err)
+
+Selector: 0x9fe2f95a
+When: Token transfer or pool interaction fails
+Contract: [OffRamp](/ccip/evm/api-reference/v2.0.0/offramp)
+
+```solidity
+error TokenHandlingError(address target, bytes err);
+```
+
+## Token pools
+
+Token pool contracts define additional errors for:
+
+- token allowlist violations
+- rate limit enforcement
+- fee policy constraints
+- transfer restrictions
+
+See:
+
+- [LockReleaseTokenPool](/ccip/evm/api-reference/v2.0.0/lock-release-token-pool)
+- [BurnMintTokenPool](/ccip/evm/api-reference/v2.0.0/burn-mint-token-pool)
+- [TokenAdminRegistry](/ccip/evm/api-reference/v2.0.0/token-admin-registry)

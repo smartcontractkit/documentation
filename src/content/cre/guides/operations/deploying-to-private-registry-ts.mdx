@@ -19,7 +19,7 @@ import { Aside } from "@components"
 
 {/* prettier-ignore */}
 <Aside type="note" title="Private registry beta">
-  The **private registry** is currently in **beta**. If you want access to private deploys, [contact us](/cre/support-feedback). For organization deploy access, see [Requesting Deploy Access](/cre/account/deploy-access)—follow the guide to submit a request, or reach out to your Chainlink contact.
+  The **private registry** is currently in **beta**. If you want access to private deploys, [contact us](/cre/support-feedback). For organization deploy access, see [Requesting Deploy Access](/cre/guides/operations/deploy-access)—follow the guide to submit a request, or reach out to your Chainlink contact.
 </Aside>
 
 The **private registry** is a Chainlink-hosted, offchain workflow registry. All lifecycle operations (deploy, activate, pause, delete, update) are authorized by your CRE login session — not a linked wallet key. There are no Ethereum Mainnet transactions and no gas fees for registry management.
@@ -36,7 +36,7 @@ For a comparison of both registry options, see [Deploying Workflows](/cre/guides
 Before deploying to the private registry, ensure you have:
 
 - **CRE CLI v1.15.0 or later**: Run `cre version` to check. See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) to install or update.
-- **[Logged in](/cre/account/cli-login)**: Run `cre login` and complete the browser authentication flow. API keys also work: set `CRE_API_KEY` in your environment.
+- **[Logged in](/cre/guides/cli/cli-login)**: Run `cre login` and complete the browser authentication flow. API keys also work: set `CRE_API_KEY` in your environment.
 
 Once you're logged in with **`cre login`**, run **`cre whoami`**. **`Deploy Access`** appears under **Account details**. Pending approval typically shows **`Deploy Access: Not enabled`**:
 
@@ -50,7 +50,7 @@ After your organization has access—what you want before **`cre workflow deploy
 Deploy Access:     Enabled
 ```
 
-For how to submit a deploy access request, see [Requesting Deploy Access](/cre/account/deploy-access).
+For how to submit a deploy access request, see [Requesting Deploy Access](/cre/guides/operations/deploy-access).
 
 - **Private registry enabled for your organization**: Run `cre registry list` and confirm a registry with `Type: off-chain` appears in the output. If no private registry appears, contact your Chainlink account team. Organizations are limited to **3 private registry workflows** by default — see [Service Quotas](/cre/service-quotas#registry-quotas).
 - **A workflow project**: An existing project created with `cre init`. See [Part 1: Project Setup (TypeScript)](/cre/getting-started/part-1-project-setup-ts).
@@ -177,7 +177,7 @@ The `Owner Address (derived)` value from deploy matches the **Organization addre
 
 ## Onchain write permissions
 
-If your workflow performs [onchain writes](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts) and you did not [link your own wallet key](/cre/organization/linking-keys), use your [organization owner address](#organization-owner-address) when configuring consumer contract permissions (for example, with `setExpectedAuthor()` in [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions)).
+If your workflow performs [onchain writes](/cre/guides/workflow/using-evm-client/onchain-write/overview-ts) and you did not [link your own wallet key](/cre/guides/operations/linking-wallet-keys), use your [organization owner address](#organization-owner-address) when configuring consumer contract permissions (for example, with `setExpectedAuthor()` in [Building Consumer Contracts](/cre/guides/workflow/using-evm-client/onchain-write/building-consumer-contracts#34-configuring-permissions)).
 
 ## Managing a private registry workflow
 
@@ -271,14 +271,9 @@ See [Using Secrets with Deployed Workflows](/cre/guides/workflow/secrets/using-s
 
 ## HTTP triggers with the private registry
 
-If your private registry workflow uses an HTTP trigger, note that the gateway endpoint is different from the public registry:
+If your private registry workflow uses an HTTP trigger, note that the gateway endpoint depends on the execution environment (DON) your workflow runs on, not on which registry it was deployed to. A workflow deployed to the private registry still runs on the public DON, so it uses the same public gateway as onchain deployments.
 
-| Registry         | HTTP trigger gateway URL                               |
-| ---------------- | ------------------------------------------------------ |
-| Public (onchain) | `https://01.gateway.zone-a.cre.chain.link`             |
-| **Private**      | `https://01.enterprise-gateway.zone-a.cre.chain.link/` |
-
-Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests — in local testing, CI scripts, or backend integrations — to use the enterprise gateway URL when targeting private registry workflows.
+Update your `GATEWAY_URL` (or equivalent configuration) wherever you send trigger requests — in local testing, CI scripts, or backend integrations — to use the gateway that matches your workflow's execution environment. See [Gateway URLs](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls) to pick the right endpoint.
 
 See [Triggering Deployed Workflows](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows) for the full HTTP trigger request format and authentication details.
 

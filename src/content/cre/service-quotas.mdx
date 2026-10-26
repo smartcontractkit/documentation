@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Understand CRE service quotas for your workflows: execution timeouts, trigger rates, WASM resources, and organization constraints."
   datePublished: "2025-11-04"
-  lastModified: "2026-05-26"
+  lastModified: "2026-09-16"
 ---
 
 import { Aside } from "@components"
@@ -47,7 +47,7 @@ These quotas apply to each workflow owner (user account) within an organization.
 
 | Quota Key                                                                                                                                              | Description                                                 | Value |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------- | ----- |
-| <a href="#perowner-workflowexecutionconcurrencylimit" id="perowner-workflowexecutionconcurrencylimit">`PerOwner.WorkflowExecutionConcurrencyLimit`</a> | Maximum number of workflows that can execute simultaneously | 5     |
+| <a href="#perowner-workflowexecutionconcurrencylimit" id="perowner-workflowexecutionconcurrencylimit">`PerOwner.WorkflowExecutionConcurrencyLimit`</a> | Maximum number of workflows that can execute simultaneously | 200   |
 | <a href="#perowner-vaultsecretslimit" id="perowner-vaultsecretslimit">`PerOwner.VaultSecretsLimit`</a>                                                 | Maximum number of secrets that can be stored per owner      | 100   |
 
 <Aside type="note" title="Quota enforcement">
@@ -77,7 +77,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                               | Description                                                     | Value     |
 | --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- | --------- |
-| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 10        |
+| <a href="#perworkflow-executionconcurrencylimit" id="perworkflow-executionconcurrencylimit">`PerWorkflow.ExecutionConcurrencyLimit`</a> | Maximum number of concurrent executions for a specific workflow | 50        |
 | <a href="#perworkflow-executiontimeout" id="perworkflow-executiontimeout">`PerWorkflow.ExecutionTimeout`</a>                            | Maximum total execution time for a single workflow run          | 5 minutes |
 | <a href="#perworkflow-wasmmemorylimit" id="perworkflow-wasmmemorylimit">`PerWorkflow.WASMMemoryLimit`</a>                               | Maximum memory allocated to a workflow                          | 100 MB    |
 | <a href="#perworkflow-executionresponselimit" id="perworkflow-executionresponselimit">`PerWorkflow.ExecutionResponseLimit`</a>          | Maximum size of the data a workflow can return                  | 100 KB    |
@@ -103,7 +103,7 @@ These quotas apply to each individual workflow.
 | Quota Key                                                                                                                                              | Description                                                      | Value |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- | ----- |
 | <a href="#perworkflow-consensus-observationsizelimit" id="perworkflow-consensus-observationsizelimit">`PerWorkflow.Consensus.ObservationSizeLimit`</a> | Maximum size of data that can be passed to consensus aggregation | 25 KB |
-| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 20    |
+| <a href="#perworkflow-consensus-calllimit" id="perworkflow-consensus-calllimit">`PerWorkflow.Consensus.CallLimit`</a>                                  | Maximum number of consensus calls per workflow execution         | 50    |
 
 ### Logging quotas
 
@@ -129,7 +129,7 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                   | Description                                    | Value                                  |
 | --------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------- |
-| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 60 seconds <br /> Burst: 1 |
+| <a href="#perworkflow-httptrigger-ratelimit" id="perworkflow-httptrigger-ratelimit">`PerWorkflow.HTTPTrigger.RateLimit`</a> | Maximum rate at which an HTTP trigger can fire | Rate: 1 per 30 seconds <br /> Burst: 1 |
 
 ### EVM log trigger
 
@@ -144,11 +144,11 @@ These quotas apply to each individual workflow.
 
 ### EVM write capability
 
-| Quota Key                                                                                                                                                          | Description                                               | Value     |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- | --------- |
-| <a href="#perworkflow-chainwrite-targetslimit" id="perworkflow-chainwrite-targetslimit">`PerWorkflow.ChainWrite.TargetsLimit`</a>                                  | Maximum number of destination chains for write operations | 10        |
-| <a href="#perworkflow-chainwrite-reportsizelimit" id="perworkflow-chainwrite-reportsizelimit">`PerWorkflow.ChainWrite.ReportSizeLimit`</a>                         | Maximum size of a report payload                          | 5 KB      |
-| <a href="#perworkflow-chainwrite-evm-transactiongaslimit" id="perworkflow-chainwrite-evm-transactiongaslimit">`PerWorkflow.ChainWrite.EVM.TransactionGasLimit`</a> | Gas quota per EVM transaction                             | 5,000,000 |
+| Quota Key                                                                                                                                                          | Description                                               | Value      |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------- | ---------- |
+| <a href="#perworkflow-chainwrite-targetslimit" id="perworkflow-chainwrite-targetslimit">`PerWorkflow.ChainWrite.TargetsLimit`</a>                                  | Maximum number of destination chains for write operations | 10         |
+| <a href="#perworkflow-chainwrite-reportsizelimit" id="perworkflow-chainwrite-reportsizelimit">`PerWorkflow.ChainWrite.ReportSizeLimit`</a>                         | Maximum size of a report payload                          | 50 KB      |
+| <a href="#perworkflow-chainwrite-evm-transactiongaslimit" id="perworkflow-chainwrite-evm-transactiongaslimit">`PerWorkflow.ChainWrite.EVM.TransactionGasLimit`</a> | Gas quota per EVM transaction                             | 10,000,000 |
 
 ### EVM read capability
 
@@ -162,20 +162,20 @@ These quotas apply to each individual workflow.
 
 | Quota Key                                                                                                                                        | Description                                            | Value      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------ | ---------- |
-| <a href="#perworkflow-httpaction-calllimit" id="perworkflow-httpaction-calllimit">`PerWorkflow.HTTPAction.CallLimit`</a>                         | Maximum number of HTTP requests per workflow execution | 5          |
-| <a href="#perworkflow-httpaction-responsesizelimit" id="perworkflow-httpaction-responsesizelimit">`PerWorkflow.HTTPAction.ResponseSizeLimit`</a> | Maximum size of an HTTP response                       | 100 KB     |
+| <a href="#perworkflow-httpaction-calllimit" id="perworkflow-httpaction-calllimit">`PerWorkflow.HTTPAction.CallLimit`</a>                         | Maximum number of HTTP requests per workflow execution | 15         |
+| <a href="#perworkflow-httpaction-responsesizelimit" id="perworkflow-httpaction-responsesizelimit">`PerWorkflow.HTTPAction.ResponseSizeLimit`</a> | Maximum size of an HTTP response                       | 250 KB     |
 | <a href="#perworkflow-httpaction-connectiontimeout" id="perworkflow-httpaction-connectiontimeout">`PerWorkflow.HTTPAction.ConnectionTimeout`</a> | Maximum time to establish an HTTP connection           | 10 seconds |
-| <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 10 KB      |
+| <a href="#perworkflow-httpaction-requestsizelimit" id="perworkflow-httpaction-requestsizelimit">`PerWorkflow.HTTPAction.RequestSizeLimit`</a>    | Maximum size of an HTTP request payload                | 120 KB     |
 | <a href="#perworkflow-httpaction-cacheagelimit" id="perworkflow-httpaction-cacheagelimit">`PerWorkflow.HTTPAction.CacheAgeLimit`</a>             | Maximum time HTTP responses can be cached              | 10 minutes |
 
 ### Confidential HTTP capability
 
 | Quota Key                                                                                                                                                          | Description                                                         | Value      |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | ---------- |
-| <a href="#perworkflow-confidentialhttp-calllimit" id="perworkflow-confidentialhttp-calllimit">`PerWorkflow.ConfidentialHTTP.CallLimit`</a>                         | Maximum number of confidential HTTP requests per workflow execution | 5          |
-| <a href="#perworkflow-confidentialhttp-requestsizelimit" id="perworkflow-confidentialhttp-requestsizelimit">`PerWorkflow.ConfidentialHTTP.RequestSizeLimit`</a>    | Maximum size of a confidential HTTP request payload                 | 10 KB      |
-| <a href="#perworkflow-confidentialhttp-responsesizelimit" id="perworkflow-confidentialhttp-responsesizelimit">`PerWorkflow.ConfidentialHTTP.ResponseSizeLimit`</a> | Maximum size of a confidential HTTP response                        | 100 KB     |
-| <a href="#perworkflow-confidentialhttp-timeout" id="perworkflow-confidentialhttp-timeout">`PerWorkflow.ConfidentialHTTP.TimeOut`</a>                               | Maximum time for a confidential HTTP request to complete            | 10 seconds |
+| <a href="#perworkflow-confidentialhttp-calllimit" id="perworkflow-confidentialhttp-calllimit">`PerWorkflow.ConfidentialHTTP.CallLimit`</a>                         | Maximum number of confidential HTTP requests per workflow execution | 15         |
+| <a href="#perworkflow-confidentialhttp-requestsizelimit" id="perworkflow-confidentialhttp-requestsizelimit">`PerWorkflow.ConfidentialHTTP.RequestSizeLimit`</a>    | Maximum size of a confidential HTTP request payload                 | 125 KB     |
+| <a href="#perworkflow-confidentialhttp-responsesizelimit" id="perworkflow-confidentialhttp-responsesizelimit">`PerWorkflow.ConfidentialHTTP.ResponseSizeLimit`</a> | Maximum size of a confidential HTTP response                        | 500 KB     |
+| <a href="#perworkflow-confidentialhttp-timeout" id="perworkflow-confidentialhttp-timeout">`PerWorkflow.ConfidentialHTTP.TimeOut`</a>                               | Maximum time for a confidential HTTP request to complete            | 90 seconds |
 
 ## Quota increases
 

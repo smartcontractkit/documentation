@@ -9,6 +9,7 @@ type LinksConfig = {
 export type Page = {
   label: string
   href: string
+  type?: "separator"
   sdkLang?: string
   chainTypes?: ChainType[]
   highlightAsCurrent?: string[]

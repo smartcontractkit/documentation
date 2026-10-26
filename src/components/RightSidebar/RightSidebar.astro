@@ -4,22 +4,39 @@ import { Feedback } from "../PageContent/Feedback"
 import { MarkdownHeading } from "astro"
 import TableOfContents from "~/components/TableOfContents/TableOfContents"
 import { CopyPageLink } from "./CopyPageLink"
+import { isSunsetDocsPath } from "~/config/sunset"
 
 export type Props = {
   githubEditUrl: string
   headings: MarkdownHeading[]
   frontmatter?: Record<string, any>
+  /**
+   * Shared pages resolve their product context on the client, so their ToC
+   * cannot be correct in static HTML. Render it only after the URL is known.
+   */
+  deferToClient?: boolean
 }
-const { githubEditUrl, headings, frontmatter } = Astro.props
+const { githubEditUrl, headings, frontmatter, deferToClient = false } = Astro.props
+const showCopyPage = !isSunsetDocsPath(Astro.url.pathname)
 ---
 
 <section class="sidebar-nav" aria-labelledby="grid-right" data-sticky>
-  <div class="copy-page-wrapper">
-    <CopyPageLink client:only="react" />
-  </div>
+  {
+    showCopyPage && (
+      <div class="copy-page-wrapper">
+        <CopyPageLink client:only="react" />
+      </div>
+    )
+  }
   <h2 class="heading">On this page</h2>
   <div class="toc-wrapper">
-    <TableOfContents client:media="(min-width: 50em)" initialHeadings={headings} />
+    {
+      deferToClient ? (
+        <TableOfContents client:only="preact" initialHeadings={headings} />
+      ) : (
+        <TableOfContents client:media="(min-width: 50em)" initialHeadings={headings} />
+      )
+    }
   </div>
   <MoreMenu editHref={githubEditUrl} frontmatter={frontmatter} />
   <h2 class="heading feedback-title">Feedback</h2>

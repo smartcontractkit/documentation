@@ -1,0 +1,96 @@
+---
+section: ccip
+date: Last Modified
+title: "Faster-Than-Finality (FTF) - Token Issuers"
+metadata:
+  description: "Learn how token issuers enable and manage Faster-Than-Finality (FTF) on CCIP 2.0 token pools, including confirmation floors, rate limits, and fees."
+  excerpt: "FTF token issuer allowedFinality rate limits FTF fees V2 token pool"
+  datePublished: "2025-05-19"
+  lastModified: "2025-05-19"
+---
+
+import { ClickToZoom } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+Token issuers retain complete control over whether and how FTF (Faster-Than-Finality) is enabled for their token. By default, FTF is disabled. The pool's `allowedFinality` parameter defaults to 0 (`WAIT_FOR_FINALITY_FLAG`), so all transfers for that token wait for full source chain finality, exactly as in previous versions of CCIP. No user can bypass this default; any request for FTF on a pool that has not enabled it reverts.
+
+**Existing token pools are unaffected.** Pools deployed under previous versions of CCIP use the V1 pool interface, which does not accept block confirmation parameters. These pools continue to function exactly as they do today, with no code changes or redeployment required. All transfers sent from them wait for full finality. FTF is only available through the V2 pool interface, and only when the token issuer has explicitly configured it. Token issuers who are satisfied with full-finality behavior have no action to take.
+
+A token issuer who enables FTF on a V2 pool still controls configurable parameters of the risk profile: the minimum confirmation depth, the rate limits, and the fees. CCIP 2.0 provides the tools; the token issuer decides if and how to use them.
+
+These tools are organized into three areas: confirmation floors, separate rate limits, and differentiated fees.
+
+## Minimum Block Confirmation Floor
+
+Token issuers set a minimum block confirmation floor via the `allowedFinality` parameter. This is the on/off switch for FTF on the pool:
+
+- **Default setting (0 / `WAIT_FOR_FINALITY_FLAG`):**
+  - FTF is disabled. All transfers sent from the pool wait for full finality.
+  - This is the same behavior as previous versions of CCIP and all existing V1 pools.
+  - No user action can override this.
+- **Non-zero value:**
+  - FTF is enabled, but only down to the floor the issuer sets.
+  - This allows issuers to enforce a maximum reorg exposure window, for example by permitting FTF but requiring at least 20 block confirmations on a given chain. This setting applies at the chain level, not per lane.
+  - If a user requests fewer confirmations than this minimum, the transaction reverts.
+
+The token issuer can call `setAllowedFinalityConfig` on their token pool at any time to enable FTF, disable it, or change the floor as their risk posture evolves.
+
+For step-by-step configuration details, see the [Token Issuer Guide](/ccip/concepts/cross-chain-token/token-issuer-guide).
+
+<div style="display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; align-items: flex-start;">
+  <ClickToZoom
+    src="/images/ccip/concepts/faster-than-finality/ftf-token-issuer-min-finality.png"
+    alt="Comparison showing that a transfer reverts when the requested finality is below the token pool minimum and proceeds when it meets or exceeds the minimum."
+  />
+</div>
+
+## Managing Exposure with Separate Rate Limits
+
+Because FTF transfers carry a different risk profile than standard finality transfers, CCIP 2.0 token pools maintain dedicated rate limit buckets for each:
+
+- **Default rate limits** apply to standard (wait-for-finality) transfers. These are configured per remote chain when the chain is added to the pool.
+- **FTF rate limits** are separate, isolated buckets that apply only to FTF transfers (any transfer that does not wait for full finality). These are configured independently via the `setRateLimitConfig` function, with `fastFinality` set to `true`.
+- If FTF rate limits are not enabled for a given chain, FTF transfers fall back to the default rate limits. By configuring tighter limits on the FTF bucket, a token issuer can limit how much value FTF transfers can move (bucket capacity and refill rate).
+
+## Pricing Risk with Differentiated Fees
+
+Token issuers can configure per-destination-chain fee parameters that charge differently for FTF versus standard finality transfers:
+
+|                    | Basis points (collected in transferred token, deducted from amount sent) | Flat (charged in USD as part of fees paid) |
+| :----------------- | :----------------------------------------------------------------------- | :----------------------------------------- |
+| FTF transfers      | `fastFinalityTransferFeeBps`                                             | `fastFinalityFeeUSDCents`                  |
+| Standard transfers | `finalityTransferFeeBps`                                                 | `finalityFeeUSDCents`                      |
+
+For example, a token issuer can set 0 basis points for standard transfers and 15 basis points for FTF transfers on a given lane to price in the reorg risk they take on by allowing faster execution. The basis-point fee is deducted from the transferred amount on the source chain before the tokens are locked or burned. The pool owner or a designated fee admin can withdraw accrued fees. A token issuer can also charge flat fees instead of, or alongside, basis-point fees. See [Fees and Billing](/ccip/concepts/fees-and-billing) for more details.
+
+Token issuers can use these fees to fund their own corrective mechanisms, such as reserves for corrective mints/burns in the event of reorg-induced duplicates.
+
+## Risk Management Summary
+
+| Mechanism                           | What It Does                                                                                                                                                                    |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Min block confirmation floor**    | The on/off switch for FTF. Defaults to full finality (disabled). When set, prevents users from requesting dangerously low confirmation depths, bounding maximum reorg exposure. |
+| **Separate FTF rate limits**        | Limits the value FTF transfers can move per lane (capacity and refill rate), isolating FTF exposure from standard transfers.                                                    |
+| **Differentiated basis-point fees** | Charges a higher basis-point fee on FTF transfers. The pool owner or fee admin withdraws accrued fees to fund corrective reserves.                                              |
+
+None of these mechanisms activate unless the token issuer explicitly enables FTF on a V2 pool. Existing V1 pools and new V2 pools with default settings both enforce full finality on the transfers they send.
+
+## Practical Guidance
+
+**If you are an existing token issuer:** Your current pool continues to work as-is. By design, V1 pools enforce full finality on the transfers they send and require no changes. You do not need to redeploy or reconfigure anything.
+
+**If you are a new token issuer who does not need FTF:** Deploy your V2 pool with default settings. `allowedFinality` defaults to full finality. No user can request faster execution of transfers for your token. Your experience is the same as in previous versions of CCIP.
+
+**For token issuers considering enabling FTF:** Start by setting a conservative `allowedFinality` floor well above typical reorg depths for your source chains. Configure separate FTF rate limits to cap your worst-case exposure. Consider setting fees to accumulate a fee reserve that funds corrective mechanisms for reorg-induced duplicates.
+
+**For dApps on CCIP:** Consider whether you can include an application-level idempotency key in your message payload. This is optional and doesn't leak into the protocol, but it gives you a clean way to deduplicate on the destination side without relying solely on the protocol's quarantine mechanism. If the token pool you interact with has not enabled FTF (an existing V1 pool or a V2 pool with default settings), a transfer that requests FTF reverts, and only full-finality transfers go through. See [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side guidance.
+
+**When in doubt:** Use the defaults, and your pool behaves exactly as it does today, with full finality for every transfer.
+
+## Related Pages
+
+- [FTF](/ccip/concepts/execution-latency/ftf): FTF execution model and bounded-risk guarantees
+- [Token Issuer Guide](/ccip/concepts/cross-chain-token/token-issuer-guide): Full issuer deployment and governance guidance
+- [Fees and Billing](/ccip/concepts/fees-and-billing): Fee model and billing details
+
+<CcipCommon callout="conceptualDisclaimer" />

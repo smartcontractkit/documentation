@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro"
-import { APIErrorType, createErrorResponse, commonHeaders, CCIPError } from "~/lib/ccip/utils.ts"
+import { APIErrorType, createErrorResponse, CCIPError } from "~/lib/ccip/utils.ts"
+import { commonHeaders } from "@lib/api/cacheHeaders.ts"
 import { logger } from "@lib/logging/index.js"
 import { FaucetService } from "~/lib/ccip/services/faucet-service.ts"
 
@@ -28,9 +29,8 @@ export const POST: APIRoute = async ({ request, params }) => {
     try {
       body = await request.json()
     } catch {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid JSON body", 400, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid JSON body", 400, requestId, {
         code: "invalid_json",
-        traceId: requestId,
       })
     }
 
@@ -49,30 +49,26 @@ export const POST: APIRoute = async ({ request, params }) => {
 
     // 3. Input validation
     if (!token || typeof token !== "string") {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid token parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid token parameter", 422, requestId, {
         code: "invalid_token",
-        traceId: requestId,
       })
     }
 
     if (!receiver || typeof receiver !== "string") {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid receiver parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid receiver parameter", 422, requestId, {
         code: "invalid_receiver",
-        traceId: requestId,
       })
     }
 
     if (!challenge || typeof challenge !== "string") {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid challenge parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid challenge parameter", 422, requestId, {
         code: "bad_challenge",
-        traceId: requestId,
       })
     }
 
     if (!receiverSignature || typeof receiverSignature !== "string") {
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid signature parameter", 422, {
+      return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Invalid signature parameter", 422, requestId, {
         code: "invalid_signature",
-        traceId: requestId,
       })
     }
 
@@ -109,10 +105,15 @@ export const POST: APIRoute = async ({ request, params }) => {
     // 5. Handle verification result
     if (verifyResult.status === "error") {
       // Return 400 for verification failures (client error, not server error)
-      return createErrorResponse(APIErrorType.VALIDATION_ERROR, verifyResult.message || "Verification failed", 400, {
-        code: verifyResult.code || "verification_failed",
-        traceId: requestId,
-      })
+      return createErrorResponse(
+        APIErrorType.VALIDATION_ERROR,
+        verifyResult.message || "Verification failed",
+        400,
+        requestId,
+        {
+          code: verifyResult.code || "verification_failed",
+        }
+      )
     }
 
     // 6. Security headers
@@ -144,7 +145,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         error.statusCode === 400 ? APIErrorType.VALIDATION_ERROR : APIErrorType.SERVER_ERROR,
         error.message,
         error.statusCode,
-        { traceId: requestId }
+        requestId
       )
     }
 
@@ -153,56 +154,49 @@ export const POST: APIRoute = async ({ request, params }) => {
       const errorMessage = error.message.toLowerCase()
 
       if (errorMessage.includes("challenge expired")) {
-        return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Challenge has expired", 401, {
+        return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Challenge has expired", 401, requestId, {
           code: "challenge_expired",
-          traceId: requestId,
         })
       }
 
       if (errorMessage.includes("challenge tampered") || errorMessage.includes("invalid hmac")) {
-        return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Challenge has been tampered with", 401, {
+        return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Challenge has been tampered with", 401, requestId, {
           code: "challenge_tampered",
-          traceId: requestId,
         })
       }
 
       if (errorMessage.includes("signature verification failed")) {
-        return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Signature verification failed", 401, {
+        return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Signature verification failed", 401, requestId, {
           code: "invalid_signature",
-          traceId: requestId,
         })
       }
 
       if (errorMessage.includes("origin mismatch")) {
-        return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Challenge origin mismatch", 401, {
+        return createErrorResponse(APIErrorType.VALIDATION_ERROR, "Challenge origin mismatch", 401, requestId, {
           code: "origin_mismatch",
-          traceId: requestId,
         })
       }
 
       if (errorMessage.includes("not supported")) {
-        return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, {
+        return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, requestId, {
           code: "unsupported_chain",
-          traceId: requestId,
         })
       }
 
       if (errorMessage.includes("invalid address")) {
-        return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, {
+        return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, requestId, {
           code: "invalid_address",
-          traceId: requestId,
         })
       }
 
       if (errorMessage.includes("not allowed")) {
-        return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, {
+        return createErrorResponse(APIErrorType.VALIDATION_ERROR, error.message, 422, requestId, {
           code: "unsupported_token",
-          traceId: requestId,
         })
       }
     }
 
     // Handle other errors
-    return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to verify signature", 500, { traceId: requestId })
+    return createErrorResponse(APIErrorType.SERVER_ERROR, "Failed to verify signature", 500, requestId)
   }
 }

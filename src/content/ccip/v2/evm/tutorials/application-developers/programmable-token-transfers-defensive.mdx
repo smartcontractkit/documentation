@@ -1,0 +1,1541 @@
+---
+section: ccip
+date: Last Modified
+title: "Transfer Tokens with Data - Defensive Example"
+metadata:
+  description: "Send ERC-20 tokens and data defensively with CCIP. Handle errors gracefully, lock tokens on failure, and recover assets using robust receiver logic."
+  image: "/images/ccip/basic-architecture.png"
+  excerpt: "defensive coding, error handling, token recovery, CCIP, ERC-20, ERC20, token + data, Solidity, Foundry, Hardhat"
+  datePublished: "2024-03-25"
+  lastModified: "2026-05-01"
+  estimatedTime: "30 minutes"
+  difficulty: "intermediate"
+whatsnext:
+  "Learn how to manually execute a failed CCIP transaction": "/ccip/evm/tutorials/application-developers/manual-execution"
+  "CCIP Directory": "/ccip/directory"
+  "Learn CCIP best practices": "/ccip/evm/concepts/best-practices"
+---
+
+import { AnchoredAccordion, Aside, GitHubCard } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+This tutorial extends the [Transfer Tokens with Data](/ccip/evm/tutorials/application-developers/programmable-token-transfers) example. It uses CCIP to send `tokens + arbitrary data` from one chain to another in a single transaction.
+In addition though, it incorporates defensive receiver logic that stores failed messages and locks received tokens instead of reverting the whole delivery.
+
+You will send `CCIP-BnM` tokens and a `string` payload from _Ethereum Sepolia_ to _Arbitrum Sepolia_. The destination contract is configured to fail intentionally, then you will recover the locked tokens.
+
+<CcipCommon callout="ftfSupportTutorials" />
+
+<Aside type="note" title="Gas limit for defensive contracts">
+  <ol>
+    <li>Defensive error handling (try/catch, failed-message storage) requires more gas than standard receivers.</li>
+    <li>
+      Foundry scripts default to <strong>400,000</strong> gas. Hardhat scripts estimate gas unless you set{" "}
+      <code>GAS_LIMIT</code> (and fall back to 400,000 if estimation fails).
+    </li>
+    <li>Make sure to test all scenarios, not just success paths, to accurately estimate the required gas limit.</li>
+  </ol>
+</Aside>
+
+## Before you begin
+
+1. You should understand how to write, compile, deploy, and fund a smart contract. Go through this [tutorial](/quickstarts/deploy-your-first-contract) to get started.
+2. Your account must have some `ETH` on _Ethereum Sepolia_ and `ETH` on _Arbitrum Sepolia_ for gas. If you plan to pay CCIP fees in `LINK`, you also need testnet `LINK` on _Ethereum Sepolia_. \
+   Learn how to [Acquire testnet LINK](/resources/acquire-link).
+3. Check the [CCIP Directory](/ccip/directory) if you want to configure a different set of source and destination chains/tokens.
+4. [Acquire CCIP test tokens](/ccip/getting-started/test-tokens#evm-chains). You should have `CCIP-BnM` tokens, and `CCIP-BnM` should appear in the list of your tokens in MetaMask.
+
+## Examine the code
+
+<AnchoredAccordion title="Initializing the contract" number={1} depth={4} >
+
+When deploying the contract, we define the router address of the blockchain we deploy the contract on.
+Defining the router address is useful for the following:
+
+- Sender part:
+  - Calls the router's `getFee` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#getfee) to estimate the CCIP fees.
+  - Calls the router's `ccipSend` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#ccipsend) to send CCIP messages.
+
+- Receiver part:
+  - The contract inherits from [CCIPReceiver](/ccip/evm/api-reference/v2.0.0/ccip-receiver), which serves as a base contract for receiver contracts. This contract requires that child contracts implement the `_ccipReceive` [function](/ccip/evm/api-reference/v2.0.0/ccip-receiver#_ccipreceive).
+  - This defensive contract overrides `ccipReceive` directly so it can wrap processing in `try/catch`. The inherited `onlyRouter` modifier still ensures that only the router can deliver CCIP messages to the receiver contract.
+
+Some key things to note:
+
+- `OwnerIsCreator` sets the deployer as the owner of the contract.
+- The constructor passes the router address into `CCIPReceiver` at deployment time.
+- `sendMessage` is `payable` and open to any caller (not restricted to the owner). It handles both LINK and native fee payments:
+  - pass the LINK token address as `_feeTokenAddress` to pay in LINK, or,
+  - `address(0)` to pay in native gas.
+- The function accepts pre-encoded `_extraArgs` bytes built off-chain, making the contract forward-compatible with any extraArgs version.
+- Access control is enforced through allowlisting:
+  - outbound messages are restricted by destination chain selector (`onlyAllowlistedDestinationChain`), not by destination receiver address
+  - inbound messages are restricted by source chain selector + source sender contract pair (`onlyAllowlisted`)
+- The contract overrides `getCCVsAndFinalityConfig` from `CCIPReceiver` to advertise per-source-chain receiver finality policy to the OffRamp. See **Configure receiver finality policy** below.
+- An `EnumerableMap` (`s_failedMessages`) tracks failed message IDs and their error codes (`FAILED` or `RESOLVED`). The `s_messageContents` mapping stores the full CCIP message payload for failed messages, enabling token recovery.
+- The `s_simRevert` flag allows the owner to simulate processing failures for testing.
+
+```solidity filename="ProgrammableDefensiveTokenTransfers.sol"
+// Imports
+import {EnumerableMap} from "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+
+contract ProgrammableDefensiveTokenTransfers is CCIPReceiver, OwnerIsCreator {
+    using EnumerableMap for EnumerableMap.Bytes32ToUintMap;
+    using SafeERC20 for IERC20;
+
+    enum ErrorCode { RESOLVED, FAILED }
+
+    mapping(uint64 => bool) public allowlistedDestinationChains;
+    mapping(uint64 => mapping(address => bool)) public allowlistedChainSenders;
+    mapping(uint64 => bytes4) private s_allowedFinalityConfig;
+    mapping(bytes32 messageId => Client.Any2EVMMessage contents) public s_messageContents;
+    EnumerableMap.Bytes32ToUintMap internal s_failedMessages;
+    bool internal s_simRevert = false;
+
+    constructor(address _router) CCIPReceiver(_router) {}
+
+    function sendMessage(
+        uint64 _destinationChainSelector,
+        address _receiver,
+        string calldata _text,
+        address _token,
+        uint256 _amount,
+        address _feeTokenAddress,
+        bytes calldata _extraArgs
+    )
+        external
+        payable
+        onlyAllowlistedDestinationChain(_destinationChainSelector)
+        validateReceiver(_receiver)
+        returns (bytes32 messageId)
+    {
+        messageId = _sendCCIPMessage(/* ... */);
+    }
+
+    // ... defensive receive pipeline, recovery functions, and finality config ...
+}
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Build transaction payload" number={2} depth={4} >
+
+`_sendCCIPMessage` calls the `_buildCCIPMessage` helper to build a CCIP message payload using `EVM2AnyMessage` [struct](/ccip/evm/api-reference/v2.0.0/client#evm2anymessage). \
+This payload is then passed to the router's `getFee` and `ccipSend` functions.
+
+The payload includes:
+
+- `receiver`: ABI-encoded destination address (`abi.encode(_receiver)`).
+- `data`: ABI-encoded text payload (`abi.encode(_text)`).
+- `tokenAmounts`: A 1-element array containing the token address and amount to transfer.
+- `extraArgs`: Pre-encoded message execution parameters built off-chain by a helper script. For default finality, the scripts encode V3 extraArgs with the finalized/default finality config. For non-default finality requests, the scripts detect lane support and use V3 extraArgs with `requestedFinalityConfig` on FTF-capable lanes, or V2 extraArgs on pre-v2.0 lanes.
+- `feeToken`: The token used to pay CCIP fees (`_feeTokenAddress`). Pass the LINK token address to pay in LINK, or `address(0)` to pay in native gas.
+
+<Aside type="note" title="ExtraArgs are encoded off-chain">
+  <ol>
+    <li>
+      The contract accepts pre-encoded `_extraArgs` bytes, so it does not need to know about specific encoding versions.
+      The scripts handle lane detection and encoding.
+    </li>
+    <li>This makes the contract forward-compatible with future CCIP versions.</li>
+  </ol>
+</Aside>
+
+```solidity filename="_buildCCIPMessage"
+  function _buildCCIPMessage(
+      address _receiver,
+      string calldata _text,
+      address _token,
+      uint256 _amount,
+      address _feeTokenAddress,
+      bytes calldata _extraArgs
+  ) private pure returns (Client.EVM2AnyMessage memory) {
+      Client.EVMTokenAmount[] memory tokenAmounts = new Client.EVMTokenAmount[](1);
+      tokenAmounts[0] = Client.EVMTokenAmount({token: _token, amount: _amount});
+
+      return Client.EVM2AnyMessage({
+          receiver: abi.encode(_receiver),
+          data: abi.encode(_text),
+          tokenAmounts: tokenAmounts,
+          extraArgs: _extraArgs,
+          feeToken: _feeTokenAddress
+      });
+  }
+```
+
+<CcipCommon callout="senderContractCalloutV2" />
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Sending messages" number={3} depth={4} >
+
+The public `sendMessage` function delegates to `_sendCCIPMessage`, which performs four operations:
+
+1. Builds the message payload by calling `_buildCCIPMessage`. See **Build transaction payload** for details.
+2. Computes the fees by invoking the router's `getFee` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#getfee).
+3. Pulls tokens from the caller and grants the router the required approvals by calling `_handleFeeAndTokenApprovals`. See **Handling fees and token approvals** for details.
+4. Dispatches the CCIP message by executing the router's `ccipSend` [function](/ccip/evm/api-reference/v2.0.0/i-router-client#ccipsend). If paying in native gas (`_feeTokenAddress == address(0)`), the fee is forwarded via `{value: ccipFee}`.
+
+**Note**: As a security measure, `sendMessage` is protected by the `onlyAllowlistedDestinationChain` and `validateReceiver` modifiers. Any caller can invoke it -- access is governed by the destination chain allowlist, not ownership.
+
+```solidity filename="_sendCCIPMessage"
+  function _sendCCIPMessage(
+      uint64 _destinationChainSelector,
+      address _receiver,
+      string calldata _text,
+      address _token,
+      uint256 _amount,
+      address _feeTokenAddress,
+      bytes calldata _extraArgs
+  ) private returns (bytes32 messageId) {
+      Client.EVM2AnyMessage memory evm2AnyMessage = _buildCCIPMessage(
+          _receiver, _text, _token, _amount, _feeTokenAddress, _extraArgs
+      );
+
+      IRouterClient router = IRouterClient(this.getRouter());
+      uint256 ccipFee = router.getFee(_destinationChainSelector, evm2AnyMessage);
+
+      _handleFeeAndTokenApprovals(router, _token, _amount, _feeTokenAddress, ccipFee);
+
+      if (_feeTokenAddress == address(0)) {
+          messageId = router.ccipSend{value: ccipFee}(_destinationChainSelector, evm2AnyMessage);
+      } else {
+          messageId = router.ccipSend(_destinationChainSelector, evm2AnyMessage);
+      }
+
+      emit MessageSent(
+          messageId, _destinationChainSelector, _receiver, _text, _token, _amount, _feeTokenAddress, ccipFee
+      );
+
+      return messageId;
+  }
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Handling fees and token approvals" number={4} depth={4} >
+
+The contract uses a **pull-from-caller** model: when a user calls `sendMessage`, the contract pulls the required tokens from `msg.sender` via `safeTransferFrom`, then approves the Router to spend them via `forceApprove`. The caller (EOA or upstream contract) must `approve` this contract **before** calling `sendMessage`.
+
+`_handleFeeAndTokenApprovals` handles three scenarios:
+
+1. **Native fee** (`_feeTokenAddress == address(0)`): Validates that `msg.value` covers the CCIP fee. Pulls the transfer token from the caller via `safeTransferFrom` and approves the Router.
+2. **Same token for fee and transfer** (`_token == _feeTokenAddress`): Pulls the combined total (`ccipFee + amount`) from the caller in one `safeTransferFrom`. Approves the Router for the combined total.
+3. **Different ERC-20 tokens**: Pulls each token separately from the caller. Approves the Router for each.
+
+<Aside type="note" title="Approve the contract, not the Router">
+  Because the contract pulls tokens from the caller, your scripts must call `approve(contractAddress, amount)` --
+  **not** `approve(routerAddress, amount)`. This is a key difference from older CCIP patterns where the contract was
+  pre-funded.
+</Aside>
+
+```solidity filename="_handleFeeAndTokenApprovals"
+  function _handleFeeAndTokenApprovals(
+      IRouterClient _router,
+      address _token,
+      uint256 _amount,
+      address _feeTokenAddress,
+      uint256 _ccipFee
+  ) private {
+      if (_feeTokenAddress == address(0)) {
+          if (msg.value < _ccipFee) {
+              revert InsufficientNativeForFees(msg.value, _ccipFee);
+          }
+
+          IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+          IERC20(_token).forceApprove(address(_router), _amount);
+      } else if (_token == _feeTokenAddress) {
+          uint256 totalAmount = _ccipFee + _amount;
+          IERC20(_token).safeTransferFrom(msg.sender, address(this), totalAmount);
+          IERC20(_token).forceApprove(address(_router), totalAmount);
+      } else {
+          IERC20(_feeTokenAddress).safeTransferFrom(msg.sender, address(this), _ccipFee);
+          IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+          IERC20(_feeTokenAddress).forceApprove(address(_router), _ccipFee);
+          IERC20(_token).forceApprove(address(_router), _amount);
+      }
+  }
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Defensive message reception" number={5} depth={4} >
+
+This is the core defensive pattern. Unlike the standard `CCIPReceiver`, this contract **overrides `ccipReceive` directly** and wraps message processing in a `try/catch` so application-level failures are captured and stored instead of reverting the delivery.
+
+**Step-by-step flow:**
+
+1. **`ccipReceive`** is called by the CCIP router. The `onlyRouter` modifier ensures no other caller can invoke it. The `onlyAllowlisted` modifier checks the (sourceChainSelector, sender) pair.
+
+2. Inside `ccipReceive`, the contract calls `this.processMessage(any2EvmMessage)` as an **external** call to itself. This external call is wrapped in a `try/catch` block.
+
+3. **`processMessage`** is protected by the `onlySelf` modifier (only the contract itself can call it). It first checks `s_simRevert` -- if `true`, it reverts with `ErrorCase()` to simulate a failure. Otherwise it forwards to `_ccipReceive`.
+
+4. **On success**: processing completes normally and `_ccipReceive` stores the message details and emits `MessageReceived`.
+
+5. **On failure**: the `catch` block stores the message ID in `s_failedMessages` with `ErrorCode.FAILED`, saves the full message payload in `s_messageContents`, and emits `MessageFailed`. The tokens are locked in the contract.
+
+```solidity filename="ccipReceive"
+  function ccipReceive(Client.Any2EVMMessage calldata any2EvmMessage)
+      external
+      override
+      onlyRouter
+      onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address)))
+  {
+      try this.processMessage(any2EvmMessage) {
+      } catch (bytes memory err) {
+          s_failedMessages.set(any2EvmMessage.messageId, uint256(ErrorCode.FAILED));
+          s_messageContents[any2EvmMessage.messageId] = any2EvmMessage;
+          emit MessageFailed(any2EvmMessage.messageId, err);
+          return;
+      }
+  }
+```
+
+```solidity filename="processMessage"
+  function processMessage(Client.Any2EVMMessage calldata any2EvmMessage)
+      external
+      onlySelf
+      onlyAllowlisted(any2EvmMessage.sourceChainSelector, abi.decode(any2EvmMessage.sender, (address)))
+  {
+      if (s_simRevert) revert ErrorCase();
+
+      _ccipReceive(any2EvmMessage);
+  }
+```
+
+The internal `_ccipReceive` is tokenless-safe -- it checks `destTokenAmounts.length > 0` before accessing the array:
+
+```solidity filename="_ccipReceive"
+  function _ccipReceive(Client.Any2EVMMessage memory any2EvmMessage) internal override {
+      s_lastReceivedMessageId = any2EvmMessage.messageId;
+      s_lastReceivedSender = abi.decode(any2EvmMessage.sender, (address));
+      s_lastReceivedText = abi.decode(any2EvmMessage.data, (string));
+
+      bool hasToken = any2EvmMessage.destTokenAmounts.length > 0;
+      s_lastReceivedTokenAddress = hasToken ? any2EvmMessage.destTokenAmounts[0].token : address(0);
+      s_lastReceivedTokenAmount = hasToken ? any2EvmMessage.destTokenAmounts[0].amount : 0;
+
+      emit MessageReceived(
+          any2EvmMessage.messageId,
+          any2EvmMessage.sourceChainSelector,
+          s_lastReceivedSender,
+          s_lastReceivedText,
+          s_lastReceivedTokenAddress,
+          s_lastReceivedTokenAmount
+      );
+  }
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Recovering locked tokens" number={6} depth={4} >
+
+When a message fails, the tokens are locked in the contract. The owner can recover them using `retryFailedMessage`:
+
+<Aside type="note" title="retryFailedMessage recovers tokens (it doesn't replay execution)">
+  Despite the name, `retryFailedMessage` does **not** re-run the original message delivery or your application logic. It
+  marks the message as `RESOLVED` and transfers the locked tokens to `tokenReceiver`.
+</Aside>
+
+1. **Validation**: checks that the message has `ErrorCode.FAILED` in `s_failedMessages`. Reverts with `MessageNotFailed` otherwise.
+2. **Status update**: sets the error code to `RESOLVED` to prevent re-entry and duplicate retries.
+3. **Token recovery**: retrieves the stored message from `s_messageContents` and transfers the locked tokens to the specified `tokenReceiver` via `safeTransfer`.
+4. **Event**: emits `MessageRecovered`.
+
+```solidity filename="retryFailedMessage"
+  function retryFailedMessage(bytes32 messageId, address tokenReceiver) external onlyOwner {
+      if (s_failedMessages.get(messageId) != uint256(ErrorCode.FAILED)) {
+          revert MessageNotFailed(messageId);
+      }
+
+      s_failedMessages.set(messageId, uint256(ErrorCode.RESOLVED));
+
+      Client.Any2EVMMessage memory message = s_messageContents[messageId];
+
+      IERC20(message.destTokenAmounts[0].token).safeTransfer(tokenReceiver, message.destTokenAmounts[0].amount);
+
+      emit MessageRecovered(messageId);
+  }
+```
+
+**Supporting functions:**
+
+- `getFailedMessages(uint256 offset, uint256 limit)`: returns a paginated list of `FailedMessage` structs (each containing `messageId` and `errorCode`). Use this to find failed message IDs before calling `retryFailedMessage`.
+- `setSimRevert(bool simRevert)`: owner-only toggle that controls the `s_simRevert` flag. Set to `true` to simulate failures for testing, `false` to resume normal processing.
+
+</AnchoredAccordion>
+
+<AnchoredAccordion title="Configure receiver finality policy" number={7} depth={4} >
+
+The receiver exposes an `allowedFinalityConfig` for each source chain. This value tells CCIP which finality modes the receiver accepts for messages from that chain. The sender scripts encode the requested mode into V3 `extraArgs` as `requestedFinalityConfig`, then validate the request against the receiver policy (and the token pool policy, when applicable) before sending.
+
+CCIP 2.0 supports two finality request styles:
+
+- **Default finality (finalized)**: Omit `BLOCK_DEPTH` (or set `BLOCK_DEPTH=DEFAULT`).
+- **Numeric block depth (faster than finality)**: Set `BLOCK_DEPTH=32` (or higher). This tutorial standardizes on `32`.
+
+This contract uses two functions to manage receiver-side finality policy:
+
+1. **`setAllowedFinalityConfig`**: An owner-only setter that stores the `FinalityCodec`-encoded policy for a source chain.
+2. **`getCCVsAndFinalityConfig`**: The OffRamp and scripts can call this hook to read the receiver's CCV and finality policy. This tutorial does not configure custom CCVs, so it returns empty CCV arrays and `optionalThreshold = 0`.
+
+```solidity filename="Receiver finality policy"
+  function setAllowedFinalityConfig(
+      uint64 _sourceChainSelector,
+      bytes4 _allowedFinalityConfig
+  ) external onlyOwner {
+      s_allowedFinalityConfig[_sourceChainSelector] = _allowedFinalityConfig;
+      emit AllowedFinalityConfigSet(_sourceChainSelector, _allowedFinalityConfig);
+  }
+
+  function getCCVsAndFinalityConfig(
+      uint64 sourceChainSelector,
+      bytes calldata sender
+  )
+      external
+      view
+      override
+      returns (
+          address[] memory requiredCCVs,
+          address[] memory optionalCCVs,
+          uint8 optionalThreshold,
+          bytes4 allowedFinalityConfig
+      )
+  {
+      address decodedSender = abi.decode(sender, (address));
+      if (!allowlistedChainSenders[sourceChainSelector][decodedSender]) {
+          revert SenderNotAllowedForChain(sourceChainSelector, decodedSender);
+      }
+
+      requiredCCVs = new address[](0);
+      optionalCCVs = new address[](0);
+      optionalThreshold = 0;
+      allowedFinalityConfig = s_allowedFinalityConfig[sourceChainSelector];
+  }
+```
+
+</AnchoredAccordion>
+
+<GitHubCard
+  title="ProgrammableDefensiveTokenTransfers.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/contracts/tutorials/programmable-defensive-token-transfers/ProgrammableDefensiveTokenTransfers.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete contract code on Github.
+</GitHubCard>
+
+## Tutorial
+
+Let's get started! Choose your preferred development environment below.
+
+### Foundry
+
+Best for **Solidity-native** workflows that prefer a modular, powerful scripting framework.
+
+<Aside type="note" title="Want to set up a dev environment from scratch? ">
+  Check out the [Getting started page](/ccip/evm/getting-started#foundry) for detailed instructions on setting up a
+  Foundry dev environment from scratch.
+</Aside>
+<AnchoredAccordion
+  title="Bootstrap a new Foundry project"
+  anchorId="foundry-bootstrap-a-new-foundry-project"
+  number={1}
+  depth={4}
+>
+
+<GitHubCard title="Foundry Starter Kit" href="https://github.com/smartcontractkit/docs-ccip" iconName="github-svg-card">
+  Clone the Foundry Starter Kit for a smoother setup.
+</GitHubCard>
+
+1. Clone the [CCIP 2.0 template](https://github.com/smartcontractkit/docs-ccip) repository, and open a terminal inside the project directory:
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-ccip.git && cd docs-ccip
+```
+
+2. If you don't already have a Foundry keystore, use the `cast` command to create a new one. Here, `your_keystore_name` is the alias you assign to this keystore entry -- Foundry will prompt you to enter the actual private key and a password to encrypt it:
+
+```bash filename="Terminal"
+cast wallet import your_keystore_name --interactive
+```
+
+<Aside type="caution" title="Note">
+  As of writing, Foundry supports keystore encryption only for private keys (not generic strings), so in this tutorial
+  we only encrypt the private key and store the keystore alias in `KEYSTORE_NAME`.
+</Aside>
+
+3. Install dependencies:
+
+```bash filename="Terminal"
+npm install
+```
+
+4. Create a `.env` file by copying the example file, and fill in your values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+Set `KEYSTORE_NAME` to the name of the keystore entry you created above, and provide RPC endpoints for the chains you will use:
+
+```env filename=".env"
+# Keystore name
+KEYSTORE_NAME=your_keystore_name
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=
+ARBITRUM_SEPOLIA_RPC_URL=
+
+# Etherscan API key (required only if you pass --verify to deployment scripts)
+ETHERSCAN_API_KEY=
+```
+
+5. Load the environment variables:
+
+```bash filename="Terminal"
+source .env
+```
+
+<Aside type="caution" title="Run this in every new terminal session">
+  If you open a new terminal, you must run `source .env` again. To verify, run `echo $ETHEREUM_SEPOLIA_RPC_URL` and
+  confirm it prints your URL.
+</Aside>
+
+6. Run the following command to compile all the contracts:
+
+```bash filename="Terminal"
+forge build
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Deploy your contracts"
+  anchorId="foundry-deploy-your-contracts"
+  number={2}
+  depth={4}
+>
+
+In this section, you will deploy the `ProgrammableDefensiveTokenTransfers` contracts on the source and destination chains.
+
+1. The `Deploy.s.sol` script does the following:
+
+- Deploy `ProgrammableDefensiveTokenTransfers` on _Ethereum Sepolia_ (source).
+- Deploy `ProgrammableDefensiveTokenTransfers` on _Arbitrum Sepolia_ (destination).
+- Returns the contract addresses in the terminal
+
+To run the script, use the following command:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+forge script foundry/scripts/tutorials/programmable-defensive-token-transfers/deploy/Deploy.s.sol \
+--account $KEYSTORE_NAME \
+--broadcast -vv \
+--verify
+```
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+🚀 Deploy CCIP Defensive Contracts on Both Chains
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+========================================
+
+
+[Step 1] Deploying ProgrammableDefensiveTokenTransfers on Ethereum Sepolia
+Contract deployed at: 0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3
+https://sepolia.etherscan.io/address/0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3
+
+========================================
+✅ Deployment Complete on Ethereum Sepolia!
+========================================
+Source Contract Address: 0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3
+
+
+[Step 2] Deploying ProgrammableDefensiveTokenTransfers on Arbitrum Sepolia
+Contract deployed at: 0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+https://sepolia.arbiscan.io/address/0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+
+========================================
+✅ Deployment Complete on Arbitrum Sepolia!
+========================================
+Destination Contract Address: 0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+
+========================================
+✅ All Deployments Complete!
+========================================
+Source Chain: Ethereum Sepolia
+Source Contract: 0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3
+https://sepolia.etherscan.io/address/0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3
+
+Destination Chain: Arbitrum Sepolia
+Destination Contract: 0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+https://sepolia.arbiscan.io/address/0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+
+Run this command to set both environment variables:
+export ETHEREUM_SEPOLIA_CONTRACT=0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3 && export ARBITRUM_SEPOLIA_CONTRACT=0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+========================================
+```
+
+2. Before moving on, export the addresses of the previously deployed contracts so that they're available in the terminal:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_CONTRACT=<sender-contract-address> && export ARBITRUM_SEPOLIA_CONTRACT=<receiver-contract-address>
+```
+
+Check out the complete file on Github here:
+
+<GitHubCard
+  title="Deploy.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/programmable-defensive-token-transfers/deploy/Deploy.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Configure allowlists and finality"
+  anchorId="foundry-configure-allowlists-and-finality"
+  number={3}
+  depth={4}
+>
+
+As a best practice, allowlist specific contracts to prevent unauthorized message delivery between your sender and receiver.
+
+<GitHubCard
+  title="Configure.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/programmable-defensive-token-transfers/configure/Configure.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+1. The `Configure.s.sol` script handles all configuration in a single command:
+   - Allowlists the destination chain on the sender contract.
+   - Allowlists the chain-sender pair on the receiver contract via `allowlistChainSender`.
+   - Sets the receiver's finality policy via `setAllowedFinalityConfig`.
+   - Enables simulated revert on the receiver contract via `setSimRevert(true)`.
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH \
+ALLOWED_BLOCK_DEPTH=32 \
+forge script foundry/scripts/tutorials/programmable-defensive-token-transfers/configure/Configure.s.sol \
+--account $KEYSTORE_NAME --broadcast -vv
+```
+
+##### Finality configuration
+
+<CcipCommon callout="ftfExplainer" />
+
+To allow numeric faster than finality requests, set `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH` and choose a minimum `ALLOWED_BLOCK_DEPTH`. In this tutorial, `ALLOWED_BLOCK_DEPTH=32` allows send-time requests of `BLOCK_DEPTH=32` (or higher).
+
+<Aside type="note" title="SIM_REVERT defaults to true">
+  The `SIM_REVERT` environment variable defaults to `true` in this tutorial's configure script. This means the receiver
+  contract will deliberately fail when processing incoming messages, causing tokens to be locked. This is the expected
+  behavior for demonstrating the defensive recovery pattern. Set `SIM_REVERT=false` if you want normal message
+  processing.
+</Aside>
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚙️ Configure CCIP Defensive Contracts on Both Chains
+========================================
+Source Chain: Ethereum Sepolia
+Source Contract: 0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3
+Destination Chain: Arbitrum Sepolia
+Destination Contract: 0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+========================================
+
+
+[Step 1] Configuring sender on Ethereum Sepolia
+Allowlisting Arbitrum Sepolia as destination chain...
+✅ Destination chain allowlisted: Arbitrum Sepolia
+
+========================================
+✅ Configuration Complete on Ethereum Sepolia!
+========================================
+
+
+[Step 2] Configuring receiver on Arbitrum Sepolia
+Allowlisting sender 0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3 from Ethereum Sepolia...
+✅ Chain-sender pair allowlisted: Ethereum Sepolia -> 0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3
+Setting allowed finality config to 0x00000020 (BLOCK_DEPTH=32)...
+✅ Allowed finality config set to 0x00000020 (BLOCK_DEPTH=32) for Ethereum Sepolia
+✅ Sim revert set to true - messages will fail for testing recovery
+
+========================================
+✅ Configuration Complete on Arbitrum Sepolia!
+========================================
+
+========================================
+✅ All Configurations Complete!
+========================================
+Ethereum Sepolia can send messages to Arbitrum Sepolia
+Arbitrum Sepolia can receive messages from Ethereum Sepolia
+⚠️  Messages will fail on destination (simRevert=true) to demonstrate defensive handling
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Fund your wallet with test tokens"
+  anchorId="foundry-fund-your-wallet-with-test-tokens"
+  number={4}
+  depth={4}
+>
+
+<GitHubCard
+  title="DripBnMToken.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/faucet/DripBnMToken.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the faucet script on Github.
+</GitHubCard>
+
+<Aside type="note" title="Convenient way to print your wallet address">
+  If you don't have the public address of your wallet handy, run `cast wallet address` with `--account $KEYSTORE_NAME`
+  to print it from the terminal.
+</Aside>
+Before sending a CCIP message, you need `CCIP-BnM` test tokens in your wallet. The send scripts transfer `CCIP-BnM` from
+your EOA to the contract, so your wallet must hold a balance.
+
+Use the faucet script included in the starter kit to drip `CCIP-BnM` tokens to your address:
+
+```bash filename="Terminal"
+CHAIN=ETHEREUM_SEPOLIA RECIPIENT_ADDRESS=<your-wallet-address> forge script foundry/scripts/faucet/DripBnMToken.s.sol --account $KEYSTORE_NAME --broadcast -vv
+```
+
+<Aside type="note" title="Note">
+  If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the
+  [Chainlink faucet](https://faucets.chain.link/).
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Send a message"
+  anchorId="foundry-send-a-message"
+  number={5}
+  depth={4}
+>
+
+`SendMessage.s.sol` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
+
+- Builds off-chain `extraArgs` for the lane. Foundry uses `ExtraArgsHelper.buildExtraArgs` to detect the lane version and encode V2 or V3.
+- Approves the contract to spend the caller's tokens (the contract then pulls via `safeTransferFrom`).
+- Sends the CCIP message.
+
+<Aside type="note" title="Expected behavior with SIM_REVERT=true">
+  Because the configure step enabled `setSimRevert(true)` on the receiver, the message **will fail on the destination
+  chain by design**. The receiver contract will lock the tokens instead of reverting. You will recover them in the next
+  step.
+</Aside>
+
+##### Faster Than Finality (block depth)
+
+<CcipCommon callout="extraArgsV3Explainer" />
+
+The `BLOCK_DEPTH` environment variable controls send-side finality behavior:
+
+- Omit `BLOCK_DEPTH`, or set `BLOCK_DEPTH=DEFAULT`/`BLOCK_DEPTH=0` (default): Use finalized finality.
+- Set `BLOCK_DEPTH=32`: Request faster than finality using numeric block depth.
+
+##### Example 1: Pay with native gas + faster than finality (`BLOCK_DEPTH=32`)
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+BLOCK_DEPTH=32 \
+TOKEN_AMOUNT=1000000000000000 GAS_LIMIT=400000 \
+MESSAGE='Hello from Foundry!' \
+forge script foundry/scripts/tutorials/programmable-defensive-token-transfers/interact/SendMessage.s.sol \
+--account $KEYSTORE_NAME --broadcast -vv
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Defensive Message Transfer - Pay with Native
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+Sender: 0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3
+Receiver: 0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+Fee Token: Native (ETH)
+========================================
+
+
+[Pre-validation] Detecting lane version and building extraArgs...
+Gas limit (override): 400000
+Token pool ALLOWED_FINALITY_CONFIG: 0x00000020 (BLOCK_DEPTH: 32 block(s))
+Receiver contract ALLOWED_FINALITY_CONFIG: 0x00000020 (BLOCK_DEPTH: 32 block(s))
+✅ Using V3 extraArgs with FTF (gasLimit=400000, finalityConfig=0x00000020 (BLOCK_DEPTH: 32 block(s))).
+
+[Step 1] Approving contract to spend CCIP-BnM...
+✅ Contract approved to spend CCIP-BnM
+
+
+[Step 2] Sending CCIP message with native token fee ( ETH )...
+Required CCIP fee (in WEI): 330463107598943
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0x1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0x1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708
+```
+
+##### Example 2: Pay with LINK + finalized finality (default)
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+FEE_TOKEN=LINK \
+TOKEN_AMOUNT=1000000000000000 GAS_LIMIT=400000 \
+MESSAGE='Hello from Foundry!' \
+forge script foundry/scripts/tutorials/programmable-defensive-token-transfers/interact/SendMessage.s.sol \
+--account $KEYSTORE_NAME --broadcast -vv
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Defensive Message Transfer - Pay with LINK
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+Sender: 0x8A1b2C3d4E5f60718293A4b5c6D7e8F9a0B1c2D3
+Receiver: 0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+Fee Token: LINK
+========================================
+
+
+[Pre-validation] Detecting lane version and building extraArgs...
+Gas limit (override): 400000
+✅ Using default finality (BLOCK_DEPTH=DEFAULT). V3 extraArgs (gasLimit=400000, finalityConfig=0x00000000).
+
+[Step 1] Approving contract to spend fee token for CCIP fees...
+Required CCIP fee (in token units): 38700123456789000
+✅ Contract approved to spend fee token
+
+
+[Step 2] Approving contract to spend CCIP-BnM...
+✅ Contract approved to spend CCIP-BnM
+
+
+[Step 3] Sending CCIP message...
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0x2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0x2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a
+```
+
+##### Environment variables
+
+| <nobr>Variable</nobr>                  | Description                                                                                                                        | <nobr>Default</nobr>                    |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| <nobr>`KEYSTORE_NAME`</nobr>           | Foundry encrypted keystore name used by `--account $KEYSTORE_NAME`                                                                 | <nobr>`your_keystore_name`</nobr>       |
+| <nobr>`SOURCE_CHAIN`</nobr>            | Source chain name identifier (for example, `ETHEREUM_SEPOLIA`)                                                                     | <nobr>Not set</nobr>                    |
+| <nobr>`DEST_CHAIN`</nobr>              | Destination chain name identifier (for example, `ARBITRUM_SEPOLIA`)                                                                | <nobr>Not set</nobr>                    |
+| <nobr>`{CHAIN}_RPC_URL`</nobr>         | RPC URL for each chain you run scripts against (for example, `ETHEREUM_SEPOLIA_RPC_URL`, `ARBITRUM_SEPOLIA_RPC_URL`)               | <nobr>Not set</nobr>                    |
+| <nobr>`{CHAIN}_CONTRACT`</nobr>        | Deployed tutorial contract address per chain (for example, `ETHEREUM_SEPOLIA_CONTRACT`, `ARBITRUM_SEPOLIA_CONTRACT`)               | <nobr>Not set</nobr>                    |
+| <nobr>`FEE_TOKEN`</nobr>               | `LINK` or `NATIVE`                                                                                                                 | <nobr>`NATIVE`</nobr>                   |
+| <nobr>`FEE_TOKEN_ADDRESS`</nobr>       | ERC-20 address of a CCIP-supported fee token on the lane. Takes priority over `FEE_TOKEN`                                          | <nobr>Not set</nobr>                    |
+| <nobr>`TOKEN_AMOUNT`</nobr>            | Amount of CCIP-BnM to transfer (in wei)                                                                                            | <nobr>`1000000000000000` (0.001)</nobr> |
+| <nobr>`GAS_LIMIT`</nobr>               | Gas limit for the destination callback                                                                                             | <nobr>`400000`</nobr>                   |
+| <nobr>`BLOCK_DEPTH`</nobr>             | Omit or set `DEFAULT` for finalized finality (default), or set `32` for faster than finality                                       | <nobr>`DEFAULT`</nobr>                  |
+| <nobr>`ALLOWED_FINALITY_CONFIG`</nobr> | Receiver allowed finality mode(s) used by the configure step. Set to `BLOCK_DEPTH` to allow numeric faster than finality requests. | <nobr>Not set</nobr>                    |
+| <nobr>`ALLOWED_BLOCK_DEPTH`</nobr>     | Receiver minimum block depth (used when `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH`). Use `32` in this tutorial.                         | <nobr>Not set</nobr>                    |
+| <nobr>`SIM_REVERT`</nobr>              | Enables simulated failures on the receiver during configuration                                                                    | <nobr>`true`</nobr>                     |
+| <nobr>`MESSAGE`</nobr>                 | Text payload to send                                                                                                               | <nobr>`Default String Text`</nobr>      |
+| <nobr>`CHAIN`</nobr>                   | Chain name identifier used by the failed-message scripts (the chain where the receiver is deployed)                                | <nobr>Not set</nobr>                    |
+| <nobr>`MESSAGE_ID`</nobr>              | Failed message ID to retry (used by the retry script)                                                                              | <nobr>Not set</nobr>                    |
+| <nobr>`TOKEN_RECEIVER`</nobr>          | Address to receive recovered tokens when retrying a failed message                                                                 | <nobr>Not set</nobr>                    |
+
+<GitHubCard
+  title="SendMessage.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/programmable-defensive-token-transfers/interact/SendMessage.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Check failed messages and recover tokens"
+  anchorId="foundry-check-failed-messages-and-recover-tokens"
+  number={6}
+  depth={4}
+>
+
+After sending the message, wait for it to arrive on the destination chain (typically 10-20 minutes). Because `s_simRevert` is `true`, the message will fail and the tokens will be locked in the receiver contract.
+
+##### Step 1: Check for failed messages
+
+Run the `GetFailedMessages.s.sol` script to query the receiver contract for failed messages:
+
+```bash filename="Terminal"
+CHAIN=ARBITRUM_SEPOLIA forge script foundry/scripts/tutorials/programmable-defensive-token-transfers/interact/GetFailedMessages.s.sol -vv
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+🔍 Check Failed Messages
+========================================
+Chain: Arbitrum Sepolia
+Receiver Address: 0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+========================================
+
+Found 1 unresolved failed message(s):
+
+========================================
+Failed Message #1
+========================================
+Message ID: 0x1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708
+Error Code: 1 (FAILED)
+
+```
+
+Note the `Message ID` from the output -- you will need it for the next step.
+
+<GitHubCard
+  title="GetFailedMessages.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/programmable-defensive-token-transfers/interact/GetFailedMessages.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+##### Step 2: Recover the locked tokens
+
+Use the `RetryFailedMessage.s.sol` script to recover the locked tokens. Pass the failed message ID and the address where you want the tokens sent:
+
+```bash filename="Terminal"
+MESSAGE_ID=<failed-message-id> TOKEN_RECEIVER=<your-wallet-address> CHAIN=ARBITRUM_SEPOLIA \
+forge script foundry/scripts/tutorials/programmable-defensive-token-transfers/interact/RetryFailedMessage.s.sol \
+--account $KEYSTORE_NAME --broadcast -vv
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+🔄 Retry Failed Message
+========================================
+Chain: Arbitrum Sepolia
+Receiver Address: 0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+Message ID: 0x1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708
+========================================
+
+Retrying failed message...
+Token receiver address: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
+
+========================================
+✅ Message Retry Complete!
+========================================
+Tokens have been recovered and sent to: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
+```
+
+<GitHubCard
+  title="RetryFailedMessage.s.sol"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/foundry/scripts/tutorials/programmable-defensive-token-transfers/interact/RetryFailedMessage.s.sol"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+##### Step 3: Verify the recovery
+
+Re-run the `GetFailedMessages.s.sol` script. The error code for the recovered message should now be `0` (`RESOLVED`):
+
+```bash filename="Terminal"
+CHAIN=ARBITRUM_SEPOLIA forge script foundry/scripts/tutorials/programmable-defensive-token-transfers/interact/GetFailedMessages.s.sol -vv
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+🔍 Check Failed Messages
+========================================
+Chain: Arbitrum Sepolia
+Receiver Address: 0x6D2a8F4c1E9b3A7d5C0e6B8f2A4c9E1d3F7b5A0c
+========================================
+
+✅ No unresolved failed messages found.
+Total messages: 1 (all resolved)
+
+```
+
+</AnchoredAccordion>
+
+### Hardhat
+
+Best for developers who want a mature, TypeScript-based smart contract development framework.
+
+<Aside type="note" title="Want to set up a dev environment from scratch? ">
+  Check out the [Getting started page](/ccip/evm/getting-started#hardhat-3) for detailed instructions on setting up a
+  Hardhat dev environment from scratch.
+</Aside>
+<AnchoredAccordion
+  title="Bootstrap a new Hardhat project"
+  anchorId="hardhat-bootstrap-a-new-hardhat-project"
+  number={1}
+  depth={4}
+>
+
+<GitHubCard title="CCIP Starter Kit" href="https://github.com/smartcontractkit/docs-ccip" iconName="github-svg-card">
+  Clone the starter kit (contains both Hardhat and Foundry code) for a smoother setup.
+</GitHubCard>
+
+1. Clone the [CCIP 2.0 template](https://github.com/smartcontractkit/docs-ccip) repository, and open a terminal inside the project directory:
+
+```bash filename="Terminal"
+git clone https://github.com/smartcontractkit/docs-ccip.git && cd docs-ccip
+```
+
+2. Copy the example environment file and fill in your values:
+
+```bash filename="Terminal"
+cp .env.example .env
+```
+
+Set `KEYSTORE_NAME` to the keystore alias you will create later in this section, and provide RPC endpoints for the chains you will use:
+
+```env filename=".env"
+# Keystore name
+KEYSTORE_NAME=your_keystore_name
+
+# RPC URLs (add the ones you need)
+ETHEREUM_SEPOLIA_RPC_URL=
+ARBITRUM_SEPOLIA_RPC_URL=
+
+# Etherscan API key (required only if you pass --verify to deployment scripts)
+ETHERSCAN_API_KEY=
+```
+
+3. Install dependencies and compile:
+
+```bash filename="Terminal"
+npm install && npx hardhat compile
+```
+
+4. Load the environment variables:
+
+```bash filename="Terminal"
+source .env
+```
+
+<Aside type="caution" title="Run this in every new terminal session">
+  If you open a new terminal, you must run `source .env` again. To verify, run `echo $ETHEREUM_SEPOLIA_RPC_URL` and
+  confirm it prints your URL.
+</Aside>
+
+5. Create a Hardhat keystore entry for your private key. Use the same name as `KEYSTORE_NAME` in your `.env` file. Hardhat will prompt you to enter the private key and a password to encrypt it:
+
+```bash filename="Terminal"
+npx hardhat keystore set your_keystore_name
+```
+
+<Aside type="caution" title="Private key format">
+  When prompted for your private key, include the <code>0x</code> prefix.
+</Aside>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Deploy your contracts"
+  anchorId="hardhat-deploy-your-contracts"
+  number={2}
+  depth={4}
+>
+
+<GitHubCard
+  title="deploy.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-defensive-token-transfers/deploy/deploy.ts"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+In this section, you will deploy the `ProgrammableDefensiveTokenTransfers` contracts on the source and destination chains.
+
+1. The `deploy.ts` script does the following:
+
+- Deploy `ProgrammableDefensiveTokenTransfers` on _Ethereum Sepolia_ (source).
+- Deploy `ProgrammableDefensiveTokenTransfers` on _Arbitrum Sepolia_ (destination).
+- Returns the contract addresses in the terminal
+
+2. To run the script, use the following command:
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+npx hardhat run hardhat/scripts/tutorials/programmable-defensive-token-transfers/deploy/deploy.ts
+```
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+🚀 Deploy CCIP Defensive Contracts on Both Chains
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+========================================
+
+[Step 1] Deploying ProgrammableDefensiveTokenTransfers on Ethereum Sepolia
+Contract deployed at: 0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899
+https://sepolia.etherscan.io/address/0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899
+
+========================================
+✅ Deployment Complete on Ethereum Sepolia!
+========================================
+Source Contract Address: 0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899
+
+[Step 2] Deploying ProgrammableDefensiveTokenTransfers on Arbitrum Sepolia
+Contract deployed at: 0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+https://sepolia.arbiscan.io/address/0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+
+========================================
+✅ Deployment Complete on Arbitrum Sepolia!
+========================================
+Destination Contract Address: 0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+
+========================================
+✅ All Deployments Complete!
+========================================
+Source Chain: Ethereum Sepolia
+Source Contract: 0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899
+https://sepolia.etherscan.io/address/0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899
+
+Destination Chain: Arbitrum Sepolia
+Destination Contract: 0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+https://sepolia.arbiscan.io/address/0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+
+Run this command to set both environment variables:
+export ETHEREUM_SEPOLIA_CONTRACT=0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899 && export ARBITRUM_SEPOLIA_CONTRACT=0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+========================================
+```
+
+3. Before moving on, export the addresses of the previously deployed contracts so that they're available in the terminal:
+
+```bash filename="Terminal"
+export ETHEREUM_SEPOLIA_CONTRACT=<sender-contract-address> && \
+export ARBITRUM_SEPOLIA_CONTRACT=<receiver-contract-address>
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Configure allowlists and finality"
+  anchorId="hardhat-configure-allowlists-and-finality"
+  number={3}
+  depth={4}
+>
+
+As a best practice, allowlist specific contracts to prevent unauthorized message delivery between your sender and receiver.
+
+<GitHubCard
+  title="configure.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-defensive-token-transfers/configure/configure.ts"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+1. The `configure.ts` script handles all configuration in a single command:
+   - Allowlists the destination chain on the sender contract.
+   - Allowlists the chain-sender pair on the receiver contract via `allowlistChainSender`.
+   - Sets the receiver's finality policy via `setAllowedFinalityConfig`.
+   - Enables simulated revert on the receiver contract via `setSimRevert(true)`.
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH \
+ALLOWED_BLOCK_DEPTH=32 \
+npx hardhat run hardhat/scripts/tutorials/programmable-defensive-token-transfers/configure/configure.ts
+```
+
+##### Finality configuration
+
+<CcipCommon callout="ftfExplainer" />
+
+To allow numeric faster than finality requests, set `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH` and choose a minimum `ALLOWED_BLOCK_DEPTH`. In this tutorial, `ALLOWED_BLOCK_DEPTH=32` allows send-time requests of `BLOCK_DEPTH=32` (or higher).
+
+<Aside type="note" title="SIM_REVERT defaults to true">
+  The `SIM_REVERT` environment variable defaults to `true` in this tutorial's configure script. This means the receiver
+  contract will deliberately fail when processing incoming messages, causing tokens to be locked. This is the expected
+  behavior for demonstrating the defensive recovery pattern. Set `SIM_REVERT=false` if you want normal message
+  processing.
+</Aside>
+
+Your terminal should look something like this:
+
+```bash filename="Terminal"
+========================================
+⚙️ Configure CCIP Defensive Contracts on Both Chains
+========================================
+Source Chain: Ethereum Sepolia
+Source Contract: 0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899
+Destination Chain: Arbitrum Sepolia
+Destination Contract: 0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+========================================
+
+[Step 1] Configuring sender on Ethereum Sepolia
+Allowlisting Arbitrum Sepolia as destination chain...
+✅ Destination chain allowlisted: Arbitrum Sepolia
+
+========================================
+✅ Configuration Complete on Ethereum Sepolia!
+========================================
+
+[Step 2] Configuring receiver on Arbitrum Sepolia
+Allowlisting sender 0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899 from Ethereum Sepolia...
+✅ Chain-sender pair allowlisted: Ethereum Sepolia -> 0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899
+Setting allowed finality config to 0x00000020 (BLOCK_DEPTH=32)...
+✅ Allowed finality config set to 0x00000020 (BLOCK_DEPTH=32) for Ethereum Sepolia
+Setting simRevert to true...
+✅ Sim revert set to true - messages will fail for testing recovery
+
+========================================
+✅ Configuration Complete on Arbitrum Sepolia!
+========================================
+
+========================================
+✅ All Configurations Complete!
+========================================
+Ethereum Sepolia can send messages to Arbitrum Sepolia
+Arbitrum Sepolia can receive messages from Ethereum Sepolia
+⚠️  Messages will fail on destination (simRevert=true) to demonstrate defensive handling
+```
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Fund your wallet with test tokens"
+  anchorId="hardhat-fund-your-wallet-with-test-tokens"
+  number={4}
+  depth={4}
+>
+
+<GitHubCard
+  title="drip-bnm-token.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/faucet/drip-bnm-token.ts"
+  iconName="github-svg-card"
+>
+  Check out the faucet script on Github.
+</GitHubCard>
+
+Before sending a CCIP message, you need `CCIP-BnM` test tokens in your wallet. The send scripts transfer `CCIP-BnM` from your EOA to the contract, so your wallet must hold a balance.
+
+Use the faucet script included in the starter kit to drip `CCIP-BnM` tokens to your address:
+
+```bash filename="Terminal"
+CHAIN=ETHEREUM_SEPOLIA \
+RECIPIENT_ADDRESS=<your-wallet-address> \
+npx hardhat run hardhat/scripts/faucet/drip-bnm-token.ts
+```
+
+If you plan to pay CCIP fees in LINK (instead of native gas), you also need LINK tokens. Get test LINK from the [Chainlink faucet](https://faucets.chain.link/).
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Send a message"
+  anchorId="hardhat-send-a-message"
+  number={5}
+  depth={4}
+>
+
+`send-message.ts` is a unified send script that handles both native and LINK fee payments. Set `FEE_TOKEN=LINK` to pay with LINK, or omit it (defaults to `NATIVE`) to pay with the native gas token. The script:
+
+- Builds off-chain `extraArgs` for the lane. Hardhat uses `@chainlink/ccip-sdk` and the receiver policy check in `buildExtraArgs` to encode V2 or V3.
+- Approves the contract to spend the caller's tokens (the contract then pulls via `safeTransferFrom`).
+- Sends the CCIP message.
+
+<Aside type="note" title="Expected behavior with SIM_REVERT=true">
+  Because the configure step enabled `setSimRevert(true)` on the receiver, the message **will fail on the destination
+  chain by design**. The receiver contract will lock the tokens instead of reverting. You will recover them in the next
+  step.
+</Aside>
+
+##### Dynamic gas estimation
+
+When `GAS_LIMIT` is **not** set, the script uses `estimateReceiveExecution` from `@chainlink/ccip-sdk` to dynamically estimate the required gas limit for the destination callback. If estimation fails, it falls back to `400000`.
+
+<Aside type="caution" title="Dynamic estimation with simRevert">
+  When `s_simRevert` is `true` on the receiver, the SDK simulates the failure path, which may produce inaccurate gas
+  estimates. For this tutorial, we recommend setting `GAS_LIMIT=400000` explicitly to ensure the message has enough gas
+  for the defensive try/catch and error-storage logic.
+</Aside>
+
+##### Faster Than Finality (block depth)
+
+<CcipCommon callout="extraArgsV3Explainer" />
+
+The `BLOCK_DEPTH` environment variable controls send-side finality behavior:
+
+- Omit `BLOCK_DEPTH`, or set `BLOCK_DEPTH=DEFAULT`/`BLOCK_DEPTH=0` (default): Use finalized finality.
+- Set `BLOCK_DEPTH=32`: Request faster than finality using numeric block depth.
+
+##### Example 1: Pay with native gas + faster than finality (`BLOCK_DEPTH=32`) + explicit gas limit
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+BLOCK_DEPTH=32 \
+TOKEN_AMOUNT=1000000000000000 \
+MESSAGE="Hello from Hardhat" \
+GAS_LIMIT=400000 \
+FEE_TOKEN=NATIVE \
+npx hardhat run hardhat/scripts/tutorials/programmable-defensive-token-transfers/interact/send-message.ts
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Defensive Message Transfer - Pay with ETH
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+Sender: 0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899
+Receiver: 0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+Fee Token: Native (ETH)
+========================================
+
+[Pre-validation] Querying lane features and receiver contract...
+Gas limit (override): 400000
+Token pool ALLOWED_FINALITY_CONFIG: 0x00000020 (BLOCK_DEPTH: 32 block(s))
+Receiver contract ALLOWED_FINALITY_CONFIG: 0x00000020 (BLOCK_DEPTH: 32 block(s))
+✅ Using V3 extraArgs with FTF (gasLimit=400000, finalityConfig=32 block(s)).
+[Pre-validation] CCIP fee: 330463107598943
+
+[Step 1] Approving contract to spend CCIP-BnM...
+✅ Contract approved to spend CCIP-BnM
+
+
+[Step 2] Sending CCIP message with native token fee (ETH)...
+Required CCIP fee (in WEI): 330463107598943
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0x3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f7082
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0x3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f7082
+```
+
+##### Example 2: Pay with LINK + finalized finality (default) + explicit gas limit
+
+```bash filename="Terminal"
+SOURCE_CHAIN=ETHEREUM_SEPOLIA DEST_CHAIN=ARBITRUM_SEPOLIA \
+TOKEN_AMOUNT=1000000000000000 \
+MESSAGE="Hello from Hardhat" \
+GAS_LIMIT=400000 \
+FEE_TOKEN=LINK \
+npx hardhat run hardhat/scripts/tutorials/programmable-defensive-token-transfers/interact/send-message.ts
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+📡 CCIP Defensive Message Transfer - Pay with LINK
+========================================
+Source Chain: Ethereum Sepolia
+Destination Chain: Arbitrum Sepolia
+Sender: 0xB0c1D2e3F4a5B6c7D8e9F00112233445566778899
+Receiver: 0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+Fee Token: LINK
+========================================
+
+[Pre-validation] Querying lane features and receiver contract...
+Gas limit (override): 400000
+✅ Using default finality (BLOCK_DEPTH=DEFAULT). V3 extraArgs (gasLimit=400000, finalityConfig=0x00000000).
+[Pre-validation] CCIP fee: 38700123456789000
+
+[Step 1] Approving contract to spend LINK for CCIP fees...
+Required CCIP fee (in LINK units): 38700123456789000
+✅ Contract approved to spend LINK
+
+
+[Step 2] Approving contract to spend CCIP-BnM...
+✅ Contract approved to spend CCIP-BnM
+
+
+[Step 3] Sending CCIP message...
+
+========================================
+✅ Message sent successfully!
+========================================
+CCIP messageId: 0x4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708193
+CCIP Explorer:
+https://ccip.chain.link/#/side-drawer/msg/0x4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708193
+```
+
+##### Environment variables
+
+| <nobr>Variable</nobr>                  | Description                                                                                                                        | <nobr>Default</nobr>                    |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| <nobr>`KEYSTORE_NAME`</nobr>           | Hardhat keystore entry name, set in `.env`                                                                                         | <nobr>`your_keystore_name`</nobr>       |
+| <nobr>`SOURCE_CHAIN`</nobr>            | Source chain name identifier (for example, `ETHEREUM_SEPOLIA`)                                                                     | <nobr>Not set</nobr>                    |
+| <nobr>`DEST_CHAIN`</nobr>              | Destination chain name identifier (for example, `ARBITRUM_SEPOLIA`)                                                                | <nobr>Not set</nobr>                    |
+| <nobr>`{CHAIN}_RPC_URL`</nobr>         | RPC URL for each chain you run scripts against (for example, `ETHEREUM_SEPOLIA_RPC_URL`, `ARBITRUM_SEPOLIA_RPC_URL`)               | <nobr>Not set</nobr>                    |
+| <nobr>`{CHAIN}_CONTRACT`</nobr>        | Deployed tutorial contract address per chain (for example, `ETHEREUM_SEPOLIA_CONTRACT`, `ARBITRUM_SEPOLIA_CONTRACT`)               | <nobr>Not set</nobr>                    |
+| <nobr>`FEE_TOKEN`</nobr>               | `LINK` or `NATIVE`                                                                                                                 | <nobr>`NATIVE`</nobr>                   |
+| <nobr>`FEE_TOKEN_ADDRESS`</nobr>       | ERC-20 address of a CCIP-supported fee token on the lane. Takes priority over `FEE_TOKEN`                                          | <nobr>Not set</nobr>                    |
+| <nobr>`TOKEN_AMOUNT`</nobr>            | Amount of CCIP-BnM to transfer (in wei)                                                                                            | <nobr>`1000000000000000` (0.001)</nobr> |
+| <nobr>`GAS_LIMIT`</nobr>               | Gas limit for the destination callback (if unset, estimated dynamically via `estimateReceiveExecution`)                            | <nobr>`400000` (fallback)</nobr>        |
+| <nobr>`BLOCK_DEPTH`</nobr>             | Omit or set `DEFAULT` for finalized finality (default), or set `32` for faster than finality                                       | <nobr>`DEFAULT`</nobr>                  |
+| <nobr>`ALLOWED_FINALITY_CONFIG`</nobr> | Receiver allowed finality mode(s) used by the configure step. Set to `BLOCK_DEPTH` to allow numeric faster than finality requests. | <nobr>Not set</nobr>                    |
+| <nobr>`ALLOWED_BLOCK_DEPTH`</nobr>     | Receiver minimum block depth (used when `ALLOWED_FINALITY_CONFIG=BLOCK_DEPTH`). Use `32` in this tutorial.                         | <nobr>Not set</nobr>                    |
+| <nobr>`SIM_REVERT`</nobr>              | Enables simulated failures on the receiver during configuration                                                                    | <nobr>`true`</nobr>                     |
+| <nobr>`MESSAGE`</nobr>                 | Text payload to send                                                                                                               | <nobr>`Default String Text`</nobr>      |
+| <nobr>`CHAIN`</nobr>                   | Chain name identifier used by the failed-message scripts (the chain where the receiver is deployed)                                | <nobr>Not set</nobr>                    |
+| <nobr>`MESSAGE_ID`</nobr>              | Failed message ID to retry (used by the retry script)                                                                              | <nobr>Not set</nobr>                    |
+| <nobr>`TOKEN_RECEIVER`</nobr>          | Address to receive recovered tokens when retrying a failed message                                                                 | <nobr>Not set</nobr>                    |
+| <nobr>`OFFSET`</nobr>                  | Offset into the receiver's failed-message list (used by `get-failed-messages.ts`)                                                  | <nobr>`0`</nobr>                        |
+| <nobr>`LIMIT`</nobr>                   | Maximum number of failed messages to return (used by `get-failed-messages.ts`)                                                     | <nobr>`10`</nobr>                       |
+
+<GitHubCard
+  title="send-message.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-defensive-token-transfers/interact/send-message.ts"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+</AnchoredAccordion>
+
+<AnchoredAccordion
+  title="Check failed messages and recover tokens"
+  anchorId="hardhat-check-failed-messages-and-recover-tokens"
+  number={6}
+  depth={4}
+>
+
+After sending the message, wait for it to arrive on the destination chain (typically 10-20 minutes). Because `s_simRevert` is `true`, the message will fail and the tokens will be locked in the receiver contract.
+
+##### Step 1: Check for failed messages
+
+Run the `get-failed-messages.ts` script to query the receiver contract for failed messages:
+
+```bash filename="Terminal"
+CHAIN=ARBITRUM_SEPOLIA \
+npx hardhat run hardhat/scripts/tutorials/programmable-defensive-token-transfers/interact/get-failed-messages.ts
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+🔍 Check Failed Messages
+========================================
+Chain: Arbitrum Sepolia
+Receiver Address: 0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+========================================
+
+Found 1 unresolved failed message(s):
+
+========================================
+Failed Message #1
+========================================
+Message ID: 0x3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f7082
+Error Code: 1 (FAILED)
+
+```
+
+Note the `Message ID` from the output -- you will need it for the next step.
+
+<GitHubCard
+  title="get-failed-messages.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-defensive-token-transfers/interact/get-failed-messages.ts"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+##### Step 2: Recover the locked tokens
+
+Use the `retry-failed-message.ts` script to recover the locked tokens. Pass the failed message ID and the address where you want the tokens sent:
+
+```bash filename="Terminal"
+MESSAGE_ID=<failed-message-id> TOKEN_RECEIVER=<your-wallet-address> CHAIN=ARBITRUM_SEPOLIA \
+npx hardhat run hardhat/scripts/tutorials/programmable-defensive-token-transfers/interact/retry-failed-message.ts
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+🔄 Retry Failed Message
+========================================
+Chain: Arbitrum Sepolia
+Receiver Address: 0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+Message ID: 0x3e4f5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f7082
+Token Receiver: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+========================================
+
+Retrying failed message...
+Token receiver address: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+
+========================================
+✅ Message Retry Complete!
+========================================
+Tokens have been recovered and sent to: 0x90F79bf6EB2c4f870365E785982E1f101E93b906
+Transaction: 0x5a6b7c8d9e0f1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a4b5c
+```
+
+<GitHubCard
+  title="retry-failed-message.ts"
+  href="https://github.com/smartcontractkit/docs-ccip/blob/main/hardhat/scripts/tutorials/programmable-defensive-token-transfers/interact/retry-failed-message.ts"
+  iconName="github-svg-card"
+>
+  Check out the complete script code on Github.
+</GitHubCard>
+
+##### Step 3: Verify the recovery
+
+Re-run the `get-failed-messages.ts` script. The error code for the recovered message should now be `0` (`RESOLVED`):
+
+```bash filename="Terminal"
+CHAIN=ARBITRUM_SEPOLIA \
+npx hardhat run hardhat/scripts/tutorials/programmable-defensive-token-transfers/interact/get-failed-messages.ts
+```
+
+Your terminal should look like this:
+
+```bash filename="Terminal"
+========================================
+🔍 Check Failed Messages
+========================================
+Chain: Arbitrum Sepolia
+Receiver Address: 0xC1d2E3f4A5b6C7d8E9F00112233445566778899Aa
+========================================
+
+✅ No unresolved failed messages found.
+Total messages: 1 (all resolved)
+
+```
+
+</AnchoredAccordion>
+
+<CcipCommon callout="educationalDisclaimer" />
