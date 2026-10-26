@@ -4,7 +4,7 @@ date: "Last Modified"
 title: "Data Streams Market Hours"
 metadata:
   title: "Chainlink Data Streams Market Hours | Trading Hours & marketStatus Reference"
-  description: "Trading hours and marketStatus field mappings for all Chainlink Data Streams asset classes: crypto, forex, precious metals, US equities (standard and 24/5), APAC equities, and commodities."
+  description: "Trading hours and marketStatus field mappings for all Chainlink Data Streams asset classes: crypto, forex, precious metals, US equities (standard and 24/5), APAC equities, commodities, and futures."
   keywords:
     [
       "Market Hours",
@@ -15,6 +15,7 @@ metadata:
       "US Equities",
       "APAC Equities",
       "Commodities",
+      "Futures",
       "RWA",
       "Data Streams",
       "marketStatus",
@@ -24,6 +25,7 @@ whatsnext:
     "Find the list of available Crypto streams": "/data-streams/crypto-streams",
     "Find the list of available RWA streams": "/data-streams/rwa-streams",
     "Learn about APAC Equities streams": "/data-streams/rwa-streams/apac-equities",
+    "Learn about Futures streams": "/data-streams/rwa-streams/futures",
     "Find the schema of data to expect from Data Streams reports: RWA Standard (v8)": "/data-streams/reference/report-schema-v8",
     "Find the schema of data to expect from Data Streams reports: RWA Advanced (v11)": "/data-streams/reference/report-schema-v11",
     "Learn best practices for managing market hours risks": "/data-streams/concepts/best-practices",
@@ -44,17 +46,18 @@ This page covers trading schedules and `marketStatus` value mappings for each Ch
 
 ## Asset class overview
 
-| Asset class                                                                              | Weekly open                                      | Weekly close                                     | Daily breaks        | Bank holidays                                                                                  |
-| ---------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------ | ------------------- | ---------------------------------------------------------------------------------------------- |
-| [**Crypto**](#cryptocurrency)                                                            | 24/7/365                                         | —                                                | None                | None                                                                                           |
-| [**US Equities and ETFs**](#v11-standard-hours-feeds) (Standard)                         | **09:30 Mon**                                    | **16:00 Fri**                                    | 16:00–09:30 daily   | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
-| [**24/5 US Equities and ETFs**](#24-5-us-equities)                                       | **20:00 Sun**                                    | **20:00 Fri**                                    | None                | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
-| [**APAC Equities**](#apac-equities)<br/>(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange  | Consult each exchange's official holiday calendar                                              |
-| [**FX Majors**](#forex-precious-metals-and-commodities)<br/>(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                | Jan 1, Dec 25                                                                                  |
-| [**Precious Metals Spot**](#forex-precious-metals-and-commodities)<br/>(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
-| [**Commodities**](#forex-precious-metals-and-commodities)<br/>(WTI Synthetic Spot)       | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/)         |
+| Asset class                                                                              | Weekly open                                      | Weekly close                                     | Daily breaks          | Bank holidays                                                                                  |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------ | --------------------- | ---------------------------------------------------------------------------------------------- |
+| [**Crypto**](#cryptocurrency)                                                            | 24/7/365                                         | —                                                | None                  | None                                                                                           |
+| [**US Equities and ETFs**](#v11-standard-hours-feeds) (Standard)                         | **09:30 Mon**                                    | **16:00 Fri**                                    | 16:00–09:30 daily     | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
+| [**24/5 US Equities and ETFs**](#24-5-us-equities)                                       | **20:00 Sun**                                    | **20:00 Fri**                                    | None                  | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
+| [**APAC Equities**](#apac-equities)<br/>(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange    | Consult each exchange's official holiday calendar                                              |
+| [**FX Majors**](#forex-precious-metals-and-commodities)<br/>(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                  | Jan 1, Dec 25                                                                                  |
+| [**Precious Metals Spot**](#forex-precious-metals-and-commodities)<br/>(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu   | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
+| [**Commodities**](#forex-precious-metals-and-commodities)<br/>(WTI Synthetic Spot)       | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu   | [NYMEX holiday calendar](https://www.cmegroup.com/tools-information/holiday-calendar/)         |
+| [**Futures (v14)**](#futures-v14)<br/>(US Oil, UK Oil, Natural Gas)                      | Per underlying market                            | Per underlying market                            | Scheduled daily break | Underlying market holidays                                                                     |
 
-US Equities, FX Majors, Precious Metals Spot, and Commodities times are **ET (Eastern Time)** and follow US daylight saving time. APAC Equities times are **local exchange time**. Early closes may apply on major US holidays for Precious Metals Spot — see [Precious Metals Spot early closures](#precious-metals-early-closures).
+US Equities, FX Majors, Precious Metals Spot, and Commodities times are **ET (Eastern Time)** and follow US daylight saving time. APAC Equities times are **local exchange time**. Futures schedules follow the underlying market. Early closes may apply on major US holidays for Precious Metals Spot — see [Precious Metals Spot early closures](#precious-metals-early-closures).
 
 ---
 
@@ -161,6 +164,20 @@ On major US holidays, Precious Metals Spot markets may close early instead of at
 | Date        | Holiday                        | Early close (ET) |
 | ----------- | ------------------------------ | ---------------- |
 | Jul 3, 2026 | US Independence Day (observed) | 13:00            |
+
+---
+
+## Futures (v14) <span id="futures-v14"></span>
+
+Futures streams follow the trading hours of the underlying contract, with a scheduled break each trading day. Holidays and early closes follow the underlying market's calendar.
+
+| Value | Status      | Description                        |
+| ----- | ----------- | ---------------------------------- |
+| `0`   | **Unknown** | Market status cannot be determined |
+| `1`   | **Closed**  | Market is closed                   |
+| `2`   | **Open**    | Market is open                     |
+
+Always use the `marketStatus` field in each report to determine whether the market is open. See [Futures](/data-streams/rwa-streams/futures) for coverage and integration guidance.
 
 ---
 
