@@ -1885,6 +1885,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "data-streams/reference/data-streams-api/onchain-verification",
             },
             {
+              title: "Settlement Verifier",
+              url: "data-streams/reference/data-streams-api/settlement-verifier",
+            },
+            {
               title: "Onchain report verification (Stellar)",
               url: "data-streams/tutorials/stellar-onchain-report-verification",
             },

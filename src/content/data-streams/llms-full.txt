@@ -5856,6 +5856,72 @@ pub struct ConfigBuilder {
 
 ---
 
+# Settlement Verifier
+Source: https://docs.chain.link/data-streams/reference/data-streams-api/settlement-verifier
+
+The Settlement Verifier is a community tool on [data.chain.link](https://data.chain.link) that lets anyone check the Chainlink Data Streams price that settles a market at a 5-minute boundary. Pick a date and a boundary time, and the tool returns the report's mid price, bid and ask prices, and the timestamps that define the window the report covers. No wallet, code, or Data Streams account is required.
+
+It was designed and shipped for prediction markets, which can link to it so their users can independently check the price a market settled on.
+
+![The Settlement Verifier modal showing a BTC / USDT mid price, bid and ask prices, and the Valid From and Observed At timestamps](/images/data-streams/settlement-verifier/settlement-verifier.png)
+
+## Who it's for
+
+- **Traders and community members** who want to confirm the price used to settle a market without reading raw report data or writing code.
+- **Prediction market operators** who want to give their users a public, neutral place to check settlement prices. Link to the stream page on [data.chain.link](https://data.chain.link) from your market's resolution details.
+
+## How it relates to onchain verification
+
+[Onchain report verification](/data-streams/reference/data-streams-api/onchain-verification) is still the way applications trust Data Streams reports. A smart contract submits the signed report to the `VerifierProxy` contract, which checks the signatures from the Decentralized Oracle Network (DON) before your application uses the data. That is what keeps an onchain settlement trustless, and the Settlement Verifier does not replace it.
+
+The Settlement Verifier answers a different question for a different audience: *"What price did Chainlink report at this boundary?"* It gives non-technical users a way to look up and read the report that settled a market. Builders who need cryptographic guarantees in their own contracts should still verify reports onchain.
+
+> **NOTE: Informational tool**
+>
+> The Settlement Verifier displays the data from a report. It does not perform signature verification in your browser,
+> and it does not decide how any market resolves. Each market defines its own resolution rules.
+
+## Supported streams
+
+The Settlement Verifier is available on every stream listed on [data.chain.link](https://data.chain.link). It appears as a button before **Explore docs** on each stream's page.
+
+## Use the Settlement Verifier
+
+1. Open the stream page on [data.chain.link](https://data.chain.link), for example BTC/USDT, and select **Settlement Verifier**.
+2. Choose a **Date**. You can select any day within the last 30 days.
+3. Choose a **Boundary**. Boundaries are in 5-minute increments in your local time zone, which the tool displays under the date. Only boundaries that are more than 15 minutes old are available.
+4. Select **Look up price**.
+
+The result shows:
+
+| Field           | Description                                                                                              |
+| --------------- | -------------------------------------------------------------------------------------------------------- |
+| **Mid-price**   | The aggregated weighted-average price between the bid and ask prices, converted into the quote currency. |
+| **Bid price**   | The bid price from the report.                                                                           |
+| **Ask price**   | The ask price from the report.                                                                           |
+| **Valid From**  | The start of the window the report covers, shown in your local time and as a Unix timestamp.             |
+| **Observed At** | The time the report's price was observed, shown in your local time and as a Unix timestamp.              |
+
+For a boundary report, **Valid From** and **Observed At** are the same instant, the boundary itself.
+
+### When no report lands exactly on the boundary
+
+Data Streams reports are produced continuously, but a report is not guaranteed at every second. If no report was observed exactly at the boundary, the Settlement Verifier shows the next report. Its **Valid From** and **Observed At** timestamps show the window it covers, which contains the boundary. If no report covers the boundary, the tool tells you instead of showing a price.
+
+## Limits
+
+- Boundaries must fall on a 5-minute mark, be more than 15 minutes old, and be within the last 30 days.
+- Lookups use Data Streams mainnet reports. Testnet is not supported.
+- The tool shows price data only. For the full signed report, [sign up for Chainlink Data Streams](https://app.chain.link/streams) and [fetch reports](/data-streams/tutorials/go-sdk-fetch) directly.
+
+## Learn more
+
+- [Onchain report verification (EVM chains)](/data-streams/reference/data-streams-api/onchain-verification)
+- [Data Streams API reference](/data-streams/reference/data-streams-api/interface-api)
+- [Report schema overview](/data-streams/reference/report-schema-overview)
+
+---
+
 # Data Streams SDK (TypeScript)
 Source: https://docs.chain.link/data-streams/reference/data-streams-api/ts-sdk
 
