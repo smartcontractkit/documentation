@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Set up your Chainlink ACE account: create an organization on app.chain.link, get your API key, create CRE Connect Wallets, and prepare for your first ACE deployment."
   datePublished: "2026-03-31"
-  lastModified: "2026-10-20"
+  lastModified: "2026-10-26"
 ---
 
 import { Aside, ClickToZoom, MethodTabs } from "@components"
@@ -51,35 +51,29 @@ Share your Organization ID with your Chainlink contact so they can enable the AC
 
 Once your account has been provisioned for the ACE service, create an API key.
 
-<Aside type="note" title="To create an API key for ACE">
-- You must be the organization **Owner**
-  
-  **OR** 
-  
-- Have the ACE **Admin** or **Operator** role.
-
-For information about role-based access, see [RBAC](/chainlink-platform/rbac?parent=ace#ace). To invite team members and assign roles, see [Invite members](/chainlink-platform/inviting-team-members?parent=ace).
-
+{/* prettier-ignore */}
+<Aside type="note" title="Roles needed to create a ACE API key">
+  Creating an API key requires a Platform role that includes API key permissions: Platform User, Platform Admin, or Owner. You can only give a key permissions that your own roles include, so to grant every permission below you also need the ACE Admin role. ACE Operators can grant every permission below except `ace:core:wallet:write`. See [RBAC](/chainlink-platform/rbac?parent=ace#ace) for what each role includes, and [Inviting Team Members](/chainlink-platform/inviting-team-members?parent=ace) to invite members and assign roles.
 </Aside>
 
-1. Log in to the [Chainlink Platform](https://app.chain.link), click on "Org settings" in the top-right corner of the navbar to open your **Organization Settings** page, then open the **API Keys** tab.
+1. Log in to the [Chainlink Platform](https://app.chain.link), click your account icon in the top-right corner of the navbar, then click **Org settings** to open the **Organization** page, then open the **API Keys** tab.
 1. Click **Create API Key** and enter a name for the key.
-1. In the **API Scope** section, expand the **ACE** accordion and grant the key the permissions that this Getting Started guide uses.
+1. In the **API Scope** section, expand the **ACE** section and grant the key the permissions that this Getting Started guide uses.
 
-   | Name                         | Action | Permission ID                            |
-   | ---------------------------- | ------ | ---------------------------------------- |
-   | Core wallet                  | Write  | `ace:core:wallet:write`                  |
-   | Policy manager policy engine | Write  | `ace:policy_manager:policy_engine:write` |
-   | Policy manager target        | Write  | `ace:policy_manager:target:write`        |
-   | Policy manager policy        | Write  | `ace:policy_manager:policy:write`        |
-   | Identity manager registry    | Write  | `ace:identity_manager:registry:write`    |
-   | Identity manager identity    | Write  | `ace:identity_manager:identity:write`    |
-   | Reporting policy             | Read   | `ace:reporting:policy:read`              |
-   | Reporting identity           | Read   | `ace:reporting:identity:read`            |
-   | Reporting target             | Read   | `ace:reporting:target:read`              |
-   | Reporting transaction        | Read   | `ace:reporting:transaction:read`         |
-   | Reporting permit             | Read   | `ace:reporting:permit:read`              |
-   | Reporting registry           | Read   | `ace:reporting:registry:read`            |
+   | Name                                | Permission                               | Description                                                              |
+   | ----------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------ |
+   | Core wallet: Write                  | `ace:core:wallet:write`                  | Create wallet.                                                           |
+   | Policy manager policy engine: Write | `ace:policy_manager:policy_engine:write` | Create and update policy engine.                                         |
+   | Policy manager target: Write        | `ace:policy_manager:target:write`        | Create and update target and its protections.                            |
+   | Policy manager policy: Write        | `ace:policy_manager:policy:write`        | Create and update policy and data validator instances.                   |
+   | Identity manager registry: Write    | `ace:identity_manager:registry:write`    | Create and update identity or credential registry, and credential types. |
+   | Identity manager identity: Write    | `ace:identity_manager:identity:write`    | Create and update identity, and assign credentials.                      |
+   | Reporting policy: Read              | `ace:reporting:policy:read`              | Read the reporting service's policy view.                                |
+   | Reporting identity: Read            | `ace:reporting:identity:read`            | Read the reporting service's identity view.                              |
+   | Reporting target: Read              | `ace:reporting:target:read`              | Read the reporting service's target view.                                |
+   | Reporting transaction: Read         | `ace:reporting:transaction:read`         | Read the reporting service's transaction view.                           |
+   | Reporting permit: Read              | `ace:reporting:permit:read`              | Read the reporting service's permit view.                                |
+   | Reporting registry: Read            | `ace:reporting:registry:read`            | Read the reporting service's registry usage view.                        |
 
    See [API Keys](/chainlink-platform/api-keys?parent=ace#ace) for the full list of permissions available for ACE.
 
