@@ -366,6 +366,16 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       },
 
       // ---------------------------------------------
+      // CCIP Intents (EVM)
+      // ---------------------------------------------
+      {
+        title: "CCIP Intents",
+        pageId: "ccip-evm-concepts-intents",
+        url: "ccip/evm/concepts/ccip-intents",
+        chainTypes: ["evm"],
+      },
+
+      // ---------------------------------------------
       // Canton — minimal, enterprise-focused IA (independent of other chain families)
       // ---------------------------------------------
       {
@@ -474,17 +484,6 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             url: "ccip/evm/tutorials/application-developers/usdc",
             chainTypes: ["evm"],
             pageId: "ptt-transfer-usdc",
-          },
-          {
-            title: "Intents",
-            type: "separator",
-            chainTypes: ["evm"],
-          },
-          {
-            title: "Get Started with CCIP Intents",
-            url: "ccip/evm/tutorials/use-ccip-intents-api",
-            pageId: "ccip-intents-api-tutorial",
-            chainTypes: ["evm"],
           },
         ],
       },
