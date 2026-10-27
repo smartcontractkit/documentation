@@ -5470,7 +5470,7 @@ For detailed CLI command documentation, see:
 
 # Using Secrets with Deployed Workflows
 Source: https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-deployed
-Last Updated: 2026-01-20
+Last Updated: 2026-10-26
 
 When your workflow is deployed, it cannot access your local `.env` file or environment variables. Instead, secrets must be stored in the **Vault DON**—a decentralized, secure secret storage system that your deployed workflows can access at runtime.
 
@@ -5486,7 +5486,8 @@ Before managing secrets for deployed workflows, ensure you have:
 
 1. **CRE CLI installed**: See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux)
 2. **Authentication**: You must be logged in with `cre login`
-3. **(Web3-keyed flow only) Owner address configured**: When managing secrets owned by a workflow owner address (the onchain registry flow), your `workflow-owner-address` must be set. Browser-auth flows on the private registry use your CRE login session and don't require this.
+3. **A CRE role with secret access**: Listing secrets requires `cre:secret:read` (every CRE role). Creating, updating, or deleting secrets requires `cre:secret:write` (CRE Developer or CRE Admin). See [RBAC](/chainlink-platform/rbac?parent=cre#cre).
+4. **(Web3-keyed flow only) Owner address configured**: When managing secrets owned by a workflow owner address (the onchain registry flow), your `workflow-owner-address` must be set. Browser-auth flows on the private registry use your CRE login session and don't require this.
 
 ## Auth modes: web3 key vs. browser auth
 
@@ -6991,7 +6992,7 @@ See [Confidential Workflows in CRE](/cre/concepts/confidential-workflows) for a 
 
 # Activating & Pausing Workflows
 Source: https://docs.chain.link/cre/guides/operations/activating-pausing-workflows
-Last Updated: 2025-11-04
+Last Updated: 2026-10-26
 
 After deploying a workflow, you can control its operational state using the `cre workflow activate` and `cre workflow pause` commands. These commands modify the workflow's status in the registry selected by `deployment-registry`, determining whether it can respond to triggers.
 
@@ -7005,6 +7006,7 @@ After deploying a workflow, you can control its operational state using the `cre
 Before activating or pausing workflows, ensure you have:
 
 - **A [deployed workflow](/cre/guides/operations/deploying-workflows)**: You must have a workflow that has been successfully deployed to the registry selected by `deployment-registry`.
+- **CRE Developer or CRE Admin role (private registry)**: Managing private registry workflows requires the `cre:workflow:write/private_registry` permission. CRE Viewers can view workflows but not change them. See [RBAC](/chainlink-platform/rbac?parent=cre#cre).
 - **Workflow authorization**: You must be authorized to manage the workflow. Public onchain registry workflows use the linked workflow owner address. Private registry workflows use your CRE organization login session.
 - **Local workflow folder**: You must run these commands from your project directory. The CLI reads the workflow name and configuration from your `workflow.yaml` file to identify which workflow to activate or pause.
 - **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check your authentication status, run `cre whoami`.
@@ -7227,7 +7229,7 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Deleting Workflows
 Source: https://docs.chain.link/cre/guides/operations/deleting-workflows
-Last Updated: 2025-11-04
+Last Updated: 2026-10-26
 
 Deleting a workflow permanently removes it from the registry selected by `deployment-registry`. This action cannot be undone, and the workflow will no longer be able to respond to triggers.
 
@@ -7236,6 +7238,7 @@ Deleting a workflow permanently removes it from the registry selected by `deploy
 Before deleting a workflow, ensure you have:
 
 - **A [deployed workflow](/cre/guides/operations/deploying-workflows)**: The workflow must exist in the registry selected by `deployment-registry`.
+- **CRE Developer or CRE Admin role (private registry)**: Managing private registry workflows requires the `cre:workflow:write/private_registry` permission. CRE Viewers can view workflows but not change them. See [RBAC](/chainlink-platform/rbac?parent=cre#cre).
 - **Workflow authorization**: You must be authorized to manage the workflow. Public onchain registry workflows use the linked workflow owner address. Private registry workflows use your CRE organization login session.
 - **Local workflow folder**: You must run this command from your project directory. The CLI reads the workflow name and configuration from your `workflow.yaml` file to identify which workflow to delete.
 - **[Logged in](/cre/reference/cli/authentication#cre-login)**: Authenticated with the platform by running `cre login`. To check if you are logged in, run `cre whoami`.
@@ -8824,7 +8827,7 @@ The typical workflow development process uses these commands in sequence:
 
 # Authentication Commands
 Source: https://docs.chain.link/cre/reference/cli/authentication
-Last Updated: 2026-10-20
+Last Updated: 2026-10-26
 
 The CRE CLI supports two authentication methods:
 
@@ -8889,15 +8892,9 @@ For CI/CD pipelines, automated scripts, or any environment where a browser is no
 
 ### Creating an API key
 
-> **NOTE: To create an API key for CRE**
+> **NOTE: Roles needed to create a CRE API key**
 >
-> - You must be the organization **Owner**
->
->   **OR**
->
-> - Have the CRE **Admin** role.
->
-> For information about role-based access, see [RBAC](/chainlink-platform/rbac?parent=cre#cre). To invite team members and assign roles, see [Invite members](/chainlink-platform/inviting-team-members?parent=cre).
+> Creating an API key requires a Platform role that includes API key permissions: Platform User, Platform Admin, or Owner. You can only give a key permissions that your own roles include, so to grant the CRE permissions below you also need the CRE Admin role. CRE Developers can grant every permission below except owner address linking. See [RBAC](/chainlink-platform/rbac?parent=cre#cre) for what each role includes, and [Inviting Team Members](/chainlink-platform/inviting-team-members?parent=cre) to invite members and assign roles.
 
 1. [Create an account](/chainlink-platform/creating-an-account?parent=cre) or sign in to [app.chain.link](https://app.chain.link).
 
@@ -8905,14 +8902,14 @@ For CI/CD pipelines, automated scripts, or any environment where a browser is no
 
 3. Click **Create API Key** and enter a name for the key.
 
-4. In the **API Scope** section, expand the **CRE** accordion and grant the key the permissions that the CLI uses. For the Organization permission, expand the **Chainlink Platform** accordion.
+4. In the **API Scope** section, expand the **CRE** section and grant the key the permissions that the CLI uses. For `platform:organization:read`, expand the **Chainlink Platform** section.
 
-   | Name                  | Action | Permission ID                              |
-   | --------------------- | ------ | ------------------------------------------ |
-   | Workflow              | Write  | `cre:workflow:write/private_registry`      |
-   | Workflow artifact     | Write  | `cre:workflow:artifact:write`              |
-   | Owner address linking | Write  | `platform:owner_address:linking:write/cre` |
-   | Organization          | Read   | `platform:organization:read`               |
+   | Name                               | Permission                                 | Description                                                                                              |
+   | ---------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+   | Workflow: Write (Private registry) | `cre:workflow:write/private_registry`      | Deploy, pause, activate, and delete workflows in the private registry.                                   |
+   | Workflow artifact: Write           | `cre:workflow:artifact:write`              | Upload workflow artifacts, which is required to deploy a workflow.                                       |
+   | Owner address linking: Write (CRE) | `platform:owner_address:linking:write/cre` | Link and unlink workflow owner addresses, which is required to deploy workflows to the onchain registry. |
+   | Organization: Read                 | `platform:organization:read`               | View organization information.                                                                           |
 
    See [API Keys](/chainlink-platform/api-keys?parent=cre#cre) for the full list of permissions available for CRE.
 
@@ -10674,7 +10671,7 @@ The [Common Queries](/cre/reference/graphql-api/common-queries) guide organizes 
 
 # Authentication
 Source: https://docs.chain.link/cre/reference/graphql-api/authentication
-Last Updated: 2026-10-02
+Last Updated: 2026-10-26
 
 Every request to the CRE GraphQL API must include an `Authorization` header carrying a CRE API key.
 
@@ -10687,15 +10684,9 @@ Every request to the CRE GraphQL API must include an `Authorization` header carr
 
 API keys for CRE are created from [app.chain.link](https://app.chain.link), not from the GraphQL API itself.
 
-> **NOTE: To create an API key for CRE**
+> **NOTE: Roles needed to create a CRE API key**
 >
-> - You must be the organization **Owner**
->
->   **OR**
->
-> - Have the CRE **Admin** role.
->
-> For information about role-based access, see [RBAC](/chainlink-platform/rbac?parent=cre#cre). To invite team members and assign roles, see [Invite members](/chainlink-platform/inviting-team-members?parent=cre).
+> Creating an API key requires a Platform role that includes API key permissions: Platform User, Platform Admin, or Owner. You can only give a key permissions that your own roles include, so to grant the CRE permissions below you also need the CRE Admin role. CRE Developers can grant every permission below except owner address linking. See [RBAC](/chainlink-platform/rbac?parent=cre#cre) for what each role includes, and [Inviting Team Members](/chainlink-platform/inviting-team-members?parent=cre) to invite members and assign roles.
 
 1. [Create an account](/chainlink-platform/creating-an-account?parent=cre) or sign in to [app.chain.link](https://app.chain.link).
 
@@ -10703,15 +10694,16 @@ API keys for CRE are created from [app.chain.link](https://app.chain.link), not 
 
 3. Click **Create API Key** and enter a name for the key.
 
-4. In the **API Scope** section, expand the **CRE** accordion and grant the key the permissions that the CLI uses. For the Organization permission, expand the **Chainlink Platform** accordion.
+4. In the **API Scope** section, expand the **CRE** section and grant the key the permissions that the CLI uses. For `platform:organization:read`, expand the **Chainlink Platform** section.
 
-   | Name                  | Action | Permission ID                              |
-   | --------------------- | ------ | ------------------------------------------ |
-   | Workflow              | Read   | `cre:workflow:read`                        |
-   | Workflow              | Write  | `cre:workflow:write/private_registry`      |
-   | Workflow artifact     | Read   | `cre:workflow:artifact:read`               |
-   | Workflow artifact     | Write  | `cre:workflow:artifact:write`              |
-   | Owner address linking | Write  | `platform:owner_address:linking:write/cre` |
+   | Name                               | Permission                                 | Description                                                                                              |
+   | ---------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+   | Workflow: Read                     | `cre:workflow:read`                        | View workflows.                                                                                          |
+   | Workflow: Write (Private registry) | `cre:workflow:write/private_registry`      | Deploy, pause, activate, and delete workflows in the private registry.                                   |
+   | Workflow artifact: Read            | `cre:workflow:artifact:read`               | Download workflow artifacts.                                                                             |
+   | Workflow artifact: Write           | `cre:workflow:artifact:write`              | Upload workflow artifacts, which is required to deploy a workflow.                                       |
+   | Owner address linking: Write (CRE) | `platform:owner_address:linking:write/cre` | Link and unlink workflow owner addresses, which is required to deploy workflows to the onchain registry. |
+   | Organization: Read                 | `platform:organization:read`               | View organization information.                                                                           |
 
    See [API Keys](/chainlink-platform/api-keys?parent=cre#cre) for the full list of permissions available for CRE.
 
@@ -15306,7 +15298,7 @@ You've now mastered the complete CRE development workflow!
 
 # Deploying to the Onchain Registry
 Source: https://docs.chain.link/cre/guides/operations/deploying-to-onchain-registry-go
-Last Updated: 2026-05-12
+Last Updated: 2026-10-26
 
 > **NOTE: Go**
 >
@@ -15326,6 +15318,7 @@ Before deploying to the onchain registry, ensure you have:
 
 - **Deploy access approval**: Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/guides/operations/deploy-access).
 - **[Authenticated](/cre/reference/cli/authentication)**: Logged in via `cre login` or using an [API key](/cre/reference/cli/authentication#api-key-authentication) (`CRE_API_KEY`). To verify, run `cre whoami`.
+- **CRE Admin role, or a key linked by an Admin**: Only CRE Admins (and the Owner) can link workflow owner addresses. Once an Admin has linked your key, a CRE Developer can deploy with it. See [RBAC](/chainlink-platform/rbac?parent=cre#cre).
 - **[Linked your key](/cre/guides/operations/linking-wallet-keys)**: Linked your EOA or multi-sig wallet to your CRE organization by running `cre account link-key`. See [Linking Wallet Keys](/cre/guides/operations/linking-wallet-keys) for instructions.
 - **A funded wallet**: The account you are deploying from must hold ETH on Ethereum Mainnet to pay gas for the registration transaction.
 - **`CRE_ETH_PRIVATE_KEY` in your `.env`**: Your wallet's private key, used by the CLI to sign registry transactions.
@@ -15562,7 +15555,7 @@ For complete setup instructions, configuration requirements, and step-by-step gu
 
 # Deploying to the Private Registry
 Source: https://docs.chain.link/cre/guides/operations/deploying-to-private-registry-go
-Last Updated: 2026-05-28
+Last Updated: 2026-10-26
 
 > **NOTE: Go**
 >
@@ -15584,6 +15577,7 @@ For a comparison of both registry options, see [Deploying Workflows](/cre/guides
 
 Before deploying to the private registry, ensure you have:
 
+- **CRE Developer or CRE Admin role**: Deploying to the private registry requires the `cre:workflow:write/private_registry` and `cre:workflow:artifact:write` permissions. If you use an API key, it needs the same permissions. See [RBAC](/chainlink-platform/rbac?parent=cre#cre).
 - **CRE CLI v1.15.0 or later**: Run `cre version` to check. See the [Installation Guide](/cre/getting-started/cli-installation/macos-linux) to install or update.
 - **[Logged in](/cre/guides/cli/cli-login)**: Run `cre login` and complete the browser authentication flow. API keys also work: set `CRE_API_KEY` in your environment.
 
