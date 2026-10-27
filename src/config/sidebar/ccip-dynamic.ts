@@ -475,6 +475,17 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
             chainTypes: ["evm"],
             pageId: "ptt-transfer-usdc",
           },
+          {
+            title: "Intents",
+            type: "separator",
+            chainTypes: ["evm"],
+          },
+          {
+            title: "Get Started with CCIP Intents",
+            url: "ccip/evm/tutorials/use-ccip-intents-api",
+            pageId: "ccip-intents-api-tutorial",
+            chainTypes: ["evm"],
+          },
         ],
       },
       {
