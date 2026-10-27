@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Authenticate requests to the CRE GraphQL API using an API key and the Authorization header."
   datePublished: "2026-08-31"
-  lastModified: "2026-10-02"
+  lastModified: "2026-10-26"
 ---
 
 import { Aside } from "@components"
@@ -21,29 +21,24 @@ Every request to the CRE GraphQL API must include an `Authorization` header carr
 
 API keys for CRE are created from [app.chain.link](https://app.chain.link), not from the GraphQL API itself.
 
-<Aside type="note" title="To create an API key for CRE">
-- You must be the organization **Owner**
-  
-  **OR** 
-  
-- Have the CRE **Admin** role.
-
-For information about role-based access, see [RBAC](/chainlink-platform/rbac?parent=cre#cre). To invite team members and assign roles, see [Invite members](/chainlink-platform/inviting-team-members?parent=cre).
-
+{/* prettier-ignore */}
+<Aside type="note" title="Roles needed to create a CRE API key">
+  Creating an API key requires a Platform role that includes API key permissions: Platform User, Platform Admin, or Owner. You can only give a key permissions that your own roles include, so to grant the CRE permissions below you also need the CRE Admin role. CRE Developers can grant every permission below except owner address linking. See [RBAC](/chainlink-platform/rbac?parent=cre#cre) for what each role includes, and [Inviting Team Members](/chainlink-platform/inviting-team-members?parent=cre) to invite members and assign roles.
 </Aside>
 
 1. [Create an account](/chainlink-platform/creating-an-account?parent=cre) or sign in to <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a>.
 1. Click on your account's icon in the top-right corner of the navbar and go to **Org settings** to open the **Organization** page, then navigate to the **API Keys** tab.
 1. Click **Create API Key** and enter a name for the key.
-1. In the **API Scope** section, expand the **CRE** accordion and grant the key the permissions that the CLI uses. For the Organization permission, expand the **Chainlink Platform** accordion.
+1. In the **API Scope** section, expand the **CRE** section and grant the key the permissions that the CLI uses. For `platform:organization:read`, expand the **Chainlink Platform** section.
 
-   | Name                  | Action | Permission ID                              |
-   | --------------------- | ------ | ------------------------------------------ |
-   | Workflow              | Read   | `cre:workflow:read`                        |
-   | Workflow              | Write  | `cre:workflow:write/private_registry`      |
-   | Workflow artifact     | Read   | `cre:workflow:artifact:read`               |
-   | Workflow artifact     | Write  | `cre:workflow:artifact:write`              |
-   | Owner address linking | Write  | `platform:owner_address:linking:write/cre` |
+   | Name                               | Permission                                 | Description                                                                                              |
+   | ---------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+   | Workflow: Read                     | `cre:workflow:read`                        | View workflows.                                                                                          |
+   | Workflow: Write (Private registry) | `cre:workflow:write/private_registry`      | Deploy, pause, activate, and delete workflows in the private registry.                                   |
+   | Workflow artifact: Read            | `cre:workflow:artifact:read`               | Download workflow artifacts.                                                                             |
+   | Workflow artifact: Write           | `cre:workflow:artifact:write`              | Upload workflow artifacts, which is required to deploy a workflow.                                       |
+   | Owner address linking: Write (CRE) | `platform:owner_address:linking:write/cre` | Link and unlink workflow owner addresses, which is required to deploy workflows to the onchain registry. |
+   | Organization: Read                 | `platform:organization:read`               | View organization information.                                                                           |
 
    See [API Keys](/chainlink-platform/api-keys?parent=cre#cre) for the full list of permissions available for CRE.
 
