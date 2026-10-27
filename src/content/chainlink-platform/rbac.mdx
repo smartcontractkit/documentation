@@ -27,7 +27,7 @@ The first user to create an organization is automatically assigned the Owner rol
 
 - Managing members and their roles for every product
 - Creating and managing API keys
-- Managing organization settings, billing, and addresses
+- Managing organization settings and addresses
 
 There is exactly one Owner per organization, and the Owner role cannot be transferred.
 
@@ -48,27 +48,26 @@ Each permission has an ID in the format `product:resource:action`. You see these
 
 ### Chainlink Platform
 
-Chainlink Platform roles control access to organization-level features such as members, API keys, addresses, billing, and limits. Every member has a Platform role.
+Chainlink Platform roles control access to organization-level features such as members, API keys, addresses, and limits. Every member has a Platform role.
 
 | Role  | Description                                                                                                                                    |
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Admin | Full access to manage the Chainlink Platform for your organization: invite and remove members, change any member's roles, and manage API keys. |
 | User  | For developers and operations team members. Can view organization information and members, and can view and create API keys.                   |
 
-| Name                     | Permission                       | Description                                                       | Admin | User |
-| ------------------------ | -------------------------------- | ----------------------------------------------------------------- | ----- | ---- |
-| Organization: Read       | `platform:organization:read`     | View organization information.                                    | ✓     | ✓    |
-| Organization: Write      | `platform:organization:write`    | Edit organization information.                                    | ✓     |      |
-| Billing: Read (\*)       | `platform:billing:read/*`        | View billing information for all products.                        | ✓     | ✓    |
-| Member: Read             | `platform:member:read`           | View the members of the organization.                             | ✓     | ✓    |
-| Member invite: Write     | `platform:member_invite:write`   | Invite new members to the organization.                           | ✓     |      |
-| Member: Write            | `platform:member:write`          | Remove members from the organization.                             | ✓     |      |
-| Member role: Write (\*)  | `platform:member_role:write/*`   | Change members' roles for every product.                          | ✓     |      |
-| Owner address: Read      | `platform:owner_address:read`    | View the organization's addresses in the address book.            | ✓     | ✓    |
-| Api key: Read            | `platform:api_key:read`          | View the organization's API keys.                                 | ✓     | ✓    |
-| Api key: Write           | `platform:api_key:write`         | Create and edit API keys.                                         | ✓     | ✓    |
-| Limits: Read (Platform)  | `platform:limits:read/platform`  | View organization-level limits, such as the maximum overdraft.    | ✓     | ✓    |
-| Limits: Write (Platform) | `platform:limits:write/platform` | Change organization-level limits that support self-serve changes. | ✓     |      |
+| Name                              | Permission                       | Description                                                       | Admin | User |
+| --------------------------------- | -------------------------------- | ----------------------------------------------------------------- | ----- | ---- |
+| Organization: Read                | `platform:organization:read`     | View organization information.                                    | ✓     | ✓    |
+| Organization: Write               | `platform:organization:write`    | Edit organization information.                                    | ✓     |      |
+| Member: Read                      | `platform:member:read`           | View the members of the organization.                             | ✓     | ✓    |
+| Member invite: Write              | `platform:member_invite:write`   | Invite new members to the organization.                           | ✓     |      |
+| Member: Write                     | `platform:member:write`          | Remove members from the organization.                             | ✓     |      |
+| Member role: Write (All products) | `platform:member_role:write/*`   | Change members' roles for every product.                          | ✓     |      |
+| Owner address: Read               | `platform:owner_address:read`    | View the organization's addresses in the address book.            | ✓     | ✓    |
+| API key: Read                     | `platform:api_key:read`          | View the organization's API keys.                                 | ✓     | ✓    |
+| API key: Write                    | `platform:api_key:write`         | Create and edit API keys.                                         | ✓     | ✓    |
+| Limits: Read (Platform)           | `platform:limits:read/platform`  | View organization-level limits, such as the maximum overdraft.    | ✓     | ✓    |
+| Limits: Write (Platform)          | `platform:limits:write/platform` | Change organization-level limits that support self-serve changes. | ✓     |      |
 
 Only the Owner can change limits for every product (`platform:limits:write/*`). Product Admin roles include the product-scoped version instead. For example, the CRE Admin role includes `platform:limits:write/cre`. Only limits that support self-serve changes can be changed this way. To change other limits, contact Chainlink.
 
@@ -94,10 +93,10 @@ CRE roles control access to workflows, secrets, limits, and workflow owner addre
 | Workflow: Write (Private registry) | `cre:workflow:write/private_registry`      | Deploy, pause, activate, and delete workflows in the private registry.                                   | ✓     | ✓         |        |
 | Secret: Read                       | `cre:secret:read`                          | List secrets.                                                                                            | ✓     | ✓         | ✓      |
 | Secret: Write                      | `cre:secret:write`                         | Create, update, and delete secrets.                                                                      | ✓     | ✓         |        |
-| Owner address linking: Write (Cre) | `platform:owner_address:linking:write/cre` | Link and unlink workflow owner addresses, which is required to deploy workflows to the onchain registry. | ✓     |           |        |
-| Limits: Read (Cre)                 | `platform:limits:read/cre`                 | View CRE limits, such as the maximum spend per workflow execution.                                       | ✓     | ✓         | ✓      |
-| Limits: Write (Cre)                | `platform:limits:write/cre`                | Change CRE limits that support self-serve changes, such as the maximum spend per workflow execution.     | ✓     |           |        |
-| Member role: Write (Cre)           | `platform:member_role:write/cre`           | Change members' CRE roles.                                                                               | ✓     |           |        |
+| Owner address linking: Write (CRE) | `platform:owner_address:linking:write/cre` | Link and unlink workflow owner addresses, which is required to deploy workflows to the onchain registry. | ✓     |           |        |
+| Limits: Read (CRE)                 | `platform:limits:read/cre`                 | View CRE limits, such as the maximum spend per workflow execution.                                       | ✓     | ✓         | ✓      |
+| Limits: Write (CRE)                | `platform:limits:write/cre`                | Change CRE limits that support self-serve changes, such as the maximum spend per workflow execution.     | ✓     |           |        |
+| Member role: Write (CRE)           | `platform:member_role:write/cre`           | Change members' CRE roles.                                                                               | ✓     |           |        |
 
 </ProductSection>
 
@@ -187,14 +186,14 @@ ACE roles control access to policy engines, policies, targets, identities, evalu
 | Active monitoring screening interval: Write | `ace:active_monitoring:screening_interval:write` | Set, remove, start and stop the screening interval. | ✓     | ✓        |        |
 | Active monitoring decision log: Read        | `ace:active_monitoring:decision_log:read`        | Read decision logs.                                 | ✓     | ✓        | ✓      |
 | Active monitoring decision log: Write       | `ace:active_monitoring:decision_log:write`       | Dismiss and enforce decision logs.                  | ✓     | ✓        |        |
-| Active monitoring provider api key: Read    | `ace:active_monitoring:provider_api_key:read`    | Read screening-provider API key metadata.           | ✓     | ✓        | ✓      |
-| Active monitoring provider api key: Write   | `ace:active_monitoring:provider_api_key:write`   | Set and remove screening-provider API keys.         | ✓     | ✓        |        |
+| Active monitoring provider API key: Read    | `ace:active_monitoring:provider_api_key:read`    | Read screening-provider API key metadata.           | ✓     | ✓        | ✓      |
+| Active monitoring provider API key: Write   | `ace:active_monitoring:provider_api_key:write`   | Set and remove screening-provider API keys.         | ✓     | ✓        |        |
 
 **Administration**
 
 | Name                     | Permission                       | Description                | Admin | Operator | Viewer |
 | ------------------------ | -------------------------------- | -------------------------- | ----- | -------- | ------ |
-| Member role: Write (Ace) | `platform:member_role:write/ace` | Change members' ACE roles. | ✓     |          |        |
+| Member role: Write (ACE) | `platform:member_role:write/ace` | Change members' ACE roles. | ✓     |          |        |
 
 </ProductSection>
 
@@ -258,9 +257,9 @@ CRE Connect roles control access to operations, wallets, channels, watchers, que
 
 **Administration**
 
-| Name                      | Permission                        | Description                        | Admin | Operator | Viewer |
-| ------------------------- | --------------------------------- | ---------------------------------- | ----- | -------- | ------ |
-| Member role: Write (Crec) | `platform:member_role:write/crec` | Change members' CRE Connect roles. | ✓     |          |        |
+| Name                             | Permission                        | Description                        | Admin | Operator | Viewer |
+| -------------------------------- | --------------------------------- | ---------------------------------- | ----- | -------- | ------ |
+| Member role: Write (CRE Connect) | `platform:member_role:write/crec` | Change members' CRE Connect roles. | ✓     |          |        |
 
 </ProductSection>
 
@@ -274,9 +273,9 @@ Data Streams has a single role.
 | ----- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Admin | Access to your organization's Data Streams subscription, and the ability to assign other members as Data Streams Admins. Each member gets their own API credentials while sharing access to the organization's Data Streams. |
 
-| Name                             | Permission                               | Description                         | Admin |
-| -------------------------------- | ---------------------------------------- | ----------------------------------- | ----- |
-| Member role: Write (Datastreams) | `platform:member_role:write/datastreams` | Change members' Data Streams roles. | ✓     |
+| Name                              | Permission                               | Description                         | Admin |
+| --------------------------------- | ---------------------------------------- | ----------------------------------- | ----- |
+| Member role: Write (Data Streams) | `platform:member_role:write/datastreams` | Change members' Data Streams roles. | ✓     |
 
 </ProductSection>
 
