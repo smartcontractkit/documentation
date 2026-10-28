@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Set up your Chainlink ACE account: create an organization on app.chain.link, get your API key, create CRE Connect Wallets, and prepare for your first ACE deployment."
   datePublished: "2026-03-31"
-  lastModified: "2026-10-05"
+  lastModified: "2026-10-26"
 ---
 
 import { Aside, ClickToZoom, MethodTabs } from "@components"
@@ -17,12 +17,19 @@ This page walks through the shared setup steps for all ACE users. Whether you us
 
 ## 1. Create your organization
 
-Go to [app.chain.link](https://app.chain.link) and create an account or sign in.
+Go to [app.chain.link](https://app.chain.link) and [create an account](/chainlink-platform/creating-an-account?parent=ace) or sign in.
 
-Once signed in, click **"My Org"** in the bottom-left corner of the sidebar to open the Organization page. Your **Organization ID** is displayed in the page header — copy it.
+Once signed in, navigate to your account icon on the top-right corner, then click **"Org settings"** in the dropdown to open the Organization page.
 
 <ClickToZoom
-  src="/images/ace/account-setup/organization-id.webp"
+  src="/images/ace/account-setup/navbar-organization.png"
+  caption="The account dropdown with the Org settings option."
+/>
+
+Your **Organization ID** is displayed in the page header — copy it.
+
+<ClickToZoom
+  src="/images/ace/account-setup/organization-id.png"
   caption="The Organization page showing your Organization ID in the header."
 />
 
@@ -42,20 +49,35 @@ Share your Organization ID with your Chainlink contact so they can enable the AC
   keys created before enablement will not have access to ACE endpoints.
 </Aside>
 
-Once your account has been provisioned for the ACE service, create an API key for authentication:
+Once your account has been provisioned for the ACE service, create an API key.
 
-1. Log in to the [Chainlink App](https://app.chain.link), click **"My Org"** at the bottom of the left sidebar, then select the **"APIs"** tab.
-1. Click **"+ Organization API"**.
-   <ClickToZoom
-     src="/images/ace/account-setup/api-key-1.webp"
-     caption="The APIs tab on the Organization page. Click '+ Organization API' to create a new key."
-   />
-1. Enter a name for the key and select an expiration period (1 day, 1 month, or 1 year).
-   <ClickToZoom
-     src="/images/ace/account-setup/api-key-2.webp"
-     caption="Enter a name, select an expiration period, and click Generate."
-   />
-1. Click **"Generate"**. The API key is displayed once — copy it immediately.
+{/* prettier-ignore */}
+<Aside type="note" title="Roles needed to create a ACE API key">
+  Creating an API key requires a Platform role that includes API key permissions: Platform User, Platform Admin, or Owner. You can only give a key permissions that your own roles include, so to grant every permission below you also need the ACE Admin role. ACE Operators can grant every permission below except `ace:core:wallet:write`. See [RBAC](/chainlink-platform/rbac?parent=ace#ace) for what each role includes, and [Inviting Team Members](/chainlink-platform/inviting-team-members?parent=ace) to invite members and assign roles.
+</Aside>
+
+1. Log in to the [Chainlink Platform](https://app.chain.link), click your account icon in the top-right corner of the navbar, then click **Org settings** to open the **Organization** page, then open the **API Keys** tab.
+1. Click **Create API Key** and enter a name for the key.
+1. In the **API Scope** section, expand the **ACE** section and grant the key the permissions that this Getting Started guide uses.
+
+   | Name                                | Permission                               | Description                                                              |
+   | ----------------------------------- | ---------------------------------------- | ------------------------------------------------------------------------ |
+   | Core wallet: Write                  | `ace:core:wallet:write`                  | Create wallet.                                                           |
+   | Policy manager policy engine: Write | `ace:policy_manager:policy_engine:write` | Create and update policy engine.                                         |
+   | Policy manager target: Write        | `ace:policy_manager:target:write`        | Create and update target and its protections.                            |
+   | Policy manager policy: Write        | `ace:policy_manager:policy:write`        | Create and update policy and data validator instances.                   |
+   | Identity manager registry: Write    | `ace:identity_manager:registry:write`    | Create and update identity or credential registry, and credential types. |
+   | Identity manager identity: Write    | `ace:identity_manager:identity:write`    | Create and update identity, and assign credentials.                      |
+   | Reporting policy: Read              | `ace:reporting:policy:read`              | Read the reporting service's policy view.                                |
+   | Reporting identity: Read            | `ace:reporting:identity:read`            | Read the reporting service's identity view.                              |
+   | Reporting target: Read              | `ace:reporting:target:read`              | Read the reporting service's target view.                                |
+   | Reporting transaction: Read         | `ace:reporting:transaction:read`         | Read the reporting service's transaction view.                           |
+   | Reporting permit: Read              | `ace:reporting:permit:read`              | Read the reporting service's permit view.                                |
+   | Reporting registry: Read            | `ace:reporting:registry:read`            | Read the reporting service's registry usage view.                        |
+
+   See [API Keys](/chainlink-platform/api-keys?parent=ace#ace) for the full list of permissions available for ACE.
+
+1. Click **Create API Key**, then copy the key and click **Done**. The API key is displayed only once.
 
 <Aside type="caution" title="Save your API key">
   The API key is only shown once at creation time. Copy it immediately — if you lose it, you will need to generate a new

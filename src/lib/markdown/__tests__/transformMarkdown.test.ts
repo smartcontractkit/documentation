@@ -952,6 +952,59 @@ Before <Unknown>hidden JSX</Unknown> after.
   })
 })
 
+describe("product-scoped content", () => {
+  const markdown = `<ProductSection product="platform" shared>
+
+### Chainlink Platform
+
+Platform roles.
+</ProductSection>
+
+<ProductSection product="cre">
+
+### CRE
+
+CRE roles.
+</ProductSection>
+
+<ProductSection product="dataStreams">
+
+### Data Streams
+
+Data Streams roles.
+</ProductSection>
+
+- <ProductOnly products="cre,ace,crec">API keys link</ProductOnly>
+- <ProductOnly products="cre" strict>CRE CLI step</ProductOnly>`
+
+  it("renders the full page and non-strict content when no product context is set", async () => {
+    const result = await transformMarkdown(markdown, "/fake/path.mdx")
+    expect(result).toContain("Platform roles.")
+    expect(result).toContain("CRE roles.")
+    expect(result).toContain("Data Streams roles.")
+    expect(result).toContain("API keys link")
+    expect(result).not.toContain("CRE CLI step")
+  })
+
+  it("renders the shared block and the matching product for CRE", async () => {
+    const result = await transformMarkdown(markdown, "/fake/path.mdx", { productContext: "cre" })
+    expect(result).toContain("Platform roles.")
+    expect(result).toContain("CRE roles.")
+    expect(result).not.toContain("Data Streams roles.")
+    expect(result).toContain("API keys link")
+    expect(result).toContain("CRE CLI step")
+  })
+
+  it("excludes other products and CRE-only content for Data Streams", async () => {
+    const result = await transformMarkdown(markdown, "/fake/path.mdx", { productContext: "dataStreams" })
+    expect(result).toContain("Platform roles.")
+    expect(result).not.toContain("CRE roles.")
+    expect(result).toContain("Data Streams roles.")
+    expect(result).not.toContain("API keys link")
+    expect(result).not.toContain("CRE CLI step")
+  })
+})
+
 describe("extractFrontmatter", () => {
   it("should extract title from frontmatter", () => {
     const raw = `---

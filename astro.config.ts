@@ -55,6 +55,8 @@ export default defineConfig({
     "/ccip/supported-networks": "/ccip/directory/mainnet",
     "/getting-started": "/getting-started/conceptual-overview",
     "/resources": "/resources/link-token-contracts",
+    "/chainlink-platform": "/chainlink-platform/getting-started",
+    "/chainlink-platform/overview": "/chainlink-platform/getting-started",
     ...ccipRedirects,
   },
   integrations: [

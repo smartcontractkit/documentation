@@ -9,6 +9,7 @@ import { isSunsetSidebarSection } from "./sunset.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
 import { CCIP_V16_SIDEBAR_CONTENT } from "./sidebar/ccip-v1.ts"
 import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
+import { CHAINLINK_PLATFORM_SECTION, getAccountOrganizationSection } from "./sidebar/chainlink-platform.ts"
 import type { ChainType, CcipVersion } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
@@ -131,6 +132,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         { title: "Identity Manager Quick Start", url: "ace/getting-started/identity-manager" },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.ACE),
     {
       section: "Guides",
       contents: [
@@ -749,6 +751,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "cre/guides/operations/deploying-workflows",
           children: [
             {
+              title: "Requesting Deploy Access",
+              url: "cre/guides/operations/deploy-access",
+            },
+            {
+              title: "Linking Wallet Keys",
+              url: "cre/guides/operations/linking-wallet-keys",
+            },
+            {
               title: "Deploying to the Private Registry",
               url: "cre/guides/operations/deploying-to-private-registry",
               highlightAsCurrent: [
@@ -765,6 +775,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               ],
             },
           ],
+        },
+        {
+          title: "Requesting Confidential Workflows Access",
+          url: "cre/guides/operations/confidential-workflows-access",
         },
         {
           title: "Activating & Pausing Workflows",
@@ -804,52 +818,17 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.CRE),
     {
-      section: "Account & Organization",
+      section: "CLI Setup",
       contents: [
         {
-          title: "Account",
-          url: "cre/account",
-          children: [
-            {
-              title: "Creating Your Account",
-              url: "cre/account/creating-account",
-            },
-            {
-              title: "Logging in with the CLI",
-              url: "cre/account/cli-login",
-            },
-            {
-              title: "Managing Authentication",
-              url: "cre/account/managing-auth",
-            },
-            {
-              title: "Requesting Deploy Access",
-              url: "cre/account/deploy-access",
-            },
-            {
-              title: "Requesting Confidential Workflows Access",
-              url: "cre/account/confidential-workflows-access",
-            },
-          ],
+          title: "Logging in with the CLI",
+          url: "cre/guides/cli/cli-login",
         },
         {
-          title: "Organization",
-          url: "cre/organization",
-          children: [
-            {
-              title: "Understanding Organizations",
-              url: "cre/organization/understanding-organizations",
-            },
-            {
-              title: "Linking Wallet Keys",
-              url: "cre/organization/linking-keys",
-            },
-            {
-              title: "Inviting Team Members",
-              url: "cre/organization/inviting-members",
-            },
-          ],
+          title: "Managing Authentication",
+          url: "cre/guides/cli/managing-auth",
         },
       ],
     },
@@ -1100,6 +1079,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         { title: "Quickstart: Send Your First Operation", url: "crec/getting-started/quickstart-send-operation" },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.CREC),
     {
       section: "Concepts",
       contents: [
@@ -1667,6 +1647,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.DATA_STREAMS),
     {
       section: "Streams & Report Schemas",
       contents: [
@@ -1715,6 +1696,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "data-streams/reference/report-schema-v11",
             },
             {
+              title: "Report Schema v14 (Futures)",
+              url: "data-streams/reference/report-schema-v14",
+            },
+            {
               title: "Handling Market Events",
               url: "data-streams/rwa-streams/handling-market-events",
               highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
@@ -1726,6 +1711,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
             {
               title: "APAC Equities",
               url: "data-streams/rwa-streams/apac-equities",
+            },
+            {
+              title: "Futures",
+              url: "data-streams/rwa-streams/futures",
             },
           ],
         },
@@ -1894,6 +1883,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
             {
               title: "Onchain report verification (EVM chains)",
               url: "data-streams/reference/data-streams-api/onchain-verification",
+            },
+            {
+              title: "Settlement Verifier",
+              url: "data-streams/reference/data-streams-api/settlement-verifier",
             },
             {
               title: "Onchain report verification (Stellar)",
@@ -2815,6 +2808,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
       ],
     },
   ],
+  [SIDEBAR_SECTIONS.CHAINLINK_PLATFORM]: [CHAINLINK_PLATFORM_SECTION],
   [SIDEBAR_SECTIONS.LEGACY]: [
     {
       section: "VRF V2 Subscription Method [DEPRECATED]",

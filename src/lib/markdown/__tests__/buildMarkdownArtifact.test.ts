@@ -36,6 +36,11 @@ function expectedLegalNotice(version: string): string {
   return `Continued use of VRF ${version} is at your own risk. Use of the Chainlink Network is subject to the [Chainlink Foundation Terms of Service](https://chain.link/terms), which provides important information and disclosures.`
 }
 
+const shutdownDates: Record<string, string> = {
+  v1: "November 18, 2026",
+  v2: "November 30, 2026",
+}
+
 describe("buildMarkdownArtifact", () => {
   it.each([
     ["v1", "vrf/v1/api-reference"],
@@ -71,13 +76,20 @@ describe("buildMarkdownArtifact", () => {
       .trim()
 
     expect(transformed.transformMode).toBe("normal")
-    expect(markdown.split(`**CAUTION: Chainlink VRF ${version} is deprecated**`).length - 1).toBe(1)
-    expect(markdown.split(`Security fixes for VRF ${version} are not guaranteed.`).length - 1).toBe(1)
+    expect(
+      markdown.split(`**DANGER: Chainlink VRF ${version} shuts down on ${shutdownDates[version]}**`).length - 1
+    ).toBe(1)
+    expect(
+      markdown.split(
+        `VRF ${version} was deprecated on November 29, 2024 and will be permanently shut down on ${shutdownDates[version]}.`
+      ).length - 1
+    ).toBe(1)
     expect(markdown).toContain(`](/vrf/v2-5/migration-from-${version})`)
     expect(markdown).not.toContain("replaces and enhances VRF v1")
     expect(normalized.split(expectedLegalNotice(version)).length - 1).toBe(1)
 
     if (version === "v2") {
+      expect(normalized).toContain("A 48-hour brownout is scheduled for October 28-30, 2026")
       expect(normalized).toContain(
         "The migration guide includes VRF v2.5 code examples for both subscription and direct funding and explains the differences between VRF v2.5 and VRF v2."
       )
@@ -95,9 +107,18 @@ describe("buildMarkdownArtifact", () => {
       .trim()
 
     expect(artifact?.transformMode).toBe("normal")
-    expect(markdown).toContain(`Chainlink VRF ${version} is deprecated`)
-    expect(markdown.match(new RegExp(`Security fixes for VRF ${version} are not guaranteed\\.`, "g"))).toHaveLength(1)
-    expect(markdown).toContain("Complete this guide to migrate your application to Chainlink VRF v2.5.")
+    expect(markdown).toContain(`Chainlink VRF ${version} shuts down on ${shutdownDates[version]}`)
+    expect(
+      markdown.match(
+        new RegExp(
+          `VRF ${version} was deprecated on November 29, 2024 and will be permanently shut down on ${shutdownDates[version]}\\.`,
+          "g"
+        )
+      )
+    ).toHaveLength(1)
+    expect(normalized).toContain(
+      `Complete this guide to migrate your application to Chainlink VRF v2.5 before ${shutdownDates[version]} to avoid service disruption.`
+    )
     expect(normalized.split(expectedLegalNotice(version)).length - 1).toBe(1)
   })
 
@@ -338,5 +359,46 @@ package main
 
     expect(result.transformMode).toBe("replacement")
     expect(result.markdown).toContain("## Deprecated Feeds")
+  })
+})
+
+describe("product-scoped platform docs", () => {
+  it("includes every product table when there is no product context", async () => {
+    const artifact = await buildMarkdownArtifact("chainlink-platform/rbac")
+
+    expect(artifact?.markdown).toContain("Chainlink Platform roles control access")
+    expect(artifact?.markdown).toContain("CRE roles control access")
+    expect(artifact?.markdown).toContain("Data Streams has a single role")
+    expect(artifact?.markdown).toContain("Create API keys with scoped permissions")
+  })
+
+  it("filters the CRE view to shared and CRE content", async () => {
+    const artifact = await buildMarkdownArtifact("chainlink-platform/rbac", { productContext: "cre" })
+
+    expect(artifact?.markdown).toContain("Chainlink Platform roles control access")
+    expect(artifact?.markdown).toContain("CRE roles control access")
+    expect(artifact?.markdown).not.toContain("Data Streams has a single role")
+    expect(artifact?.markdown).toContain("Create API keys with scoped permissions")
+  })
+
+  it("filters the Data Streams view and drops CRE-only API key links", async () => {
+    const artifact = await buildMarkdownArtifact("chainlink-platform/rbac", { productContext: "dataStreams" })
+
+    expect(artifact?.markdown).toContain("Chainlink Platform roles control access")
+    expect(artifact?.markdown).toContain("Data Streams has a single role")
+    expect(artifact?.markdown).not.toContain("CRE roles control access")
+    expect(artifact?.markdown).not.toContain("Create API keys with scoped permissions")
+  })
+
+  it("only includes the strict CRE CLI next step in the CRE view", async () => {
+    const unfiltered = await buildMarkdownArtifact("chainlink-platform/creating-an-account")
+    const cre = await buildMarkdownArtifact("chainlink-platform/creating-an-account", { productContext: "cre" })
+    const dataStreams = await buildMarkdownArtifact("chainlink-platform/creating-an-account", {
+      productContext: "dataStreams",
+    })
+
+    expect(unfiltered?.markdown).not.toContain("Log in to the CLI")
+    expect(cre?.markdown).toContain("Log in to the CLI")
+    expect(dataStreams?.markdown).not.toContain("Log in to the CLI")
   })
 })
