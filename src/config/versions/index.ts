@@ -67,12 +67,13 @@ export const VERSIONS = {
   },
   // Chainlink Local Versions
   "chainlink-local": {
-    LATEST: "v0.2.3",
-    ALL: ["v0.2.3", "v0.2.2", "v0.2.1"] as const,
+    LATEST: "v0.3.1",
+    ALL: ["v0.3.1", "v0.2.3", "v0.2.2", "v0.2.1"] as const,
     RELEASE_DATES: {
       "v0.2.1": "2024-07-05T00:00:00Z", // 5 July 2024
       "v0.2.2": "2024-10-15T00:00:00Z", // 15 October 2024
       "v0.2.3": "2024-11-30T00:00:00Z", // 30 November 2024
+      "v0.3.1": "2026-10-07T00:00:00Z", // 7 October 2026
     },
   },
   // CRE CLI Versions — update LATEST here for each new release

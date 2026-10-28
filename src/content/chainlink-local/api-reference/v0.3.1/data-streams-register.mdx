@@ -1,0 +1,86 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Register (Data Streams) v0.3.1 API Reference"
+metadata:
+  description: "API documentation for the Data Streams Register contract, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## Register (Data Streams)
+
+A contract that stores and retrieves Data Streams network details for various chains.
+
+[`Register`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/data-streams/Register.sol)
+
+<Aside>
+  This contract is separate from the CCIP [`Register`](/chainlink-local/api-reference/v0.3.1/register): it stores the
+  Data Streams verifier proxy and LINK addresses per chain. Used by
+  [`DataStreamsLocalSimulatorFork`](/chainlink-local/api-reference/v0.3.1/data-streams-local-simulator-fork).
+</Aside>
+
+## Structs
+
+### NetworkDetails
+
+Contains Data Streams configuration details for a specific network/chain.
+
+| Field                | Type      | Description                                |
+| -------------------- | --------- | ------------------------------------------ |
+| verifierProxyAddress | `address` | The address of the Verifier Proxy contract |
+| linkAddress          | `address` | The address of the LINK token contract     |
+
+## Functions
+
+### constructor
+
+Initializes the contract with predefined network details.
+
+```solidity
+constructor()
+```
+
+<Aside>
+  Built-in details cover Arbitrum Sepolia, Avalanche Fuji, Base Sepolia, opBNB Testnet and Soneium Minato Testnet.
+</Aside>
+
+### getNetworkDetails
+
+Retrieves network details for a given chain ID.
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (NetworkDetails memory networkDetails)
+```
+
+#### Parameters
+
+| Parameter | Type      | Description                                |
+| --------- | --------- | ------------------------------------------ |
+| chainId   | `uint256` | The ID of the chain to get the details for |
+
+#### Returns
+
+| Parameter      | Type             | Description                                    |
+| -------------- | ---------------- | ---------------------------------------------- |
+| networkDetails | `NetworkDetails` | The network details for the specified chain ID |
+
+### setNetworkDetails
+
+Sets the network details for a given chain ID.
+
+```solidity
+function setNetworkDetails(uint256 chainId, NetworkDetails memory networkDetails) external
+```
+
+<Aside>Used to add or update network details when they are not present or have changed from default values.</Aside>
+
+#### Parameters
+
+| Parameter      | Type             | Description                                           |
+| -------------- | ---------------- | ----------------------------------------------------- |
+| chainId        | `uint256`        | The ID of the chain to set the details for            |
+| networkDetails | `NetworkDetails` | The network details to set for the specified chain ID |
