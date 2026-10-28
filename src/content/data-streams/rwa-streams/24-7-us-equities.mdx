@@ -1,0 +1,251 @@
+---
+section: dataStreams
+date: "Last Modified"
+title: "24/7 US Equities User Guide"
+metadata:
+  title: "24/7 US Equities User Guide | Chainlink Data Streams"
+  description: "User guide for Chainlink 24/7 US Equities Streams, covering the single continuous stream per asset, fast and slow prices, off-hours methodology, field behavior by session, and risks."
+  keywords:
+    [
+      "24/7 US Equities",
+      "Weekend Pricing",
+      "Off-Hours Pricing",
+      "Tokenized Equities",
+      "Lending",
+      "Perpetual Futures",
+      "RWA",
+      "v11 Schema",
+      "marketStatus",
+    ]
+whatsnext:
+  {
+    "Find the schema of data to expect from Data Streams reports: RWA Advanced (v11)": "/data-streams/reference/report-schema-v11",
+    "Learn about 24/7 Tokenized Equity Feeds on Data Feeds": "/data-feeds/tokenized-equity-feeds/24-7",
+    "Learn about the 24/5 US Equities streams": "/data-streams/rwa-streams/24-5-us-equities-user-guide",
+    "Learn about Data Streams market hours and schedules": "/data-streams/market-hours",
+  }
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="Early access">
+  24/7 US Equities streams are available to a limited set of integrators. To request access, contact
+  [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+</Aside>
+
+Chainlink 24/7 US Equities Streams publish one continuous price stream per asset, every hour of every day. During the trading week the stream is built from the same regular, extended, and overnight session data as the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). When the equity market is closed (weekends and US market holidays), the stream switches to an off-hours price derived from perpetual futures markets, then hands back to equity pricing when the market reopens.
+
+Each report carries two prices built for different consumers:
+
+- A **fast price** for perpetual futures protocols and other uses that need to track the market closely.
+- A **slow price** for lending protocols and other uses that secure collateral and trigger liquidations.
+
+Unlike the 24/5 streams, there is one stream per asset instead of three, and you do not need to build session-switching logic yourself. Session selection, transitions, and off-hours pricing all happen before the report is produced.
+
+Developers are responsible for choosing the appropriate stream and price field and ensuring that the operation and performance of their choice matches expectations. For more information, see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance.
+
+## How 24/7 compares to 24/5
+
+|                       | 24/5 US Equities                                      | 24/7 US Equities                                                             |
+| :-------------------- | :---------------------------------------------------- | :--------------------------------------------------------------------------- |
+| Streams per asset     | Three (Regular, Extended, Overnight)                  | One                                                                          |
+| Session switching     | Built by the integrator using `marketStatus`          | Handled by the stream                                                        |
+| Weekends and holidays | No new prices. `marketStatus = 5` and values go stale | Off-hours price from perpetual futures. `marketStatus = 5` and values update |
+| Session transitions   | Raw. Price jumps at boundaries are passed through     | Smoothed into and out of each session, except pre-market into regular hours  |
+| `lastTradedPrice`     | Deprecated as a production input                      | Carries the slow price (Oracle Price)                                        |
+| Asset coverage        | Broad coverage of US single-name equities and ETFs    | A focused set of assets with liquid off-hours perpetual futures markets      |
+| Latency               | Lowest available for each session                     | Slightly higher, due to the additional stitching and smoothing step          |
+
+The 24/5 streams remain available and are still the right choice if you want raw session data and full control over how sessions are combined.
+
+## Schema
+
+24/7 US Equities streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11), the same schema used by the 24/5 streams. The field layout is identical, but some fields carry different values. Read the [field behavior](#field-behavior-by-session) section before integrating, even if you already consume the 24/5 streams.
+
+<Aside type="caution" title="lastTradedPrice has a different meaning on 24/7 streams">
+  On 24/5 US Equities streams, `lastTradedPrice` is deprecated as a production input. On 24/7 US Equities streams,
+  `lastTradedPrice` carries the **Oracle Price (slow price)** and is a supported production field. Do not reuse 24/5
+  decoding logic that ignores or discards this field.
+</Aside>
+
+The 24/7 streams do not carry corporate action fields such as the multiplier and activation fields in the [Tokenized Asset (v10) schema](/data-streams/reference/report-schema-v10). Track corporate actions offchain.
+
+## Fast price and slow price
+
+Both prices are published in every report, during every session, not only on weekends.
+
+| Price                                      | v11 field           | Behavior                                                                                                                                  | Typical use                                                   |
+| :----------------------------------------- | :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
+| Fast price (Instantaneous Reference Price) | `mid`, `bid`, `ask` | Tracks the market as closely as the inputs allow. No continuous smoothing, no cap on how quickly it moves.                                | Perpetual futures mark and index prices, monitoring           |
+| Slow price (Oracle Price)                  | `lastTradedPrice`   | Smoothed and anchored to the last equity close during off-hours. Follows genuine moves, but deliberately more slowly the further they go. | Collateral valuation, liquidations, other value-securing uses |
+
+The slow price is intentionally lagged against live order books. Do not use it to hedge or execute against a specific venue.
+
+## How pricing works
+
+### Trading week
+
+From the Sunday 8:00 PM ET overnight open to the Friday 8:00 PM ET post-market close, the stream follows the active 24/5 session: pre-market, regular hours, post-market, or overnight. The fast price is the `mid` of that session. The slow price equals the fast price during regular and extended hours, and is an exponential moving average (EMA) of the overnight `mid` during the overnight session, where liquidity is thinnest.
+
+Each session runs on its own order book, so prices can jump when one session hands off to the next. The stream applies a short smoothing window around each transition, starting shortly before the new session opens and finishing within about the first minute. The one exception is **pre-market into regular hours**: the regular session is the deepest market of the day, and a move at that boundary is almost always real price discovery, so it is passed through unsmoothed.
+
+### Off-hours
+
+From the Friday post-market close to the Sunday overnight open, and on US market holidays, no spot equity market is open. During this window the stream prices the asset from **perpetual futures** markets, which keep trading through the weekend.
+
+<Aside type="caution" title="Off-hours prices come from derivatives">
+  The off-hours price is built entirely from perpetual futures. It is not derived from spot trading in the underlying
+  shares, and it does not use secondary market prices of tokenized equities, which are too thin to price against safely.
+</Aside>
+
+The fast price during off-hours is a composite of top-of-book quotes from several perpetual futures venues:
+
+- **Quote normalization:** Venues that quote in stablecoins are normalized to USD so every venue is compared on the same basis.
+- **Freshness:** Each venue is weighted by how recently it updated. Venues that go quiet beyond a threshold drop out of the composite.
+- **Outlier capping:** Each venue's mid is clamped to a band around the cross-venue median, which limits how far any single venue can pull the result.
+- **Bid and ask:** Each venue's relative spread is reapplied around its capped mid, so the composite publishes a `bid` and `ask`, not only a `mid`.
+- **Weighting:** The composite is a weighted average across venues. More liquid venues carry more weight.
+
+If no venue has fresh data, no new off-hours price is computed. The stream does not fabricate a price.
+
+The slow price during off-hours follows the fast price from a fixed **anchor**: a snapshot of the equity price taken at the final close before off-hours begin. The anchor is computed only from equity market data and does not change for the rest of the off-hours period. When the fast price is close to the anchor, the slow price follows it within tens of minutes. The further the fast price moves away from the anchor, the more slowly the slow price follows, stretching to hours for large moves. There is no ceiling: a large move that persists is followed in full, just more gradually. Short-lived dislocations tend to decay before they move the slow price much.
+
+### Entering and leaving off-hours
+
+When off-hours begins, both prices start from the anchored equity close and blend onto the off-hours composite over roughly one minute. When the equity market reopens, both prices blend back onto the equity session price through the same mechanism. Smoothing state from the off-hours period is not carried into the trading week, and there is no step change at either boundary.
+
+The true Sunday open is not knowable until the market opens. Expect the published price to close any remaining weekend gap to the live equity market over the short reopen window, not instantly. See [Reopen convergence](#reopen-convergence).
+
+## Market status
+
+`marketStatus` identifies which session is active and which source is driving the price. The values match the [24/5 mapping](/data-streams/market-hours#v11-24-5-feeds), but `5` has a different practical meaning on 24/7 streams: prices keep updating.
+
+| Value | Status        | Hours (ET)                                       | Price source                          |
+| :---- | :------------ | :----------------------------------------------- | :------------------------------------ |
+| `0`   | Unknown       | N/A                                              | None. Treat as unavailable            |
+| `1`   | Pre-market    | 4:00 AM–9:30 AM Mon–Fri                          | Extended hours session                |
+| `2`   | Regular hours | 9:30 AM–4:00 PM Mon–Fri                          | Regular hours session                 |
+| `3`   | Post-market   | 4:00 PM–8:00 PM Mon–Fri                          | Extended hours session                |
+| `4`   | Overnight     | 8:00 PM–4:00 AM Sun–Fri                          | Overnight session                     |
+| `5`   | Closed        | 8:00 PM Fri–8:00 PM Sun, plus US market holidays | Off-hours perpetual futures composite |
+
+## Field behavior by session
+
+| Field                     | Regular and extended hours          | Overnight                      | Closed (off-hours)                                        | Session transitions            |
+| :------------------------ | :---------------------------------- | :----------------------------- | :-------------------------------------------------------- | :----------------------------- |
+| `mid`                     | Active session `mid`, unsmoothed    | Overnight `mid`, unsmoothed    | Off-hours composite `mid`                                 | Smoothed blend between sources |
+| `bid` / `ask`             | Active session values               | Overnight session values       | Off-hours composite `bid` / `ask`                         | Smoothed blend between sources |
+| `lastTradedPrice`         | Same as `mid`                       | EMA of overnight `mid`         | Anchored, smoothed off-hours price                        | Smoothed blend between sources |
+| `lastSeenTimestampNs`     | Last `mid` update in active session | Last `mid` update in overnight | Last time an off-hours composite price was received       | Active session value           |
+| `bidVolume` / `askVolume` | Active session values               | Overnight session values       | May be zero. Do not rely on these fields during off-hours | Active session values          |
+| `marketStatus`            | `1`, `2`, or `3`                    | `4`                            | `5`                                                       | Current session                |
+
+As with the 24/5 streams, `lastSeenTimestampNs` applies to `mid` only. It is not a freshness signal for `bid`, `ask`, the volume fields, or `lastTradedPrice`.
+
+## Which price to use
+
+| Use case                                           | Recommended field                | Why                                                                                             |
+| :------------------------------------------------- | :------------------------------- | :---------------------------------------------------------------------------------------------- |
+| Lending collateral, liquidations, borrowing limits | `lastTradedPrice` (slow price)   | Resists manipulation and short-lived dislocations in thin off-hours markets, at the cost of lag |
+| Perpetual futures mark or index price              | `mid` (fast price), `bid`, `ask` | Tracks the current tradable price without smoothing or caps                                     |
+| Monitoring and alerting                            | Both                             | The gap between fast and slow prices shows how far the market has moved from the slow price     |
+
+These are different risk profiles served from the same report. If you need the slow price onchain without running your own Data Streams integration, see [24/7 Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
+
+## Asset coverage
+
+24/7 pricing depends on active perpetual futures markets during off-hours, so coverage is limited to assets where that liquidity exists. Each asset is approved individually based on its off-hours volume and the cost of manipulating its price. The initial set includes:
+
+- The Magnificent 7: AAPL, AMZN, GOOGL, META, MSFT, NVDA, TSLA
+- Major index ETFs: SPY, QQQ
+
+Additional assets are under evaluation. All other US equities remain available through the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). Thinly traded single names and long-tail ETFs are unlikely to get 24/7 coverage until their perpetual futures markets deepen. To request an asset, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+
+## Risks
+
+24/7 streams remove the need to build session-switching logic, but they do not remove the underlying market risks. They also add risks that the 24/5 streams do not have, mainly from pricing the weekend off derivatives. The [24/5 risks](/data-streams/rwa-streams/24-5-us-equities-user-guide#risks) for overnight data, illiquid sessions, corporate actions, and trading halts still apply during the trading week.
+
+### Slow price lag
+
+The slow price deliberately trails the market during the overnight session and off-hours. During a fast, genuine move, especially one that moves far from the anchor, the slow price can take hours to catch up. A real 20% drop over a weekend is treated the same as an artificial one until it persists. This protects against wrongful liquidations from short-lived dislocations, but it delays liquidations after real ones and can leave room for arbitrage.
+
+#### Mitigation
+
+- Size loan-to-value ratios, liquidation thresholds, and supply caps for a lagging price, not a real-time one
+- Monitor the gap between `mid` and `lastTradedPrice`, and alert when it is large or persistent
+- Test your parameters against historical weekend moves and earnings gaps before going live
+
+### Off-hours prices come from perpetual futures
+
+A perpetual futures contract is a derivative. Its price can carry a basis to the underlying shares, influenced by funding rates and by each venue's contract design. Venues occasionally change contract specifications, including index construction and funding mechanics. Weekend perpetual futures volumes are also a fraction of weekday spot volumes, and the composite currently uses top-of-book quotes, which take less capital to move than deeper order book prices.
+
+#### Mitigation
+
+- Treat the off-hours price as an estimate of where the equity would trade, not as a traded price
+- Apply tighter exposure limits or supply caps during `marketStatus = 5`
+- Do not assume the off-hours price will match the reopen price
+
+### Single provider and single venue dependencies
+
+Two separate single-source dependencies exist:
+
+- **Overnight:** As with the 24/5 streams, only one traditional venue trades during the overnight session.
+- **Off-hours:** Perpetual futures data is currently delivered through a single data provider. Using several venues protects against a bad price on one exchange, but not against an outage or bad data at the provider.
+
+If the provider stops delivering data, no new off-hours price can be computed. If it delivers incorrect data, outlier capping and cross-venue checks reduce the impact but cannot remove it.
+
+#### Mitigation
+
+- Check `lastSeenTimestampNs` against your own staleness threshold during off-hours
+- Define what your protocol does when no fresh price is available: pause new borrowing, hold the last valid price within bounds, or both
+
+### Fewer contributing venues
+
+The composite keeps publishing as venues drop out. A price built from all venues and a price built from one or two are published the same way, but they are not equally robust. With fewer venues, the remaining ones have more influence and the cost to move the price falls.
+
+#### Mitigation
+
+- Monitor the fast price against independent references during off-hours
+- Apply value bounds and per-update deviation limits
+
+### Slow price unavailable
+
+The slow price depends on the anchor and on a continuous series of inputs. Two cases matter:
+
+- **No anchor:** If the anchor cannot be computed at the start of off-hours, for example because the final equity reports before the close are missing, the stream cannot produce a slow price for that off-hours period. In the worst case, an entire weekend can go without a slow price.
+- **Interrupted inputs:** If inputs are missing for longer than a short tolerance window, the slow price stops updating. Once inputs return, it needs a recovery period of roughly 20 minutes before it publishes again. Before it stops, the last value may be repeated for several minutes, so a slow price that is not moving is not proof that it is current.
+
+#### Mitigation
+
+- Define protocol behavior for an unavailable slow price before going live, including a full-weekend outage
+- Pause new borrowing and size liquidation buffers to tolerate a stale valuation
+- Alert on a flat `lastTradedPrice` while `mid` keeps moving
+
+### Reopen convergence
+
+The true reopen price is only known when the equity market opens. At the reopen, both prices close any remaining weekend gap to the equity market over a short window. Positions that degraded over the weekend can still become liquidatable around the reopen, just not in a single jump.
+
+#### Mitigation
+
+- Account for the reopen window in latency-sensitive logic
+- Consider tighter limits on new positions in the minutes before and after the Sunday 8:00 PM ET open
+
+### Corporate actions over a weekend
+
+Splits, reverse splits, large special dividends, and symbol changes can move the true price sharply at the reopen. During off-hours, perpetual futures may price the event before the equity market does, and the slow price will follow that move slowly because it is measured against a pre-event anchor. The stream does not adjust for corporate actions.
+
+#### Mitigation
+
+- Monitor corporate action announcements for the assets you support
+- Pause markets or adjust parameters around corporate action dates
+
+### Market holidays and halts
+
+Market holidays are priced as off-hours (`marketStatus = 5`). Trading halts only occur while the market is open and are not flagged in `marketStatus`. During a halt, `marketStatus` shows the active session while `lastSeenTimestampNs` stops advancing. A halt that runs into a scheduled open holds the transition until the equity price resumes.
+
+#### Mitigation
+
+- Use an authoritative exchange holiday calendar alongside `marketStatus`
+- Monitor exchange halt notices independently
+
+For trading schedules, see [Market Hours](/data-streams/market-hours#24-7-us-equities).
