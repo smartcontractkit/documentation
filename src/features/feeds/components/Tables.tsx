@@ -1710,6 +1710,10 @@ export const MainnetTable = ({
   const feedTypeFlags = getFeedTypeFlags(dataFeedType, "mainnet")
   const { isStreams, isSmartData, isUSGovernmentMacroeconomicData, isDefaultTable: isDefault } = feedTypeFlags
 
+  // While a market-hours filter is active the schema/category dropdowns are hidden.
+  // Ignore any leftover values so they can't silently empty the table (e.g. from a URL).
+  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams)
+
   const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
     network,
     dataFeedType,
@@ -1727,8 +1731,8 @@ export const MainnetTable = ({
     visibilityOptions: {
       showOnlyDEXFeeds,
       showOnlyDatalinkFeeds,
-      streamCategoryFilter,
-      rwaSchemaFilter,
+      streamCategoryFilter: isMarketHoursFilterActive ? undefined : streamCategoryFilter,
+      rwaSchemaFilter: isMarketHoursFilterActive ? undefined : rwaSchemaFilter,
       cryptoSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
@@ -1887,6 +1891,10 @@ export const TestnetTable = ({
     isDefaultTable: isDefault,
   } = getFeedTypeFlags(dataFeedType, "testnet")
 
+  // While a market-hours filter is active the schema/category dropdowns are hidden.
+  // Ignore any leftover values so they can't silently empty the table (e.g. from a URL).
+  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams)
+
   const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
     network,
     dataFeedType,
@@ -1903,8 +1911,8 @@ export const TestnetTable = ({
     visibilityOptions: {
       showOnlyDEXFeeds,
       showOnlyDatalinkFeeds,
-      streamCategoryFilter,
-      rwaSchemaFilter,
+      streamCategoryFilter: isMarketHoursFilterActive ? undefined : streamCategoryFilter,
+      rwaSchemaFilter: isMarketHoursFilterActive ? undefined : rwaSchemaFilter,
       cryptoSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,

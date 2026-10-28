@@ -419,18 +419,26 @@ export const FeedList = ({
     setTradingHoursFilterParam(next === "all" ? [] : next)
   }
 
+  const [rwaSchemaFilterParam, setRwaSchemaFilterParam] = useQueryString("schema")
+  const rwaSchemaFilter =
+    typeof rwaSchemaFilterParam === "string" && isSchemaFilterValue(rwaSchemaFilterParam) ? rwaSchemaFilterParam : "all"
+  const setRwaSchemaFilter = (next: SchemaFilterValue) => {
+    setRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+
   const setMarketHoursFilter = (next: MarketHoursFilterValue) => {
     if (force24x5Only) return
     setMarketHoursFilterParam(next === "all" ? [] : next)
     setShow24x5FeedsParam([])
     if (next !== "24x5") setTradingHoursFilter("all")
     if (next !== "24x7") setTwentyFourSevenFilter("all")
-  }
-  const [rwaSchemaFilterParam, setRwaSchemaFilterParam] = useQueryString("schema")
-  const rwaSchemaFilter =
-    typeof rwaSchemaFilterParam === "string" && isSchemaFilterValue(rwaSchemaFilterParam) ? rwaSchemaFilterParam : "all"
-  const setRwaSchemaFilter = (next: SchemaFilterValue) => {
-    setRwaSchemaFilterParam(next === "all" ? [] : next)
+    if (next !== "all") {
+      // The schema/category dropdowns are hidden while a market-hours filter is
+      // active, so reset them instead of leaving a filter that can empty the table
+      // with no visible control to undo it.
+      if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
+      setRwaSchemaFilter("all")
+    }
   }
   const [cryptoSchemaFilterParam, setCryptoSchemaFilterParam] = useQueryString("cryptoSchema")
   const cryptoSchemaFilter =
@@ -496,6 +504,13 @@ export const FeedList = ({
     setShow24x5FeedsTestnetParam([])
     if (next !== "24x5") setTestnetTradingHoursFilter("all")
     if (next !== "24x7") setTestnetTwentyFourSevenFilter("all")
+    if (next !== "all") {
+      // The schema/category dropdowns are hidden while a market-hours filter is
+      // active, so reset them instead of leaving a filter that can empty the table
+      // with no visible control to undo it.
+      if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
+      setTestnetRwaSchemaFilter("all")
+    }
   }
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
   const handleDropdownToggle = (dropdownId: string, isOpen: boolean) => {
