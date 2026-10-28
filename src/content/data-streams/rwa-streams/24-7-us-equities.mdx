@@ -33,7 +33,7 @@ import { Aside } from "@components"
   [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 </Aside>
 
-Chainlink 24/7 US Equities Streams publish one continuous price stream per asset, every hour of every day. During the trading week the stream is built from the same regular, extended, and overnight session data as the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). When the equity market is closed (weekends and US market holidays), the stream switches to an off-hours price derived from perpetual futures markets, then hands back to equity pricing when the market reopens.
+Chainlink 24/7 US Equities Streams publish one continuous price stream per asset that keeps updating around the clock, including weekends and US market holidays. During the trading week the stream is built from the same regular, extended, and overnight session data as the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). When the equity market is closed (weekends and US market holidays), the stream switches to an off-hours price derived from perpetual futures markets, then hands back to equity pricing when the market reopens.
 
 Each report carries two prices built for different consumers:
 
@@ -46,26 +46,26 @@ Developers are responsible for choosing the appropriate stream and price field a
 
 ## How 24/7 compares to 24/5
 
-|                       | 24/5 US Equities                                      | 24/7 US Equities                                                             |
-| :-------------------- | :---------------------------------------------------- | :--------------------------------------------------------------------------- |
-| Streams per asset     | Three (Regular, Extended, Overnight)                  | One                                                                          |
-| Session switching     | Built by the integrator using `marketStatus`          | Handled by the stream                                                        |
-| Weekends and holidays | No new prices. `marketStatus = 5` and values go stale | Off-hours price from perpetual futures. `marketStatus = 5` and values update |
-| Session transitions   | Raw. Price jumps at boundaries are passed through     | Smoothed into and out of each session, except pre-market into regular hours  |
-| `lastTradedPrice`     | Deprecated as a production input                      | Carries the slow price (Oracle Price)                                        |
-| Asset coverage        | Broad coverage of US single-name equities and ETFs    | A focused set of assets with liquid off-hours perpetual futures markets      |
-| Latency               | Lowest available for each session                     | Slightly higher, due to the additional stitching and smoothing step          |
+|                       | 24/5 US Equities                                              | 24/7 US Equities                                                 |
+| :-------------------- | :------------------------------------------------------------ | :--------------------------------------------------------------- |
+| Streams per asset     | Three (Regular, Extended, Overnight)                          | One                                                              |
+| Session switching     | Integrator chooses the stream using `marketStatus`            | Handled by the stream                                            |
+| Weekends and holidays | Market closed (`marketStatus = 5`). Prices resume at the open | Off-hours price from perpetual futures (`marketStatus = 5`)      |
+| Session transitions   | Each session's price as published, so you control transitions | Smoothed by the stream, except pre-market into regular hours     |
+| `lastTradedPrice`     | Deprecated                                                    | Carries the slow price (Oracle Price)                            |
+| Asset coverage        | Broad coverage of US single-name equities and ETFs            | Assets that meet off-hours liquidity and manipulation thresholds |
+| Latency               | Lowest available for each session                             | Slightly higher, due to the additional stitching and smoothing   |
 
-The 24/5 streams remain available and are still the right choice if you want raw session data and full control over how sessions are combined.
+The 24/5 streams remain available and are still the right choice if you want session-level data and full control over how sessions are combined.
 
 ## Schema
 
 24/7 US Equities streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11), the same schema used by the 24/5 streams. The field layout is identical, but some fields carry different values. Read the [field behavior](#field-behavior-by-session) section before integrating, even if you already consume the 24/5 streams.
 
 <Aside type="caution" title="lastTradedPrice has a different meaning on 24/7 streams">
-  On 24/5 US Equities streams, `lastTradedPrice` is deprecated as a production input. On 24/7 US Equities streams,
-  `lastTradedPrice` carries the **Oracle Price (slow price)** and is a supported production field. Do not reuse 24/5
-  decoding logic that ignores or discards this field.
+  On 24/5 US Equities streams, `lastTradedPrice` is deprecated and should not be used. On 24/7 US Equities streams,
+  `lastTradedPrice` carries the **Oracle Price (slow price)** and is fully supported. If you already decode the 24/5
+  streams, make sure your logic does not ignore or discard this field.
 </Aside>
 
 The 24/7 streams do not carry corporate action fields such as the multiplier and activation fields in the [Tokenized Asset (v10) schema](/data-streams/reference/report-schema-v10). Track corporate actions offchain.
@@ -74,10 +74,10 @@ The 24/7 streams do not carry corporate action fields such as the multiplier and
 
 Both prices are published in every report, during every session, not only on weekends.
 
-| Price                                      | v11 field           | Behavior                                                                                                                                  | Typical use                                                   |
-| :----------------------------------------- | :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
-| Fast price (Instantaneous Reference Price) | `mid`, `bid`, `ask` | Tracks the market as closely as the inputs allow. No continuous smoothing, no cap on how quickly it moves.                                | Perpetual futures mark and index prices, monitoring           |
-| Slow price (Oracle Price)                  | `lastTradedPrice`   | Smoothed and anchored to the last equity close during off-hours. Follows genuine moves, but deliberately more slowly the further they go. | Collateral valuation, liquidations, other value-securing uses |
+| Price                     | v11 field           | Behavior                                                                                                                                  | Typical use                                                   |
+| :------------------------ | :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
+| Fast price                | `mid`, `bid`, `ask` | Tracks the market as closely as the inputs allow. No continuous smoothing, no cap on how quickly it moves.                                | Perpetual futures mark and index prices, monitoring           |
+| Slow price (Oracle Price) | `lastTradedPrice`   | Smoothed and anchored to the last equity close during off-hours. Follows genuine moves, but deliberately more slowly the further they go. | Collateral valuation, liquidations, other value-securing uses |
 
 The slow price is intentionally lagged against live order books. Do not use it to hedge or execute against a specific venue.
 
@@ -87,7 +87,7 @@ The slow price is intentionally lagged against live order books. Do not use it t
 
 From the Sunday 8:00 PM ET overnight open to the Friday 8:00 PM ET post-market close, the stream follows the active 24/5 session: pre-market, regular hours, post-market, or overnight. The fast price is the `mid` of that session. The slow price equals the fast price during regular and extended hours, and is an exponential moving average (EMA) of the overnight `mid` during the overnight session, where liquidity is thinnest.
 
-Each session runs on its own order book, so prices can jump when one session hands off to the next. The stream applies a short smoothing window around each transition, starting shortly before the new session opens and finishing within about the first minute. The one exception is **pre-market into regular hours**: the regular session is the deepest market of the day, and a move at that boundary is almost always real price discovery, so it is passed through unsmoothed.
+Regular, extended, and overnight trading happen on different venues with different levels of liquidity, so the price can shift when one session hands off to the next. The stream applies a short smoothing window around each transition, starting shortly before the new session opens and finishing within about the first minute. The one exception is **pre-market into regular hours**: the regular session is the deepest market of the day, and a move at that boundary is almost always real price discovery, so it is passed through unsmoothed.
 
 ### Off-hours
 
@@ -154,12 +154,11 @@ These are different risk profiles served from the same report. If you need the s
 
 ## Asset coverage
 
-24/7 pricing depends on active perpetual futures markets during off-hours, so coverage is limited to assets where that liquidity exists. Each asset is approved individually based on its off-hours volume and the cost of manipulating its price. The initial set includes:
+24/7 pricing depends on liquid perpetual futures markets during off-hours, so not every US equity is covered. Each asset is assessed individually and must meet minimum thresholds for off-hours trading volume and cost of manipulation before it launches. Assets that do not meet them remain available on the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). Coverage will expand as off-hours perpetual futures markets deepen. To request an asset, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 
-- The Magnificent 7: AAPL, AMZN, GOOGL, META, MSFT, NVDA, TSLA
-- Major index ETFs: SPY, QQQ
+### Available streams
 
-Additional assets are under evaluation. All other US equities remain available through the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). Thinly traded single names and long-tail ETFs are unlikely to get 24/7 coverage until their perpetual futures markets deepen. To request an asset, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+{/* DOCS TEAM: add the link or FeedList filter for 24/7 US Equities streams here. */}
 
 ## Risks
 
@@ -167,7 +166,7 @@ Additional assets are under evaluation. All other US equities remain available t
 
 ### Slow price lag
 
-The slow price deliberately trails the market during the overnight session and off-hours. During a fast, genuine move, especially one that moves far from the anchor, the slow price can take hours to catch up. A real 20% drop over a weekend is treated the same as an artificial one until it persists. This protects against wrongful liquidations from short-lived dislocations, but it delays liquidations after real ones and can leave room for arbitrage.
+The slow price is designed to trail the market during the overnight session and off-hours. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately. The larger the move away from the anchor, the longer it takes, and a large weekend move can take hours to be fully reflected. This protects against liquidations caused by brief dislocations, but it also means liquidations after a sustained move can happen later than they would against a live market price, and can leave room for arbitrage.
 
 #### Mitigation
 
