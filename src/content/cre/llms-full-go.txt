@@ -381,8 +381,15 @@ These quotas apply to each individual workflow.
 | [`PerWorkflow.WASMSecretsSizeLimit`](#perworkflow-wasmsecretssizelimit)       | Maximum total size of secrets accessible to a workflow                                                                                                                                                                         | 27 KB |
 | [`PerWorkflow.SecretsConcurrencyLimit`](#perworkflow-secretsconcurrencylimit) | Maximum number of secret fetch calls that can be in flight at the same time. A batch call counts as one. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets/using-secrets-deployed#fetching-multiple-secrets). | 5     |
 | [`PerWorkflow.Secrets.CallLimit`](#perworkflow-secrets-calllimit)             | Maximum number of secret fetch calls per workflow execution. A single call and a batch call each count as one.                                                                                                                 | 5     |
-| [`VaultRequestBatchSizeLimit`](#vaultrequestbatchsizelimit)                   | Maximum number of secrets in a single request. Applies to batch fetches and to each `cre secrets create`, `update`, or `delete` file.                                                                                          | 10    |
+| [`VaultRequestBatchSizeLimit`](#vaultrequestbatchsizelimit)                   | Maximum number of secrets in a single request: one batch fetch, or one `cre secrets create`, `update`, or `delete` file. This is not the total you can store (see `PerOwner.VaultSecretsLimit`).                               | 10    |
 | [`PerSecret.CipherTextSize`](#persecret-ciphertextsize)                       | Maximum size of a single encrypted secret value                                                                                                                                                                                | 2 KB  |
+
+> **NOTE: Secrets per owner vs. secrets per request**
+>
+> `PerOwner.VaultSecretsLimit` (100) is the total number of secrets you can store. `VaultRequestBatchSizeLimit` (10)
+> limits a single request: how many secrets one `cre secrets` file can contain, and how many secrets one batch fetch can
+> request. To store more than 10 secrets, upload them in several files. See [Secrets limits at a
+> glance](/cre/guides/workflow/secrets/using-secrets-deployed#secrets-limits-at-a-glance).
 
 > **NOTE: Confidential Workflows**
 >
@@ -5456,7 +5463,7 @@ apiKey := secret.Value
 
 The CRE runtime automatically handles retrieving the secret from the appropriate source based on your environment.
 
-To fetch several secrets in one call, use the batch API (`runtime.getSecrets()` in TypeScript, `runtime.GetSecrets()` in Go). Each execution can make up to 5 fetch calls, and a batch can contain up to 10 secrets. See [Fetching multiple secrets](/cre/guides/workflow/secrets/using-secrets-deployed#fetching-multiple-secrets) and the [secrets quotas](/cre/service-quotas#secrets-quotas).
+To fetch several secrets in one call, use the batch API (`runtime.getSecrets()` in TypeScript, `runtime.GetSecrets()` in Go). Each execution can make up to 5 fetch calls, and a batch can contain up to 10 secrets. These fetch limits are separate from the limits on uploading secrets (10 per `cre secrets` file, 100 stored in total). See [Fetching multiple secrets](/cre/guides/workflow/secrets/using-secrets-deployed#fetching-multiple-secrets) and the [secrets quotas](/cre/service-quotas#secrets-quotas).
 
 > **NOTE: Fetch secrets only inside trigger handlers**
 >
@@ -5527,6 +5534,19 @@ The workflow is similar to local development, but with a critical difference in 
 - **Local simulation**: Secrets read from your environment variables or `.env` file on your machine
 - **Deployed workflows**: Secrets retrieved from Vault DON by the workflow
 
+## Secrets limits at a glance
+
+Several different limits apply to secrets. Two of them are both 10, but they are separate limits that apply at different times:
+
+| Limit                      | Value | What it limits                                                                                                                                        |
+| -------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Secrets stored per owner   | 100   | The total number of secrets you can have stored in the Vault for one owner (your workflow owner address, or your organization for org-owned secrets). |
+| Secrets per upload request | 10    | How many secrets a single `cre secrets create`, `update`, or `delete` file can contain. To store more than 10 secrets, upload them in several files.  |
+| Secrets per batch fetch    | 10    | How many secrets a single `getSecrets()` / `GetSecrets()` call can request in your workflow code.                                                     |
+| Fetch calls per execution  | 5     | How many times one workflow execution can fetch secrets. A single-secret call and a batch call each count as one.                                     |
+
+For example, you can store up to 100 secrets (ten files of 10), but a workflow can read at most 10 secrets per call and at most 5 calls per execution, so up to 50 secrets in one execution, within the size limits. See [Service Quotas](/cre/service-quotas#secrets-quotas) for the full list, including secret sizes.
+
 ## Step-by-step guide
 
 ### Step 1: Create a secrets YAML file
@@ -5553,7 +5573,7 @@ secretsNames:
 
 > **NOTE: Up to 10 secrets per file**
 >
-> Each `cre secrets create`, `update`, or `delete` file can contain at most 10 secrets. The CLI rejects larger files with `cannot have more than 10 items in a single payload; check your secrets YAML`. Split larger sets across multiple files.
+> Each `cre secrets create`, `update`, or `delete` file can contain at most 10 secrets. The CLI rejects larger files with `cannot have more than 10 items in a single payload; check your secrets YAML`. Split larger sets across multiple files. This limits a single upload only: you can store up to 100 secrets in total per owner. It is separate from the limit of 10 secrets per batch fetch in your workflow code (see [Secrets limits at a glance](#secrets-limits-at-a-glance)).
 
 > **CAUTION: Don't commit secrets files**
 >
@@ -5701,7 +5721,7 @@ databaseUrl := secrets[1].Value
 > **NOTE: Secrets fetch limits**
 >
 > - Each execution can make up to **5 fetch calls** (`PerWorkflow.Secrets.CallLimit`). A single-secret call and a batch call each count as one.
-> - A batch can contain up to **10 secrets**.
+> - A batch can contain up to **10 secrets**. This is the limit on fetching, separate from the limits on uploading secrets (10 per file, 100 stored in total).
 > - Up to **5 fetch calls** can be in flight at the same time (`PerWorkflow.SecretsConcurrencyLimit`).
 > - Batches are all-or-nothing: if any secret in the batch fails to fetch, the call returns an error that lists every failure.
 > - See [Service Quotas](/cre/service-quotas#secrets-quotas) for the full list.
@@ -10319,7 +10339,7 @@ secretsNames:
 
 > **NOTE: Maximum of 10 secrets per file**
 >
-> A single file can contain at most 10 secrets. The CLI rejects larger files with `cannot have more than 10 items in a single payload; check your secrets YAML`. Split larger sets across multiple files.
+> A single file can contain at most 10 secrets. The CLI rejects larger files with `cannot have more than 10 items in a single payload; check your secrets YAML`. Split larger sets across multiple files. This limits a single request only: you can store up to 100 secrets in total per owner by uploading several files. It is separate from the limit of 10 secrets per batch fetch in workflow code.
 
 > **NOTE: Default namespace**
 >
