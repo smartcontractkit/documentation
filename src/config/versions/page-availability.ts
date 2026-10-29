@@ -26,34 +26,34 @@ export const PAGE_AVAILABILITY: Record<string, Record<string, PageAvailability>>
       onlyAvailableIn: ["v0.2.1"],
     },
     "ccip-local-router": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3", "v0.2.4", "v0.2.5", "v0.2.6", "v0.2.7", "v0.2.8", "v0.2.9"],
     },
     "data-streams-local-simulator": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3"],
     },
     "data-streams-local-simulator-fork": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3"],
     },
     "data-streams-register": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3"],
     },
     "mock-fee-manager": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3"],
     },
     "mock-report-generator": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3"],
     },
     "mock-reward-manager": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3"],
     },
     "mock-verifier": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3"],
     },
     "mock-verifier-proxy": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3"],
     },
     "report-versions": {
-      onlyAvailableIn: ["v0.3.1"],
+      notAvailableIn: ["v0.2.1", "v0.2.2", "v0.2.3"],
     },
   },
 }

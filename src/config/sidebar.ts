@@ -14,6 +14,13 @@ import type { ChainType, CcipVersion } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
+import chainlinkLocalV024Contents from "./sidebar/chainlink-local/api-reference/v0_2_4.json" with { type: "json" }
+import chainlinkLocalV025Contents from "./sidebar/chainlink-local/api-reference/v0_2_5.json" with { type: "json" }
+import chainlinkLocalV026Contents from "./sidebar/chainlink-local/api-reference/v0_2_6.json" with { type: "json" }
+import chainlinkLocalV027Contents from "./sidebar/chainlink-local/api-reference/v0_2_7.json" with { type: "json" }
+import chainlinkLocalV028Contents from "./sidebar/chainlink-local/api-reference/v0_2_8.json" with { type: "json" }
+import chainlinkLocalV029Contents from "./sidebar/chainlink-local/api-reference/v0_2_9.json" with { type: "json" }
+import chainlinkLocalV030Contents from "./sidebar/chainlink-local/api-reference/v0_3_0.json" with { type: "json" }
 import chainlinkLocalV031Contents from "./sidebar/chainlink-local/api-reference/v0_3_1.json" with { type: "json" }
 
 /**
@@ -2608,6 +2615,48 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "chainlink-local/api-reference/v0.3.1",
           isCollapsible: true,
           children: chainlinkLocalV031Contents,
+        },
+        {
+          title: "v0.3.0",
+          url: "chainlink-local/api-reference/v0.3.0",
+          isCollapsible: true,
+          children: chainlinkLocalV030Contents,
+        },
+        {
+          title: "v0.2.9",
+          url: "chainlink-local/api-reference/v0.2.9",
+          isCollapsible: true,
+          children: chainlinkLocalV029Contents,
+        },
+        {
+          title: "v0.2.8",
+          url: "chainlink-local/api-reference/v0.2.8",
+          isCollapsible: true,
+          children: chainlinkLocalV028Contents,
+        },
+        {
+          title: "v0.2.7",
+          url: "chainlink-local/api-reference/v0.2.7",
+          isCollapsible: true,
+          children: chainlinkLocalV027Contents,
+        },
+        {
+          title: "v0.2.6",
+          url: "chainlink-local/api-reference/v0.2.6",
+          isCollapsible: true,
+          children: chainlinkLocalV026Contents,
+        },
+        {
+          title: "v0.2.5",
+          url: "chainlink-local/api-reference/v0.2.5",
+          isCollapsible: true,
+          children: chainlinkLocalV025Contents,
+        },
+        {
+          title: "v0.2.4",
+          url: "chainlink-local/api-reference/v0.2.4",
+          isCollapsible: true,
+          children: chainlinkLocalV024Contents,
         },
         {
           title: "v0.2.3",
