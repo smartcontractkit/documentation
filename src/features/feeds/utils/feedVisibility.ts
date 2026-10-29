@@ -5,6 +5,7 @@ import {
   isFuturesStreamFeed,
   normalizeCategoryKey,
 } from "./feedMetadata.ts"
+import { is247Stream } from "./twentyFourSeven.ts"
 
 /**
  * Proxy addresses (lowercase) for feeds that should display the contact email
@@ -82,13 +83,20 @@ export function shouldHideAddress(feed: any, riskTier?: string | null): boolean 
 }
 
 /**
+ * Feature flag for the 24/7 stream family (24/7 TWAP and 24/7 Perpetual Markets).
+ * While true, their feed IDs render as a "Contact us" link instead of the ID.
+ * Flip to false when these streams are publicly launched and the IDs can ship.
+ */
+export const HIDE_247_STREAM_FEED_IDS = true
+
+/**
  * Returns true when a stream's feedId should be hidden and replaced with a
  * contact link. Add new feed-type checks here to extend the behaviour; remove
- * them when the stream goes live.
+ * them (or flip their flag) when the stream goes live.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideStreamFeedId(feed: any): boolean {
-  return isApacEquitiesStreamFeed(feed) || isFuturesStreamFeed(feed)
+  return isApacEquitiesStreamFeed(feed) || isFuturesStreamFeed(feed) || (HIDE_247_STREAM_FEED_IDS && is247Stream(feed))
 }
 
 /**
@@ -181,7 +189,8 @@ export function isFeedVisible(
           isVisible = false
         }
       } else if (dataFeedType === "streamsRwa") {
-        isVisible = ["Equities", "Forex", "Futures"].includes(feed.docs?.feedType)
+        // 24/7 streams span multiple schemas but all belong on the RWA page.
+        isVisible = ["Equities", "Forex", "Futures"].includes(feed.docs?.feedType) || is247Stream(feed)
       } else if (dataFeedType === "streamsNav") {
         isVisible = getSchemaVersion(feed) === "v9"
       } else if (dataFeedType === "streamsExRate") {
