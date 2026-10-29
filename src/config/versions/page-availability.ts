@@ -25,5 +25,35 @@ export const PAGE_AVAILABILITY: Record<string, Record<string, PageAvailability>>
     "mock-evm2evm-offramp": {
       onlyAvailableIn: ["v0.2.1"],
     },
+    "ccip-local-router": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
+    "data-streams-local-simulator": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
+    "data-streams-local-simulator-fork": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
+    "data-streams-register": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
+    "mock-fee-manager": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
+    "mock-report-generator": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
+    "mock-reward-manager": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
+    "mock-verifier": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
+    "mock-verifier-proxy": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
+    "report-versions": {
+      onlyAvailableIn: ["v0.3.1"],
+    },
   },
 }
