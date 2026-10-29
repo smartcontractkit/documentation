@@ -51,7 +51,7 @@ You and your agent go through four phases during the linkup process:
    You give this generated token with your agent, which signs it and gives you back a signature. You paste that signature back into the platform. The signature proves that your agent holds the key for that address, so the platform links your agent to your organization.
 
 3. **Set guardrails.** In the Chainlink platform, you choose which kinds of actions your agent may take: sending, swapping or bridging tokens, and using Aave. Or maybe you want your agent to not want to do any of those actions? You can set that up too.
-   You also choose which tokens it may use, set up allowlists, and spend limits per transaction and per rolling 24 hours. Your agent can't change these settings, only you can, using the UI.
+   You also choose which wallets your agent may send or bridge tokens to, and how much it may send or bridge per transaction and per rolling 24 hours. Your agent can't change these settings, only you can, using the UI.
 
 4. **Run workflows.** Your agent runs workflows through Chainlink for Agents and pays a small fee for each one. Workflows that move tokens use a chain wallet, a separate wallet your agent creates on each chain. Chainlink for Agents checks every workflow against your guardrails, checks again just before anything is written onchain, and blocks any workflow that breaks a guardrail.
 
@@ -66,7 +66,7 @@ The following diagram shows each step and who takes it.
 
 ## What's next
 
-- [Link your agent to Chainlink](/solutions/chainlink-for-agents/guides/link-your-agent): sign up your agent, link it to your organization, and set its guardrails.
+- [Link your agent to Chainlink](/solutions/chainlink-for-agents/guides/link-your-agent): sign up your agent and link it to your organization.
 
 ## Disclaimer
 
@@ -86,7 +86,6 @@ In this guide you will:
 
 1. Sign up on the Chainlink platform UI.
 2. Link your agent to your organization.
-3. Set guardrails for your agent.
 
 ## Sign up to the Chainlink platform UI
 
@@ -137,7 +136,47 @@ Please note, this repo contains community examples only — these are not Chainl
 # Check the ETH price and swap USDC on Base
 Source: https://docs.chain.link/solutions/chainlink-for-agents/guides/check-price-and-swap
 
-## Before you begin
+> **NOTE: Prerequisites**
+>
+> This guide assumes that you have already linked your agent to the Chainlink platform using the steps in the [Link your agent to Chainlink guide](/solutions/chainlink-for-agents/guides/link-your-agent). You also need:
+>
+> - A few USDC on Base left in your agent's address, to pay this guide's fees.
+> - About 6 USDC on Base in your own wallet. Later in this guide, you send it to your agent's chain wallet.
+>
+> Your agent doesn't need any ETH: it pays its fees in USDC, and Chainlink covers the gas for its chain wallet.
+
+In this tutorial, you will:
+
+1. Set guardrails for your agent in the Chainlink platform UI.
+2. Have your agent fetch live token prices from Chainlink's Data Streams.
+3. Have your agent create its chain wallet on Base, and fund it with USDC.
+4. Swap USDC for ETH on Base through Uniswap.
+5. Check your agent's balances after the swap.
+6. Watch a guardrail block a swap.
+
+> **TIP: Agent address vs. chain wallet**
+>
+> Your agent works with two addresses:
+>
+> - **Agent address:** the address your agent created during sign-up, and the one you linked to your organization. It's your agent's identity, and your agent pays its Chainlink for Agents fees from it.
+> - **Chain wallet:** a [smart contract wallet](/crec/concepts/smart-accounts) that Chainlink deploys for your agent on each chain it uses, such as Base. It holds the tokens your agent swaps or sends. It has no private key of its own: it only carries out instructions signed with your agent's key and delivered by Chainlink.
+>   - We might also refer to it as an SVA (Signature Verifying Account).
+>
+> Your agent's swaps run from its chain wallet, so Chainlink for Agents can check each one against your guardrails before it goes onchain. Both addresses belong to the same agent, so your link and your guardrails cover both.
+
+## Set up guardrails
+
+1. Go to the [Chainlink platform's agent dashboard](https://app.chain.link/cre/agents), and click on `Add Guardrails`.
+2. Set up minimal guardrails that allow you to follow the tutorial below, without exposing a wider than needed permission set.
+
+![Screenshot of the Chainlink platform's guardrails panel for the agent. Agent Restriction is on. Send Limit is on, with a per-transaction limit of 10 USD and a 24-hour limit of 15 USD. Under Operations, only Uniswap token swaps is on; Aave deposits and withdrawals, Token Transfers, and Bridge using CCIP are off. The Transfer and Bridge Allowlist is off.](/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-1.png)
+
+3. Click on `Apply Settings` and make sure your guardrails are set up.
+
+> **CAUTION: Keep Agent Restriction on**
+>
+> We highly recommend leaving Agent Restriction on, even if you don't configure specific settings. It limits your agent
+> to the workflows in the Chainlink catalog, even if your agent switches itself to unrestricted mode.
 
 ## Check the ETH price
 
