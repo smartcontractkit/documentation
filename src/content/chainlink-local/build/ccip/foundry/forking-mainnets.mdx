@@ -10,11 +10,13 @@ import { Aside } from "@components"
 
 <Common callout="importPackage" />
 
-This guide explains how to use the Chainlink Local Simulator to test cross-chain transactions in forked mainnet environments using Foundry. You'll learn how to leverage the `Register.sol` contract to streamline the simulation process and properly configure mainnet details that aren't included by default.
+This guide explains how to use the Chainlink Local Simulator to test cross-chain transactions in forked mainnet environments using Foundry. You'll use the `Register.sol` contract to read the network details of the chains you fork, and `setNetworkDetails` to add or override details when a chain is not in `Register` or its values have changed.
+
+Fork routing supports every CCIP era: pre-1.6, 1.6 and CCIP 2.0 (CCV-based) lanes. If the mainnet lane you fork runs CCIP 2.0 through a dedicated router, read it with [`getCCIPV2RouterAddress`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork#getccipv2routeraddress) or set it with [`setCCIPV2RouterAddress`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork#setccipv2routeraddress), and send through that router. Messages sent through either router are routed by `switchChainAndRouteMessage`.
 
 ## Understanding Network Registration
 
-The `Register.sol` smart contract contains pre-configured details for test networks to help accelerate cross-chain transaction simulations in Foundry. However, mainnet details are intentionally excluded and must be manually configured.
+The `Register.sol` smart contract contains pre-configured details for 134 chains, mainnets included, to accelerate cross-chain transaction simulations in Foundry. `getNetworkDetails` returns an all-zero struct for a chain ID that is not in `Register`; use `setNetworkDetails` to add it.
 
 <Aside type="note" title="Best Practice">
   Always verify contract addresses from `Register.sol` against the official [CCIP Directory](/ccip/directory/mainnet) to
@@ -26,7 +28,7 @@ Here's an example of how to verify network details for a test network such as Se
 ```solidity
 pragma solidity ^0.8.0;
 
-import { Test, console } from "forge-std/Test.sol"
+import { Test, console } from "forge-std/Test.sol";
 import {
     CCIPLocalSimulatorFork,
     Register
@@ -60,99 +62,89 @@ contract ExampleTest is Test {
 
 ## Working with Mainnet Forks
 
-The Chainlink Local Simulator supports any forked environment where CCIP contracts exist. Since mainnet details aren't included in `Register.sol`, you'll need to configure them manually. Let's walk through a complete example that demonstrates how to simulate cross-chain messages between Ethereum and Polygon mainnets. This example shows:
+The Chainlink Local Simulator supports any forked environment where CCIP contracts exist. Mainnet details are in `Register`, so forking a mainnet lane needs no extra configuration.
 
-1. Setting up mainnet forks
-2. Configuring network details
-3. Creating and sending a cross-chain message
-4. Routing the message between chains
-
-Here's the complete implementation:
+Chainlink Local runs this exact flow as an e2e test: [`CCIPv2MainnetEthereumArbitrumFork.t.sol`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/test/e2e/ccip/CCIPv2MainnetEthereumArbitrumFork.t.sol) sends a data-only message across the _Ethereum_ → _Arbitrum One_ mainnet lane, a CCIP 2.0 lane, and needs only `ETHEREUM_MAINNET_RPC_URL` and `ARBITRUM_MAINNET_RPC_URL`. The core of the test:
 
 ```solidity
-pragma solidity ^0.8.0;
+function setUp() public {
+    s_ethereumFork = vm.createSelectFork(vm.envString("ETHEREUM_MAINNET_RPC_URL"));
+    s_arbitrumFork = vm.createFork(vm.envString("ARBITRUM_MAINNET_RPC_URL"));
 
-import { Test, console } from "forge-std/Test.sol";
-import { CCIPLocalSimulatorFork, Register } from "@chainlink/local/src/ccip/CCIPLocalSimulatorFork.sol";
-import { IRouterClient } from "@chainlink/contracts-ccip/src/v0.8/ccip/interfaces/IRouterClient.sol";
-import { Client } from "@chainlink/contracts-ccip/src/v0.8/ccip/libraries/Client.sol";
+    s_forkSimulator = new CCIPLocalSimulatorFork();
+    vm.makePersistent(address(s_forkSimulator));
+    s_encoder = new EncodeExtraArgsOffchain();
+    vm.makePersistent(address(s_encoder));
 
-contract ExampleTest is Test {
-  CCIPLocalSimulatorFork public ccipLocalSimulatorFork;
-  uint256 public ethereumMainnetForkId;
-  uint256 public polygonMainnetForkId;
+    // Read the network details of both chains from Register
+    vm.selectFork(s_arbitrumFork);
+    s_arbitrum = s_forkSimulator.getNetworkDetails(block.chainid);
+    vm.selectFork(s_ethereumFork);
+    s_ethereum = s_forkSimulator.getNetworkDetails(block.chainid);
 
-  function setUp() public {
-    // Create forks of both networks
-    string memory ETHEREUM_MAINNET_RPC_URL = vm.envString("ETHEREUM_MAINNET_RPC_URL");
-    string memory POLYGON_MAINNET_RPC_URL = vm.envString("POLYGON_MAINNET_RPC_URL");
-    ethereumMainnetForkId = vm.createFork(ETHEREUM_MAINNET_RPC_URL);
-    polygonMainnetForkId = vm.createFork(POLYGON_MAINNET_RPC_URL);
+    // Fail fast if the lane is not CCIP 2.0 at the forked block
+    address onRamp = IRouterOnRamp(s_ethereum.routerAddress).getOnRamp(s_arbitrum.chainSelector);
+    assertEq(ITypeAndVersion(onRamp).typeAndVersion(), "OnRamp 2.0.0", "Ethereum -> Arbitrum is not CCIP 2.0");
 
-    address ethereumMainnetCcipRouterAddress = 0x80226fc0Ee2b096224EeAc085Bb9a8cba1146f7D;
-    uint64 polygonMainnetChainSelector = 4051577828743386545;
+    s_alice = makeAddr("alice");
+    vm.deal(s_alice, 10 ether);
+}
 
-    ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
+function test_mainnet_message_ethereumToArbitrum_fork() external {
+    // Deploy a receiver on the destination chain
+    vm.selectFork(s_arbitrumFork);
+    BasicMessageReceiver receiver = new BasicMessageReceiver(s_arbitrum.routerAddress);
 
-    ccipLocalSimulatorFork.setNetworkDetails(
-      polygonMainnetForkId,
-      Register.NetworkDetails({
-        chainSelector: polygonMainnetChainSelector,
-        routerAddress: polygonMainnetCcipRouterAddress,
-        linkAddress: address(0), // not needed for this test
-        wrappedNativeAddress: address(0), // not needed for this test
-        ccipBnMAddress: address(0), // not needed for this test
-        ccipLnMAddress: address(0), // not needed for this test
-        rmnProxyAddress: address(0), // not needed for this test
-        registryModuleOwnerCustomAddress: address(0), // not needed for this test
-        tokenAdminRegistryAddress: address(0) // not needed for this test
-      })
-    );
-    vm.makePersistent(address(ccipLocalSimulatorFork));
-  }
-
-  function test_example() public {
-    // Set up the source chain (Ethereum)
-    vm.selectFork(ethereumMainnetForkId);
-    Register.NetworkDetails memory polygonMainnetNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(
-      polygonMainnetForkId
+    // Send an ExtraArgsV3 message with default finality through the Ethereum router, paying in native
+    bytes memory payload = bytes("Hello mainnet CCIP 2.0");
+    bytes32 messageId = _send(
+        address(receiver),
+        payload,
+        new Client.EVMTokenAmount[](0),
+        s_encoder.encodeV3Basic(200_000, FinalityCodec.WAIT_FOR_FINALITY_FLAG)
     );
 
-    address alice = makeAddr("alice");
-    vm.deal(alice, 1 ether);
+    // Route the message to the Arbitrum OffRamp
+    s_forkSimulator.switchChainAndRouteMessage(s_arbitrumFork);
 
-    // Prepare the cross-chain message
-    vm.startPrank(alice);
-    Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-      receiver: abi.encode(ccipReceiverAddress),
-      data: abi.encode("Hello world"),
-      tokenAmounts: new Client.EVMTokenAmount[](0),
-      extraArgs: "",
-      feeToken: address(0)
-    });
-
-    // Send the message using CCIP
-    IRouterClient(ethereumMainnetCcipRouterAddress).ccipSend(polygonMainnetNetworkDetails.routerAddress, message);
-    vm.stopPrank();
-
-    // Route the message to Polygon
-    ccipLocalSimulatorFork.switchChainAndRouteMessage(polygonMainnetForkId);
-  }
+    // Verify the message arrived
+    vm.selectFork(s_arbitrumFork);
+    assertEq(receiver.latestMessageId(), messageId);
+    assertEq(receiver.latestSourceChainSelector(), s_ethereum.chainSelector);
+    assertEq(receiver.latestSender(), s_alice);
+    assertEq(receiver.latestMessage(), payload);
 }
 ```
 
+The `_send` helper builds the `Client.EVM2AnyMessage` with the given extraArgs, quotes the fee, and calls `ccipSend` as `alice` paying in native. The test's receiver and encoder are chainlink-local test contracts (`src/test/ccip/`, not shipped in the npm package); for your own project, the [CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry) ships a receiver (`src/BasicMessageReceiver.sol`) and an extraArgs encoder (`script/EncodeExtraArgsOffchain.s.sol`).
+
 **Code explanation**:
 
-- **Network Setup**: The `setUp()` function creates forks of both Ethereum and Polygon mainnets and initializes the CCIP simulator.
-- **Network Configuration**: We configure Polygon mainnet details using [`setNetworkDetails()`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#setnetworkdetails). This step is crucial because mainnet details aren't included in `Register.sol`. The configuration includes:
-  - `chainSelector`: The unique CCIP identifier for the Polygon network. Check the [CCIP Directory](/ccip/directory/mainnet) for the correct value.
-  - `routerAddress`: The address of the CCIP router on Polygon. Check the [CCIP Directory](/ccip/directory/mainnet) for the correct value.
-  - Parameters that can be set to `address(0)` because they are optional for messaging.
+- **Network Setup**: The `setUp()` function creates forks of both Ethereum and Arbitrum One mainnets, initializes the CCIP simulator, and reads both chains' details from `Register` with no manual configuration.
+- **Lane check**: The `OnRamp 2.0.0` assertion fails the test early if the lane is not CCIP 2.0 at the forked block, for example after a chain upgrade.
+- **Message Transfer**: The test deploys the receiver on the destination fork, sends an `ExtraArgsV3` message with default finality (`FinalityCodec.WAIT_FOR_FINALITY_FLAG`) through the source router, and routes it with [`switchChainAndRouteMessage()`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork#switchchainandroutemessage), which executes it on the destination OffRamp. Contracts created in a fork test are per-fork: make them persistent with `vm.makePersistent` before using them on another fork.
 
-- **Message Transfer**: The `test_example()` function demonstrates:
-  - Setting up a test user (alice) with funds
-  - Creating a cross-chain message
-  - Sending the message through CCIP
-  - Routing the message to the destination chain
+## Add or override network details with setNetworkDetails
 
-After this configuration, you can simulate cross-chain messages between mainnet forks, enabling thorough testing of your cross-chain applications in a local environment.
+Use [`setNetworkDetails()`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork#setnetworkdetails) when a chain is not in `Register` (it returns an all-zero struct) or when a value has changed from the built-in one, for example after a router upgrade. The details are keyed by the **chain ID**, not the fork ID:
+
+```solidity
+ccipLocalSimulatorFork.setNetworkDetails(
+  137, // Polygon mainnet chain ID
+  Register.NetworkDetails({
+    chainSelector: 4051577828743386545,
+    routerAddress: 0x849c5ED5a80F5B408Dd4969b78c2C8fdf0565Bfe,
+    linkAddress: 0xb0897686c545045aFc77CF20eC7A532E3120E0F1,
+    wrappedNativeAddress: 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270,
+    ccipBnMAddress: address(0), // not needed for this test
+    ccipLnMAddress: address(0), // not needed for this test
+    rmnProxyAddress: 0xf1ceAa46D8d13Cac9fC38aaEF3d3d14754C5A9c2,
+    registryModuleOwnerCustomAddress: 0xc751E86208F0F8aF2d5CD0e29716cA7AD98B5eF5,
+    tokenAdminRegistryAddress: 0x00F027eA6D0fb03256A15E9182B2B9227A4931d8
+  })
+);
+```
+
+The values above are the built-in `Register` entry for Polygon mainnet, shown as an example of the full struct. Check the [CCIP Directory](/ccip/directory/mainnet) for the current values of the chain you are configuring. Parameters not needed for messaging can be set to `address(0)`.
+
+After this configuration, you can simulate cross-chain messages between any forks, enabling thorough testing of your cross-chain applications in a local environment.

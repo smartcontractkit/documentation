@@ -23,21 +23,23 @@ does not persist the files that you open from an external source. To save files,
 
 1. Open the [Remix IDE](https://remix.ethereum.org/) in your browser.
 1. Create a [new workspace](https://remix-ide.readthedocs.io/en/latest/file_explorer.html#new-workspace).
-1. Copy the content of the [Test Chainlink Local Simulator contract](https://docs.chain.link/samples/CCIP/TestCCIPLocalSimulator.sol) into a new file in the workspace.
+1. Copy the content of the [Test Chainlink Local Simulator contract](https://github.com/smartcontractkit/documentation/blob/main/public/samples/CCIP/TestCCIPLocalSimulator.sol) into a new file in the workspace:
 
    <CodeSample src="samples/CCIP/TestCCIPLocalSimulator.sol" />
 
-1. Copy the content of the [Sender contract](https://docs.chain.link/samples/CCIP/Sender.sol) into a new file in the workspace.
+   When you compile, Remix resolves the `@chainlink/local`, `@chainlink/contracts-ccip`, and `@chainlink/contracts` imports from npm into the `.deps` folder. Without a version suffix, Remix uses the latest release of each package (`0.3.1` for `@chainlink/local`). To pin a specific version, use the version-suffixed form, for example `@chainlink/local@0.3.1/src/ccip/CCIPLocalSimulator.sol`.
+
+1. Copy the content of the [Sender contract](https://github.com/smartcontractkit/documentation/blob/main/public/samples/CCIP/Sender.sol) into a new file in the workspace.
 
    <CodeSample src="samples/CCIP/Sender.sol" />
 
-1. Copy the content of the [Receiver contract](https://docs.chain.link/samples/CCIP/Receiver.sol) into a new file in the workspace.
+1. Copy the content of the [Receiver contract](https://github.com/smartcontractkit/documentation/blob/main/public/samples/CCIP/Receiver.sol) into a new file in the workspace.
 
    <CodeSample src="samples/CCIP/Receiver.sol" />
 
 At this point, you should have three files in your workspace:
 
-      - **TestCCIPLocalSimulator.sol**: The file imports the Chainlink Chainlink Local simulator contract.
+      - **TestCCIPLocalSimulator.sol**: The file imports the Chainlink Local simulator contract.
 
       - **Sender.sol**: The file contains the Sender contract that interacts with CCIP to send data to the Receiver contract.
 
@@ -45,15 +47,15 @@ At this point, you should have three files in your workspace:
 
 ## Deploy the contracts
 
-1.  Compile the contracts.
+1.  Compile the contracts. In the Solidity Compiler tab, select version `0.8.24` to match the `pragma solidity 0.8.24` of the sample contracts.
 1.  Under the **Deploy & Run Transactions** tab, make sure _Remix VM_ is selected in the **Environment** drop-down list. Remix will use a sandbox blockchain in the
     browser to deploy the contracts.
-1.  Deploy the [Chainlink Local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#cciplocalsimulator):
+1.  Deploy the [Chainlink Local simulator](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator#cciplocalsimulator):
     1. Select the `TestCCIPLocalSimulator.sol` file in the file explorer.
     1. In the _Contract_ drop-down list, select `CCIPLocalSimulator`.
     1. Click the **Deploy** button.
     1. The `CCIPLocalSimulator` is shown in the **Deployed Contracts** section.
-    1. In the list of functions, click the [`configuration`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#configuration) function to retrieve the
+    1. In the list of functions, click the [`configuration`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator#configuration) function to retrieve the
        configuration details for the pre-deployed contracts and services needed for local CCIP simulations:
 
        <ClickToZoom
@@ -62,7 +64,7 @@ At this point, you should have three files in your workspace:
        />
 
 1.  You will interact with the LINK token contract to fund the sender contract with LINK tokens. The LINK token contract is pre-deployed in the local simulator
-    configuration, so you can simply load the LINK token contract instance:
+    configuration, so you can load the LINK token contract instance:
     1.  Select `LinkToken` in the _Contract_ drop-down list.
     1.  Fill in the _At Address_ field with the address of the `LINK` token contract from the `CCIPLocalSimulator` configuration.
     1.  Click the **At Address** button.
@@ -92,7 +94,7 @@ At this point, you should have three files in your workspace:
 
 1. Fund the sender contract with LINK tokens to pay for CCIP fees:
    1. Copy the address of the `Sender` contract from the **Deployed Contracts** section.
-   1. In the `CCIPLocalSimulator` contract, fill in the [`requestLinkFromFaucet`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator#requestlinkfromfaucet)
+   1. In the `CCIPLocalSimulator` contract, fill in the [`requestLinkFromFaucet`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator#requestlinkfromfaucet)
       function with the following inputs:
       - `to`: The address of the `Sender` contract.
       - `amount`: The amount of LINK tokens to transfer. For instance: <CopyText text="1000000000000000000" code/>.
@@ -100,6 +102,9 @@ At this point, you should have three files in your workspace:
 
 1. Send data from the sender contract to the receiver contract:
    1. Copy the address of the `Receiver` contract from the **Deployed Contracts** section.
+   1. In the `LinkToken` contract, call the `approve` function to let the `Sender` contract spend the LINK for the CCIP fee:
+      - `spender`: The address of the `Sender` contract.
+      - `value`: The amount of LINK to approve. For instance <CopyText text="1000000000000000000" code/>.
    1. In the `Sender` contract, fill in the `sendMessage` function with:
       - `destinationChainSelector`: The destination chain selector. You can find it in the `CCIPLocalSimulator` configuration.
       - `receiver`: The address of the `Receiver` contract.

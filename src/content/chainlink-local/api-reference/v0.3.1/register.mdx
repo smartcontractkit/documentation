@@ -1,0 +1,138 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Register v0.3.1 API Reference"
+metadata:
+  description: "API documentation for Register in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## Register
+
+A contract that stores and retrieves network details for various chains.
+
+[`Register`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/ccip/Register.sol)
+
+<Aside>
+  This contract maintains a registry of network-specific details including chain selectors, router addresses, and token
+  addresses for various supported networks. Built-in network details live in the generated data shards of
+  `RegisterData.sol`, which the simulator places with `vm.etch`, instead of being written to storage in the constructor:
+  storing ~150 chains cost ~24M gas, which made `CCIPLocalSimulatorFork` too expensive to deploy on 30M-gas-limit forks.
+  Sharding keeps every generated contract runtime under the EIP-170 limit. `setNetworkDetails` overrides are stored.
+</Aside>
+
+## Structs
+
+### NetworkDetails
+
+Contains configuration details for a specific network/chain.
+
+| Field                            | Type      | Description                                  |
+| -------------------------------- | --------- | -------------------------------------------- |
+| chainSelector                    | `uint64`  | Unique identifier for the chain in CCIP      |
+| routerAddress                    | `address` | Address of the CCIP Router contract          |
+| linkAddress                      | `address` | Address of the LINK token contract           |
+| wrappedNativeAddress             | `address` | Address of the wrapped native token contract |
+| ccipBnMAddress                   | `address` | Address of the CCIP BnM token contract       |
+| ccipLnMAddress                   | `address` | Address of the CCIP LnM token contract       |
+| rmnProxyAddress                  | `address` | Address of the RMN proxy contract            |
+| registryModuleOwnerCustomAddress | `address` | Address of the registry module owner         |
+| tokenAdminRegistryAddress        | `address` | Address of the token admin registry contract |
+
+## Variables
+
+### s_networkDetails
+
+```solidity
+mapping(uint256 chainId => NetworkDetails) internal s_networkDetails
+```
+
+<Aside>Internal mapping that stores network details set with `setNetworkDetails`, overriding the built-in ones.</Aside>
+
+### s_isOverridden
+
+```solidity
+mapping(uint256 chainId => bool isOverridden) internal s_isOverridden
+```
+
+<Aside>Internal mapping that records whether `setNetworkDetails` was called for a chain ID.</Aside>
+
+## Functions
+
+### constructor
+
+Initializes the contract.
+
+```solidity
+constructor()
+```
+
+<Aside>
+  Built-in network details are not stored here; they live in the generated `RegisterData` shards. A bare `new
+  Register()` only serves `setNetworkDetails` overrides.
+</Aside>
+
+### getNetworkDetails
+
+Retrieves network details for a given chain ID.
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (NetworkDetails memory networkDetails)
+```
+
+<Aside>
+  Returns the `setNetworkDetails` override for the chain ID when one was set, otherwise the built-in details from the
+  data shards. An unknown chain returns an all-zero struct.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                                |
+| --------- | --------- | ------------------------------------------ |
+| chainId   | `uint256` | The ID of the chain to get the details for |
+
+#### Returns
+
+| Parameter      | Type             | Description                                    |
+| -------------- | ---------------- | ---------------------------------------------- |
+| networkDetails | `NetworkDetails` | The network details for the specified chain ID |
+
+### setNetworkDetails
+
+Sets the network details for a given chain ID.
+
+```solidity
+function setNetworkDetails(uint256 chainId, NetworkDetails memory networkDetails) external
+```
+
+<Aside>
+  Used to add or update network details when they are not present or have changed from default values.
+  `getNetworkDetails` returns an all-zero struct for a chain ID that is not in `Register`.
+</Aside>
+
+#### Parameters
+
+| Parameter      | Type             | Description                                           |
+| -------------- | ---------------- | ----------------------------------------------------- |
+| chainId        | `uint256`        | The ID of the chain to set the details for            |
+| networkDetails | `NetworkDetails` | The network details to set for the specified chain ID |
+
+### shardAddress
+
+Returns the deterministic address of built-in data shard `index`.
+
+```solidity
+function shardAddress(uint256 index) public view returns (address)
+```
+
+<Aside>The simulator places each generated `RegisterDataN` shard at this address with `vm.etch`.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                               |
+| --------- | --------- | ----------------------------------------- |
+| index     | `uint256` | The shard index (0 to `_SHARD_COUNT - 1`) |
