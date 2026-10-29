@@ -180,11 +180,69 @@ In this tutorial, you will:
 
 ## Check the ETH price
 
-## Swap USDC for ETH
+This serves as the first test of your agent's connection to the Chainlink platform.
 
-## Check your balances
+Give this prompt to your agent:
+
+```
+What's the current price of ETH in US dollars? Get it from Chainlink Data Streams through Chainlink for Agents.
+```
+
+The agent should be able to fetch the latest price straight from the platform via Chainlink Data Streams.
+Simply reading the data doesn't require us to set up a separate chain wallet, but the next step does.
+
+![Screenshot showing the agent fetching the current ETH price from Chainlink Data Streams.](/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-2.png)
+
+## Create and fund your agent's chain wallet
+
+Give this prompt to your agent to create a fresh, separate chain wallet that it will use to carry out swaps and other onchain operations, bound by the guardrails set up by you in the UI:
+
+```
+Create a chain wallet for yourself on Base and give me its address.
+```
+
+Behind the scenes, Chainlink deploys the wallet contract on Base, and the agent pays a one-time fee for that deployment. It's the biggest fee-paying operation in this guide.
+
+> Please note that since this is a contract deployment, the agent doesn't actually hold the private key to this account, and thus the address generation is non-deterministic.
+> If your agent creates a new chain wallet on another chain, it will have a different address.
+
+![Screenshot showing the agent creating a new chain wallet on Base.](/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-3.png)
+
+- Send `6 USDC` to the freshly created chain wallet on `Base Mainnet`. You can use [BaseScan](https://basescan.org/) to track balances.
+
+## Swap USDC for ETH using Uniswap
+
+Remember the guardrails we set up earlier? We allowed our wallet to be able to swap tokens on Uniswap. Let us see if that works.
+
+Give this prompt to your agent to initiate the swap:
+
+```
+Swap 5 USDC for ETH on Base from your chain wallet.
+
+Before you sign, show me what I'll get and wait for my confirmation.
+```
+
+> You can also edit the prompt to have your agent simply execute the swap without asking for confirmation.
+
+![Screenshot showing the agent preparing to swap USDC for ETH on Uniswap.](/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-4.png)
+
+- Before moving forward, ask your agent to check if the swap went through, and make sure your balances reflect the updated amounts.
 
 ## Watch a guardrail block a swap
+
+1. Go to the [Chainlink platform's agent dashboard](https://app.chain.link/cre/agents), and locate your agent.
+2. Click on the `Settings` icon and configure your existing settings to turn off `Uniswap` token swaps. Click on `Apply Settings`.
+3. Paste this prompt to try and swap your remaining `USDC` for `ETH` **after turning** off Uniswap swaps from inside the UI.
+
+```
+Swap 1 USDC for ETH on Base please.
+```
+
+Your agent should now refuse to execute the swap, as the guardrail for Uniswap swaps has been turned off.
+
+![Screenshot showing the agent refusing to swap USDC for ETH after Uniswap swaps are turned off.](/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-5.png)
+
+## What's next
 
 ## Disclaimer
 
