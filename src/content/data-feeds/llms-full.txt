@@ -7727,17 +7727,17 @@ The feed does not expose a market status or session flag onchain, and the `updat
 
 ### Available assets
 
-24/7 coverage depends on liquid perpetual futures markets during off-hours, so not every tokenized equity has a 24/7 feed. Each asset is assessed individually and must meet minimum thresholds for off-hours trading volume and cost of manipulation, and the asset issuer must support it. Other tokenized equities remain on 24/5 feeds. Coverage will expand as off-hours perpetual futures markets deepen.
+24/7 coverage depends on liquid perpetual futures markets during off-hours, so not every tokenized equity has a 24/7 feed. Each asset is reviewed individually before launch, including its off-hours trading volume and how much it would cost to move its off-hours price, and the asset issuer must support it. This review lowers risk but does not remove it: covered assets can still be manipulated or dislocated during off-hours, and the [risks](#risks) below apply to every one of them. Other tokenized equities remain on 24/5 feeds. Coverage will expand as off-hours perpetual futures markets deepen.
 
 ## Key differences from 24/5 tokenized equity feeds
 
-|                        | 24/5 Tokenized Equity Feeds         | 24/7 Tokenized Equity Feeds                                      |
-| :--------------------- | :---------------------------------- | :--------------------------------------------------------------- |
-| Weekends and holidays  | Holds the last value until the open | Continues to update from the off-hours price                     |
-| Off-hours price source | None                                | Perpetual futures composite, smoothed                            |
-| Sunday reopen          | Updates to the opening price        | Remaining gap is closed over a short window                      |
-| Smoothing              | Session transitions and overnight   | Session transitions, overnight, and all of off-hours             |
-| Asset coverage         | Broad                               | Assets that meet off-hours liquidity and manipulation thresholds |
+|                        | 24/5 Tokenized Equity Feeds         | 24/7 Tokenized Equity Feeds                          |
+| :--------------------- | :---------------------------------- | :--------------------------------------------------- |
+| Weekends and holidays  | Holds the last value until the open | Continues to update from the off-hours price         |
+| Off-hours price source | None                                | Perpetual futures composite, smoothed                |
+| Sunday reopen          | Updates to the opening price        | Remaining gap is closed over a short window          |
+| Smoothing              | Session transitions and overnight   | Session transitions, overnight, and all of off-hours |
+| Asset coverage         | Broad                               | Assets reviewed for off-hours liquidity              |
 
 All risks on the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds#risks) page still apply during the trading week. The risks below are specific to 24/7 feeds or change in a meaningful way.
 
@@ -7745,7 +7745,7 @@ All risks on the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds#ris
 
 ### Slow price, delayed liquidations
 
-The Oracle Price is designed to move gradually. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately, and a large weekend move can take hours to be fully reflected. This is what protects borrowers from being liquidated on a brief dislocation, but it also means liquidations after a sustained move can happen later than they would against a live market price, and arbitrage opportunities can appear in the meantime.
+The Oracle Price is designed to move gradually. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately, and a large weekend move can take hours to be fully reflected. This reduces the chance of borrowers being liquidated on a brief dislocation, but it also means liquidations after a sustained move can happen later than they would against a live market price, and arbitrage opportunities can appear in the meantime.
 
 #### Mitigation
 
@@ -7755,7 +7755,7 @@ The Oracle Price is designed to move gradually. It cannot tell a genuine move fr
 
 ### Off-hours prices come from derivatives
 
-Perpetual futures can trade at a basis to the underlying shares, driven by funding rates and venue contract design, and venues occasionally change their contract specifications. Weekend volumes are a fraction of weekday spot volumes. The methodology is designed for that environment, but the cost of moving the price is lower off-hours than during the trading week, and lower still if some venues drop out.
+Perpetual futures can trade at a basis to the underlying shares, driven by funding rates and venue contract design, and venues occasionally change their contract specifications. Weekend volumes are a fraction of weekday spot volumes. Off-hours prices can be manipulated. It costs less to move them than during the trading week, and less still if some venues drop out. Smoothing in the Oracle Price reduces the effect of a short-lived move but does not prevent a sustained one.
 
 #### Mitigation
 

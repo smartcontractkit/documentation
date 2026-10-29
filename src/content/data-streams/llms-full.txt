@@ -7615,15 +7615,15 @@ Developers are responsible for choosing the appropriate stream and price field a
 
 ## How 24/7 compares to 24/5
 
-|                       | 24/5 US Equities                                              | 24/7 US Equities                                                 |
-| :-------------------- | :------------------------------------------------------------ | :--------------------------------------------------------------- |
-| Streams per asset     | Three (Regular, Extended, Overnight)                          | One                                                              |
-| Session switching     | Integrator chooses the stream using `marketStatus`            | Handled by the stream                                            |
-| Weekends and holidays | Market closed (`marketStatus = 5`). Prices resume at the open | Off-hours price from perpetual futures (`marketStatus = 5`)      |
-| Session transitions   | Each session's price as published, so you control transitions | Smoothed by the stream, except pre-market into regular hours     |
-| `lastTradedPrice`     | Deprecated                                                    | Carries the slow price (Oracle Price)                            |
-| Asset coverage        | Broad coverage of US single-name equities and ETFs            | Assets that meet off-hours liquidity and manipulation thresholds |
-| Latency               | Lowest available for each session                             | Slightly higher, due to the additional stitching and smoothing   |
+|                       | 24/5 US Equities                                              | 24/7 US Equities                                               |
+| :-------------------- | :------------------------------------------------------------ | :------------------------------------------------------------- |
+| Streams per asset     | Three (Regular, Extended, Overnight)                          | One                                                            |
+| Session switching     | Integrator chooses the stream using `marketStatus`            | Handled by the stream                                          |
+| Weekends and holidays | Market closed (`marketStatus = 5`). Prices resume at the open | Off-hours price from perpetual futures (`marketStatus = 5`)    |
+| Session transitions   | Each session's price as published, so you control transitions | Smoothed by the stream, except pre-market into regular hours   |
+| `lastTradedPrice`     | Deprecated                                                    | Carries the slow price (Oracle Price)                          |
+| Asset coverage        | Broad coverage of US single-name equities and ETFs            | Assets reviewed for off-hours liquidity                        |
+| Latency               | Lowest available for each session                             | Slightly higher, due to the additional stitching and smoothing |
 
 The 24/5 streams remain available and are still the right choice if you want session-level data and full control over how sessions are combined.
 
@@ -7667,7 +7667,7 @@ From the Friday post-market close to the Sunday overnight open, and on US market
 > The off-hours price is built entirely from perpetual futures. It is not derived from spot trading in the underlying
 > shares, and it does not use secondary market prices of tokenized equities, which are too thin to price against safely.
 
-The fast price during off-hours is a USD composite of quotes from several perpetual futures venues, weighted toward the more liquid venues. Venues that stop updating drop out, and no single venue can move the composite far on its own. The composite publishes a `bid` and `ask` as well as a `mid`. If no venue has fresh data, no new off-hours price is computed. The stream does not fabricate a price.
+The fast price during off-hours is a USD composite of quotes from several perpetual futures venues, weighted toward the more liquid venues. Venues that stop updating drop out. Weighting limits the influence of any one venue, but does not remove it. The composite publishes a `bid` and `ask` as well as a `mid`. If no venue has fresh data, no new off-hours price is computed. The stream does not fabricate a price.
 
 The slow price during off-hours is referenced to the last equity close before off-hours begin and follows the fast price gradually. Short-lived dislocations have little effect on it, while sustained moves are followed in full over time, so large moves can take hours to be fully reflected.
 
@@ -7705,17 +7705,17 @@ As with the 24/5 streams, `lastSeenTimestampNs` applies to `mid` only. It is not
 
 ## Which price to use
 
-| Use case                                           | Recommended field                | Why                                                                                             |
-| :------------------------------------------------- | :------------------------------- | :---------------------------------------------------------------------------------------------- |
-| Lending collateral, liquidations, borrowing limits | `lastTradedPrice` (slow price)   | Resists manipulation and short-lived dislocations in thin off-hours markets, at the cost of lag |
-| Perpetual futures mark or index price              | `mid` (fast price), `bid`, `ask` | Tracks the current tradable price without smoothing or caps                                     |
-| Monitoring and alerting                            | Both                             | The gap between fast and slow prices shows how far the market has moved from the slow price     |
+| Use case                                           | Recommended field                | Why                                                                                         |
+| :------------------------------------------------- | :------------------------------- | :------------------------------------------------------------------------------------------ |
+| Lending collateral, liquidations, borrowing limits | `lastTradedPrice` (slow price)   | Less sensitive to short-lived dislocations in thin off-hours markets, at the cost of lag    |
+| Perpetual futures mark or index price              | `mid` (fast price), `bid`, `ask` | Tracks the current tradable price without smoothing or caps                                 |
+| Monitoring and alerting                            | Both                             | The gap between fast and slow prices shows how far the market has moved from the slow price |
 
 These are different risk profiles served from the same report. If you need the slow price onchain without running your own Data Streams integration, see [24/7 Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
 
 ## Asset coverage
 
-24/7 pricing depends on liquid perpetual futures markets during off-hours, so not every US equity is covered. Each asset is assessed individually and must meet minimum thresholds for off-hours trading volume and cost of manipulation before it launches. Assets that do not meet them remain available on the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). Coverage will expand as off-hours perpetual futures markets deepen. To request an asset, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+24/7 pricing depends on liquid perpetual futures markets during off-hours, so not every US equity is covered. Each asset is reviewed individually before launch, including its off-hours trading volume and how much it would cost to move its off-hours price. This review lowers risk but does not remove it: covered assets can still be manipulated or dislocated during off-hours, and the [risks](#risks) below apply to every one of them. Assets that are not covered remain available on the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). Coverage will expand as off-hours perpetual futures markets deepen. To request an asset, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
 
 ### Available streams
 
@@ -7725,7 +7725,7 @@ These are different risk profiles served from the same report. If you need the s
 
 ### Slow price lag
 
-The slow price is designed to trail the market during the overnight session and off-hours. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately. A large weekend move can take hours to be fully reflected. This protects against liquidations caused by brief dislocations, but it also means liquidations after a sustained move can happen later than they would against a live market price, and can leave room for arbitrage.
+The slow price is designed to trail the market during the overnight session and off-hours. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately. A large weekend move can take hours to be fully reflected. This reduces liquidations caused by brief dislocations, but it also means liquidations after a sustained move can happen later than they would against a live market price, and can leave room for arbitrage.
 
 #### Mitigation
 
@@ -7735,7 +7735,7 @@ The slow price is designed to trail the market during the overnight session and 
 
 ### Off-hours prices come from perpetual futures
 
-A perpetual futures contract is a derivative. Its price can carry a basis to the underlying shares, influenced by funding rates and by each venue's contract design. Venues occasionally change contract specifications, including index construction and funding mechanics. Weekend perpetual futures volumes are also a fraction of weekday spot volumes, so it can take less capital to move them.
+A perpetual futures contract is a derivative. Its price can carry a basis to the underlying shares, influenced by funding rates and by each venue's contract design. Venues occasionally change contract specifications, including index construction and funding mechanics. Weekend perpetual futures volumes are also a fraction of weekday spot volumes, so it can take less capital to move them. Off-hours prices can be manipulated, and smoothing in the slow price reduces the effect but does not prevent it.
 
 #### Mitigation
 
@@ -7748,7 +7748,7 @@ A perpetual futures contract is a derivative. Its price can carry a basis to the
 Two separate single-source dependencies exist:
 
 - **Overnight:** As with the 24/5 streams, only one traditional venue trades during the overnight session.
-- **Off-hours:** Perpetual futures data is currently delivered through a single data provider. Using several venues protects against a bad price on one exchange, but not against an outage or bad data at the provider.
+- **Off-hours:** Perpetual futures data is currently delivered through a single data provider. Using several venues reduces the impact of a bad price on one exchange, but does not help with an outage or bad data at the provider.
 
 If the provider stops delivering data, no new off-hours price can be computed. If it delivers incorrect data, cross-venue checks reduce the impact but cannot remove it.
 
