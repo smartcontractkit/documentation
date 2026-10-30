@@ -1,0 +1,172 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockVerifier v0.3.1 API Reference"
+metadata:
+  description: "API documentation for MockVerifier in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## MockVerifier
+
+A mock implementation of the Data Streams verifier for local testing.
+
+[`MockVerifier`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/data-streams/MockVerifier.sol)
+
+<Aside>
+  This contract verifies reports signed by the mock DON address (generated from `keccak256("Mock Data Streams DON")`).
+  Only the [`MockVerifierProxy`](/chainlink-local/api-reference/v0.3.1/mock-verifier-proxy) may call `verify`. Reports
+  are generated with [`MockReportGenerator`](/chainlink-local/api-reference/v0.3.1/mock-report-generator).
+</Aside>
+
+## Errors
+
+### AccessForbidden
+
+```solidity
+error AccessForbidden()
+```
+
+<Aside>Reverts when `verify` is called by anyone other than the verifier proxy.</Aside>
+
+### InactiveFeed
+
+```solidity
+error InactiveFeed(bytes32 feedId)
+```
+
+### DigestInactive
+
+```solidity
+error DigestInactive(bytes32 feedId, bytes32 configDigest)
+```
+
+### BadVerification
+
+```solidity
+error BadVerification()
+```
+
+<Aside>Reverts when the report signature does not recover to the mock DON address.</Aside>
+
+### InvalidV
+
+```solidity
+error InvalidV()
+```
+
+### AlreadyUsedSignature
+
+```solidity
+error AlreadyUsedSignature()
+```
+
+<Aside>Reverts on a replayed report signature.</Aside>
+
+### InvalidSignatureLength
+
+```solidity
+error InvalidSignatureLength()
+```
+
+### InvalidS
+
+```solidity
+error InvalidS()
+```
+
+<Aside>Reverts when `s` exceeds half the secp256k1 curve order (EIP-2 signature malleability check).</Aside>
+
+## Events
+
+### ReportVerified
+
+```solidity
+event ReportVerified(bytes32 indexed feedId, address indexed sender)
+```
+
+## Functions
+
+### constructor
+
+Initializes the contract with the verifier proxy address.
+
+```solidity
+constructor(address verifierProxy)
+```
+
+#### Parameters
+
+| Parameter     | Type      | Description                                |
+| ------------- | --------- | ------------------------------------------ |
+| verifierProxy | `address` | The address of the verifier proxy contract |
+
+### verify
+
+Verifies a signed report and returns the report data.
+
+```solidity
+function verify(bytes calldata signedReport, address sender) external returns (bytes memory verifierResponse)
+```
+
+<Aside>
+  Only callable by the verifier proxy. Decodes the signed report, checks the feed and config digest are active, recovers
+  the signer with `ecrecover` and marks the signature as used. Returns the report data.
+</Aside>
+
+#### Parameters
+
+| Parameter    | Type      | Description                           |
+| ------------ | --------- | ------------------------------------- |
+| signedReport | `bytes`   | The ABI-encoded signed report         |
+| sender       | `address` | The address that submitted the report |
+
+#### Returns
+
+| Parameter        | Type    | Description             |
+| ---------------- | ------- | ----------------------- |
+| verifierResponse | `bytes` | The decoded report data |
+
+### deactivateConfig
+
+Deactivates a config digest for a feed.
+
+```solidity
+function deactivateConfig(bytes32 feedId, bytes32 configDigest) external
+```
+
+### activateConfig
+
+Activates a config digest for a feed.
+
+```solidity
+function activateConfig(bytes32 feedId, bytes32 configDigest) external
+```
+
+### deactivateFeed
+
+Deactivates a feed.
+
+```solidity
+function deactivateFeed(bytes32 feedId) external
+```
+
+### activateFeed
+
+Activates a feed.
+
+```solidity
+function activateFeed(bytes32 feedId) external
+```
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure override returns (bool)
+```
+
+<Aside>Returns true only for the `verify` selector.</Aside>

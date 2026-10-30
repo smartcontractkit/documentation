@@ -34,8 +34,9 @@ import {
   isApacEquitiesStreamFeed,
   getTwapWindowSeconds,
 } from "~/features/feeds/utils/feedMetadata.ts"
+import { get247Category, is247Stream } from "~/features/feeds/utils/twentyFourSeven.ts"
 import { isFeedIdAddressedNetwork } from "~/features/feeds/utils/feedIdAddressedNetworks.ts"
-import { getFeedTypeFlags, type SchemaFilterValue } from "~/features/feeds/types.ts"
+import { getFeedTypeFlags, type SchemaFilterValue, type TwentyFourSevenFilterValue } from "~/features/feeds/types.ts"
 import { useFilteredFeedMetadata } from "~/features/feeds/hooks/useFilteredFeedMetadata.ts"
 
 const feedItems = monitoredFeeds.mainnet
@@ -90,6 +91,7 @@ const getSchemaDefinitionKey = (metadata: any): string | undefined => {
   if (schemaVersion === "v11") {
     return isApacEquitiesStreamFeed(metadata) ? "v11-apac" : "v11"
   }
+  if (schemaVersion === "v14") return "v14"
   if (schemaVersion === "v7") return "v7"
   if (schemaVersion === "v3") {
     return feedType === "Crypto-DEX" ? "v3-dex" : "v3-crypto"
@@ -1397,6 +1399,10 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
     metadata.docs?.attributeType === "ExchangeRate" &&
     metadata.docs?.assetClass === "Tokenized Debt"
   const schemaKey = getSchemaDefinitionKey(metadata)
+  // v2's price field is a TWAP. That covers the classic TWAP streams and the
+  // 24/7 TWAP product, which carries attributeType "247" instead of "TWAP".
+  const isTwapStream =
+    schemaKey === "v2" && (metadata.docs?.attributeType === "TWAP" || get247Category(metadata) === "twap")
 
   return (
     <tr>
@@ -1424,7 +1430,12 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 Datalink
               </a>
             )}
-            {schemaKey === "v2" && metadata.docs?.attributeType === "TWAP" && (
+            {is247Stream(metadata) && (
+              <span className={tableStyles.feedVariantBadge} title="24/7 stream">
+                24/7
+              </span>
+            )}
+            {isTwapStream && (
               <a
                 href="/data-streams/reference/report-schema-v2#time-weighted-average-price-twap"
                 target="_blank"
@@ -1435,10 +1446,9 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
               </a>
             )}
             {(() => {
-              const twapWindow =
-                schemaKey === "v2" && metadata.docs?.attributeType === "TWAP"
-                  ? getTwapWindowSeconds(metadata)
-                  : undefined
+              // 24/7 TWAP streams currently carry no window token in the RDD name,
+              // so this only renders when a `-TWAP-<N>s` value is actually present.
+              const twapWindow = isTwapStream ? getTwapWindowSeconds(metadata) : undefined
               if (!twapWindow) return null
               return (
                 <span className={tableStyles.feedVariantBadge} title={`${twapWindow}-second TWAP window`}>
@@ -1531,6 +1541,14 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 </dd>
               </div>
             ) : null}
+            {metadata.feedType === "Futures" && (
+              <div className={tableStyles.definitionGroup}>
+                <dt>
+                  <span className="label">Feed cut:</span>
+                </dt>
+                <dd>Front</dd>
+              </div>
+            )}
             {(() => {
               const assetSubClass = (metadata.docs as any)?.assetSubClass
               const clicProductName = (metadata.docs as any)?.clicProductName || ""
@@ -1578,13 +1596,12 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 </dt>
                 <dd>
                   <a href="/data-streams/market-hours" target="_blank">
-                    {metadata.docs.marketHours}
+                    {is247Stream(metadata) ? "24/7" : metadata.docs.marketHours}
                   </a>
                 </dd>
               </div>
             ) : null}
-            {schemaKey === "v2" &&
-              metadata.docs?.attributeType === "TWAP" &&
+            {isTwapStream &&
               (() => {
                 const twapWindow = getTwapWindowSeconds(metadata)
                 if (!twapWindow) return null
@@ -1640,7 +1657,10 @@ export const MainnetTable = ({
   cryptoSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
+  show247Streams,
+  twentyFourSevenFilter,
   showApacEquitiesFeeds,
+  showFuturesFeeds,
   tradingHoursFilter,
   dataFeedType,
   ecosystem,
@@ -1664,9 +1684,12 @@ export const MainnetTable = ({
   showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: SchemaFilterValue
   cryptoSchemaFilter?: SchemaFilterValue
-  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex" | "futures"
   show24x5Feeds?: boolean
+  show247Streams?: boolean
+  twentyFourSevenFilter?: TwentyFourSevenFilterValue
   showApacEquitiesFeeds?: boolean
+  showFuturesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   dataFeedType: string
   ecosystem: string
@@ -1687,6 +1710,10 @@ export const MainnetTable = ({
   const feedTypeFlags = getFeedTypeFlags(dataFeedType, "mainnet")
   const { isStreams, isSmartData, isUSGovernmentMacroeconomicData, isDefaultTable: isDefault } = feedTypeFlags
 
+  // While a market-hours filter is active the schema/category dropdowns are hidden.
+  // Ignore any leftover values so they can't silently empty the table (e.g. from a URL).
+  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams)
+
   const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
     network,
     dataFeedType,
@@ -1696,13 +1723,16 @@ export const MainnetTable = ({
     searchVariant: "mainnet",
     showOnlySVR,
     show24x5Feeds,
+    show247Streams,
+    twentyFourSevenFilter,
     showApacEquitiesFeeds,
+    showFuturesFeeds,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,
       showOnlyDatalinkFeeds,
-      streamCategoryFilter,
-      rwaSchemaFilter,
+      streamCategoryFilter: isMarketHoursFilterActive ? undefined : streamCategoryFilter,
+      rwaSchemaFilter: isMarketHoursFilterActive ? undefined : rwaSchemaFilter,
       cryptoSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
@@ -1817,7 +1847,10 @@ export const TestnetTable = ({
   cryptoSchemaFilter,
   streamCategoryFilter,
   show24x5Feeds,
+  show247Streams,
+  twentyFourSevenFilter,
   showApacEquitiesFeeds,
+  showFuturesFeeds,
   tradingHoursFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
@@ -1838,9 +1871,12 @@ export const TestnetTable = ({
   showOnlyDatalinkFeeds?: boolean
   rwaSchemaFilter?: SchemaFilterValue
   cryptoSchemaFilter?: SchemaFilterValue
-  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex"
+  streamCategoryFilter?: "all" | "datalink" | "equities" | "forex" | "futures"
   show24x5Feeds?: boolean
+  show247Streams?: boolean
+  twentyFourSevenFilter?: TwentyFourSevenFilterValue
   showApacEquitiesFeeds?: boolean
+  showFuturesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
@@ -1855,6 +1891,10 @@ export const TestnetTable = ({
     isDefaultTable: isDefault,
   } = getFeedTypeFlags(dataFeedType, "testnet")
 
+  // While a market-hours filter is active the schema/category dropdowns are hidden.
+  // Ignore any leftover values so they can't silently empty the table (e.g. from a URL).
+  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams)
+
   const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
     network,
     dataFeedType,
@@ -1863,13 +1903,16 @@ export const TestnetTable = ({
     searchValue,
     searchVariant: "testnet",
     show24x5Feeds,
+    show247Streams,
+    twentyFourSevenFilter,
     showApacEquitiesFeeds,
+    showFuturesFeeds,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,
       showOnlyDatalinkFeeds,
-      streamCategoryFilter,
-      rwaSchemaFilter,
+      streamCategoryFilter: isMarketHoursFilterActive ? undefined : streamCategoryFilter,
+      rwaSchemaFilter: isMarketHoursFilterActive ? undefined : rwaSchemaFilter,
       cryptoSchemaFilter,
       showOnlyMVRFeeds,
       tokenizedEquityProvider,

@@ -1,0 +1,84 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "ReportVersions v0.2.9 API Reference"
+metadata:
+  description: "API documentation for ReportVersions in Solidity, version v0.2.9."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage029" />
+
+## ReportVersions
+
+Data Streams report schemas.
+
+[ReportVersions](https://github.com/smartcontractkit/chainlink-local/blob/v0.2.9/src/data-streams/ReportVersions.sol)
+
+## Structs
+
+### ReportV2
+
+_Represents a data report from a Data Streams stream for v2 schema (crypto
+streams). The `price` value is carried to either 8 or 18 decimal places,
+depending on the stream. For more information, see
+https://docs.chain.link/data-streams/crypto-streams and
+https://docs.chain.link/data-streams/reference/report-schema_
+
+```solidity
+struct ReportV2 {
+  bytes32 feedId;
+  uint32 validFromTimestamp;
+  uint32 observationsTimestamp;
+  uint192 nativeFee;
+  uint192 linkFee;
+  uint32 expiresAt;
+  int192 benchmarkPrice;
+}
+```
+
+### ReportV3
+
+_Represents a data report from a Data Streams stream for v3 schema (crypto
+streams). The `price`, `bid`, and `ask` values are carried to either 8 or 18
+decimal places, depending on the stream. For more information, see
+https://docs.chain.link/data-streams/crypto-streams and
+https://docs.chain.link/data-streams/reference/report-schema_
+
+```solidity
+struct ReportV3 {
+  bytes32 feedId;
+  uint32 validFromTimestamp;
+  uint32 observationsTimestamp;
+  uint192 nativeFee;
+  uint192 linkFee;
+  uint32 expiresAt;
+  int192 price;
+  int192 bid;
+  int192 ask;
+}
+```
+
+### ReportV4
+
+_Represents a data report from a Data Streams stream for v4 schema (RWA stream).
+The `price` value is carried to either 8 or 18 decimal places, depending on the
+stream. The `marketStatus` indicates whether the market is currently open.
+Possible values: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`). For more
+information, see https://docs.chain.link/data-streams/rwa-streams and
+https://docs.chain.link/data-streams/reference/report-schema-v4_
+
+```solidity
+struct ReportV4 {
+  bytes32 feedId;
+  uint32 validFromTimestamp;
+  uint32 observationsTimestamp;
+  uint192 nativeFee;
+  uint192 linkFee;
+  uint32 expiresAt;
+  int192 price;
+  uint32 marketStatus;
+}
+```

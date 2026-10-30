@@ -1,0 +1,195 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Sending data to a receiver with CCV config in your Hardhat project"
+isIndex: false
+---
+
+import Common from "@features/chainlink-local/Common.astro"
+import { Aside } from "@components"
+
+<Common callout="importPackage" />
+
+This guide walks you through the CCIP 2.0 receiver-side finality rules in local mode, using the [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat)'s Example 02. You will send a data-only message to a `BasicMessageReceiverWithCCVs` contract with Fast Transfers, and see the local router reject it when the requested block confirmations fall below the receiver's minimum block depth.
+
+The Example 01 guide covers a token-only transfer to an EOA, which is exactly the case that skips the receiver finality check. This guide covers the opposite case: a message with data and a receiver contract, where the local router reads the receiver's `getCCVsAndFinalityConfig` and enforces its allowed finality, reproducing the CCIP 2.0 OffRamp check. Read [CCIP 2.0 behavior in local mode](/chainlink-local/learn/ccip-v2-local) for the full rule list.
+
+<Aside type="note" title="Hardhat 3 required">
+  Chainlink Local `0.3.x` does not compile under Hardhat 2. Hardhat 2 users stay on the `0.2.x` line (`npm install
+  @chainlink/local@0.2.9`).
+</Aside>
+
+## Prerequisites
+
+Complete the [Hardhat local simulator guide](/chainlink-local/build/ccip/hardhat/local-simulator) first: it covers cloning the kit, `npm install`, and the `setupLocalSimulator` helper this guide builds on.
+
+## Test data messages to a receiver with CCV config
+
+The test file `Example02.test.ts` is located in the `./test` directory. It calls the real Example 02 task actions (`tasks/Example02.ts` and `tasks/helpers/SetBasicMessageReceiverWithCCVsMinBlockDepth.ts`) against the Chainlink Local simulator. The file contains nine test cases:
+
+1. **Deploy**: The receiver is wired to the router and owned by the deployer.
+1. **Deliver above the minimum depth**: A Fast Transfer with confirmations above the receiver's `minBlockDepth` is delivered.
+1. **Deliver at the minimum depth**: Confirmations equal to `minBlockDepth` are also delivered.
+1. **Deliver with default finality**: A message with `blockConfirmations = 0` is delivered even when no `minBlockDepth` is set.
+1. **Deliver with a CCV config applied**: A receiver with required and optional CCVs still gates on `minBlockDepth`.
+1. **Revert below the minimum depth**: Confirmations below `minBlockDepth` revert with `InvalidRequestedFinality`.
+1. **Revert when the minimum depth is unset**: Without a configured depth, the receiver accepts finalized messages only.
+1. **Argument validation**: The tasks reject a zero source chain selector and a zero receiver.
+
+In your terminal, run the following command to execute the test:
+
+    ```shell
+    npx hardhat test nodejs
+    ```
+
+Example output:
+
+      ```text
+      $ npx hardhat test nodejs
+
+      Example02
+        ✔ deploys the receiver wired to the router and owned by the deployer (644ms)
+        ✔ delivers the message when confirmations are above the min block depth (285ms)
+        ✔ delivers the message when confirmations equal the min block depth (347ms)
+        ✔ delivers a message with default finality (0 confirmations) even when no min block depth is set (165ms)
+        ✔ delivers the message when the receiver has a CCV config applied (223ms)
+        ✔ reverts when confirmations are below the min block depth (141ms)
+        ✔ reverts when the min block depth is unset, so only full finality is accepted (137ms)
+        ✔ set-min-block-depth task rejects a zero source chain selector
+        ✔ rejects a zero receiver
+
+      ...
+      ```
+
+## Examine the code
+
+### The receiver contract
+
+`contracts/BasicMessageReceiverWithCCVs.sol` extends `BasicMessageReceiver` with a per-source-chain CCV and finality policy. Two settings matter for this guide:
+
+- `setMinBlockDepth(sourceChainSelector, minBlockDepth)`: the minimum block depth the receiver accepts for Fast Transfers from that chain. `0` means the receiver requires default finality (fully finalized messages only).
+- `getCCVsAndFinalityConfig(sourceChainSelector, sender)`: the CCIP 2.0 receiver interface the OffRamp calls for every message that is not a token-only transfer. The kit's receiver returns its stored CCV config and encodes `minBlockDepth` as the allowed finality with `FinalityCodec._encodeBlockDepth`.
+
+### Setup
+
+The `beforeEach` hook deploys the receiver through the same Ignition module the kit's book uses for live-testnet deployments, so the test exercises the real deployment path:
+
+```typescript
+s = await setupLocalSimulator()
+const { basicMessageReceiverWithCCVs } = await s.connection.ignition.deploy(BasicMessageReceiverWithCCVsModule, {
+  parameters: { BasicMessageReceiverWithCCVsModule: { routerAddress: s.router.address } },
+})
+receiver = await s.viem.getContractAt("BasicMessageReceiverWithCCVs", basicMessageReceiverWithCCVs.address)
+```
+
+The helper functions wrap the two task actions the test drives:
+
+```typescript
+const setMinBlockDepth = (minBlockDepth: number, sourceChainSelector = s.chainSelector) =>
+  quietly(() => setMinBlockDepthAction({ receiver: receiver.address, sourceChainSelector, minBlockDepth }, s.taskHre))
+
+const send = (blockConfirmations: number, overrides: { receiver?: string } = {}) =>
+  quietly(() =>
+    example02Action(
+      {
+        sourceRouter: s.router.address,
+        destinationChainSelector: s.chainSelector,
+        receiver: overrides.receiver ?? receiver.address,
+        messageText: MESSAGE_TEXT,
+        gasLimit: GAS_LIMIT,
+        blockConfirmations,
+        feeTokenAddress: ZERO_ADDRESS,
+      },
+      s.taskHre
+    )
+  )
+```
+
+The constants used:
+
+```typescript
+const MESSAGE_TEXT = "Hello CCIP 2.0"
+const GAS_LIMIT = 200_000
+```
+
+`GAS_LIMIT` must be `> 0`: the receiver has a `ccipReceive` callback to execute, unlike the EOA receiver of Example 01.
+
+### Deliver when confirmations meet the minimum depth
+
+The `delivers the message when confirmations are above the min block depth` test case sets the receiver's minimum depth to `3` and sends with `5` confirmations:
+
+```typescript
+await setMinBlockDepth(3)
+
+await send(5)
+
+assert.notEqual(await receiver.read.latestMessageId(), `0x${"00".repeat(32)}`)
+assert.equal(await receiver.read.latestSourceChainSelector(), s.chainSelector)
+assert.equal((await receiver.read.latestSender()).toLowerCase(), s.broadcaster.account.address.toLowerCase())
+assert.equal(await receiver.read.latestMessage(), encodeAbiParameters([{ type: "string" }], [MESSAGE_TEXT]))
+```
+
+Inside the send, the local router parses the `ExtraArgsV3` requested finality, sees the message has data (not a token-only transfer), and calls the receiver's `getCCVsAndFinalityConfig`. The receiver's allowed finality is `FinalityCodec._encodeBlockDepth(3)`; the requested `5` is at least that, so the message is delivered synchronously and the assertions read the receiver's stored state directly.
+
+The `delivers the message when confirmations equal the min block depth` test case sends with exactly `3` confirmations and passes: the check is inclusive.
+
+### Revert when confirmations fall below the minimum depth
+
+The `reverts when confirmations are below the min block depth` test case sends with `2` confirmations against a minimum depth of `3`. The local router rejects the send with the same error the production OffRamp records:
+
+```typescript
+await setMinBlockDepth(3)
+
+await expectInvalidFinality(send(2), blockDepth(2), blockDepth(3))
+```
+
+`expectRevertWithError` decodes the revert data and asserts the exact custom error and arguments. `blockDepth(n)` is the finality encoding of a block-depth request, `bytes4(uint32(n))`:
+
+```typescript
+const blockDepth = (n: number) => `0x${n.toString(16).padStart(8, "0")}`
+```
+
+The error carries both sides of the comparison: the requested finality (`0x00000002`) and the allowed finality (the receiver's minimum depth, `0x00000003`).
+
+The `reverts when the min block depth is unset, so only full finality is accepted` test case shows the default: with no depth configured, the receiver's allowed finality is `WAIT_FOR_FINALITY` (`0x00000000`), so any Fast Transfer request reverts:
+
+```typescript
+await expectInvalidFinality(send(1), blockDepth(1), WAIT_FOR_FINALITY)
+```
+
+A message with `blockConfirmations = 0` (default finality) is still delivered in this state, which the `delivers a message with default finality` test case verifies.
+
+### Deliver with a CCV config applied
+
+The `delivers the message when the receiver has a CCV config applied` test case configures the receiver with required and optional CCVs through `applyCCVConfigUpdates`, then verifies the finality gate still applies on top:
+
+```typescript
+await receiver.write.applyCCVConfigUpdates([
+  [
+    {
+      requiredCCVs: ["0x00000000000000000000000000000000000000a1"],
+      optionalCCVs: ["0x00000000000000000000000000000000000000b1", "0x00000000000000000000000000000000000000b2"],
+      sourceChainSelector: s.chainSelector,
+      optionalThreshold: 1,
+    },
+  ],
+])
+await setMinBlockDepth(3)
+
+await send(3)
+
+assert.notEqual(await receiver.read.latestMessageId(), `0x${"00".repeat(32)}`)
+await expectInvalidFinality(send(2), blockDepth(2), blockDepth(3))
+```
+
+Local mode has no CCV verifiers, so it cannot check quorum. It does validate the config itself (duplicate CCVs, `optionalThreshold` beyond the optional list length) the same way the OffRamp does, so a receiver configured this way is accepted by the router-side validation and keeps gating on the minimum block depth.
+
+## Run the same flow on a live testnet
+
+The kit's book chapter lists the task commands for the live-testnet flow: deploy the receiver with Ignition on the destination chain, set its minimum block depth with the `set-basic-message-receiver-with-ccvs-min-block-depth` task, then send the data message with the `example02` task. See the [Example 02 chapter](https://smartcontractkit.github.io/ccip-starter-kit-hardhat/examples/example02-hello-world-to-basic-message-receiver.html) of the kit's book.
+
+## Next steps
+
+- `Example03.test.ts` combines this receiver-side gating with a token transfer (data + tokens in one message).
+- To see the receiver finality rules enforced by the real OffRamp instead of the local router, read the [forked environments guide](/chainlink-local/build/ccip/hardhat/local-simulator-fork).
+- For an index of every kit example and where its topic is documented, read the [CCIP starter kit examples map](/chainlink-local/learn/starter-kit-examples).

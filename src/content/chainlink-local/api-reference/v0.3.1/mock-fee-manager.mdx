@@ -1,0 +1,175 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockFeeManager v0.3.1 API Reference"
+metadata:
+  description: "API documentation for MockFeeManager in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## MockFeeManager
+
+A mock implementation of the Data Streams verifier fee manager for local testing.
+
+[`MockFeeManager`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/data-streams/MockFeeManager.sol)
+
+<Aside>
+  This contract processes report verification fees in LINK or native token, applies per-subscriber discounts and a
+  native surcharge, and forwards LINK rewards to the
+  [`MockRewardManager`](/chainlink-local/api-reference/v0.3.1/mock-reward-manager). Only the verifier proxy may call its
+  functions.
+</Aside>
+
+## Errors
+
+### Unauthorized
+
+```solidity
+error Unauthorized()
+```
+
+<Aside>Reverts when called by anyone other than the verifier proxy.</Aside>
+
+### InvalidAddress
+
+```solidity
+error InvalidAddress()
+```
+
+### InvalidQuote
+
+```solidity
+error InvalidQuote()
+```
+
+<Aside>Reverts when the quote token is neither the LINK nor the wrapped native token.</Aside>
+
+### ExpiredReport
+
+```solidity
+error ExpiredReport()
+```
+
+### InvalidDiscount
+
+```solidity
+error InvalidDiscount()
+```
+
+### InvalidSurcharge
+
+```solidity
+error InvalidSurcharge()
+```
+
+### InvalidDeposit
+
+```solidity
+error InvalidDeposit()
+```
+
+## Functions
+
+### constructor
+
+Initializes the contract.
+
+```solidity
+constructor(address linkAddress, address nativeAddress, address proxyAddress, address rewardManager)
+```
+
+<Aside>Approves the reward manager to pull the LINK it receives.</Aside>
+
+#### Parameters
+
+| Parameter     | Type      | Description                              |
+| ------------- | --------- | ---------------------------------------- |
+| linkAddress   | `address` | The LINK token address                   |
+| nativeAddress | `address` | The wrapped native token address         |
+| proxyAddress  | `address` | The verifier proxy address (only caller) |
+| rewardManager | `address` | The reward manager address               |
+
+### processFee
+
+Processes the fee for a single report verification.
+
+```solidity
+function processFee(bytes calldata payload, bytes calldata parameterPayload, address subscriber) external payable override onlyProxy
+```
+
+<Aside>
+  Decodes the fee from the report, applies the subscriber discount and (for native quotes) the surcharge, then pulls the
+  fee from the subscriber and forwards the LINK reward to the reward manager.
+</Aside>
+
+### processFeeBulk
+
+Processes fees for multiple report verifications.
+
+```solidity
+function processFeeBulk(bytes[] calldata payloads, bytes calldata parameterPayload, address subscriber) external payable override onlyProxy
+```
+
+### getFeeAndReward
+
+Returns the fee and reward for a report and quote token.
+
+```solidity
+function getFeeAndReward(address subscriber, bytes memory report, address quoteAddress) public view returns (Common.Asset memory, Common.Asset memory, uint256)
+```
+
+<Aside>Reverts with `ExpiredReport` when the report's `expiresAt` is in the past.</Aside>
+
+#### Parameters
+
+| Parameter    | Type      | Description                                      |
+| ------------ | --------- | ------------------------------------------------ |
+| subscriber   | `address` | The subscriber address (for the discount lookup) |
+| report       | `bytes`   | The report data                                  |
+| quoteAddress | `address` | The fee token to quote (LINK or wrapped native)  |
+
+#### Returns
+
+| Parameter | Type           | Description                               |
+| --------- | -------------- | ----------------------------------------- |
+| (unnamed) | `Common.Asset` | The fee asset and amount                  |
+| (unnamed) | `Common.Asset` | The reward asset and amount (always LINK) |
+| (unnamed) | `uint256`      | The discount applied                      |
+
+### setNativeSurcharge
+
+Sets the surcharge applied to native token fees.
+
+```solidity
+function setNativeSurcharge(uint256 surcharge) external onlyOwner
+```
+
+### setMockDiscount
+
+Sets a per-subscriber discount.
+
+```solidity
+function setMockDiscount(address subscriber, uint256 discount) external onlyOwner
+```
+
+<Aside>`1e18` is a 100% discount.</Aside>
+
+### withdrawMockFee
+
+Withdraws accumulated fees.
+
+```solidity
+function withdrawMockFee(address to, address coin) external onlyOwner
+```
+
+### withdrawLink
+
+Withdraws accumulated LINK.
+
+```solidity
+function withdrawLink(address to) external onlyOwner
+```

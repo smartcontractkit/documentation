@@ -164,6 +164,36 @@ export function replaceNode(node: { type: string }, parent: Parent, index: numbe
   return index
 }
 
+/**
+ * Unwraps a product-scoped block. Shared blocks always render; product blocks
+ * render for their product or, without a product context, on the full page.
+ */
+export function handleProductSection(
+  node: MdxJsxNode,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number {
+  const product = staticAttribute(node, "product")
+  const shared = staticAttribute(node, "shared") === true
+  const productContext = context.productContext
+  const include = shared || !productContext || (typeof product === "string" && product === productContext)
+  return replaceNode(node, parent, index, include ? ((node as Parent).children ?? []) : [])
+}
+
+/**
+ * Unwraps content restricted to the listed products. Without a product context,
+ * non-strict content renders on the full page; strict content does not.
+ */
+export function handleProductOnly(node: MdxJsxNode, parent: Parent, index: number, context: ComponentContext): number {
+  const products = staticAttribute(node, "products")
+  const strict = staticAttribute(node, "strict") === true
+  const productContext = context.productContext
+  const allowed = typeof products === "string" ? products.split(",").map((value) => value.trim()) : []
+  const include = productContext ? allowed.includes(productContext) : !strict
+  return replaceNode(node, parent, index, include ? ((node as Parent).children ?? []) : [])
+}
+
 function linkNode(label: string, url: string): Parent {
   return { type: "link", url, children: [textNode(label)] } as Parent
 }

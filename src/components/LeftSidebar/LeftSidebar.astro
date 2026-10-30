@@ -21,8 +21,19 @@ import styles from "./leftSidebar.module.css"
 
 type SectionEntryWithParent = SectionEntry & { parentSection?: string }
 
-/** Product sidebars that should not duplicate the shared AI resources footer. */
-const SECTIONS_WITHOUT_AI_RESOURCES = new Set<Sections>([SIDEBAR_SECTIONS.GLOBAL, SIDEBAR_SECTIONS.LEGACY])
+/** Sidebars that should not include the shared AI resources footer. */
+const SECTIONS_WITHOUT_AI_RESOURCES = new Set<Sections>([
+  SIDEBAR_SECTIONS.GLOBAL,
+  SIDEBAR_SECTIONS.LEGACY,
+  SIDEBAR_SECTIONS.CHAINLINK_PLATFORM,
+])
+
+/**
+ * Sections whose pages render every product sidebar (hidden) and reveal the
+ * matching one client-side via the `?parent=` query parameter. Their own
+ * sidebar is shown by default when no `?parent=` is present.
+ */
+const SHARED_PAGE_SECTIONS = new Set<Sections>([SIDEBAR_SECTIONS.GLOBAL, SIDEBAR_SECTIONS.CHAINLINK_PLATFORM])
 
 export type Props = {
   currentPage: string
@@ -51,8 +62,10 @@ function detectCcipVersionFromPage(page: string): CcipVersion {
 function getSidebarSections(section?: Sections): SectionEntryWithParent[] {
   if (!section) {
     return []
-  } else if (section === "global") {
-    // Flatten all sidebar entries into one array (include AI resources per product)
+  } else if (SHARED_PAGE_SECTIONS.has(section)) {
+    // Shared-page sections render every product sidebar (hidden) and reveal the
+    // matching one client-side via `?parent=`. The section's own sidebar is
+    // shown by default when no `?parent=` is present.
     return Object.entries(SIDEBAR_WITH_SUNSET_PRODUCTS).flatMap(([parentSection, entries]) => {
       const sections = entries?.map((entry) => ({ ...entry, parentSection: parentSection as Sections })) ?? []
 
@@ -158,7 +171,7 @@ function removeSlashes(url: string): string {
 const sidebarSections = getSidebarSections(section)
 ---
 
-<nav aria-labelledby="grid-left" class={styles.nav}>
+<nav aria-labelledby="grid-left" class={styles.nav} data-section={section ?? ""}>
   {
     (showChainSelector || section === "cre") && (
       <div class={styles.sidebarDropdowns}>
@@ -175,22 +188,39 @@ const sidebarSections = getSidebarSections(section)
   }
   <ul class={styles.navGroups} data-sticky>
     {
-      sidebarSections.map((group) => (
-        <li
-          style={section === "global" ? { display: "none" } : {}}
-          class={group.parentSection ? `parent-${group.parentSection}` : ""}
-        >
-          <details open={shouldExpandTopSection(group.contents, currentPage)}>
-            <summary class={styles.navGroupTitle}>{group.section}</summary>
-            <ul class={styles.navGroupEntries}>
+      sidebarSections.map((group) => {
+        // On Chainlink Platform pages, the section's own group renders flat
+        // (no collapsible dropdown); every other group keeps the dropdown.
+        const isOwnPlatformGroup =
+          section === SIDEBAR_SECTIONS.CHAINLINK_PLATFORM && group.parentSection === SIDEBAR_SECTIONS.CHAINLINK_PLATFORM
+        return (
+          <li
+            style={SHARED_PAGE_SECTIONS.has(section) ? { display: "none" } : {}}
+            class={group.parentSection ? `parent-${group.parentSection}` : ""}
+          >
+            {isOwnPlatformGroup ? (
               <RecursiveSidebar items={group.contents} currentPage={currentPage} />
-            </ul>
-          </details>
-        </li>
-      ))
+            ) : (
+              <details open={shouldExpandTopSection(group.contents, currentPage)}>
+                <summary class={styles.navGroupTitle}>{group.section}</summary>
+                <ul class={styles.navGroupEntries}>
+                  <RecursiveSidebar items={group.contents} currentPage={currentPage} />
+                </ul>
+              </details>
+            )}
+          </li>
+        )
+      })
     }
   </ul>
 </nav>
+
+<script is:inline>
+  // Shared pages render every product sidebar hidden; reveal the active one before paint.
+  const nav = document.querySelector("nav[aria-labelledby='grid-left']")
+  const section = new URLSearchParams(window.location.search).get("parent") || nav?.dataset.section
+  for (const element of document.querySelectorAll(`.parent-${section}`)) element.style.display = "block"
+</script>
 
 <style is:global>
   .nav-link svg {
@@ -231,9 +261,15 @@ const sidebarSections = getSidebarSections(section)
    * - Runs on initial load and after navigation
    */
   const attachContentScripts = () => {
-    const parentSection = new URLSearchParams(window.location.search).get("parent") || "global"
-    if (parentSection) {
-      for (let elem of document.querySelectorAll(`.parent-${parentSection}`)) {
+    const nav = document.querySelector<HTMLElement>("nav[aria-labelledby='grid-left']")
+    const ownSection = nav?.dataset.section
+    const parentSection = new URLSearchParams(window.location.search).get("parent")
+    // Arrived from a product sidebar: reveal that product's groups. Otherwise
+    // reveal the current section's own sidebar groups (e.g. the Chainlink
+    // Platform sidebar on /chainlink-platform pages, or General's groups).
+    const sectionToReveal = parentSection || ownSection
+    if (sectionToReveal) {
+      for (let elem of document.querySelectorAll(`.parent-${sectionToReveal}`)) {
         ;(elem as HTMLElement).style.display = "block"
       }
     }
