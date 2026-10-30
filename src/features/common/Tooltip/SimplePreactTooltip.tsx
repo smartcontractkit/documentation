@@ -27,7 +27,7 @@ export const SimplePreactTooltip = ({
 
   const defaultTooltipStyle = {
     position: "absolute",
-    backgroundColor: "white",
+    backgroundColor: "var(--card)",
     color: "var(--color-text-secondary)",
     padding: "8px 12px",
     borderRadius: "4px",
