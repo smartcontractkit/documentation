@@ -1,0 +1,968 @@
+---
+/**
+ * Dev-only light/dark component gallery. Route injected only in `astro dev`
+ * (see astro.config.ts). Query: ?theme=light|dark, ?view=split.
+ */
+export const prerender = false
+
+// Match HeadCommon.astro: blocks' `.dark` tokens must load after design-system's `:root`.
+import "~/styles/theme.css"
+import "~/styles/index.css"
+import "~/styles/product-context.css"
+import "~/styles/code-blocks.css"
+import "~/styles/migrated.css"
+import "~/styles/prism-darcula.css"
+import "@chainlink/design-system/global-styles.css"
+import "@chainlink/blocks/src/theme/globals.css"
+import "~/styles/dark.css"
+
+import PageContent from "~/components/PageContent/PageContent.astro"
+import Specimen from "~/components/dev/Specimen.astro"
+import GallerySection from "~/components/dev/GallerySection.astro"
+import Aside from "~/components/Aside.astro"
+import { Callout } from "~/components/Callout/Callout.tsx"
+import RateLimitBucket from "~/features/ccip/components/rate-limit-bucket/RateLimitBucket.astro"
+import SchemaFieldsTable from "~/features/data-streams/common/SchemaFieldsTable.astro"
+import Dropdown from "~/features/vrf/v2/components/Dropdown.astro"
+import HeavyPreview from "~/components/dev/HeavyPreview.astro"
+import PolicyInstanceBuilder from "~/components/ACE/PolicyInstanceBuilder/PolicyInstanceBuilder.tsx"
+import ProductChainTable from "~/components/QuickLinks/sections/ProductChainTable.tsx"
+import MethodTabs from "~/components/MethodTabs/MethodTabs.astro"
+import AnchoredAccordion from "~/components/AnchoredAccordion/AnchoredAccordion.astro"
+import PageTabs from "~/components/PageTabs.astro"
+import SideBySideCode from "~/components/SideBySideCode/SideBySideCode.astro"
+import CodeHighlightBlockMulti from "~/components/CodeHighlightBlockMulti/CodeHighlightBlockMulti.astro"
+import ClickToZoom from "~/components/ClickToZoom.astro"
+import Address from "~/components/Address.tsx"
+import ChangelogCard from "~/components/ChangelogSnippet/ChangelogCard.astro"
+import CodeHighlightBlock from "~/components/CodeHighlightBlock/CodeHighlightBlock.astro"
+import PackageManagerTabs from "~/components/Tabs/PackageManagerTabs.astro"
+import Accordion from "~/components/Quickstart/Accordion/Accordion.astro"
+import DocCard from "~/components/DocCards/DocCard.astro"
+import DocCards from "~/components/DocCards/DocCards.astro"
+import Icon from "~/components/Icon.astro"
+import { AiBadge } from "~/components/AiBadge/AiBadge.tsx"
+import CopyText from "~/components/CopyText.tsx"
+import { ThemeToggle } from "~/components/Header/Nav/ThemeToggle.tsx"
+import designButton from "~/lib/designSystemButton.ts"
+
+const forcedTheme = Astro.url.searchParams.get("theme")
+const view = Astro.url.searchParams.get("view")
+const embed = Astro.url.searchParams.get("embed") === "1"
+const split = view === "split" && !embed
+
+const sections = [
+  { id: "global", label: "Global" },
+  { id: "data-feeds", label: "Data Feeds" },
+  { id: "data-streams", label: "Data Streams" },
+  { id: "ccip", label: "CCIP" },
+  { id: "vrf", label: "VRF" },
+  { id: "automation", label: "Automation" },
+  { id: "ace-cre", label: "ACE & CRE" },
+  { id: "changelog", label: "Changelog" },
+  { id: "landing", label: "Landing" },
+]
+
+const tokenGroups = [
+  {
+    name: "Surfaces",
+    tokens: [
+      "--background",
+      "--background-alt",
+      "--muted",
+      "--muted-more",
+      "--card",
+      "--progress",
+      "--success",
+      "--warning",
+      "--error",
+    ].map((token) => ({ token, kind: "bg" as const })),
+  },
+  {
+    name: "Text",
+    tokens: [
+      "--foreground",
+      "--muted-foreground",
+      "--progress-foreground",
+      "--success-foreground",
+      "--warning-foreground",
+      "--error-foreground",
+      "--color-text-primary",
+      "--color-text-info",
+    ].map((token) => ({ token, kind: "fg" as const })),
+  },
+  {
+    name: "Borders",
+    tokens: [
+      "--border",
+      "--progress-border",
+      "--success-border",
+      "--warning-border",
+      "--error-border",
+      "--gray-700",
+    ].map((token) => ({ token, kind: "border" as const })),
+  },
+]
+
+const soliditySample = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
+
+contract Bucket {
+    uint256 public capacity;
+    uint256 public tokens;
+
+    constructor(uint256 capacity_) {
+        capacity = capacity_;
+        tokens = capacity_;
+    }
+}`
+
+// The prop type requires every SupportedLanguage key, but the component only reads those provided.
+const multiLanguages = {
+  go: { code: `package main\n\nfunc main() {\n    println("hello")\n}`, title: "main.go" },
+  ts: { code: `function main(): void {\n  console.log("hello")\n}`, title: "main.ts" },
+} as any
+
+const changelogItem = {
+  createdOn: "2026-01-15T00:00:00.000Z",
+  "date-of-release": "2026-01-15",
+  hash: "0123456789abcdef",
+  id: "gallery-demo",
+  lastPublished: "2026-01-15T00:00:00.000Z",
+  lastUpdated: "2026-01-15T00:00:00.000Z",
+  name: "Gallery demo changelog entry",
+  networks: "Ethereum, Base",
+  slug: "gallery-demo",
+  "text-description": "A demo changelog entry used to preview the card in light and dark mode.",
+  topic: "general",
+  type: "feature",
+  objectID: "gallery-demo",
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Component gallery (dev)</title>
+    <script is:inline>
+      // ?theme= wins over the saved choice; otherwise mirror BaseLayout.
+      ;(() => {
+        const forced = new URLSearchParams(location.search).get("theme")
+        let dark
+        if (forced === "dark") dark = true
+        else if (forced === "light") dark = false
+        else {
+          try {
+            const saved = localStorage.getItem("docs-theme")
+            if (saved === "dark" || saved === "light") dark = saved === "dark"
+          } catch (e) {
+            // localStorage unavailable
+          }
+          if (dark === undefined) dark = matchMedia("(prefers-color-scheme: dark)").matches
+        }
+        document.documentElement.classList.toggle("dark", dark)
+      })()
+    </script>
+    <style is:global>
+      html,
+      body {
+        margin: 0;
+        background: var(--background);
+        color: var(--foreground);
+      }
+
+      .gallery-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: var(--background);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .gallery-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        min-height: 44px;
+        padding: 0.4rem 1rem;
+        background: var(--background);
+        color: var(--foreground);
+        font:
+          500 13px/1.2 "Inter",
+          system-ui,
+          sans-serif;
+      }
+
+      .gallery-nav {
+        display: flex;
+        align-items: center;
+        gap: 0.15rem;
+        overflow-x: auto;
+        padding: 0 1rem 0.4rem;
+        scrollbar-width: thin;
+      }
+
+      .gallery-nav a,
+      .gallery-nav button {
+        flex: none;
+        padding: 0.28rem 0.55rem;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--muted-foreground);
+        cursor: pointer;
+        font:
+          500 12px/1.2 "Inter",
+          system-ui,
+          sans-serif;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      .gallery-nav a:hover,
+      .gallery-nav button:hover {
+        background: var(--muted);
+        color: var(--foreground);
+      }
+
+      .gallery-nav .gallery-spacer {
+        flex: 1;
+      }
+
+      .gallery-toolbar strong {
+        font-weight: 650;
+      }
+
+      .gallery-toolbar a {
+        padding: 0.25rem 0.55rem;
+        border-radius: 6px;
+        color: var(--muted-foreground);
+        text-decoration: none;
+      }
+
+      .gallery-toolbar a:hover {
+        background: var(--muted);
+        color: var(--foreground);
+      }
+
+      .gallery-toolbar a[aria-current="page"] {
+        background: var(--muted);
+        color: var(--foreground);
+      }
+
+      .gallery-toolbar .gallery-spacer {
+        flex: 1;
+      }
+
+      .gallery-toolbar .gallery-hint {
+        color: var(--muted-foreground);
+        font-weight: 400;
+      }
+
+      .gallery-main {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 1.25rem 1.5rem 6rem;
+      }
+
+      .gallery-embed .gallery-main {
+        padding-top: 0.5rem;
+      }
+
+      .gallery-split {
+        position: fixed;
+        inset: var(--gallery-header-h, 80px) 0 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .gallery-split iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: var(--background);
+      }
+
+      .gallery-split iframe + iframe {
+        border-left: 1px solid var(--border);
+      }
+
+      @media (max-width: 800px) {
+        .gallery-split {
+          grid-template-columns: 1fr;
+          grid-template-rows: 1fr 1fr;
+        }
+        .gallery-split iframe + iframe {
+          border-left: 0;
+          border-top: 1px solid var(--border);
+        }
+      }
+
+      .gallery-swatches {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 0.5rem;
+      }
+
+      .gallery-swatch {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--background-alt);
+        font-size: 12px;
+        min-width: 0;
+      }
+
+      .gallery-chip {
+        width: 28px;
+        height: 28px;
+        flex: none;
+        border-radius: 6px;
+        box-shadow: inset 0 0 0 1px var(--border);
+      }
+
+      .gallery-swatch code {
+        overflow: hidden;
+        color: var(--foreground);
+        font-size: 11px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .gallery-swatch .gallery-value {
+        margin-left: auto;
+        color: var(--muted-foreground);
+        font-size: 10px;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .gallery-tone-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      .gallery-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+
+      .gallery-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.75rem;
+      }
+    </style>
+  </head>
+
+  <body class:list={{ "gallery-embed": embed }}>
+    {
+      !embed && (
+        <div class="gallery-header">
+          <div class="gallery-toolbar">
+            <strong>Component gallery</strong>
+            <a href="?theme=light" aria-current={forcedTheme === "light" ? "page" : undefined}>
+              Light
+            </a>
+            <a href="?theme=dark" aria-current={forcedTheme === "dark" ? "page" : undefined}>
+              Dark
+            </a>
+            <a href="?view=split" aria-current={view === "split" ? "page" : undefined}>
+              Split
+            </a>
+            <a href="./components" aria-current={!forcedTheme && view !== "split" ? "page" : undefined}>
+              Auto
+            </a>
+            <span class="gallery-hint">(Auto follows the saved choice / OS)</span>
+            <span class="gallery-spacer" />
+            {!forcedTheme && view !== "split" && <ThemeToggle client:load />}
+          </div>
+          <nav class="gallery-nav" aria-label="Product sections">
+            {sections.map((section) => (
+              <a href={`#${section.id}`}>{section.label}</a>
+            ))}
+            <span class="gallery-spacer" />
+            <button type="button" data-expand-all>
+              Expand all
+            </button>
+            <button type="button" data-collapse-all>
+              Collapse all
+            </button>
+          </nav>
+        </div>
+      )
+    }
+
+    {
+      split ? (
+        <div class="gallery-split">
+          <iframe src="?theme=light&embed=1" title="Light theme preview" />
+          <iframe src="?theme=dark&embed=1" title="Dark theme preview" />
+        </div>
+      ) : (
+        <main class="gallery-main">
+          <PageContent titleHeading={{ text: "Component gallery", slug: "component-gallery", depth: 1 }}>
+            <p>
+              Internal visual QA page, grouped by product. Use the toolbar to force a theme or open a true side-by-side
+              split, the product nav to jump between groups, and each group's summary to collapse it. Items marked
+              <strong>Shared across products</strong> are global components used everywhere; heavy pages mount on
+              demand.
+            </p>
+
+            <GallerySection
+              id="global"
+              title="Global"
+              label="Shared across products"
+              description="Design tokens, typography, surfaces, code, tables, cards, forms and shared content components."
+            >
+              {tokenGroups.map((group) => (
+                <Specimen
+                  title={`${group.name} tokens`}
+                  description="Chip shows the token; the value is computed in the current theme."
+                >
+                  <div class="gallery-swatches">
+                    {group.tokens.map(({ token, kind }) => (
+                      <div class="gallery-swatch">
+                        <span
+                          class="gallery-chip"
+                          data-token={token}
+                          data-kind={kind}
+                          style={
+                            kind === "bg"
+                              ? `background: var(${token})`
+                              : kind === "fg"
+                                ? `color: var(${token}); background: currentColor;`
+                                : `border-top: 3px solid var(${token})`
+                          }
+                        >
+                          {""}
+                        </span>
+                        <code>{token}</code>
+                        <span class="gallery-value" data-value>
+                          {""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </Specimen>
+              ))}
+
+              <Specimen
+                title="Typography & inline elements"
+                description="Headings, paragraphs, links, inline code, lists, quotes."
+              >
+                <h1>Heading 1</h1>
+                <h2>Heading 2</h2>
+                <h3>Heading 3</h3>
+                <h4>Heading 4</h4>
+                <h5>Heading 5</h5>
+                <h6>Heading 6</h6>
+                <p>
+                  Body copy with <strong>bold</strong>, <em>italic</em>, <del>deleted</del>,{" "}
+                  <a href="#typography">a link</a>, and <code>inline code</code>. A{" "}
+                  <a href="#typography">
+                    <code>linked code</code>
+                  </a>{" "}
+                  too.
+                </p>
+                <ul>
+                  <li>Unordered item one</li>
+                  <li>
+                    Unordered item two with <code>code</code>
+                  </li>
+                </ul>
+                <ol>
+                  <li>Ordered item one</li>
+                  <li>Ordered item two</li>
+                </ol>
+                <blockquote>
+                  <p>A blockquote, which picks up the article's quote styling.</p>
+                </blockquote>
+                <hr />
+              </Specimen>
+
+              <Specimen title="Buttons" description="Design-system primary/secondary, enabled and disabled.">
+                <div class="gallery-row">
+                  <button type="button" class={designButton.primary}>
+                    Primary
+                  </button>
+                  <button type="button" class={designButton.secondary}>
+                    Secondary
+                  </button>
+                  <button type="button" class={designButton.primary} disabled>
+                    Primary disabled
+                  </button>
+                  <button type="button" class={designButton.secondary} disabled>
+                    Secondary disabled
+                  </button>
+                </div>
+              </Specimen>
+
+              <Specimen title="Aside" description="All four markdown aside types.">
+                <div class="gallery-stack">
+                  <Aside type="note" title="Note">
+                    A note with <code>inline code</code> and a <a href="#">link</a>.
+                  </Aside>
+                  <Aside type="tip" title="Tip">
+                    A tip with <code>inline code</code> and a <a href="#">link</a>.
+                  </Aside>
+                  <Aside type="caution" title="Caution">
+                    A caution with <code>inline code</code> and a <a href="#">link</a>.
+                  </Aside>
+                  <Aside type="danger" title="Danger">
+                    A danger with <code>inline code</code> and a <a href="#">link</a>.
+                  </Aside>
+                </div>
+              </Specimen>
+
+              <Specimen title="Callout (React)" description="The React callout, all four types.">
+                <div class="gallery-stack">
+                  <Callout client:load type="note" title="Note">
+                    Callout note body with <code>inline code</code>.
+                  </Callout>
+                  <Callout client:load type="tip" title="Tip">
+                    Callout tip body.
+                  </Callout>
+                  <Callout client:load type="caution" title="Caution">
+                    Callout caution body.
+                  </Callout>
+                  <Callout client:load type="danger" title="Danger">
+                    Callout danger body.
+                  </Callout>
+                </div>
+              </Specimen>
+
+              <Specimen title="Code" description="Single-language code highlight and side-by-side code.">
+                <CodeHighlightBlock lang="sol" title="Bucket.sol" code={soliditySample} />
+                <SideBySideCode
+                  language="solidity"
+                  codeSrc="CRE/CalculatorConsumer.sol"
+                  title="CalculatorConsumer.sol"
+                />
+              </Specimen>
+
+              <Specimen title="Tables" description="Article table styling and borders.">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Network</th>
+                      <th>Status</th>
+                      <th>Rate limit</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Ethereum</td>
+                      <td>Available</td>
+                      <td>1,000 tokens/s</td>
+                    </tr>
+                    <tr>
+                      <td>Base</td>
+                      <td>Available</td>
+                      <td>500 tokens/s</td>
+                    </tr>
+                    <tr>
+                      <td>Solana</td>
+                      <td>Unavailable</td>
+                      <td>—</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </Specimen>
+
+              <Specimen title="Accordion" description="Quickstart accordion, open and closed.">
+                <Accordion title="Open by default" number={1} startOpen={true}>
+                  <p>Accordion body content.</p>
+                </Accordion>
+                <Accordion title="Closed by default" number={2} startOpen={false}>
+                  <p>Hidden until expanded.</p>
+                </Accordion>
+              </Specimen>
+
+              <Specimen title="Cards" description="Doc cards as links.">
+                <DocCards>
+                  <DocCard title="First card" href="#cards">
+                    <p>A short description of the first card.</p>
+                  </DocCard>
+                  <DocCard title="Second card" href="#cards">
+                    <p>A short description of the second card.</p>
+                  </DocCard>
+                  <DocCard title="Third card" href="#cards">
+                    <p>A short description of the third card.</p>
+                  </DocCard>
+                </DocCards>
+              </Specimen>
+
+              <Specimen title="Forms" description="Inputs, selects, textareas, checkboxes and radios.">
+                <div class="gallery-stack">
+                  <input type="text" placeholder="Text input" aria-label="Text input" />
+                  <input type="text" value="Disabled input" aria-label="Disabled input" disabled />
+                  <select aria-label="Select">
+                    <option>Option one</option>
+                    <option>Option two</option>
+                  </select>
+                  <textarea placeholder="Textarea" aria-label="Textarea" rows="3" />
+                  <div class="gallery-row">
+                    <label>
+                      <input type="checkbox" checked /> Checkbox
+                    </label>
+                    <label>
+                      <input type="radio" name="gallery-radio" checked /> Radio one
+                    </label>
+                    <label>
+                      <input type="radio" name="gallery-radio" /> Radio two
+                    </label>
+                  </div>
+                </div>
+              </Specimen>
+
+              <Specimen title="Icons, badges & copy" description="Icon variants, AI badge and copy-to-clipboard.">
+                <div class="gallery-row">
+                  <Icon type="note" />
+                  <Icon type="tip" />
+                  <Icon type="caution" />
+                  <Icon type="danger" />
+                  <AiBadge client:load />
+                  <CopyText client:visible text="0x1234567890abcdef1234567890abcdef12345678" />
+                </div>
+              </Specimen>
+
+              <Specimen
+                title="Images"
+                description="Article images get a white card in dark mode; .no-dark-card opts out."
+              >
+                <div class="gallery-row">
+                  <img src="/images/logo.png" alt="Chainlink logo" width="64" />
+                  <img src="/images/logo.png" alt="Chainlink logo (opt out)" width="64" class="no-dark-card" />
+                </div>
+              </Specimen>
+
+              <Specimen title="Page tabs" description="Page/version selector used across versioned guides.">
+                <PageTabs
+                  pages={[
+                    { name: "Version 1.0", url: "#page-tabs" },
+                    { name: "Version 2.0 (Latest)", url: "#page-tabs" },
+                  ]}
+                  headerTitle="Guide Versions"
+                  headerDescription="Choose the version that matches your schema."
+                />
+              </Specimen>
+
+              <Specimen title="Click to zoom" description="Image with the zoom modal.">
+                <ClickToZoom src="/images/logo.png" alt="Chainlink logo" caption="Click to zoom" />
+              </Specimen>
+
+              <Specimen title="Address" description="Copyable, linked contract address.">
+                <Address
+                  client:visible
+                  contractUrl="https://etherscan.io/address/0x514910771AF9Ca656af840dff83E8264EcF986CA"
+                  address="0x514910771AF9Ca656af840dff83E8264EcF986CA"
+                />
+              </Specimen>
+
+              <Specimen title="Product chain table" description="Quick-links grid of products × chains (header menu).">
+                <ProductChainTable client:visible />
+              </Specimen>
+            </GallerySection>
+
+            <GallerySection
+              id="data-feeds"
+              title="Data Feeds"
+              description="Feeds address tables, install tabs and feed-specific notices."
+            >
+              <Specimen title="Package manager tabs" description="npm / yarn install snippets.">
+                <PackageManagerTabs>
+                  <Fragment slot="npm">
+                    <CodeHighlightBlock lang="bash" title="npm" code={`npm install @chainlink/contracts`} />
+                  </Fragment>
+                  <Fragment slot="yarn">
+                    <CodeHighlightBlock lang="bash" title="yarn" code={`yarn add @chainlink/contracts`} />
+                  </Fragment>
+                </PackageManagerTabs>
+              </Specimen>
+
+              <HeavyPreview
+                title="Data Feeds address table"
+                description="FeedPage → FeedList (Preact), chain metadata, filters and pagination."
+                path="/data-feeds/price-feeds/addresses"
+                theme={forcedTheme}
+              />
+              <HeavyPreview
+                title="SmartData feeds"
+                description="FeedPage smartdata variant with CheckHeartbeat + Proof of Reserve callouts."
+                path="/data-feeds/smartdata"
+                theme={forcedTheme}
+              />
+            </GallerySection>
+
+            <GallerySection
+              id="data-streams"
+              title="Data Streams"
+              description="Streams tables, report schema tables and stream-specific UI."
+            >
+              <Specimen
+                id="data-streams-schema"
+                title="Data Streams schema table"
+                description="SchemaFieldsTable for a report schema."
+              >
+                <SchemaFieldsTable schema="v8" />
+              </Specimen>
+
+              <HeavyPreview
+                title="Data Streams address table"
+                description="StreamsPage → FeedList (Preact) with stream-specific filters."
+                path="/data-streams/crypto-streams"
+                theme={forcedTheme}
+              />
+            </GallerySection>
+
+            <GallerySection
+              id="ccip"
+              title="CCIP"
+              description="Rate limit bucket, directory/lane tables, wallet and faucet flows."
+            >
+              <Specimen
+                title="RateLimitBucket status"
+                description="The interactive status widget. Use the buttons to preview every tone without clicking Send."
+              >
+                <div data-rlb-demo class="gallery-stack">
+                  <div class="gallery-tone-buttons">
+                    <button type="button" data-set-tone="neutral">
+                      neutral
+                    </button>
+                    <button type="button" data-set-tone="info">
+                      info
+                    </button>
+                    <button type="button" data-set-tone="success">
+                      success
+                    </button>
+                    <button type="button" data-set-tone="warning">
+                      warning
+                    </button>
+                    <button type="button" data-set-tone="error">
+                      error
+                    </button>
+                  </div>
+                  <RateLimitBucket />
+                </div>
+              </Specimen>
+
+              <Specimen title="Anchored accordion" description="TOC-aware accordion used in CCIP and solution guides.">
+                <AnchoredAccordion title="Anchored section" depth={2} startOpen={true}>
+                  <p>Anchored accordion content.</p>
+                </AnchoredAccordion>
+              </Specimen>
+
+              <HeavyPreview
+                title="CCIP directory"
+                description="Chain tables, lane drawer, environment/version toggles."
+                path="/ccip/directory/mainnet"
+                theme={forcedTheme}
+              />
+              <HeavyPreview
+                title="CCIP test tokens (wallet + faucet)"
+                description="WalletConnection, WalletSetupGate, chain dropdown, mint button and toasts."
+                path="/ccip/test-tokens"
+                theme={forcedTheme}
+              />
+              <HeavyPreview
+                title="Cross-chain token overview"
+                description="The page this work started from: RateLimitBucket in its real article context."
+                path="/ccip/concepts/cross-chain-token/overview"
+                theme={forcedTheme}
+              />
+            </GallerySection>
+
+            <GallerySection id="vrf" title="VRF" description="Cost calculator (Preact) and gas price driven tables.">
+              <Specimen title="VRF calculator (inline)" description="Dropdown + MethodCheckbox cost calculator.">
+                <Dropdown />
+              </Specimen>
+
+              <HeavyPreview
+                title="VRF cost calculator page"
+                description="MethodCheckbox + Dropdown + CostTable in its real page context."
+                path="/vrf/v2/estimating-costs"
+                theme={forcedTheme}
+              />
+            </GallerySection>
+
+            <GallerySection id="automation" title="Automation" description="Automation forms and network tables.">
+              <HeavyPreview
+                title="Automation upkeep lookup"
+                description="UpkeepLookup (React) interactive form on the cancel-upkeep guide."
+                path="/chainlink-automation/guides/cancel-upkeep"
+                theme={forcedTheme}
+              />
+            </GallerySection>
+
+            <GallerySection
+              id="ace-cre"
+              title="ACE & CRE"
+              description="ACE policy builder, UI/API method tabs, multi-language code and CRE templates."
+            >
+              <Specimen title="ACE policy builder (inline)" description="React policy instance builder (static data).">
+                <PolicyInstanceBuilder client:only="react" />
+              </Specimen>
+
+              <Specimen title="Method tabs" description="UI / API tab switcher used in ACE and CRE content.">
+                <MethodTabs>
+                  <Fragment slot="ui">
+                    <p>UI method content.</p>
+                  </Fragment>
+                  <Fragment slot="api">
+                    <p>API method content.</p>
+                  </Fragment>
+                </MethodTabs>
+              </Specimen>
+
+              <Specimen title="Multi-language code" description="Code block with language toggle used in CRE.">
+                <CodeHighlightBlockMulti languages={multiLanguages} />
+              </Specimen>
+
+              <HeavyPreview
+                title="ACE manage policies"
+                description="PolicyInstanceBuilder in its real article context."
+                path="/ace/guides/policy-manager/manage-policies"
+                theme={forcedTheme}
+              />
+              <HeavyPreview
+                title="CRE docs"
+                description="CRE template layout, code blocks, callouts and navigation."
+                path="/cre"
+                theme={forcedTheme}
+              />
+            </GallerySection>
+
+            <GallerySection id="changelog" title="Changelog" description="Changelog cards and the filterable list.">
+              <Specimen title="Changelog card" description="Single changelog card entry.">
+                <ChangelogCard item={changelogItem} />
+              </Specimen>
+
+              <HeavyPreview
+                title="Changelog page"
+                description="Changelog cards, filters and Algolia-driven list."
+                path="/changelog"
+                theme={forcedTheme}
+              />
+            </GallerySection>
+
+            <GallerySection id="landing" title="Landing" description="Marketing/landing sections and solution layouts.">
+              <HeavyPreview
+                title="Landing page"
+                description="LandingHero, JourneyCards, MediaSection, CommunityEvents and demos."
+                path="/"
+                theme={forcedTheme}
+              />
+              <HeavyPreview
+                title="Solutions layout"
+                description="SolutionLayout, cards and disclaimer."
+                path="/solutions/cross-chain-vault-adapter"
+                theme={forcedTheme}
+              />
+            </GallerySection>
+          </PageContent>
+        </main>
+      )
+    }
+
+    <script is:inline>
+      const galleryHeader = document.querySelector(".gallery-header")
+      const syncHeaderHeight = () => {
+        if (galleryHeader) {
+          document.documentElement.style.setProperty(
+            "--gallery-header-h",
+            `${galleryHeader.getBoundingClientRect().height}px`
+          )
+        }
+      }
+      syncHeaderHeight()
+      window.addEventListener("resize", syncHeaderHeight)
+
+      // Open a collapsed group before the browser scrolls to it.
+      for (const link of document.querySelectorAll('.gallery-nav a[href^="#"]')) {
+        link.addEventListener("click", () => {
+          const section = document.querySelector(link.getAttribute("href"))
+          const details = section?.querySelector("details")
+          if (details) details.open = true
+        })
+      }
+
+      const setAllGroups = (open) => {
+        for (const details of document.querySelectorAll(".gallery-section > details")) details.open = open
+      }
+      document.querySelector("[data-expand-all]")?.addEventListener("click", () => setAllGroups(true))
+      document.querySelector("[data-collapse-all]")?.addEventListener("click", () => setAllGroups(false))
+
+      for (const details of document.querySelectorAll(".gallery-heavy")) {
+        details.addEventListener("toggle", () => {
+          if (!details.open) return
+          const frame = details.querySelector("iframe")
+          if (frame && !frame.getAttribute("src")) frame.setAttribute("src", frame.dataset.heavySrc)
+        })
+      }
+
+      for (const chip of document.querySelectorAll(".gallery-chip[data-token]")) {
+        const cs = getComputedStyle(chip)
+        const kind = chip.getAttribute("data-kind")
+        const value = kind === "bg" ? cs.backgroundColor : kind === "fg" ? cs.color : cs.borderTopColor
+        const out = chip.closest(".gallery-swatch")?.querySelector("[data-value]")
+        if (out) out.textContent = value
+      }
+
+      const demo = document.querySelector("[data-rlb-demo]")
+      if (demo) {
+        const status = demo.querySelector(".rlb-status")
+        const title = demo.querySelector('[data-part="status-title"]')
+        const detail = demo.querySelector('[data-part="status-detail"]')
+        const error = demo.querySelector('[data-part="status-error"]')
+        const code = demo.querySelector('[data-part="status-code"]')
+        const messages = {
+          neutral: {
+            title: "Adjust the sliders",
+            detail: "Change capacity, refill rate or transfer amount to see the bucket react.",
+          },
+          info: {
+            title: "Rate limit updated",
+            detail: "Changing the capacity or refill rate resets the bucket to its new max capacity.",
+          },
+          success: {
+            title: "Transfer accepted",
+            detail: "10,000 tokens consumed. 90,000 of 100,000 remain, refilling at 1,000 tokens/s.",
+          },
+          warning: {
+            title: "Transfer reverted",
+            detail: "Only 16,832 tokens are available right now. Enough capacity refills within 1 min 14 s.",
+            error: "TokenRateLimitReached",
+          },
+          error: {
+            title: "Transfer reverted",
+            detail: "100,000 is more than the max capacity of 50,000. This transfer can never succeed.",
+            error: "TokenRateLimitReached",
+          },
+        }
+        for (const button of demo.querySelectorAll("[data-set-tone]")) {
+          button.addEventListener("click", () => {
+            const tone = button.getAttribute("data-set-tone")
+            const message = messages[tone] || messages.neutral
+            if (!status || !title || !detail || !error || !code) return
+            status.setAttribute("data-tone", tone)
+            title.textContent = message.title
+            detail.textContent = message.detail
+            code.textContent = message.error || ""
+            error.hidden = !message.error
+          })
+        }
+      }
+    </script>
+  </body>
+</html>

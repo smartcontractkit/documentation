@@ -34,6 +34,9 @@ const canonicalURL = new URL(canonicalURLStr)
       // ClientRouter replaces <html>'s attributes on navigation, so reapply it before each swap.
       ;(function () {
         function isDark() {
+          // QA hook: ?theme=light|dark forces a theme without touching the saved choice.
+          var forced = new URLSearchParams(window.location.search).get("theme")
+          if (forced === "dark" || forced === "light") return forced === "dark"
           try {
             var saved = localStorage.getItem("docs-theme")
             if (saved === "dark" || saved === "light") return saved === "dark"

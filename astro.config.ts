@@ -8,7 +8,7 @@ import rehypeSlug from "rehype-slug"
 import rehypeAutolinkHeadings from "rehype-autolink-headings"
 import rehypeWrapAll from "rehype-wrap-all"
 import sitemap from "@astrojs/sitemap"
-import type { RehypePlugins } from "astro"
+import type { AstroIntegration, RehypePlugins } from "astro"
 import { unified } from "@astrojs/markdown-remark"
 import yaml from "@rollup/plugin-yaml"
 import { fileURLToPath } from "node:url"
@@ -47,6 +47,18 @@ const canonicalUrlsWithLanguageVariants = extractCanonicalUrlsWithLanguageVarian
 // Preact files (`@jsxImportSource preact` pragma) and the barrels that only re-export them; everything else is React
 const preactModules = preactModulesMatcher(fileURLToPath(new URL(".", import.meta.url)))
 
+/** Dev-only gallery: injected only under `astro dev`, so builds never see it. */
+const devOnlyComponentGallery: AstroIntegration = {
+  name: "dev-only-component-gallery",
+  hooks: {
+    "astro:config:setup": ({ command, injectRoute }) => {
+      if (command === "dev") {
+        injectRoute({ pattern: "/dev/components", entrypoint: "./src/dev/gallery.astro" })
+      }
+    },
+  },
+}
+
 // https://astro.build/config
 export default defineConfig({
   site: "https://docs.chain.link",
@@ -73,6 +85,7 @@ export default defineConfig({
     ...ccipRedirects,
   },
   integrations: [
+    devOnlyComponentGallery,
     trailingSlashMiddleware(),
     preact({
       include: [preactModules],
