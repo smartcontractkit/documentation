@@ -43,7 +43,7 @@ Use this section to get up and running in less than 5 minutes:
 > Note: Once you've completed Step 1, your agent will likely prompt you for the remaining steps and should be able to explain each to you as needed.
 
 1. Paste the link to this docs page to have your agent to reach the skills repo: [https://github.com/smartcontractkit/chainlink-for-agents]
-2. Have your agent generate an EVM wallet for signing and paying x402 fees - most agents can do this directly from a simple prompt.
+2. Have your agent generate an EVM wallet for signing and paying [x402 fees](https://x402.org/) - most agents can do this directly from a simple prompt.
 3. Send some `USDC` on `Base Mainnet` to your agent's new EVM wallet. `5 USDC` is more than sufficient to start with
 4. Ask your agent to deploy its smart contract wallet (cost: `1 USDC`). Your agent will ask you for the public EVM address of a more secure account to use as this smart contract wallet's owner. Pick your preferred address that you control in an existing wallet.
 5. Fund the smart contract wallet with the funds you wish to have your agent control
@@ -71,10 +71,16 @@ You and your agent go through four phases during the linkup process:
 
 4. **Execute onchain.** Your agent's onchain calls trigger Chainlink Runtime Environment workflows, each requiring a small fee. Workflows build the appropriate calldata for your agent to sign and then submits signed transactions to chain with redundant RPCs, sponsoring gas and handling retries. Chainlink for Agents checks every workflow against your optionally configured guardrails, checks again just before anything is written onchain, and blocks any workflow that breaks a guardrail.
 
-<Aside type="caution" title="Please Note">
-  Without guardrails, your agent can run any workflow in the catalog, with any token, recipient, or bridge destination,
-  and no spend limit. Set guardrails that match what you want your agent to do.
-</Aside>
+<Aside type="caution" title="Guardrails cover the chain wallet, not the agent address">
+1. Guardrails apply to your agent's chain wallet, the smart contract wallet that Chainlink deploys for it. Your agent
+holds the private key to its agent address, so it can move the USDC in that address without going through `Chainlink
+for Agents`, even if the address holds no ETH. 
+  
+2. Keep only enough USDC in the agent address to cover fees, and keep the funds you want your agent to trade with in its chain wallet.
+
+3. Without guardrails, your agent can run any workflow in the catalog, with any token, recipient, or bridge destination,
+   and no spend limit. Set guardrails that match what you want your agent to do.
+   </Aside>
 
 The following diagram shows each step and who takes it.
 
@@ -86,4 +92,4 @@ The following diagram shows each step and who takes it.
 
 ## What's next
 
-- [Link your agent to Chainlink](/solutions/chainlink-for-agents/guides/link-your-agent): sign up your agent and link it to your organization.
+- [Link your agent to Chainlink](/solutions/chainlink-for-agents/guides/set-guardrails): sign up your agent and link it to your organization.
