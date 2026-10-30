@@ -1,0 +1,174 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockFeeManager v0.2.6 API Reference"
+metadata:
+  description: "API documentation for MockFeeManager in Solidity, version v0.2.6."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage026" />
+
+## MockFeeManager
+
+Mock verifier fee manager.
+
+[MockFeeManager](https://github.com/smartcontractkit/chainlink-local/blob/v0.2.6/src/data-streams/MockFeeManager.sol)
+
+## Structs
+
+### Asset
+
+```solidity
+struct Asset {
+  address assetAddress;
+  uint256 amount;
+}
+```
+
+## Variables
+
+### i_linkAddress
+
+```solidity
+address i_linkAddress
+```
+
+### i_nativeAddress
+
+```solidity
+address i_nativeAddress
+```
+
+### i_proxyAddress
+
+```solidity
+address i_proxyAddress
+```
+
+### i_rewardManager
+
+```solidity
+contract IRewardManager i_rewardManager
+```
+
+### s_mockDiscounts
+
+```solidity
+mapping(address => uint256) s_mockDiscounts
+```
+
+### s_nativeSurcharge
+
+```solidity
+uint256 s_nativeSurcharge
+```
+
+## Errors
+
+### ExpiredReport
+
+```solidity
+error ExpiredReport()
+```
+
+### InvalidAddress
+
+```solidity
+error InvalidAddress()
+```
+
+### InvalidDeposit
+
+```solidity
+error InvalidDeposit()
+```
+
+### InvalidDiscount
+
+```solidity
+error InvalidDiscount()
+```
+
+### InvalidQuote
+
+```solidity
+error InvalidQuote()
+```
+
+### InvalidSurcharge
+
+```solidity
+error InvalidSurcharge()
+```
+
+### Unauthorized
+
+```solidity
+error Unauthorized()
+```
+
+## Functions
+
+### \_processFee
+
+```solidity
+function _processFee(bytes payload, bytes parameterPayload, address subscriber) internal
+```
+
+### constructor
+
+```solidity
+constructor(address linkAddress, address nativeAddress, address proxyAddress, address rewardManager) public
+```
+
+### getFeeAndReward
+
+```solidity
+function getFeeAndReward(address subscriber, bytes report, address quoteAddress) public view returns (struct Common.Asset, struct Common.Asset, uint256)
+```
+
+### getMockDiscount
+
+```solidity
+function getMockDiscount(address subscriber) external view returns (uint256)
+```
+
+### processFee
+
+```solidity
+function processFee(bytes payload, bytes parameterPayload, address subscriber) external payable
+```
+
+### processFeeBulk
+
+```solidity
+function processFeeBulk(bytes[] payloads, bytes parameterPayload, address subscriber) external payable
+```
+
+### setMockDiscount
+
+```solidity
+function setMockDiscount(address subscriber, uint256 discount) external
+```
+
+### setNativeSurcharge
+
+```solidity
+function setNativeSurcharge(uint64 surcharge) external
+```
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure returns (bool)
+```
+
+\_Returns true if this contract implements the interface defined by
+`interfaceId`. See the corresponding
+https://eips.ethereum.org/EIPS/eip-165#how-interfaces-are-identified[EIP
+section] to learn more about how these ids are created.
+
+This function call must use less than 30 000 gas.\_

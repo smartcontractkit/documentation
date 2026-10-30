@@ -1,0 +1,85 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockRewardManager v0.3.0 API Reference"
+metadata:
+  description: "API documentation for MockRewardManager in Solidity, version v0.3.0."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage030" />
+
+## MockRewardManager
+
+Mock reward manager.
+
+[MockRewardManager](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.0/src/data-streams/MockRewardManager.sol)
+
+## Variables
+
+### i_linkAddress
+
+```solidity
+address public immutable i_linkAddress
+```
+
+### s_feeManagerAddress
+
+```solidity
+address public s_feeManagerAddress
+```
+
+## Errors
+
+### Unauthorized
+
+```solidity
+error Unauthorized();
+```
+
+## Events
+
+### FeePaid
+
+```solidity
+event FeePaid(IRewardManager.FeePayment[] payments, address payer);
+```
+
+## Functions
+
+### claimRewards
+
+```solidity
+function claimRewards(
+    bytes32[] memory /*poolIds*/
+)
+    external
+    pure
+    override;
+```
+
+### constructor
+
+```solidity
+constructor(address linkAddress) ;
+```
+
+### onFeePaid
+
+```solidity
+function onFeePaid(FeePayment[] calldata payments, address payer) external override onlyFeeManager;
+```
+
+### setFeeManager
+
+```solidity
+function setFeeManager(address newFeeManager) external override;
+```
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure override returns (bool);
+```

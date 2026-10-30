@@ -14,6 +14,14 @@ import type { ChainType, CcipVersion } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
+import chainlinkLocalV024Contents from "./sidebar/chainlink-local/api-reference/v0_2_4.json" with { type: "json" }
+import chainlinkLocalV025Contents from "./sidebar/chainlink-local/api-reference/v0_2_5.json" with { type: "json" }
+import chainlinkLocalV026Contents from "./sidebar/chainlink-local/api-reference/v0_2_6.json" with { type: "json" }
+import chainlinkLocalV027Contents from "./sidebar/chainlink-local/api-reference/v0_2_7.json" with { type: "json" }
+import chainlinkLocalV028Contents from "./sidebar/chainlink-local/api-reference/v0_2_8.json" with { type: "json" }
+import chainlinkLocalV029Contents from "./sidebar/chainlink-local/api-reference/v0_2_9.json" with { type: "json" }
+import chainlinkLocalV030Contents from "./sidebar/chainlink-local/api-reference/v0_3_0.json" with { type: "json" }
+import chainlinkLocalV031Contents from "./sidebar/chainlink-local/api-reference/v0_3_1.json" with { type: "json" }
 
 /**
  * Represents a single item in the sidebar navigation.
@@ -2515,6 +2523,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "chainlink-local/learn/architecture",
         },
         {
+          title: "CCIP 2.0 behavior in Chainlink Local",
+          url: "chainlink-local/learn/ccip-v2-local",
+        },
+        {
+          title: "CCIP starter kit examples map",
+          url: "chainlink-local/learn/starter-kit-examples",
+        },
+        {
           title: "Contributing",
           url: "chainlink-local/learn/contributing",
         },
@@ -2532,6 +2548,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "chainlink-local/build/ccip/foundry/local-simulator",
             },
             {
+              title: "Sending data to a receiver with CCV config",
+              url: "chainlink-local/build/ccip/foundry/data-messages-receiver-ccv-config",
+            },
+            {
               title: "Using the Chainlink Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
             },
@@ -2544,8 +2564,12 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork",
             },
             {
-              title: "CCT - owner() token with Lock and Release Pool in forked environments",
+              title: "CCT - getCCIPAdmin() token with Lock and Release Pool in forked environments",
               url: "chainlink-local/build/ccip/foundry/cct-lock-and-release-fork",
+            },
+            {
+              title: "Pool-based CCV requirements on AdvancedPoolHooks in forked environments",
+              url: "chainlink-local/build/ccip/foundry/pool-based-ccvs-fork",
             },
           ],
         },
@@ -2556,6 +2580,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
             {
               title: "Using the Chainlink Local Simulator",
               url: "chainlink-local/build/ccip/hardhat/local-simulator",
+            },
+            {
+              title: "Sending data to a receiver with CCV config",
+              url: "chainlink-local/build/ccip/hardhat/data-messages-receiver-ccv-config",
             },
             {
               title: "Using the Chainlink Local Simulator in forked environments",
@@ -2583,7 +2611,55 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "chainlink-local/api-reference",
         },
         {
-          title: "v0.2.3 (Latest)",
+          title: "v0.3.1 (Latest)",
+          url: "chainlink-local/api-reference/v0.3.1",
+          isCollapsible: true,
+          children: chainlinkLocalV031Contents,
+        },
+        {
+          title: "v0.3.0",
+          url: "chainlink-local/api-reference/v0.3.0",
+          isCollapsible: true,
+          children: chainlinkLocalV030Contents,
+        },
+        {
+          title: "v0.2.9",
+          url: "chainlink-local/api-reference/v0.2.9",
+          isCollapsible: true,
+          children: chainlinkLocalV029Contents,
+        },
+        {
+          title: "v0.2.8",
+          url: "chainlink-local/api-reference/v0.2.8",
+          isCollapsible: true,
+          children: chainlinkLocalV028Contents,
+        },
+        {
+          title: "v0.2.7",
+          url: "chainlink-local/api-reference/v0.2.7",
+          isCollapsible: true,
+          children: chainlinkLocalV027Contents,
+        },
+        {
+          title: "v0.2.6",
+          url: "chainlink-local/api-reference/v0.2.6",
+          isCollapsible: true,
+          children: chainlinkLocalV026Contents,
+        },
+        {
+          title: "v0.2.5",
+          url: "chainlink-local/api-reference/v0.2.5",
+          isCollapsible: true,
+          children: chainlinkLocalV025Contents,
+        },
+        {
+          title: "v0.2.4",
+          url: "chainlink-local/api-reference/v0.2.4",
+          isCollapsible: true,
+          children: chainlinkLocalV024Contents,
+        },
+        {
+          title: "v0.2.3",
           url: "chainlink-local/api-reference/v0.2.3",
           isCollapsible: true,
           children: chainlinkLocalV023Contents,

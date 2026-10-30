@@ -1,0 +1,307 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalRouter v0.3.0 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalRouter in Solidity, version v0.3.0."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage030" />
+
+## CCIPLocalRouter
+
+The local-mode router with CCIP 2.0 message rules.
+
+[CCIPLocalRouter](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.0/src/ccip/CCIPLocalRouter.sol)
+
+## Variables
+
+### DEFAULT_GAS_LIMIT
+
+```solidity
+uint32 public constant DEFAULT_GAS_LIMIT = 200_000
+```
+
+### GAS_FOR_CALL_EXACT_CHECK
+
+```solidity
+uint16 public constant GAS_FOR_CALL_EXACT_CHECK = 5_000
+```
+
+### s_mockFeeTokenAmount
+
+```solidity
+uint256 internal s_mockFeeTokenAmount
+```
+
+### s_nonce
+
+Nonce used to guarantee a unique messageId per send, see `ccipSend`.
+
+```solidity
+uint256 internal s_nonce
+```
+
+### SOURCE_CHAIN_SELECTOR
+
+Source chain selector stamped on local messages (Ethereum Sepolia), as in
+`MockCCIPRouter`.
+
+```solidity
+uint64 internal constant SOURCE_CHAIN_SELECTOR = 16015286601757825753
+```
+
+## Errors
+
+### CannotSendZeroTokens
+
+Mirrors `OnRamp.CannotSendZeroTokens`.
+
+```solidity
+error CannotSendZeroTokens();
+```
+
+### CanOnlySendOneTokenPerMessage
+
+Mirrors `OnRamp.CanOnlySendOneTokenPerMessage`.
+
+```solidity
+error CanOnlySendOneTokenPerMessage();
+```
+
+### InvalidAddress
+
+```solidity
+error InvalidAddress(bytes encodedAddress);
+```
+
+### InvalidExtraArgsTag
+
+```solidity
+error InvalidExtraArgsTag();
+```
+
+### InvalidOptionalThreshold
+
+Mirrors `OffRamp.InvalidOptionalThreshold`.
+
+```solidity
+error InvalidOptionalThreshold(uint8 wanted, uint256 got);
+```
+
+### MessageGasLimitTooHigh
+
+Mirrors `FeeQuoter.MessageGasLimitTooHigh`.
+
+```solidity
+error MessageGasLimitTooHigh();
+```
+
+### ReceiverError
+
+```solidity
+error ReceiverError(bytes err);
+```
+
+### TokenReceiverNotAllowed
+
+Mirrors `OnRamp.TokenReceiverNotAllowed`: `GenericExtraArgsV3.tokenReceiver` is
+rejected on all EVM lanes (`DestChainConfig.tokenReceiverAllowed` is always
+false for EVM per its NatSpec).
+
+```solidity
+error TokenReceiverNotAllowed(uint64 destChainSelector);
+```
+
+## Events
+
+### MessageExecuted
+
+```solidity
+event MessageExecuted(bytes32 messageId, uint64 sourceChainSelector, address offRamp, bytes32 calldataHash);
+```
+
+### MsgExecuted
+
+```solidity
+event MsgExecuted(bool success, bytes retData, uint256 gasUsed);
+```
+
+## Functions
+
+### \_ensureReceiverAllowsFinality
+
+Mirrors OffRamp 2.0 `_getCCVsFromReceiver`, which is called for every message
+that is not a token-only transfer regardless of requested finality (including
+fully finalized messages, not only Faster-Than- Finality ones). Token-only
+transfers skip it entirely, as the pool enforces finality for them in production
+(pools are not simulated in local mode).
+
+Local mode has no CCV verifiers to query for quorum, so this only reproduces the
+validation and finality parts of `_getCCVsFromReceiver`: duplicate
+required/optional CCVs and `optionalThreshold > optionalCCVs.length` are
+rejected the same way, and the receiver's allowed finality is enforced.
+
+If `getCCVsAndFinalityConfig` reverts, that revert is bubbled as-is (not wrapped
+in `ReceiverError`). In production the OffRamp does not distinguish this from
+any other revert during message execution: it simply records
+`ExecutionStateChanged(..., FAILURE, returnData)` with the getter's raw revert
+data. `ReceiverError` is reserved for the narrower case of the receiver's own
+`ccipReceive` call failing (see `_routeMessage`/`OffRamp._callReceiver`), so
+bubbling here (rather than wrapping) keeps that error meaning precise while
+still failing the local send, consistent with this contract's "fails in
+production" -> "ccipSend reverts locally" mapping.
+
+```solidity
+function _ensureReceiverAllowsFinality(
+    address receiver,
+    Client.Any2EVMMessage memory message,
+    uint256 gasLimit,
+    bytes4 requestedFinality
+) internal view;
+```
+
+### \_isTokenOnlyTransfer
+
+Same token-only rule as OffRamp 2.0 `_isTokenOnlyTransfer`, which also decides
+whether the receiver is called.
+
+```solidity
+function _isTokenOnlyTransfer(uint256 dataLength, uint256 gasLimit, address receiver) internal view returns (bool);
+```
+
+### \_legacyGasLimit
+
+FeeQuoter compares the full uint256 V1/V2 gas limit against the lane's uint32
+`maxPerMsgGasLimit` and reverts `MessageGasLimitTooHigh`, so a value above
+uint32 is rejected everywhere; the upstream mock truncated it. Local mode has no
+lane config, so lower lane caps are not enforced.
+
+```solidity
+function _legacyGasLimit(uint256 gasLimit) internal pure returns (uint256);
+```
+
+### \_parseExtraArgs
+
+```solidity
+function _parseExtraArgs(uint64 destinationChainSelector, bytes calldata extraArgs)
+    internal
+    pure
+    returns (uint256 gasLimit, bytes4 requestedFinality);
+```
+
+**Parameters**
+
+| Name                       | Type     | Description                                                                    |
+| -------------------------- | -------- | ------------------------------------------------------------------------------ |
+| `destinationChainSelector` | `uint64` | Destination chain selector, used only for the `TokenReceiverNotAllowed` error. |
+| `extraArgs`                | `bytes`  |                                                                                |
+
+**Returns**
+
+| Name                | Type      | Description                                                                        |
+| ------------------- | --------- | ---------------------------------------------------------------------------------- |
+| `gasLimit`          | `uint256` | Callback gas limit.                                                                |
+| `requestedFinality` | `bytes4`  | `GenericExtraArgsV3.requestedFinalityConfig`, or WAIT_FOR_FINALITY for older tags. |
+
+### \_routeMessage
+
+```solidity
+function _routeMessage(
+    Client.Any2EVMMessage memory message,
+    uint16 gasForCallExactCheck,
+    uint256 gasLimit,
+    address receiver
+) internal returns (bool success, bytes memory retData, uint256 gasUsed);
+```
+
+### ccipSend
+
+Sends the tx locally to the receiver instead of on the destination chain.
+
+Ignores destinationChainSelector
+
+Returns a mock message ID, which is not calculated from the message contents in
+the same way as the real message ID.
+
+```solidity
+function ccipSend(uint64 destinationChainSelector, Client.EVM2AnyMessage calldata message)
+    external
+    payable
+    returns (bytes32);
+```
+
+### getFee
+
+Returns 0 as the fee is not supported in this mock contract.
+
+```solidity
+function getFee(uint64, Client.EVM2AnyMessage memory) public view returns (uint256);
+```
+
+### getOnRamp
+
+Always returns address(1234567890)
+
+```solidity
+function getOnRamp(
+    uint64 /* destChainSelector */
+)
+    external
+    pure
+    returns (address onRampAddress);
+```
+
+### getSupportedTokens
+
+Returns an empty array.
+
+```solidity
+function getSupportedTokens(uint64) external pure returns (address[] memory tokens);
+```
+
+### isChainSupported
+
+Always returns true to make sure this check can be performed on any chain.
+
+```solidity
+function isChainSupported(uint64) external pure returns (bool supported);
+```
+
+### isOffRamp
+
+Always returns true
+
+```solidity
+function isOffRamp(
+    uint64,
+    /* sourceChainSelector */
+    address /* offRamp */
+)
+    external
+    pure
+    returns (bool);
+```
+
+### routeMessage
+
+```solidity
+function routeMessage(
+    Client.Any2EVMMessage calldata message,
+    uint16 gasForCallExactCheck,
+    uint256 gasLimit,
+    address receiver
+) external returns (bool success, bytes memory retData, uint256 gasUsed);
+```
+
+### setFee
+
+Sets the fees returned by getFee but is only checked when using native fee
+tokens
+
+```solidity
+function setFee(uint256 feeAmount) external;
+```
