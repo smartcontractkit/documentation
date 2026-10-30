@@ -9,10 +9,6 @@ export const AI_AGENT_RESOURCES_CONTENTS: SectionContent[] = [
     title: "Chainlink Developer Agent Skills",
     url: "resources/chainlink-developer-agent-skills",
   },
-  {
-    title: "Chainlink for Agents User Guide",
-    url: "resources/chainlink-for-agents",
-  },
 ]
 
 export const AI_AGENT_RESOURCES_SECTION: SectionEntry = {

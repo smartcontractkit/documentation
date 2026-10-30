@@ -11,7 +11,6 @@ ai-agents, defi, crec
 
 [View on GitHub](https://github.com/smartcontractkit/chainlink-for-agents)
 
-
 Chainlink for Agents is a service we built specifically for AI agents, built on [CRE Connect](/crec). \
 It allows you to turn your agent into an onchain operator. Chainlink for Agents lets your agent correctly execute onchain strategies working from verified pricing data and chain events, with the option to strictly lock down its behavior with onchain guardrail enforcement.
 
@@ -24,9 +23,9 @@ Specifically, with Chainlink for Agents your agent can:
 
 You use the Chainlink platform UI, a separate web app, to link your agent to your organization and set the guardrails it works within.
 
+[Chainlink for Agents skills](https://github.com/smartcontractkit/chainlink-for-agents)
 
-  This repository contains the skills your agent needs to sign up, link to your organization, and run workflows.
-
+This repository contains the skills your agent needs to sign up, link to your organization, and run workflows.
 
 ## What can your agent do
 
@@ -45,7 +44,7 @@ Use this section to get up and running in less than 5 minutes:
 
 > Note: Once you've completed Step 1, your agent will likely prompt you for the remaining steps and should be able to explain each to you as needed.
 
-1. Paste the link to this docs page to have your agent to reach the skills repo: [https://github.com/smartcontractkit/chainlink-for-agents]
+1. Paste the link to this docs page to have your agent to reach the skills repo: [[https://github.com/smartcontractkit/chainlink-for-agents](https://github.com/smartcontractkit/chainlink-for-agents)]
 2. Have your agent generate an EVM wallet for signing and paying [x402 fees](https://x402.org/) - most agents can do this directly from a simple prompt.
 3. Send some `USDC` on `Base Mainnet` to your agent's new EVM wallet. `5 USDC` is more than sufficient to start with
 4. Ask your agent to deploy its smart contract wallet (cost: `1 USDC`). Your agent will ask you for the public EVM address of a more secure account to use as this smart contract wallet's owner. Pick your preferred address that you control in an existing wallet.
@@ -74,20 +73,20 @@ You and your agent go through four phases during the linkup process:
 
 4. **Execute onchain.** Your agent's onchain calls trigger Chainlink Runtime Environment workflows, each requiring a small fee. Workflows build the appropriate calldata for your agent to sign and then submits signed transactions to chain with redundant RPCs, sponsoring gas and handling retries. Chainlink for Agents checks every workflow against your optionally configured guardrails, checks again just before anything is written onchain, and blocks any workflow that breaks a guardrail.
 
-
-1. Guardrails apply to your agent's chain wallet, the smart contract wallet that Chainlink deploys for it. Your agent
-holds the private key to its agent address, so it can move the USDC in that address without going through `Chainlink
-for Agents`, even if the address holds no ETH. 
-  
-2. Keep only enough USDC in the agent address to cover fees, and keep the funds you want your agent to trade with in its chain wallet.
-
-3. Without guardrails, your agent can run any workflow in the catalog, with any token, recipient, or bridge destination,
-   and no spend limit. Set guardrails that match what you want your agent to do.
-   
+> **CAUTION: Guardrails cover the chain wallet, not the agent address**
+>
+> 1. Guardrails apply to your agent's chain wallet, the smart contract wallet that Chainlink deploys for it. Your agent
+>    holds the private key to its agent address, so it can move the USDC in that address without going through `Chainlink
+>    for Agents`, even if the address holds no ETH.
+>
+> 2. Keep only enough USDC in the agent address to cover fees, and keep the funds you want your agent to trade with in its chain wallet.
+>
+> 3. Without guardrails, your agent can run any workflow in the catalog, with any token, recipient, or bridge destination,
+>    and no spend limit. Set guardrails that match what you want your agent to do.
 
 The following diagram shows each step and who takes it.
 
-
+![A step-by-step diagram with three columns: you, your AI agent, and Chainlink. The Chainlink column has two separate parts: Chainlink for Agents, which is the service your agent uses, and the Chainlink platform, which is the web app you use. The first phase is sign-up. In step 1, you give your agent the skills repo link. In step 2, your agent creates its own key and address, and the key stays on its machine. In step 3, your agent shares its address and asks you to fund it. In step 4, you send a few USDC on Base to that address. In step 5, your agent accepts the Terms of Service on your behalf, pays a small sign-up fee, and registers with Chainlink for Agents. The second phase is linking. In step 6, you enter your agent's address in the Chainlink platform and create a one-time link request. In step 7, you give your agent the link request. In step 8, your agent signs it and gives you the signature. In step 9, you paste the signature into the Chainlink platform, and your agent is linked to your organization. The third phase is setting guardrails. In step 10, you use the Chainlink platform to set what your agent can do and how much it can spend. The last phase is running workflows. In step 11, your agent runs a workflow through Chainlink for Agents, which checks it against the guardrails you set in the Chainlink platform.](/images/solutions/chainlink-for-agents/how-your-agent-connects.svg)
 
 ## What's next
 
@@ -205,7 +204,7 @@ Behind the scenes, Chainlink deploys the wallet contract on Base, and the agent 
 > - **Chain wallet:** a [smart contract wallet](/crec/concepts/smart-accounts) that Chainlink deploys for your agent on each chain it uses, such as Base. It holds the tokens your agent swaps or sends. It has no private key of its own: it only carries out instructions signed with your agent's key and delivered by Chainlink.
 >   - We might also refer to it as an SVA (Signature Verifying Account).
 >
-> Your agent's swaps run from its chain wallet, so Chainlink for Agents can check each one against your guardrails before it goes onchain. Both addresses belong to the same agent, so your link and your guardrails cover both.
+> Your agent's swaps run from its chain wallet, so Chainlink for Agents can check each one against your guardrails before it goes onchain. Your link covers both addresses, but guardrails only apply to what your agent does from its chain wallet.
 
 ![Screenshot showing the agent creating a new chain wallet on Base.](/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-3.png)
 
@@ -247,7 +246,7 @@ In this tutorial, you will:
 > - **Chain wallet:** a [smart contract wallet](/crec/concepts/smart-accounts) that Chainlink deploys for your agent on each chain it uses, such as Base. It holds the tokens your agent swaps or sends. It has no private key of its own: it only carries out instructions signed with your agent's key and delivered by Chainlink.
 >   - We might also refer to it as an SVA (Signature Verifying Account).
 >
-> Your agent's swaps run from its chain wallet, so Chainlink for Agents can check each one against your guardrails before it goes onchain. Both addresses belong to the same agent, so your link and your guardrails cover both.
+> Your agent's swaps run from its chain wallet, so Chainlink for Agents can check each one against your guardrails before it goes onchain. Your link covers both addresses, but guardrails only apply to what your agent does from its chain wallet.
 
 ## Check the ETH price
 
