@@ -9,149 +9,209 @@ import Common from "@features/chainlink-local/Common.astro"
 
 <Common callout="importPackage" />
 
-You can use Chainlink Local to run CCIP in forked environments within your Hardhat project. To get started quickly, you will use the [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat).
-This project includes the `Example1.spec.tst` file located in the `./test/fork` directory, demonstrating how to set up and run token transfer tests between two accounts using CCIP in forked environments.
+You can use Chainlink Local to run CCIP 2.0 in forked environments within your Hardhat 3 project. To get started quickly, you will use the [CCIP Hardhat Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-hardhat).
+The kit's `test-fork` directory contains fork tests for the CCT examples (`Example06`-`Example10`), which run the real Ignition modules and tasks against pinned forks of _Ethereum Sepolia_ and _Polygon Amoy_ (a live CCIP 2.0 lane) and route each message to the destination OffRamp with the Chainlink Local JavaScript fork helper (`@chainlink/local/scripts/CCIPLocalSimulatorFork.js`).
 
-Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains. In this example, we will fork _Arbitrum Sepolia_ and _Ethereum Sepolia_.
+The helper routes messages for every CCIP era: pre-1.6 (`EVM2EVMOnRamp`), 1.6 and CCIP 2.0 (CCV-based lanes, which live testnet lanes run today). On CCIP 2.0 lanes the destination OffRamp selects the CCVs and executes the message through the permissionless `execute` entrypoint; CCV attestations are simulated with a synthetic no-op verifier.
 
 ## Prerequisites
 
 This guide assumes that you are familiar with the guide [Using Chainlink Local Simulator in Your Hardhat Project](/chainlink-local/build/ccip/hardhat/local-simulator).
 If not, please get familiar with it and run all the prerequisites.
 
-Set an environment variable file. For higher security, the examples repository imports [@chainlink/env-enc](https://www.npmjs.com/package/@chainlink/env-enc).
-Use this tool to encrypt your environment variables at rest.
+Fork tests have three requirements beyond the no-fork setup:
 
-    1.  Set an encryption password for your environment variables.
+1. **Node.js 22 and the `@nomicfoundation/hardhat-ethers` plugin**, which the JavaScript fork helper uses (`connection.ethers`). The kit already registers the plugin in `hardhat.config.ts`.
+1. **Archive-capable RPC URLs for both chains.** A free-tier Alchemy or Infura endpoint works; public non-archive endpoints fail with "historical state is not available". Provide them as environment variables or in the Hardhat keystore:
 
-        ```shell
-        npx env-enc set-pw
-        ```
+   ```shell
+   npx hardhat keystore set ETHEREUM_SEPOLIA_RPC_URL
+   npx hardhat keystore set POLYGON_AMOY_RPC_URL
+   ```
 
-    1.  Run `npx env-enc set` to configure a `.env.enc` file with:
+1. **The `production` build profile**: the token pools exceed the 24 KB contract size limit without the optimizer. The kit's `test:fork` script sets it.
 
-         - `ARBITRUM_SEPOLIA_RPC_URL`: The Remote Procedure Call (RPC) URL for the Arbitrum Sepolia network. You can obtain one by creating an account on [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/) and setting up an Arbitrum Sepolia project.
-         - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for the Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/), [Infura](https://www.infura.io/), or another node provider service.
+The fork networks are defined in `hardhat.config.ts` with pinned blocks, so a fresh clone runs the same chain state:
 
-## Test tokens transfers
+```ts
+sepoliaFork: {
+  type: "edr-simulated",
+  chainType: "generic",
+  chainId: 11155111,
+  forking: {
+    url: configVariable("ETHEREUM_SEPOLIA_RPC_URL"),
+    blockNumber: Number(process.env.ETHEREUM_SEPOLIA_FORK_BLOCK ?? 11_920_292),
+  },
+},
+```
 
-You will run a test to transfer tokens between two accounts in a forked environment. The test file `Example1.spec.ts` is located in the `./test/fork` directory.
-This file contains one test case:
+Override the pins for a run with `ETHEREUM_SEPOLIA_FORK_BLOCK` / `POLYGON_AMOY_FORK_BLOCK`, for example to check whether the live lane has drifted.
 
-**Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test, it verifies
-that the sender account was debited and the receiver account was credited.
+## Test a CCT transfer across a CCIP 2.0 lane
 
-In this test, we simulate a transfer of tokens from an Externally Owned Account (EOA) on a source blockchain (which is a fork of _Arbitrum Sepolia_) to an EOA on a destination blockchain
-(which is a fork of _Ethereum Sepolia_). Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains, providing
-a realistic testing scenario.
+You will run the fork test for Example 06 (CCT 01: `CrossChainToken` + BurnMint pool). The test file `Example06.fork.test.ts` is located in the `./test-fork` directory. It deploys a custom token and pool on both forks through the kit's Ignition module, registers them in the live TokenAdminRegistry, links the pools, and sends token transfers across the Sepolia → Amoy CCIP 2.0 lane. The file contains seven test cases, including:
 
-For a detailed explanation of the test file, refer to the [Examine the code](#examine-the-code) section.
+1. **Deploy**: Creates the token and pool and registers them on both chains.
+1. **Configure lane**: Sets the remote token and pool.
+1. **Send with default finality**: Burns on the source and mints on the destination.
+1. **Send with Faster Than Finality**: Reverts until the pool opts in, then delivers after both pools opt in.
 
 In your terminal, run the following command to execute the test:
 
     ```shell
-    npx hardhat test test/fork/Example1.spec.ts
+    npm run test:fork
     ```
 
 Example output:
 
       ```text
-      $ npx hardhat test test/fork/Example1.spec.ts
+      $ npm run test:fork
 
+      Example06 (fork)
+        ✔ deploy creates the token and pool and registers them (1962ms)
+        ✔ configureLane sets the remote token and pool (1200ms)
+        ✔ configureLane rerun replaces the existing config (1167ms)
+        ✔ send at default finality burns on the source and mints on the destination (1338ms)
+        ✔ send with Faster Than Finality reverts until the pool opts in (1328ms)
+        ✔ send with Faster Than Finality delivers after both pools opt in (1441ms)
+        ✔ check-finality-gates finds the registered pool (1105ms)
 
-      Example 1 - Fork
-         ✔ Should transfer CCIP test tokens from EOA to EOA (10889ms)
+      ...
 
-
-      1 passing (11s)
+      27 passing (36481ms)
       ```
 
 ## Examine the code
 
-To transfer tokens using CCIP in a forked environment, we need the following:
+### Setup
 
-- Destination chain selector
-- Source CCIP router
-- LINK token for paying CCIP fees
-- A test token contract (such as CCIP-BnM) on both source and destination chains
-- A sender account (Alice)
-- A receiver account (Bob)
+The shared setup lives in `test-fork/utils/cctFork.ts`. To route messages across forks, the test needs:
 
-The `it("Should transfer CCIP test tokens from EOA to EOA")` function sets up the necessary environment and runs the test. Here are the steps involved:
+- A fork connection for the source chain (Ethereum Sepolia) and the destination chain (Polygon Amoy)
+- The chain details (routers, RMN proxy, registries) for both chains
+- A sender account (the broadcaster, Hardhat wallet 0) and a receiver account
 
-1. Initialize the sender and receiver accounts:
+The `setupForks()` function:
+
+1. Connects to both fork networks and wraps each connection in a `Fork` object with the chain details, the public client, the broadcaster, and a `taskHre` whose `connect()` returns that fork (for running the example tasks against it):
 
    ```typescript
-   const [alice, bob] = await hre.ethers.getSigners()
+   const sepolia = await connectFork("sepoliaFork", SEPOLIA)
+   const amoy = await connectFork("amoyFork", AMOY)
    ```
 
-1. Set the source and destination chains:
+   The chain details (routers, RMN proxy, registries) are copied from `@chainlink/local`'s `RegisterData.sol`:
 
    ```typescript
-   const [source, destination] = ["ethereumSepolia", "arbitrumSepolia"]
+   export const SEPOLIA = {
+     chainSelector: 16015286601757825753n,
+     routerAddress: "0x0BF3dE8c5D3e8A2B34D2BEeB17ABfCeBaf363A59",
+     rmnProxyAddress: "0xba3f6251de62dED61Ff98590cB2fDf6871FbB991",
+     registryModuleOwnerCustomAddress: "0xa3c796d480638d7476792230da1E2ADa86e031b0",
+     tokenAdminRegistryAddress: "0x95F29FEE11c5C55d26cCcf1DB6772DE953B37B82",
+   } as const
    ```
 
-1. Retrieve the necessary addresses and configurations (such as the LINK token address, source router address, and so on).
-
-1. Fork the source network:
+1. Verifies the lane is the CCIP 2.0 lane the test expects. The test fails with a clear message if the pinned block or the lane is not what it describes:
 
    ```typescript
-   await hre.network.provider.request({
-     method: "hardhat_reset",
-     params: [
-       {
-         forking: {
-           jsonRpcUrl: getProviderRpcUrl(source),
-         },
-       },
-     ],
+   const onRamp = await sepolia.publicClient.readContract({
+     address: SEPOLIA.routerAddress,
+     abi: routerOnRampAbi,
+     functionName: "getOnRamp",
+     args: [AMOY.chainSelector],
    })
+   assert.notEqual(onRamp, ZERO_ADDRESS, "Sepolia router has no OnRamp for Amoy at the pinned block")
+   assert.equal(
+     await sepolia.publicClient.readContract({
+       address: onRamp,
+       abi: typeAndVersionAbi,
+       functionName: "typeAndVersion",
+     }),
+     "OnRamp 2.0.0",
+     "Sepolia -> Amoy is not a CCIP 2.0 lane"
+   )
    ```
 
-1. Connect to the source router and CCIP-BnM contracts.
-
-1. Call `sourceCCIPBnM.drip` to request CCIP-BnM tokens for Alice (sender).
-
-1. Approve the source router to spend tokens on behalf of Alice (sender).
-
-1. Construct the `Client.EVM2AnyMessage` structure. This step is similar to the non fork example.
-
-1. Call the source router to estimate the fees.
-
-1. Call the [`requestLinkFromFaucet`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork-js#requestlinkfromthefaucet)
-   function to request LINK tokens for Alice (sender).
-
-1. Connect to the LINK contract and approve the LINK token for paying CCIP fees.
-
-1. Estimate Alice (sender) balance before the transfer.
-
-1. Call the source router to send the CCIP request.
-
-1. Wait for the transaction to be included in a block.
-
-1. Call the [`getEvm2EvmMessage`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork-js#getevm2evmmessage)
-   function to parse the transaction receipt and extract the `CCIPSendRequested` event and then decodes it to an object.
-
-1. Verify that Alice's balance has decreased by the amount sent.
-
-1. Fork and switch to the destination network:
+1. Deploys the kit's Ignition module on each fork with the per-chain parameters (router, RMN proxy, registries):
 
    ```typescript
-   await hre.network.provider.request({
-     method: "hardhat_reset",
-     params: [
-       {
-         forking: {
-           jsonRpcUrl: getProviderRpcUrl(destination),
-         },
+   return (await fork.connection.ignition.deploy(module, {
+     parameters: {
+       $global: {
+         routerAddress: fork.details.routerAddress,
+         armProxy: fork.details.rmnProxyAddress,
+         registryModuleOwnerCustom: fork.details.registryModuleOwnerCustomAddress,
+         tokenAdminRegistry: fork.details.tokenAdminRegistryAddress,
+         thresholdAmountForAdditionalCCVs: THRESHOLD,
        },
-     ],
-   })
+     },
+   })) as Record<string, { address: Address }>
    ```
 
-1. Call the [`routeMessage`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork-js#routemessage) function
-   to route the message to the destination router.
+### Send and route the message
 
-1. Connect to the CCIP-BnM contract using the CCIP-BnM destination address.
+The `sendAndRoute()` helper shows the two-step flow used by every fork test:
 
-1. Verify that Bob's balance has increased by the amount sent.
+1. On the source fork, run the book's send task. It builds an `ExtraArgsV3` message and calls `ccipSend` through the Sepolia router:
+
+   ```typescript
+   await quietly(() =>
+     sendAction(
+       {
+         sourceRouter: SEPOLIA.routerAddress,
+         destinationChainSelector: AMOY.chainSelector,
+         receiver: forks.receiver,
+         tokenToSend: token,
+         amount,
+         gasLimit: EOA_RECEIVER_GAS_LIMIT,
+         blockConfirmations,
+         feeTokenAddress: ZERO_ADDRESS,
+       },
+       forks.sepolia.taskHre
+     )
+   )
+   ```
+
+1. Fetch the `ccipSend` transaction receipt and extract the CCIP message with [`getCCIPMessages`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork-js#getccipmessages), then route it on the destination connection with [`routeMessage`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork-js#routemessage):
+
+   ```typescript
+   const receipt = await sepolia.connection.ethers.provider.getTransactionReceipt(sendTx.hash)
+   const [sent] = getCCIPMessages(sepolia.connection, receipt)
+   return routeMessage(amoy.connection, AMOY.routerAddress, sent)
+   ```
+
+   `getCCIPMessages` parses the send event for every CCIP era and returns a `CCIPSentMessage` (for CCIP 2.0, the raw `encodedMessage` and the receipts). `routeMessage` finds the destination OffRamp that serves the lane, points owner-configurable CCV resolvers at a synthetic no-op verifier, and executes the message through the OffRamp's permissionless `execute`. It returns `{ offRamp, executed, reason }` and throws if no OffRamp serves the lane or the execution fails (receiver revert, finality or CCV rejection).
+
+   When the destination chain has a dedicated CCIP 2.0 router, pass both routers so both routers' OffRamps are searched. For example, when the destination is Ethereum Sepolia, which has a dedicated CCIP 2.0 router:
+
+   ```typescript
+   routeMessage(sepolia.connection, [SEPOLIA.routerAddress, CCIP_V2_ROUTERS[11155111]], sent)
+   ```
+
+### Faster Than Finality across the lane
+
+The `send with Faster Than Finality delivers after both pools opt in` test case shows the CCIP 2.0 finality gates on a real lane:
+
+1. New pools allow full finality only, so any block-depth request is rejected by the pool. The test first asserts the pool's default and expects the send to revert.
+1. Opt both pools in by setting their allowed finality config (through the kit's `Example06-SetPoolFinality` task), then find the smallest depth the live lane accepts by quoting `getFee` for candidate depths:
+
+   ```typescript
+   export async function findLaneFtfDepth(forks: Forks, token: Address): Promise<number> {
+     for (const depth of [1, 2, 3, 5, 10, 20, 50, 100]) {
+       /* quote getFee with blockConfirmations: depth; return the first depth that does not revert */
+     }
+   }
+   ```
+
+1. Send with the custom finality (`blockConfirmations = depth`) and route. The transfer burns on the source and mints on the destination, same as the default-finality case, but delivered before full finality.
+
+## What the fork helper does not model
+
+Not modelled by the helper (and not asserted in the kit's fork tests): real CCV attestations, RMN and executor fees. CCVs on the lane are replaced by a synthetic verifier, and a manual execution does not charge the executor fee a real one costs. Pinned state never sees testnet upgrades, so green tests only prove the examples against that snapshot; re-pin the fork blocks when the lane's behavior changes or on every `@chainlink/contracts-ccip` or `@chainlink/local` bump.
+
+## Next steps
+
+- The other fork tests cover Lock & Release pools with a lock box (`Example07.fork.test.ts`), `AdvancedPoolHooks` (`Example08`-`Example10`). For pool-required CCVs on `AdvancedPoolHooks` in Foundry fork tests, read the [pool-based CCVs tutorial](/chainlink-local/build/ccip/foundry/pool-based-ccvs-fork).
+- For the full CCT enabling procedure with the kit's tasks and Ignition modules, read the [CCT burn and mint tutorial](/chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork) (the flow is the same in Hardhat; the kit's book chapters list the Hardhat task commands).
+- For an index of every kit example and where its topic is documented, read the [CCIP starter kit examples map](/chainlink-local/learn/starter-kit-examples).

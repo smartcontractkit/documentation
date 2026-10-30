@@ -1,0 +1,216 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalRouter v0.3.1 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalRouter in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## CCIPLocalRouter
+
+The local-mode router used by [`CCIPLocalSimulator`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator). It mirrors `MockCCIPRouter` from `@chainlink/contracts-ccip` 2.0.0 (same ABI, events and behaviour) and additionally applies the CCIP 2.0 finality rules of the OnRamp and OffRamp, so a test that passes locally does not fail on a fork or in production.
+
+[`CCIPLocalRouter`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/ccip/CCIPLocalRouter.sol)
+
+<Aside>
+  `ccipSend` delivers the message synchronously to the receiver instead of routing it to a destination chain. The CCIP
+  2.0 rules it enforces: the requested finality of `GenericExtraArgsV3` must use a single mode (OnRamp check at send
+  time), and a Faster-Than-Finality message that is not a token-only transfer is only delivered to a receiver whose
+  `getCCVsAndFinalityConfig` allows the requested finality (OffRamp check). Receivers without
+  `IAny2EVMMessageReceiverV2` accept finalized messages only. See [CCIP 2.0 behavior in local
+  mode](/chainlink-local/learn/ccip-v2-local).
+</Aside>
+
+## Errors
+
+### CanOnlySendOneTokenPerMessage
+
+```solidity
+error CanOnlySendOneTokenPerMessage()
+```
+
+<Aside>Mirrors `OnRamp.CanOnlySendOneTokenPerMessage`: more than one token per message is rejected at send time.</Aside>
+
+### CannotSendZeroTokens
+
+```solidity
+error CannotSendZeroTokens()
+```
+
+<Aside>Mirrors `OnRamp.CannotSendZeroTokens`: a zero-amount token is rejected at send time.</Aside>
+
+### InvalidAddress
+
+```solidity
+error InvalidAddress(bytes encodedAddress)
+```
+
+### InvalidExtraArgsTag
+
+```solidity
+error InvalidExtraArgsTag()
+```
+
+### InvalidOptionalThreshold
+
+```solidity
+error InvalidOptionalThreshold(uint8 wanted, uint256 got)
+```
+
+<Aside>
+  Mirrors `OffRamp.InvalidOptionalThreshold`: the receiver's optional CCV threshold exceeds its optional CCV list
+  length.
+</Aside>
+
+### MessageGasLimitTooHigh
+
+```solidity
+error MessageGasLimitTooHigh()
+```
+
+<Aside>Mirrors `FeeQuoter.MessageGasLimitTooHigh`: a V1/V2 extraArgs gas limit above `uint32` is rejected.</Aside>
+
+### ReceiverError
+
+```solidity
+error ReceiverError(bytes err)
+```
+
+<Aside>The receiver's own `ccipReceive` call failed; `err` is its revert data.</Aside>
+
+### TokenReceiverNotAllowed
+
+```solidity
+error TokenReceiverNotAllowed(uint64 destChainSelector)
+```
+
+<Aside>
+  Mirrors `OnRamp.TokenReceiverNotAllowed`: `GenericExtraArgsV3.tokenReceiver` is rejected on all EVM lanes.
+</Aside>
+
+## Events
+
+### MessageExecuted
+
+```solidity
+event MessageExecuted(bytes32 messageId, uint64 sourceChainSelector, address offRamp, bytes32 calldataHash)
+```
+
+<Aside>The real router event, emitted after the receiver call.</Aside>
+
+### MsgExecuted
+
+```solidity
+event MsgExecuted(bool success, bytes retData, uint256 gasUsed)
+```
+
+<Aside>Test-assistance event that does not exist on real deployments.</Aside>
+
+## Constants
+
+### GAS_FOR_CALL_EXACT_CHECK
+
+```solidity
+uint16 public constant GAS_FOR_CALL_EXACT_CHECK = 5_000
+```
+
+### DEFAULT_GAS_LIMIT
+
+```solidity
+uint32 public constant DEFAULT_GAS_LIMIT = 200_000
+```
+
+<Aside>Gas limit applied when `extraArgs` is shorter than 4 bytes (treated as unset).</Aside>
+
+## Functions
+
+### ccipSend
+
+Sends the message locally to the receiver instead of on the destination chain.
+
+```solidity
+function ccipSend(uint64 destinationChainSelector, Client.EVM2AnyMessage calldata message) external payable returns (bytes32)
+```
+
+<Aside>
+  Validates the receiver address, collects the fee (see `setFee`), parses `extraArgs` (V1, V2 and V3 tags are accepted;
+  V3 `tokenReceiver` is rejected on EVM lanes), enforces the CCIP 2.0 send-time rules (one token per message, no zero
+  amounts, single finality mode), checks the receiver's finality config for non-token-only transfers, transfers the
+  tokens directly to the receiver, and calls `ccipReceive` with the exact gas limit. Returns a mock message ID that is
+  not calculated from the message contents in the same way as the real message ID.
+</Aside>
+
+### getFee
+
+Returns the fee set with `setFee`.
+
+```solidity
+function getFee(uint64, Client.EVM2AnyMessage memory) public view returns (uint256)
+```
+
+<Aside>
+  Returns the fee amount set by `setFee` (default 0). The destination chain selector and message are ignored.
+</Aside>
+
+### setFee
+
+Sets the fees returned by `getFee`.
+
+```solidity
+function setFee(uint256 feeAmount) external
+```
+
+<Aside>
+  The fee is charged in the fee token: native value when `feeToken` is `address(0)`, or a transfer of the fee token
+  otherwise.
+</Aside>
+
+### getOnRamp
+
+```solidity
+function getOnRamp(uint64) external pure returns (address onRampAddress)
+```
+
+<Aside>Always returns `address(1234567890)`.</Aside>
+
+### getSupportedTokens
+
+```solidity
+function getSupportedTokens(uint64) external pure returns (address[] memory tokens)
+```
+
+<Aside>Always returns an empty array.</Aside>
+
+### isChainSupported
+
+```solidity
+function isChainSupported(uint64) external pure returns (bool supported)
+```
+
+<Aside>Always returns true, so the check can be performed on any chain.</Aside>
+
+### isOffRamp
+
+```solidity
+function isOffRamp(uint64, address) external pure returns (bool)
+```
+
+<Aside>Always returns true.</Aside>
+
+### routeMessage
+
+Routes a message to a receiver directly, bypassing `ccipSend` validation.
+
+```solidity
+function routeMessage(Client.Any2EVMMessage calldata message, uint16 gasForCallExactCheck, uint256 gasLimit, address receiver) external returns (bool success, bytes memory retData, uint256 gasUsed)
+```
+
+<Aside>
+  Calls the receiver's `ccipReceive` with the exact gas limit. Token-only transfers (no data, gas limit 0, or a receiver
+  without `IAny2EVMMessageReceiver`) return success without calling the receiver.
+</Aside>

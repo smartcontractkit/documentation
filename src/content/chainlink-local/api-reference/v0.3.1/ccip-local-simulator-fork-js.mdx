@@ -1,0 +1,145 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulatorFork JS v0.3.1 API Reference"
+metadata:
+  description: "API documentation for the CCIPLocalSimulatorFork JavaScript helpers, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## CCIPLocalSimulatorFork JS
+
+Hardhat 3 helpers for routing CCIP messages between forked networks: the JavaScript counterpart of the Solidity [`CCIPLocalSimulatorFork`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork). Supports pre-1.6 (`EVM2EVMOnRamp`), 1.6 and CCIP 2.0 (CCV-based) lanes.
+
+[`CCIPLocalSimulatorFork.js`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/scripts/CCIPLocalSimulatorFork.js)
+
+<Aside>
+  Every function takes the `NetworkConnection` returned by `network.connect()` and requires the
+  `@nomicfoundation/hardhat-ethers` plugin (it uses `connection.ethers`). TypeScript declarations ship next to the
+  script (`CCIPLocalSimulatorFork.d.ts`). Hardhat 2 is not supported; Hardhat 2 users stay on Chainlink Local `0.2.x`.
+</Aside>
+
+## Constants
+
+### CCIP_V2_ROUTERS
+
+```javascript
+export const CCIP_V2_ROUTERS = Object.freeze({
+  11155111: "0x784d49a71BB4C48eB7dA4cD7e6Ecb424f9b5EAB1", // Ethereum Sepolia
+  43113: "0x7C9B8B4e8024e5Ee8A630F6FCe9015e470dA5763", // Avalanche Fuji
+})
+```
+
+<Aside>
+  Dedicated CCIP 2.0 routers deployed next to the default router, keyed by chain ID. Pass them (together with the
+  default router) to `routeMessage` so both routers' OffRamps are searched.
+</Aside>
+
+## Types
+
+### CCIPSentMessage
+
+Represents a CCIP message sent in a transaction, for any supported protocol version.
+
+| Property            | Type                           | Description                                                                                                                      |
+| ------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| era                 | `"PRE_V1_6" \| "V1_6" \| "V2"` | CCIP protocol version of the lane the message was sent on                                                                        |
+| onRamp              | `string`                       | Source OnRamp that emitted the message                                                                                           |
+| messageId           | `string`                       | The message ID                                                                                                                   |
+| sourceChainSelector | `bigint`                       | The source chain selector                                                                                                        |
+| destChainSelector   | `bigint`                       | The destination chain selector (`undefined` for pre-1.6)                                                                         |
+| message             | `object`                       | Era-specific payload: the pre-1.6 `EVM2EVMMessage`, the 1.6 `EVM2AnyRampMessage`, or for CCIP 2.0 `{ encodedMessage, receipts }` |
+
+## Functions
+
+### getCCIPMessages
+
+Extracts every CCIP message sent in a transaction, for all supported protocol versions.
+
+```javascript
+function getCCIPMessages(connection, receipt) => CCIPSentMessage[]
+```
+
+<Aside>
+  Parses the pre-1.6 `CCIPSendRequested` and the 1.6 / 2.0 `CCIPMessageSent` events from the receipt logs. For CCIP 2.0,
+  the source and destination chain selectors are read from the `MessageV1` wire format without a full decode.
+</Aside>
+
+#### Parameters
+
+| Parameter  | Type     | Description                                |
+| ---------- | -------- | ------------------------------------------ |
+| connection | `object` | Network connection of the source chain     |
+| receipt    | `object` | Transaction receipt of the `ccipSend` call |
+
+#### Returns
+
+| Type                | Description                                     |
+| ------------------- | ----------------------------------------------- |
+| `CCIPSentMessage[]` | The sent messages, in log order (empty if none) |
+
+### requestLinkFromTheFaucet
+
+Requests LINK tokens from the testnet faucet by impersonating it.
+
+```javascript
+async function requestLinkFromTheFaucet(connection, linkAddress, to, amount) => Promise<string>
+```
+
+#### Parameters
+
+| Parameter   | Type     | Description                                               |
+| ----------- | -------- | --------------------------------------------------------- |
+| connection  | `object` | Network connection from `network.connect()`               |
+| linkAddress | `string` | The address of the LINK contract on the connected network |
+| to          | `string` | The address to send LINK to                               |
+| amount      | `bigint` | The amount of LINK to request                             |
+
+#### Returns
+
+| Type              | Description                                                    |
+| ----------------- | -------------------------------------------------------------- |
+| `Promise<string>` | Promise resolving to the transaction hash of the fund transfer |
+
+### routeMessage
+
+Routes a sent message on the destination (connected) network, as the destination OffRamp would execute it.
+
+```javascript
+async function routeMessage(connection, routerAddresses, sent, options = {}) => Promise<Object>
+```
+
+<Aside>
+  - pre-1.6 and 1.6: impersonates the lane's OffRamp and calls `executeSingleMessage`. - CCIP 2.0: the OffRamp selects
+  the CCVs (`getCCVsForMessage`), CCVs that are owner-configurable verifier resolvers are pointed at a synthetic no-op
+  verifier, and the raw encoded message is executed through the permissionless `execute`. A message is only delivered if
+  the OffRamp reports `SUCCESS`.
+</Aside>
+
+#### Parameters
+
+| Parameter       | Type                 | Description                                                                                                                         |
+| --------------- | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| connection      | `object`             | Network connection of the destination chain                                                                                         |
+| routerAddresses | `string \| string[]` | Destination router address(es) whose OffRamps are searched, e.g. the default router and `CCIP_V2_ROUTERS[chainId]`                  |
+| sent            | `CCIPSentMessage`    | A message returned by `getCCIPMessages`                                                                                             |
+| options         | `Object`             | Optional: `forceExecution` (default `false`) executes CCIP 2.0 messages whose executor is `NO_EXECUTION_ADDRESS` (manual execution) |
+
+#### Returns
+
+| Type     | Description                                                                                                                                                                   |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Object` | `{ offRamp, executed, reason }`: `executed` is `false` only for a CCIP 2.0 `NO_EXECUTION` message routed without `forceExecution` (`reason` is then `"NO_EXECUTION_ADDRESS"`) |
+
+<Aside type="caution">
+
+**Possible Errors**
+
+- Throws if no OffRamp serves the lane (no OffRamp found for the message's source chain and OnRamp on the given routers)
+- Throws if execution fails (receiver revert, finality or CCV rejection)
+
+</Aside>

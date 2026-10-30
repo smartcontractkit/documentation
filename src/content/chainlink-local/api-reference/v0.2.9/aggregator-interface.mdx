@@ -1,0 +1,136 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "AggregatorInterface v0.2.9 API Reference"
+metadata:
+  description: "API documentation for AggregatorInterface in Solidity, version v0.2.9."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage029" />
+
+## AggregatorInterface
+
+Basic price feed interface.
+
+[AggregatorInterface](https://github.com/smartcontractkit/chainlink-local/blob/v0.2.9/src/data-feeds/interfaces/AggregatorInterface.sol)
+
+## Events
+
+### AnswerUpdated
+
+```solidity
+event AnswerUpdated(int256 current, uint256 roundId, uint256 updatedAt)
+```
+
+Emitted when the answer is updated.
+
+#### Parameters
+
+| Name      | Type    | Description                                      |
+| --------- | ------- | ------------------------------------------------ |
+| current   | int256  | - The updated answer.                            |
+| roundId   | uint256 | - The round ID for which the answer was updated. |
+| updatedAt | uint256 | - The timestamp when the answer was updated.     |
+
+### NewRound
+
+```solidity
+event NewRound(uint256 roundId, address startedBy, uint256 startedAt)
+```
+
+Emitted when a new round is started.
+
+#### Parameters
+
+| Name      | Type    | Description                                          |
+| --------- | ------- | ---------------------------------------------------- |
+| roundId   | uint256 | - The round ID of the new round.                     |
+| startedBy | address | - The address of the account that started the round. |
+| startedAt | uint256 | - The timestamp when the round was started.          |
+
+## Functions
+
+### getAnswer
+
+```solidity
+function getAnswer(uint256 roundId) external view returns (int256)
+```
+
+Gets the answer for a specific round ID.
+
+#### Parameters
+
+| Name    | Type    | Description                           |
+| ------- | ------- | ------------------------------------- |
+| roundId | uint256 | - The round ID to get the answer for. |
+
+#### Returns
+
+| Name | Type   | Description                                 |
+| ---- | ------ | ------------------------------------------- |
+| [0]  | int256 | int256 - The answer for the given round ID. |
+
+### getTimestamp
+
+```solidity
+function getTimestamp(uint256 roundId) external view returns (uint256)
+```
+
+Gets the timestamp for a specific round ID.
+
+#### Parameters
+
+| Name    | Type    | Description                              |
+| ------- | ------- | ---------------------------------------- |
+| roundId | uint256 | - The round ID to get the timestamp for. |
+
+#### Returns
+
+| Name | Type    | Description                                     |
+| ---- | ------- | ----------------------------------------------- |
+| [0]  | uint256 | uint256 - The timestamp for the given round ID. |
+
+### latestAnswer
+
+```solidity
+function latestAnswer() external view returns (int256)
+```
+
+Gets the latest answer from the aggregator.
+
+#### Returns
+
+| Name | Type   | Description                 |
+| ---- | ------ | --------------------------- |
+| [0]  | int256 | int256 - The latest answer. |
+
+### latestRound
+
+```solidity
+function latestRound() external view returns (uint256)
+```
+
+Gets the latest round ID from the aggregator.
+
+#### Returns
+
+| Name | Type    | Description                    |
+| ---- | ------- | ------------------------------ |
+| [0]  | uint256 | uint256 - The latest round ID. |
+
+### latestTimestamp
+
+```solidity
+function latestTimestamp() external view returns (uint256)
+```
+
+Gets the timestamp of the latest answer from the aggregator.
+
+#### Returns
+
+| Name | Type    | Description                                   |
+| ---- | ------- | --------------------------------------------- |
+| [0]  | uint256 | uint256 - The timestamp of the latest answer. |

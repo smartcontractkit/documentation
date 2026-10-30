@@ -1,0 +1,110 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "DataStreamsLocalSimulator v0.2.6 API Reference"
+metadata:
+  description: "API documentation for DataStreamsLocalSimulator in Solidity, version v0.2.6."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage026" />
+
+## DataStreamsLocalSimulator
+
+Local Data Streams simulator (no-fork mode).
+
+[DataStreamsLocalSimulator](https://github.com/smartcontractkit/chainlink-local/blob/v0.2.6/src/data-streams/DataStreamsLocalSimulator.sol)
+
+## Variables
+
+### i_linkToken
+
+```solidity
+contract LinkToken i_linkToken
+```
+
+The LINK token instance
+
+### i_wrappedNative
+
+```solidity
+contract WETH9 i_wrappedNative
+```
+
+The wrapped native token instance
+
+### s_mockFeeManager
+
+```solidity
+contract MockFeeManager s_mockFeeManager
+```
+
+### s_mockRewardManager
+
+```solidity
+contract MockRewardManager s_mockRewardManager
+```
+
+### s_mockVerifier
+
+```solidity
+contract MockVerifier s_mockVerifier
+```
+
+### s_mockVerifierProxy
+
+```solidity
+contract MockVerifierProxy s_mockVerifierProxy
+```
+
+## Functions
+
+### configuration
+
+```solidity
+function configuration() public view returns (contract WETH9 wrappedNative_, contract LinkToken linkToken_, contract MockVerifier mockVerifier_, contract MockVerifierProxy mockVerifierProxy_, contract MockFeeManager mockFeeManager_, contract MockRewardManager mockRewardManager_)
+```
+
+@notice Returns configuration details for pre-deployed contracts and services
+needed for local Data Streams simulations.
+
+#### Returns
+
+| Name                | Type                       | Description                         |
+| ------------------- | -------------------------- | ----------------------------------- |
+| wrappedNative\_     | contract WETH9             | - The wrapped native token.         |
+| linkToken\_         | contract LinkToken         | - The LINK token.                   |
+| mockVerifier\_      | contract MockVerifier      | - The mock verifier contract.       |
+| mockVerifierProxy\_ | contract MockVerifierProxy | - The mock verifier proxy contract. |
+| mockFeeManager\_    | contract MockFeeManager    | - The mock fee manager contract.    |
+| mockRewardManager\_ | contract MockRewardManager | - The mock reward manager contract. |
+
+### constructor
+
+```solidity
+constructor() public
+```
+
+### requestLinkFromFaucet
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+Requests LINK tokens from the faucet. The provided amount of tokens are
+transferred to provided destination address.
+
+#### Parameters
+
+| Name   | Type    | Description                                        |
+| ------ | ------- | -------------------------------------------------- |
+| to     | address | - The address to which LINK tokens are to be sent. |
+| amount | uint256 | - The amount of LINK tokens to send.               |
+
+#### Returns
+
+| Name    | Type | Description                                                                   |
+| ------- | ---- | ----------------------------------------------------------------------------- |
+| success | bool | - Returns `true` if the transfer of tokens was successful, otherwise `false`. |
