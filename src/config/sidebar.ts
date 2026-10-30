@@ -1327,6 +1327,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               title: "Tokenized Equity Feeds",
               url: "data-feeds/tokenized-equity-feeds",
               children: [
+                { title: "24/7 Tokenized Equity Feeds", url: "data-feeds/tokenized-equity-feeds/24-7" },
                 {
                   title: "Provider Catalog",
                   url: "data-feeds/tokenized-equity-feeds/providers",
@@ -1715,6 +1716,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
             {
               title: "24/5 US Equities User Guide",
               url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
+            },
+            {
+              title: "24/7 US Equities User Guide",
+              url: "data-streams/rwa-streams/24-7-us-equities",
             },
             {
               title: "APAC Equities",

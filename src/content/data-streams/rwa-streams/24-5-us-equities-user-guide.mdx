@@ -22,6 +22,8 @@ Chainlink 24/5 U.S. Equities Streams provide real-time equity pricing data acros
 
 The data referenced in this document covers 24/5 trading hours in US equities on a range of traditional venues. While there is currently no trading activity in traditional markets over the weekend on any venue, protocols can extend their pricing coverage to 24/7 in multiple ways, such as leveraging the pricing of [tokenized stocks](#stream-switching-example-logic) on secondary markets such as CEXes and DEXes.
 
+For a select set of assets, Chainlink also offers [24/7 US Equities streams](/data-streams/rwa-streams/24-7-us-equities): one continuous stream per asset that handles session switching and transitions for you, and keeps publishing on weekends and holidays using an off-hours price derived from perpetual futures markets.
+
 Developers are responsible for choosing the appropriate feed and ensuring that the operation and performance of their choice matches expectations. For more information, please visit the Chainlink [documentation](/data-streams/developer-responsibilities).
 
 ## Schema
@@ -135,6 +137,8 @@ Consumers must treat `marketStatus = 0` (Unknown) as a valid state and define de
 #### Closed (`marketStatus = 5`)
 
 Market status `5` indicates the market is closed, which includes weekends, public holidays, and unexpected market closures. During these periods, all three feeds will carry stale values. This reflects true underlying market inactivity rather than an outage or failure.
+
+If you need prices during these periods, check whether the asset is covered by the [24/7 US Equities streams](/data-streams/rwa-streams/24-7-us-equities).
 
 ##### Mitigation
 

@@ -51,6 +51,7 @@ This page covers trading schedules and `marketStatus` value mappings for each Ch
 | [**Crypto**](#cryptocurrency)                                                            | 24/7/365                                         | —                                                | None                  | None                                                                                           |
 | [**US Equities and ETFs**](#v11-standard-hours-feeds) (Standard)                         | **09:30 Mon**                                    | **16:00 Fri**                                    | 16:00–09:30 daily     | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
 | [**24/5 US Equities and ETFs**](#24-5-us-equities)                                       | **20:00 Sun**                                    | **20:00 Fri**                                    | None                  | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
+| [**24/7 US Equities and ETFs**](#24-7-us-equities)                                       | 24/7/365                                         | —                                                | None                  | Priced as off-hours (`marketStatus = 5`)                                                       |
 | [**APAC Equities**](#apac-equities)<br/>(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange    | Consult each exchange's official holiday calendar                                              |
 | [**FX Majors**](#forex-precious-metals-and-commodities)<br/>(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                  | Jan 1, Dec 25                                                                                  |
 | [**Precious Metals Spot**](#forex-precious-metals-and-commodities)<br/>(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu   | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
@@ -98,6 +99,19 @@ Standard US Equities streams cover regular NYSE/NASDAQ trading sessions only (9:
 | `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session                                          |
 | `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                              |
 | `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; ~8:00pm Fri–8:00pm Sun ET) |
+
+### 24/7 US Equities <span id="24-7-us-equities"></span>
+
+24/7 US Equities streams publish a single continuous stream per asset. They use the same `marketStatus` values as the 24/5 streams, but prices keep updating while `marketStatus` is `5`: the stream switches to an off-hours price derived from perpetual futures markets. See the [24/7 US Equities User Guide](/data-streams/rwa-streams/24-7-us-equities) for how each session is priced.
+
+| Value | Status            | Hours (ET)                                     | Price source                          |
+| ----- | ----------------- | ---------------------------------------------- | ------------------------------------- |
+| `0`   | **Unknown**       | N/A                                            | None. Treat as unavailable            |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                          | Extended hours session                |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                          | Regular hours session                 |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                          | Extended hours session                |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning          | Overnight session                     |
+| `5`   | **Closed**        | 8:00pm Fri–8:00pm Sun, plus US market holidays | Off-hours perpetual futures composite |
 
 ---
 

@@ -86,6 +86,16 @@ Used by [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide
 | `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                              |
 | `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; ~8:00pm Fri–8:00pm Sun ET) |
 
+#### 24/7 US Equities feeds
+
+Used by [24/7 US Equities](/data-streams/rwa-streams/24-7-us-equities) streams. The values are the same as the 24/5 mapping above, with one difference: when `marketStatus` is `5` (Closed), the stream keeps publishing an off-hours price derived from perpetual futures markets.
+
+<Aside type="note" title="lastTradedPrice on 24/7 streams">
+  On 24/7 US Equities streams, `lastTradedPrice` carries the Oracle Price, a smoothed price intended for collateral
+  valuation. It is fully supported on these streams. See the [24/7 US Equities User
+  Guide](/data-streams/rwa-streams/24-7-us-equities#field-behavior-by-session) for how each field behaves by session.
+</Aside>
+
 Implement appropriate safeguards based on market status — such as pausing trading, adjusting risk parameters, or adding staleness checks during non-regular or closed periods. See [Market Hours](/data-streams/market-hours) for guidance.
 
 ### Notes

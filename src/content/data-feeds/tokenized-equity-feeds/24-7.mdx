@@ -1,0 +1,139 @@
+---
+section: dataFeeds
+date: "Last Modified"
+title: "24/7 Tokenized Equity Feeds"
+metadata:
+  title: "24/7 Tokenized Equity Feeds | Chainlink Data Feeds"
+  description: "Learn how Chainlink 24/7 Tokenized Equity Feeds price tokenized stocks and ETFs through weekends and holidays, how they differ from 24/5 feeds, and the risks lending protocols should account for."
+  keywords:
+    [
+      "Tokenized Equities",
+      "24/7 Pricing",
+      "Weekend Pricing",
+      "Lending",
+      "Collateral",
+      "Data Feeds",
+      "RWA",
+      "Oracle Price",
+    ]
+whatsnext:
+  {
+    "Learn about Tokenized Equity Feeds": "/data-feeds/tokenized-equity-feeds",
+    "Learn about 24/7 US Equities on Data Streams": "/data-streams/rwa-streams/24-7-us-equities",
+    "View the Asset Issuer Catalog": "/data-feeds/tokenized-equity-feeds/providers",
+    "Learn about developer responsibilities": "/data-feeds/developer-responsibilities",
+  }
+---
+
+import { Aside } from "@components"
+
+<Aside type="note" title="Contact us before integrating">
+  24/7 Tokenized Equity Feeds are built for lending protocols and have different behavior and risks from both standard
+  price feeds and 24/5 [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds). All developers must contact
+  [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) before integrating these
+  feeds.
+</Aside>
+
+24/7 Tokenized Equity Feeds keep publishing the value of a tokenized stock or ETF when the US equity market is closed. During the trading week they behave like the existing [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds). On weekends and US market holidays, instead of holding the last Friday price, they continue to update from an off-hours price derived from perpetual futures markets.
+
+## Why 24/7?
+
+Lending protocols that accept tokenized equities as collateral run around the clock. Interest accrues on weekends and borrowers can still act, while the US equity market is closed from Friday 8:00 PM ET to Sunday 8:00 PM ET. News over that period still changes what the collateral is worth, and with a 24/5 feed that change is reflected onchain at the Sunday open, all at once. Protocols cover this gap today with conservative collateral parameters sized for the longest possible market closure.
+
+A 24/7 feed lets the onchain price move gradually over the weekend, so risk builds up in view instead of all at once at the reopen.
+
+## How 24/7 feeds work
+
+Each feed publishes the **Oracle Price**, a slow price built for collateral valuation, multiplied by the asset issuer's multiplier. As with 24/5 tokenized equity feeds, the answer is the value of the token, not the raw equity price. Multiplier sourcing and issuer-specific methodology are unchanged. See the [Asset Issuer Catalog](/data-feeds/tokenized-equity-feeds/providers) for details.
+
+The Oracle Price comes from the same source as the `lastTradedPrice` field on [24/7 US Equities streams](/data-streams/rwa-streams/24-7-us-equities). That page covers the methodology in detail. In short:
+
+| Period                                                | Source of the Oracle Price                                                               |
+| :---------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| Regular hours and pre/post-market (Mon–Fri)           | The active equity session price, unsmoothed                                              |
+| Overnight (8:00 PM–4:00 AM ET, Sun–Fri)               | An exponential moving average (EMA) of the overnight equity price                        |
+| Off-hours (8:00 PM Fri–8:00 PM Sun ET, plus holidays) | A smoothed price that follows a composite of perpetual futures venues                    |
+| Session transitions                                   | A short smoothed blend from one source to the next, except pre-market into regular hours |
+
+During off-hours, the Oracle Price is referenced to the Friday equity close and follows the perpetual futures price gradually. Short-lived dislocations in thin weekend markets have little effect on it, while sustained moves are followed in full over time.
+
+The off-hours price is built from perpetual futures, not from spot trading in the underlying shares or from secondary market prices of the tokens themselves.
+
+### Updates
+
+Like other Data Feeds, these feeds update onchain when the price moves beyond the feed's deviation threshold or when the heartbeat elapses, including on weekends. Deviation is measured on the smoothed Oracle Price, not the live market. Long stretches without an update while the underlying market is moving are expected for a smoothed feed and are not a fault.
+
+The feed does not expose a market status or session flag onchain, and the `updatedAt` value returned by `latestRoundData` is the time of the last onchain update, not the time the underlying inputs were last observed.
+
+### Available assets
+
+24/7 coverage depends on liquid perpetual futures markets during off-hours, so not every tokenized equity has a 24/7 feed. Each asset is reviewed individually before launch, including its off-hours trading volume and how much it would cost to move its off-hours price, and the asset issuer must support it. This review lowers risk but does not remove it: covered assets can still be manipulated or dislocated during off-hours, and the [risks](#risks) below apply to every one of them. Other tokenized equities remain on 24/5 feeds. Coverage will expand as off-hours perpetual futures markets deepen.
+
+{/* DOCS TEAM: add the link or FeedList filter for 24/7 Tokenized Equity Feeds here. */}
+
+## Key differences from 24/5 tokenized equity feeds
+
+|                        | 24/5 Tokenized Equity Feeds         | 24/7 Tokenized Equity Feeds                          |
+| :--------------------- | :---------------------------------- | :--------------------------------------------------- |
+| Weekends and holidays  | Holds the last value until the open | Continues to update from the off-hours price         |
+| Off-hours price source | None                                | Perpetual futures composite, smoothed                |
+| Sunday reopen          | Updates to the opening price        | Remaining gap is closed over a short window          |
+| Smoothing              | Session transitions and overnight   | Session transitions, overnight, and all of off-hours |
+| Asset coverage         | Broad                               | Assets reviewed for off-hours liquidity              |
+
+All risks on the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds#risks) page still apply during the trading week. The risks below are specific to 24/7 feeds or change in a meaningful way.
+
+## Risks
+
+### Slow price, delayed liquidations
+
+The Oracle Price is designed to move gradually. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately, and a large weekend move can take hours to be fully reflected. This reduces the chance of borrowers being liquidated on a brief dislocation, but it also means liquidations after a sustained move can happen later than they would against a live market price, and arbitrage opportunities can appear in the meantime.
+
+#### Mitigation
+
+- Set loan-to-value ratios, liquidation thresholds, close factors, liquidation bonuses, and supply caps for a lagging price. Do not size them as if the feed were real time
+- Test your parameters against historical weekend moves and earnings gaps
+- Consider tighter limits on new borrowing during off-hours
+
+### Off-hours prices come from derivatives
+
+Perpetual futures can trade at a basis to the underlying shares, driven by funding rates and venue contract design, and venues occasionally change their contract specifications. Weekend volumes are a fraction of weekday spot volumes. Off-hours prices can be manipulated. It costs less to move them than during the trading week, and less still if some venues drop out. Smoothing in the Oracle Price reduces the effect of a short-lived move but does not prevent a sustained one.
+
+#### Mitigation
+
+- Set supply caps per asset with the off-hours market in mind, not only weekday liquidity
+- Monitor the feed against independent references during off-hours
+
+### Feed stops updating
+
+Two situations can stop the feed from updating during off-hours:
+
+- **Input outage:** Perpetual futures data is currently delivered through a single data provider. If it stops, no new off-hours price can be computed. When inputs return after an interruption, the Oracle Price needs a recovery period before it updates again.
+- **Missing close:** If the Friday equity close cannot be determined, no Oracle Price is produced for that off-hours period. In the worst case, the feed does not update for an entire weekend.
+
+In both cases, the last onchain answer stands. Because the feed updates on deviation, a quiet feed during a healthy weekend and a feed that has stopped look similar onchain until the heartbeat is missed.
+
+#### Mitigation
+
+- Check `updatedAt` against the feed's heartbeat and treat a missed heartbeat as stale
+- Define protocol behavior for a full weekend without updates, such as pausing new borrowing and capping liquidations
+- Integrators who need finer staleness signals can subscribe to the matching [24/7 US Equities stream](/data-streams/rwa-streams/24-7-us-equities) and read `marketStatus` and `lastSeenTimestampNs`
+
+### Sunday reopen
+
+The reopen price is not known until the equity market opens. At the reopen, the feed closes any remaining weekend gap over a short window. This is much smaller than the single jump a 24/5 feed makes, but positions that degraded over the weekend can still become liquidatable around the reopen.
+
+#### Mitigation
+
+- Watch positions near their liquidation threshold ahead of the Sunday 8:00 PM ET open
+
+### Corporate actions and holidays
+
+The existing [pause workflow for corporate actions](/data-feeds/tokenized-equity-feeds#pause-confirmation-for-corporate-actions) is unchanged. Pauses and unpauses happen while the equity market is open, and the unpause check uses the regular-hours equity price, never the off-hours price. A corporate action that lands over a weekend without a pause, such as a split or a large special dividend, can move the true value sharply, and the Oracle Price will follow it slowly because it is referenced to the pre-event close.
+
+US market holidays are priced as off-hours. The feed does not flag them.
+
+#### Mitigation
+
+- Monitor corporate action announcements for every asset you list
+- Use an authoritative exchange holiday calendar
