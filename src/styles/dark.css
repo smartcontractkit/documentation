@@ -24,10 +24,20 @@ html.dark {
   /* blocks' gray-800 border is barely visible on gray-900 */
   --border: var(--gray-700);
 
+  /* Shared surfaces for tone callouts/status. */
+  --tone-surface: var(--muted);
+  --tone-border: var(--border);
+  --tone-info: var(--blue-500);
+  --tone-success: var(--success-foreground);
+  --tone-warning: var(--yellow-500);
+  --tone-error: var(--red-500);
+
   /* theme.css */
   --surface-accent: var(--dark-tint-blue);
   --surface-accent-strong: var(--dark-tint-blue-strong);
   --text-accent: var(--blue-400);
+  --color-accent: var(--blue-500);
+  --color-accent-dark: var(--blue-700);
   --callout-warning-bg: var(--dark-tint-yellow);
   --callout-warning-text: var(--dark-text-yellow);
   --callout-info-bg: var(--dark-tint-blue);
@@ -132,35 +142,35 @@ html.dark #article aside:not(.note, .tip, .caution, .danger) {
 
 /* Tone asides: neutral surface + tone accent bar in dark. */
 html.dark aside:is(.note, .tip, .caution, .danger) {
-  --aside-bg: var(--muted);
-  --aside-border: var(--border);
+  --aside-bg: var(--tone-surface);
+  --aside-border: var(--tone-border);
   box-shadow: inset 3px 0 0 var(--aside-accent);
 }
 
 html.dark aside:is(.note, .tip) {
-  --aside-accent: var(--blue-500);
+  --aside-accent: var(--tone-info);
   --aside-fg: var(--progress-foreground);
 }
 
 html.dark aside.caution {
-  --aside-accent: var(--yellow-500);
+  --aside-accent: var(--tone-warning);
   --aside-fg: var(--warning-foreground);
 }
 
 html.dark aside.danger {
-  --aside-accent: var(--red-500);
+  --aside-accent: var(--tone-error);
   --aside-fg: var(--error-foreground);
 }
 
 /* Same treatment for the RateLimitBucket status box (not an aside). */
 html.dark .rlb-status:not([data-tone="neutral"]) {
-  --rlb-tone-bg: var(--muted);
-  --rlb-tone-border: var(--border);
+  --rlb-tone-bg: var(--tone-surface);
+  --rlb-tone-border: var(--tone-border);
   box-shadow: inset 3px 0 0 var(--rlb-tone-icon);
 }
 
-/* Keeps transparent diagrams legible. Opt out with class="no-dark-card". */
-html.dark #article :is(p, figure, a) > img:not(.no-dark-card) {
+/* Opt out with class="no-dark-card"; SVGs are excluded. */
+html.dark #article :is(p, figure, a) > img:not(.no-dark-card):not([src$=".svg" i]) {
   background: var(--white);
   border-radius: 4px;
   box-shadow: 0 0 0 1px var(--gray-700);
