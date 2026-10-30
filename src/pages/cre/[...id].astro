@@ -193,7 +193,8 @@ const scriptVars = (vars: Record<string, string>) =>
       set:html={`${scriptVars({ goUrl: `/cre/${goEntry.id}`, tsUrl: `/cre/${tsEntry.id}` })}
       window.addEventListener("languageChanged", function(e) {
         try {
-          var l = e.detail.language;
+          var l = e.detail && e.detail.language;
+          if (!l) return;
           var u = l === "go" ? goUrl : tsUrl;
           var suffix = window.location.search + window.location.hash;
           if (u) window.location.href = u + suffix;
