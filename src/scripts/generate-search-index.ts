@@ -119,7 +119,7 @@ export async function createSearchPageCompiler(root: string): Promise<SearchPage
   const { getViteConfig } = await import("astro/config")
   const config = await getViteConfig({}, { root, logLevel: "error" })({ command: "build", mode: "production" })
   const plugins = await flattenPlugins(config.plugins ?? [])
-  const transforms = ["@mdx-js/rollup", "@astrojs/mdx-postprocess"].map((name) => {
+  const transforms = ["@mdx-js/rolldown", "@astrojs/mdx-postprocess"].map((name) => {
     const plugin = plugins.find((plugin) => plugin.name === name)
     if (!plugin?.transform) throw new Error(`Configured MDX compiler hook not found: ${name}`)
     return typeof plugin.transform === "function" ? plugin.transform : plugin.transform.handler
