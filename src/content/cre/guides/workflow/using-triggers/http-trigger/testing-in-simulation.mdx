@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Test HTTP triggers locally with the CRE simulator: provide JSON payloads interactively or via command-line flags for rapid development."
   datePublished: "2025-11-10"
-  lastModified: "2026-06-11"
+  lastModified: "2026-10-30"
 ---
 
 import { Aside, CodeHighlightBlockMulti } from "@components"
@@ -47,21 +47,36 @@ The simulator will detect your HTTP trigger and prompt you to select it from ava
 
 ## Listen mode
 
-Use `--listen` to keep the simulator alive between runs. Instead of simulating once and exiting, the CLI starts a local HTTP server on port `2000` and re-runs the simulator every time it receives a POST request — no need to restart between tests.
+Use `--listen` to keep the simulator alive between runs. Instead of simulating once and exiting, the CLI starts a local HTTP server on port `2000` and re-runs the simulator every time it receives a POST request — no need to restart between test payloads.
 
 ```bash
 cre workflow simulate my-http-workflow --listen --target staging-settings
 ```
 
-Once running, send payloads with any HTTP client:
+Once running, send payloads to `/trigger` with any HTTP client. Wrap your payload in an `input` field:
 
 ```bash
-curl -X POST http://localhost:2000 \
+curl -X POST http://localhost:2000/trigger \
   -H "Content-Type: application/json" \
-  -d '{"userId":"123","action":"purchase","amount":100}'
+  -d '{"input":{"userId":"123","action":"purchase","amount":100}}'
 ```
 
-Each POST triggers a fresh simulation run. Press `Ctrl+C` to stop.
+Your workflow receives the value of `input` as the trigger payload. Each POST triggers a simulation run. Press `Ctrl+C` to stop.
+
+<Aside type="note" title="Restart to pick up code changes">
+  The simulator compiles your workflow once, when it starts. If you change your workflow code, restart the simulator. To
+  avoid recompiling on every start, see [Simulating with a pre-built
+  binary](/cre/guides/operations/simulating-workflows#simulating-with-a-pre-built-binary).
+</Aside>
+
+<Aside type="caution" title="Default limits skip requests sent less than 30 seconds apart">
+  By default, the simulator enforces the production [HTTP trigger quota](/cre/service-quotas#http-trigger): one run per
+  30 seconds. In listen mode, the simulator skips requests that arrive sooner and still returns `200 OK`. The only sign
+  is a `Trigger rate limited, skipping execution` message in the terminal. To send requests more often, add `--limits
+  none`. See [Testing Production Limits](/cre/guides/operations/understanding-limits).
+</Aside>
+
+For the full list of listen mode behavior, including queuing and error handling, see [Listen mode](/cre/guides/operations/simulating-workflows#listen-mode).
 
 ## Providing input data
 
@@ -267,6 +282,30 @@ This helps you verify error handling and edge cases before deployment.
 <Aside type="caution" title="Add authorization before deploying">
   Simulation allows empty authorization configs for convenience, but **deployed workflows require `authorizedKeys`**.
   The CLI will reject deployments with HTTP triggers that lack authorization configuration.
+</Aside>
+
+## Local listener vs the deployed gateway
+
+If your backend triggers deployed workflows through the CRE gateway, you may want to send the same requests to the local simulator. The local HTTP server that `--listen` starts is not a copy of the gateway. Use this table to see what differs:
+
+| Aspect                 | Local simulator (`--listen`)                                                                                   | Deployed workflow (gateway)                                                                                                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Endpoint**           | `POST http://localhost:2000/trigger`                                                                           | The [gateway URL](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls) for your workflow's DON                                                       |
+| **Request format**     | `{"input": { ... }}`                                                                                           | JSON-RPC `workflows.execute` request with the payload in `params.input`. See [Request format](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#request-format) |
+| **Workflow selection** | One workflow and trigger per simulator process. The request does not choose a workflow                         | The request selects the workflow, for example with `params.workflow.workflowID`                                                                                                              |
+| **Authorization**      | None. The simulator does not check a JWT or `authorizedKeys`                                                   | JWT signed with a key listed in `authorizedKeys`. See [JWT authentication](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#jwt-authentication)                |
+| **Response**           | Empty `200 OK`, returned before the workflow runs. Results appear in the terminal                              | JSON-RPC response with `result.status` set to `ACCEPTED`. See [Response format](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#response-format)              |
+| **Execution**          | One run at a time. Up to 16 requests wait in a queue                                                           | Asynchronous on the DON                                                                                                                                                                      |
+| **Rate limit**         | One run per 30 seconds by default. Skipped requests still return `200 OK`. Disable with `--limits none`        | Production [HTTP trigger quota](/cre/service-quotas#http-trigger)                                                                                                                            |
+| **Invalid requests**   | `400 Bad Request` if the body isn't valid JSON. If `input` is missing, the workflow runs with an empty payload | JSON-RPC error response. See [Error response](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#error-response)                                                 |
+
+To send gateway-format requests to the simulator, unwrap `params.input` in your own code and send it as `{"input": ...}` to `/trigger`. To run several workflows locally, start one simulator per workflow, each with its own `--http-trigger-port`. To test JWT authorization, use a deployed workflow. See [Testing with Local JWT Server](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool).
+
+<Aside type="note" title="Two tools can use port 2000">
+  The `cre-http-trigger` tool in [Testing with Local JWT
+  Server](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool) also listens on `localhost:2000/trigger`,
+  but it forwards your request to a deployed workflow. It does not run the simulator. If you run both at the same time,
+  start the simulator on another port with `--http-trigger-port`.
 </Aside>
 
 ## Next steps
