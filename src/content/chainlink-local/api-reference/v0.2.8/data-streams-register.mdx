@@ -1,0 +1,84 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Register (Data Streams) v0.2.8 API Reference"
+metadata:
+  description: "API documentation for Register (Data Streams) in Solidity, version v0.2.8."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage028" />
+
+## Register (Data Streams)
+
+Data Streams network configuration registry.
+
+[Register (Data Streams)](https://github.com/smartcontractkit/chainlink-local/blob/v0.2.8/src/data-streams/Register.sol)
+
+## Structs
+
+### NetworkDetails
+
+```solidity
+struct NetworkDetails {
+  address verifierProxyAddress;
+  address linkAddress;
+}
+```
+
+## Variables
+
+### s_networkDetails
+
+```solidity
+mapping(uint256 => struct Register.NetworkDetails) s_networkDetails
+```
+
+Mapping to store network details based on chain ID.
+
+## Functions
+
+### constructor
+
+```solidity
+constructor() public
+```
+
+Constructor to initialize the network details for various chains.
+
+### getNetworkDetails
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (struct Register.NetworkDetails networkDetails)
+```
+
+Retrieves network details for a given chain ID.
+
+#### Parameters
+
+| Name    | Type    | Description                                   |
+| ------- | ------- | --------------------------------------------- |
+| chainId | uint256 | - The ID of the chain to get the details for. |
+
+#### Returns
+
+| Name           | Type                           | Description                                       |
+| -------------- | ------------------------------ | ------------------------------------------------- |
+| networkDetails | struct Register.NetworkDetails | - The network details for the specified chain ID. |
+
+### setNetworkDetails
+
+```solidity
+function setNetworkDetails(uint256 chainId, struct Register.NetworkDetails networkDetails) external
+```
+
+Sets the network details for a given chain ID.
+
+#### Parameters
+
+| Name           | Type                           | Description                                              |
+| -------------- | ------------------------------ | -------------------------------------------------------- |
+| chainId        | uint256                        | - The ID of the chain to set the details for.            |
+| networkDetails | struct Register.NetworkDetails | - The network details to set for the specified chain ID. |

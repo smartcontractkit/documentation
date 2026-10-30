@@ -3,6 +3,7 @@ import os from "node:os"
 import path from "node:path"
 import { describe, expect, test } from "@jest/globals"
 import { buildMarkdownArtifact } from "@lib/markdown/buildMarkdownArtifact.js"
+import { transformMarkdown } from "@lib/markdown/transformMarkdown.js"
 import type { MarkdownArtifact } from "@lib/markdown/types.js"
 import {
   analyzeSourceMarkdown,
@@ -182,7 +183,7 @@ describe("Markdown fidelity execution modes", () => {
     const exception: FidelityException = {
       path: first.path,
       occurrence: first.occurrence,
-      status: "unsupported",
+      status: first.status as FidelityException["status"],
       reason: "Known projection gap",
       owner: "docs-platform",
       removalCondition: "Remove when UnknownWidget has a static projection",
@@ -203,7 +204,7 @@ describe("Markdown fidelity execution modes", () => {
 })
 
 describe("raw source analysis", () => {
-  test("unsupported findings preserve component name, repository path, and original line", () => {
+  test("unknown source expectations preserve component name, repository path, and original line", () => {
     const source = [
       "---",
       "title: Fixture",
@@ -218,7 +219,7 @@ describe("raw source analysis", () => {
       "src/content/fixture.mdx",
       source,
       artifact("Visible text")
-    ).filter((candidate) => candidate.status === "unsupported")
+    ).filter((candidate) => candidate.status === "unverifiable")
 
     expect(unsupported).toMatchObject({
       name: "UnknownWidget",
@@ -457,6 +458,8 @@ describe("content-bearing component fidelity", () => {
     ["AnyApiCallout", '<AnyApiCallout callout="not-a-callout" />'],
     ["CcipCommon", '<CcipCommon callout="not-a-callout" />'],
     ["SchemaFieldsTable", '<SchemaFieldsTable schema="unknown" />'],
+    ["CCIPSendError", '<CCIPSendError type="unknown" version="v1_6_2" />'],
+    ["CCIPEvent", '<CCIPEvent type="onramp-send" version="v9_9_9" />'],
     ["Billing", "<Billing />"],
   ])("%s unresolved content is blocking with component, path, and line", (name, component) => {
     const source = `Visible\n\n${component}`
@@ -485,6 +488,10 @@ describe("content-bearing component fidelity", () => {
   test.each([
     ['<AnyApiCallout callout="usefunctions" />', "Use CRE"],
     ['<CcipCommon callout="senderContractCallout" />', "Best Practices"],
+    ['<AceCallout callout="privateBeta" />', "Private Beta"],
+    ['<TokenizedEquityFeeds section="tokenizedEquityNote" />', "Tokenized equity feeds"],
+    ['<CCIPSendError type="router" version="v1_6_2" />', "0xae236d9c"],
+    ['<CCIPEvent type="onramp-send" version="v1_6_3" />', "Internal.EVM2AnyRampMessage"],
   ])("static selector content is independently inventoried: %s", (component, expectedFragment) => {
     const analysis = analyzeSourceMarkdown(component, "src/content/fixture.mdx")
 
@@ -495,6 +502,27 @@ describe("content-bearing component fidelity", () => {
         (candidate) => candidate.status === "missing"
       )
     ).toBe(true)
+  })
+
+  test.each([
+    [
+      '<CCIPEvent type="onramp-send" version="v1_6_3" />',
+      "`uint64 indexed destChainSelector`",
+      "`uint64 destChainSelector`",
+      "uint64 indexed destChainSelector, uint64 indexed sequenceNumber,",
+    ],
+    ['<CCIPEvent type="onramp-send" version="v1_6_3" />', "`message`", "`payload`", "message"],
+    ['<CCIPSendError type="router" version="v1_6_2" />', "`uint64 destChainSelector`", "-", "uint64 destChainSelector"],
+  ])("CCIP reference parameters are verified in %s", async (component, rendered, changed, expected) => {
+    const markdown = await transformMarkdown(component, path.resolve("src/content/fixture.mdx"))
+    const missing = (body: string) =>
+      compareSourceToArtifact("fixture", "src/content/fixture.mdx", component, artifact(body)).filter(
+        (candidate) => candidate.status === "missing"
+      )
+
+    expect(markdown).toContain(rendered)
+    expect(missing(markdown)).toEqual([])
+    expect(missing(markdown.replace(rendered, changed))).toEqual([expect.objectContaining({ expected })])
   })
 })
 
@@ -655,19 +683,20 @@ describe("final projection and envelope regressions", () => {
         candidate.occurrence.includes('"kind":"code"')
     )
 
-    expect(findings.length).toBe(4)
+    expect(findings.filter((candidate) => !candidate.output)).toHaveLength(4)
+    expect(findings.filter((candidate) => candidate.outputs?.includes("txt"))).toHaveLength(2)
     expect(findings.every((candidate) => candidate.status === "present")).toBe(true)
     expect(new Set(findings.map((candidate) => candidate.lang ?? "default"))).toEqual(new Set(["default", "go", "ts"]))
   })
 
-  test("reports DownloadButton as an unsupported visible component", () => {
+  test("reports an unknown DownloadButton expectation as unverifiable", () => {
     const source = 'Visible\n\n<DownloadButton href="/download">Download the toolkit</DownloadButton>'
     const [unsupported] = compareSourceToArtifact(
       "fixture",
       "src/content/fixture.mdx",
       source,
       artifact("Visible")
-    ).filter((candidate) => candidate.status === "unsupported")
+    ).filter((candidate) => candidate.status === "unverifiable")
 
     expect(unsupported).toMatchObject({
       name: "DownloadButton",
@@ -711,6 +740,56 @@ describe("final projection and envelope regressions", () => {
       )
       expect(finding).toMatchObject({ status: "missing", name })
     }
+  })
+
+  test("expects the published CCIP URL, without the latest content directory, in the Source line", async () => {
+    const requestPath = "ccip/v2/canton/concepts/key-concepts"
+    const sourcePath = "src/content/ccip/v2/canton/concepts/key-concepts.mdx"
+    const source = await fs.readFile(sourcePath, "utf8")
+    const production = await buildMarkdownArtifact(requestPath)
+    if (!production) throw new Error(`Expected production Markdown artifact for ${requestPath}`)
+    const sourceFinding = (markdown: string) =>
+      compareSourceToArtifact(requestPath, sourcePath, source, { ...production, markdown }).find(
+        (candidate) => candidate.name === "Envelope.source"
+      )
+
+    expect(production.markdown).toContain("Source: https://docs.chain.link/ccip/canton/concepts/key-concepts")
+    expect(sourceFinding(production.markdown)).toMatchObject({ status: "present" })
+    expect(
+      sourceFinding(production.markdown.replace("docs.chain.link/ccip/canton", "docs.chain.link/ccip/v2/canton"))
+    ).toMatchObject({ status: "missing" })
+  })
+
+  test("reads one-line tab slots that MDX wraps in a paragraph", async () => {
+    const source = [
+      "<Tabs>",
+      '  <Fragment slot="tab.1">npm</Fragment>',
+      '  <Fragment slot="tab.2">yarn</Fragment>',
+      '  <Fragment slot="panel.1">',
+      "",
+      "Run `npm install example`.",
+      "",
+      "  </Fragment>",
+      '  <Fragment slot="panel.2">',
+      "",
+      "Run `yarn add example`.",
+      "",
+      "  </Fragment>",
+      "</Tabs>",
+    ].join("\n")
+    const markdown = await transformMarkdown(source, path.resolve("src/content/fixture.mdx"))
+    const findings = compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(markdown))
+
+    expect(analyzeSourceMarkdown(source, "src/content/fixture.mdx").diagnostics).toEqual([])
+    expect(findings.filter((candidate) => candidate.status !== "present")).toEqual([])
+    expect(findings.map((candidate) => candidate.expected)).toEqual(
+      expect.arrayContaining(["npm", "yarn", "Run npm install example.", "Run yarn add example."])
+    )
+    expect(
+      compareSourceToArtifact("fixture", "src/content/fixture.mdx", source, artifact(markdown.replace("yarn add", "")))
+        .filter((candidate) => candidate.status === "missing")
+        .map((candidate) => candidate.expected)
+    ).toEqual(["Run yarn add example."])
   })
 
   test("numbers unchanged missing duplicates independently from identical present copies", () => {
@@ -1048,13 +1127,10 @@ test("checks the Data Feeds JSX-space callout and detects a missing inline code 
   ).toBe(true)
 })
 
-test("keeps diagnostics for dynamic inline HTML attributes and unprojected elements", () => {
+test("keeps dynamic inline HTML attributes unverifiable while checking emphasis text", () => {
   const source = "Keep <strong title={runtimeTitle}>this fact</strong> and <em>unprojected emphasis</em>."
   const analysis = analyzeSourceMarkdown(source, "fixture.mdx")
   expect(analysis.diagnostics).toEqual(
-    expect.arrayContaining([
-      expect.objectContaining({ status: "unverifiable", name: "strong.title" }),
-      expect.objectContaining({ status: "unverifiable", name: "em" }),
-    ])
+    expect.arrayContaining([expect.objectContaining({ status: "unverifiable", name: "strong.title" })])
   )
 })

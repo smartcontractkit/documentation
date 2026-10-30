@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { NetworkDropdown } from "./NetworkDropdown.tsx"
 import { useWalletSelector } from "@hooks/useEIP6963Providers.tsx"
 import { useWalletConnectionStorage } from "@hooks/useLocalStorage.ts"
+import { useIsMounted } from "@hooks/useIsMounted.ts"
 import { EIP1193Provider } from "../../utils/EIP1193Interface.ts"
 import { Toast } from "./Toast.tsx"
 import { WalletErrorBoundary } from "../../../components/ErrorBoundary.tsx"
@@ -34,16 +35,7 @@ function getProviderErrorCode(error: unknown): number | string | undefined {
   return undefined
 }
 
-export const MintTokenButton = () => {
-  // ✅ SSR Guard: Return loading state during server-side rendering
-  if (typeof window === "undefined") {
-    return (
-      <div className="mint-component">
-        <p>Loading wallet interface...</p>
-      </div>
-    )
-  }
-
+const MintTokenButtonContent = () => {
   const [userAddress, setUserAddress] = useState<string>("")
   const [isWalletConnected, setIsWalletConnected] = useState<boolean>(false)
   const [toastMessage, setToastMessage] = useState<string>("")
@@ -282,3 +274,9 @@ export const MintTokenButton = () => {
     </WalletErrorBoundary>
   )
 }
+
+/**
+ * Rendered with `client:load` rather than `client:only`, so Astro scopes this island's CSS to the pages using it.
+ * The server and the hydration pass render an empty container; the wallet UI mounts in the browser.
+ */
+export const MintTokenButton = () => (useIsMounted() ? <MintTokenButtonContent /> : <div />)

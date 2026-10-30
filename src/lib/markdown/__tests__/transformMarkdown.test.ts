@@ -741,6 +741,50 @@ Read the warning.
     expect(result).toContain("> Read the warning.")
   })
 
+  it.each([
+    [
+      "<Aside>Thrown when the caller is not the owner.</Aside>",
+      "> **NOTE**\n>\n> Thrown when the caller is not the owner.",
+    ],
+    [
+      '<Aside type="caution" title="Disclaimer">Use at your own risk.</Aside>',
+      "> **CAUTION: Disclaimer**\n>\n> Use at your own risk.",
+    ],
+    [
+      "<Aside>Call `withdraw` with <b>care</b>, see [the guide](/guide).</Aside>",
+      "> **NOTE**\n>\n> Call `withdraw` with **care**, see [the guide](/guide).",
+    ],
+  ])("projects a one-line Aside %s as a blockquote", async (source, projection) => {
+    const result = await transformMarkdown(`Before.\n\n${source}\n\nAfter.`, "/fake/page.mdx")
+    expect(result).toBe(`Before.\n\n${projection}\n\nAfter.\n`)
+  })
+
+  it("projects a one-line Aside inside a list item without leaking JSX", async () => {
+    const result = await transformMarkdown(
+      `- First step.
+
+  <Aside type="note">Keep the receipt.</Aside>
+- Second step.`,
+      "/fake/page.mdx"
+    )
+    expect(result).toContain("  > **NOTE**\n  >\n  > Keep the receipt.")
+    expect(result).toContain("- Second step.")
+    expect(result).not.toContain("<Aside")
+  })
+
+  it("leaves a paragraph untouched when an inline Aside is not its only content", async () => {
+    const result = await transformMarkdown("See <Aside>inline</Aside> here.", "/fake/page.mdx")
+    expect(result).toBe("See <Aside>inline</Aside> here.\n")
+  })
+
+  it.each(["<Aside type={kind}>Dynamic type.</Aside>", "<Aside title={label}>Dynamic title.</Aside>"])(
+    "drops a one-line Aside with dynamic attributes like a flow Aside: %s",
+    async (source) => {
+      const result = await transformMarkdown(`Before.\n\n${source}\n\nAfter.`, "/fake/page.mdx")
+      expect(result).toBe("Before.\n\nAfter.\n")
+    }
+  )
+
   it("projects an Aside with a long repeated attribute value", async () => {
     const repeated = "a".repeat(100_000)
     const result = await transformMarkdown(
@@ -762,6 +806,58 @@ Read the warning.
     )
     expect(result).toContain("> **CAUTION: Check this**")
     expect(result).toContain("> Read the warning.")
+  })
+
+  it.each([
+    ['<Common callout="importPackage022" />', "npm install @chainlink/local@0.2.2"],
+    ['<AceCallout callout="privateBeta" />', "> **NOTE: Private Beta**"],
+    ['<CrecCommon callout="beta" />', "> **NOTE: Beta: permissioned access**"],
+    ['<Vrf2_5Common callout="security" />', "> **TIP: Security Considerations**"],
+    ['<Dta section="dtaNotes" />', "[Talk to an expert](https://chain.link/dta-access)"],
+    ['<TokenizedEquityFeeds section="tokenizedEquityNote" />', "Tokenized equity feeds present unique operational"],
+    ['<ContentCommon section="localTestingBenefits" />', "Testing locally using mock contracts saves you time"],
+  ])("inlines the static MDX selected by %s", async (component, expected) => {
+    const result = await transformMarkdown(`Before.\n\n${component}\n\nAfter.`, "/fake/page.mdx")
+    expect(result).toContain(expected)
+    expect(result.indexOf("Before.")).toBeLessThan(result.indexOf(expected))
+    expect(result.indexOf(expected)).toBeLessThan(result.indexOf("After."))
+    expect(result).not.toMatch(/<(Common|AceCallout|CrecCommon|Vrf2_5Common|Dta|TokenizedEquityFeeds|ContentCommon)\b/)
+  })
+
+  it("drops a selector component whose value has no static MDX target", async () => {
+    const result = await transformMarkdown('Before.\n\n<AceCallout callout="unknown" />\n\nAfter.', "/fake/page.mdx")
+    expect(result).toBe("Before.\n\nAfter.\n")
+  })
+
+  it("projects CCIPSendError data as a table with parameters, selectors, and Markdown descriptions", async () => {
+    const result = await transformMarkdown('<CCIPSendError type="router" version="v1_6_2" />', "/fake/page.mdx")
+    expect(result).toMatch(/^\| Error +\| Parameters +\| Error selector +\| Description +\|$/m)
+    expect(result).toMatch(/^\| `UnsupportedDestinationChain` +\| `uint64 destChainSelector` +\| `0xae236d9c` +\|/m)
+    expect(result).not.toContain("CCIPSendError")
+
+    const markdownDescription = await transformMarkdown(
+      '<CCIPSendError type="router" version="v1_5_0" />',
+      "/fake/page.mdx"
+    )
+    expect(markdownDescription).toContain("are *not* paid in native tokens, but `msg.value` is non-zero.")
+  })
+
+  it("projects CCIPEvent parameters in Solidity syntax and keeps type links", async () => {
+    const result = await transformMarkdown('<CCIPEvent type="onramp-send" version="v1_6_3" />', "/fake/page.mdx")
+    expect(result).toMatch(/^\| Event +\| Parameters +\| Description +\|$/m)
+    expect(result).toContain(
+      "`uint64 indexed destChainSelector`, `uint64 indexed sequenceNumber`, [`Internal.EVM2AnyRampMessage`](/ccip/v1/evm/api-reference/v1.6.3/internal#evm2anyrampmessage) `message`"
+    )
+    expect(result).not.toContain("CCIPEvent")
+  })
+
+  it.each([
+    '<CCIPSendError type="unknown" version="v1_6_2" />',
+    '<CCIPSendError type="router" version="v9_9_9" />',
+    '<CCIPEvent type="onramp-send" version="../v1_6_3" />',
+  ])("drops CCIP reference data that cannot be resolved: %s", async (component) => {
+    const result = await transformMarkdown(`Before.\n\n${component}\n\nAfter.`, "/fake/page.mdx")
+    expect(result).toBe("Before.\n\nAfter.\n")
   })
 
   it("projects SchemaFieldsTable from report schema definitions", async () => {
@@ -853,6 +949,59 @@ Before <Unknown>hidden JSX</Unknown> after.
     expect(result).not.toContain("import Unknown")
     expect(result).not.toContain("{dynamicValue}")
     expect(result).not.toContain("dynamicPages")
+  })
+})
+
+describe("product-scoped content", () => {
+  const markdown = `<ProductSection product="platform" shared>
+
+### Chainlink Platform
+
+Platform roles.
+</ProductSection>
+
+<ProductSection product="cre">
+
+### CRE
+
+CRE roles.
+</ProductSection>
+
+<ProductSection product="dataStreams">
+
+### Data Streams
+
+Data Streams roles.
+</ProductSection>
+
+- <ProductOnly products="cre,ace,crec">API keys link</ProductOnly>
+- <ProductOnly products="cre" strict>CRE CLI step</ProductOnly>`
+
+  it("renders the full page and non-strict content when no product context is set", async () => {
+    const result = await transformMarkdown(markdown, "/fake/path.mdx")
+    expect(result).toContain("Platform roles.")
+    expect(result).toContain("CRE roles.")
+    expect(result).toContain("Data Streams roles.")
+    expect(result).toContain("API keys link")
+    expect(result).not.toContain("CRE CLI step")
+  })
+
+  it("renders the shared block and the matching product for CRE", async () => {
+    const result = await transformMarkdown(markdown, "/fake/path.mdx", { productContext: "cre" })
+    expect(result).toContain("Platform roles.")
+    expect(result).toContain("CRE roles.")
+    expect(result).not.toContain("Data Streams roles.")
+    expect(result).toContain("API keys link")
+    expect(result).toContain("CRE CLI step")
+  })
+
+  it("excludes other products and CRE-only content for Data Streams", async () => {
+    const result = await transformMarkdown(markdown, "/fake/path.mdx", { productContext: "dataStreams" })
+    expect(result).toContain("Platform roles.")
+    expect(result).not.toContain("CRE roles.")
+    expect(result).toContain("Data Streams roles.")
+    expect(result).not.toContain("API keys link")
+    expect(result).not.toContain("CRE CLI step")
   })
 })
 

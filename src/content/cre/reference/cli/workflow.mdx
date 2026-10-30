@@ -5,7 +5,7 @@ title: "Workflow Commands"
 metadata:
   description: "Manage workflows with CLI: complete command reference for simulating, deploying, activating, pausing, and deleting workflows."
   datePublished: "2025-11-04"
-  lastModified: "2026-10-09"
+  lastModified: "2026-10-19"
 ---
 
 import { Aside } from "@components"
@@ -63,8 +63,9 @@ For CI/CD usage, see [Deploying Workflows](/cre/guides/operations/deploying-to-o
 
 <Aside type="note" title="Authentication required">
   Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
-  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
-  in with the CLI](/cre/account/cli-login) for further details.
+  logged in, or run `cre login` to authenticate. See [Creating Your
+  Account](/chainlink-platform/creating-an-account?parent=cre) and [Logging in with the CLI](/cre/guides/cli/cli-login)
+  for further details.
 </Aside>
 
 Compiles your workflow to WASM and executes it in a local simulation environment. This is the core command for testing and debugging your workflow.
@@ -81,19 +82,21 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| <div style={{ width: "200px" }}>Flag</div> | Description                                                                                                                                                                                                                                                                                                      |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--broadcast`                              | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                                                               |
-| `-g, --engine-logs`                        | Enable non-fatal engine logging                                                                                                                                                                                                                                                                                  |
-| `--listen`                                 | Keep the simulator alive and re-run it for each incoming trigger event. For HTTP triggers, listens for POST requests on port `2000`. For EVM log triggers, watches the chain and re-runs on each matching event. Useful when iterating on trigger-driven workflows without restarting the simulator between runs |
-| `--non-interactive`                        | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                                                    |
-| `--trigger-index <int>`                    | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                                                             |
-| `--http-payload <string>`                  | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                                                  |
-| `--evm-tx-hash <string>`                   | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                                                          |
-| `--evm-event-index <int>`                  | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                                                |
-| `--evm-receipt-timeout <duration>`         | How long to wait for an EVM transaction receipt before timing out (e.g. `30s`, `2m`). For EVM log triggers only (default: `1m`)                                                                                                                                                                                  |
-| `--limits <string>`                        | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`)                                 |
-| `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                                      |
+| <div style={{ width: "200px" }}>Flag</div> | Description                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`                              | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                                                                                                      |
+| `-g, --engine-logs`                        | Enable non-fatal engine logging                                                                                                                                                                                                                                                                                                                         |
+| `--listen`                                 | Keep the simulator alive and re-run it for each incoming trigger event. For HTTP triggers, listens for POST requests on port `2000`. For EVM log triggers, watches the chain and re-runs on each matching event. Not supported for Solana log triggers. Useful when iterating on trigger-driven workflows without restarting the simulator between runs |
+| `--non-interactive`                        | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                                                                                           |
+| `--trigger-index <int>`                    | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                                                                                                    |
+| `--http-payload <string>`                  | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                                                                                         |
+| `--evm-tx-hash <string>`                   | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                                                                                                 |
+| `--evm-event-index <int>`                  | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                                                                                       |
+| `--evm-receipt-timeout <duration>`         | How long to wait for an EVM transaction receipt before timing out (e.g. `30s`, `2m`). For EVM log triggers only (default: `1m`)                                                                                                                                                                                                                         |
+| `--solana-tx-sig <string>`                 | Base58 transaction signature containing the event that triggered your workflow. For Solana log triggers only                                                                                                                                                                                                                                            |
+| `--solana-event-index <int>`               | Which event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For Solana log triggers only                                                                                                                                                                        |
+| `--limits <string>`                        | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`)                                                                        |
+| `--skip-type-checks`                       | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                                                                             |
 
 **Examples:**
 
@@ -136,6 +139,19 @@ cre workflow simulate <workflow-name-or-path> [flags]
   cre workflow simulate ./my-workflow --listen --trigger-index 1 --target staging-settings
   ```
 
+- Non-interactive mode with Solana log trigger
+
+  ```bash
+  # If your Solana log trigger handler is the first handler in your workflow, use --trigger-index 0
+  # --solana-event-index 0 means you want the first event from that transaction
+  cre workflow simulate my-workflow --non-interactive --trigger-index 0 --solana-tx-sig c8ifuihaPd2erDuQvees1s2o8ikFmZuNF7WQE63PPGG2SXHZk5vXrHfe7nm4cj4fo7cE3Aq48ksMjP6ugPxAhqn --solana-event-index 0 --target staging-settings
+  ```
+
+{/* prettier-ignore */}
+<Aside type="note" title="Listen mode is not supported for Solana log triggers">
+  Unlike EVM log triggers, Solana log triggers do not support `--listen`. You always provide a transaction signature for a transaction that already emitted the event, using `--solana-tx-sig` and `--solana-event-index`.
+</Aside>
+
 {/* prettier-ignore */}
 <Aside type="note" title="Dry run by default">
   By default, `cre workflow simulate` performs a **dry run** for onchain write operations. It simulates the transaction to confirm it would succeed, but does not broadcast it to the network. This results in a successful log with an empty transaction hash (`0x`). To send a real transaction, use the `--broadcast` flag.
@@ -151,8 +167,8 @@ cre workflow simulate <workflow-name-or-path> [flags]
 {/* prettier-ignore */}
 <Aside type="note" title="Authentication required">
   Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
-  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
-  in with the CLI](/cre/account/cli-login) for further details.
+  logged in, or run `cre login` to authenticate. See [Creating Your Account](/chainlink-platform/creating-an-account?parent=cre) and [Logging
+  in with the CLI](/cre/guides/cli/cli-login) for further details.
 </Aside>
 
 Lists the chains enabled for your tenant and their forwarder addresses. Chains are returned from the platform based on your login session (`cre login` or `CRE_API_KEY`). Non-EVM chains configured for your tenant also appear in the output.
@@ -219,7 +235,7 @@ The chain list is tenant-specific and may vary between organizations. Run the co
 
 {/* prettier-ignore */}
 <Aside type="note" title="Deployment access required">
-  Deploying workflows requires approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+  Deploying workflows requires approval. Run `cre account access` to check your status or submit a request. See [Requesting Deploy Access](/cre/guides/operations/deploy-access).
 
 **While you wait:** Continue building and simulating workflows using [`cre workflow simulate`](/cre/guides/operations/simulating-workflows).
 
@@ -227,8 +243,9 @@ The chain list is tenant-specific and may vary between organizations. Run the co
 
 <Aside type="note" title="Authentication required">
   Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
-  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
-  in with the CLI](/cre/account/cli-login) for further details.
+  logged in, or run `cre login` to authenticate. See [Creating Your
+  Account](/chainlink-platform/creating-an-account?parent=cre) and [Logging in with the CLI](/cre/guides/cli/cli-login)
+  for further details.
 </Aside>
 
 Deploys a workflow to the registry selected by `user-workflow.deployment-registry` in `workflow.yaml`. This command compiles your workflow, uploads the artifacts to the CRE Storage Service, and registers the workflow with either the public onchain Workflow Registry or the Chainlink-hosted private registry. Use [`cre registry list`](/cre/reference/cli/registry) to see which registries your organization can use.
@@ -295,8 +312,9 @@ For more details, see [Deploying Workflows](/cre/guides/operations/deploying-wor
 
 <Aside type="note" title="Authentication required">
   Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
-  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
-  in with the CLI](/cre/account/cli-login) for further details.
+  logged in, or run `cre login` to authenticate. See [Creating Your
+  Account](/chainlink-platform/creating-an-account?parent=cre) and [Logging in with the CLI](/cre/guides/cli/cli-login)
+  for further details.
 </Aside>
 
 Changes the workflow status to active in the registry selected by `deployment-registry`. Active workflows can respond to their configured triggers.
@@ -330,8 +348,9 @@ For more details, see [Activating & Pausing Workflows](/cre/guides/operations/ac
 
 <Aside type="note" title="Authentication required">
   Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
-  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
-  in with the CLI](/cre/account/cli-login) for further details.
+  logged in, or run `cre login` to authenticate. See [Creating Your
+  Account](/chainlink-platform/creating-an-account?parent=cre) and [Logging in with the CLI](/cre/guides/cli/cli-login)
+  for further details.
 </Aside>
 
 Changes the workflow status to paused in the registry selected by `deployment-registry`. Paused workflows will not respond to triggers.
@@ -370,8 +389,9 @@ For more details, see [Activating & Pausing Workflows](/cre/guides/operations/ac
 
 <Aside type="note" title="Authentication required">
   Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
-  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
-  in with the CLI](/cre/account/cli-login) for further details.
+  logged in, or run `cre login` to authenticate. See [Creating Your
+  Account](/chainlink-platform/creating-an-account?parent=cre) and [Logging in with the CLI](/cre/guides/cli/cli-login)
+  for further details.
 </Aside>
 
 Deletes a workflow from the registry selected by `deployment-registry`.
@@ -410,8 +430,9 @@ For more details, see [Deleting Workflows](/cre/guides/operations/deleting-workf
 
 <Aside type="note" title="Authentication required">
   Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
-  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
-  in with the CLI](/cre/account/cli-login) for further details.
+  logged in, or run `cre login` to authenticate. See [Creating Your
+  Account](/chainlink-platform/creating-an-account?parent=cre) and [Logging in with the CLI](/cre/guides/cli/cli-login)
+  for further details.
 </Aside>
 
 Lists workflows deployed for your organization across registries. Deleted workflows are hidden by default.
@@ -482,8 +503,9 @@ cre workflow list [flags]
 
 <Aside type="note" title="Authentication required">
   Running this command requires you to be logged in with the CRE CLI. Run `cre whoami` in your terminal to verify you're
-  logged in, or run `cre login` to authenticate. See [Creating Your Account](/cre/account/creating-account) and [Logging
-  in with the CLI](/cre/account/cli-login) for further details.
+  logged in, or run `cre login` to authenticate. See [Creating Your
+  Account](/chainlink-platform/creating-an-account?parent=cre) and [Logging in with the CLI](/cre/guides/cli/cli-login)
+  for further details.
 </Aside>
 
 Shows deployment health and the most recent execution for the workflow configured in `workflow.yaml`. The command reads the workflow name for the selected `--target`, resolves the workflow on the CRE platform (scoped to the configured `deployment-registry` by default), and prints deployment health plus the latest execution.

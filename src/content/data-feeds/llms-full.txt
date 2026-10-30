@@ -1249,7 +1249,7 @@ Deploy the `DataConsumerV3` smart contract on the Sepolia testnet.
 
    ![Remix Deployed Contracts Section](/images/getting-started/deployedContractDataConsumerV3.png)
 
-9. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **Show more details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed uses a different number of decimal places for answers.
+9. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **More Details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed can use a different number of decimal places, so always read the `decimals()` value from the feed contract instead of hardcoding it. See [Decimal precision](/data-feeds/price-feeds#decimal-precision) for details.
 
    ![A screenshot showing the deployed contract and the latest answer.](/images/getting-started/getLatestPrice.png)
 
@@ -2069,7 +2069,7 @@ async function checkDataStaleness() {
 
 **Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
 
-1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "More Details")
 2. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
 3. Consider your specific use case requirements (some applications may need very recent data)
 
@@ -2581,7 +2581,7 @@ require(block.timestamp - lastUpdateTime <= stalenessThreshold, "MVR feed data i
 
 **Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
 
-1. Find the feed's **heartbeat interval** on the [MVR Feeds Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Find the feed's **heartbeat interval** on the [MVR Feeds Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "More Details")
 2. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
 3. Consider your specific use case requirements (some applications may need very fresh data)
 
@@ -3024,7 +3024,7 @@ async function checkDataStaleness(
 
 **Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
 
-1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "More Details")
 2. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
 3. Consider your specific use case requirements
 
@@ -3633,6 +3633,25 @@ Live values such as feed contract addresses are not inlined here. Wait for the o
 Source: https://docs.chain.link/data-feeds/price-feeds
 
 Chainlink Data Feeds provide data that is aggregated from many data sources by a decentralized set of independent node operators. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) describes this in detail. However, there are some exceptions where data for a feed can come only from a single data source or where data values are calculated. Read the [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) to learn about the different data feed categories and how to identify them.
+
+## Decimal precision
+
+Feed answers are returned as integers without a decimal point. To convert an answer into a human-readable value, divide it by `10^decimals`. For example, an answer of `3030914000000` from a feed with `8` decimals represents `30309.14`.
+
+Chainlink generally uses the following decimal standards for new feeds:
+
+| Asset class          | Decimals      |
+| -------------------- | ------------- |
+| Crypto / USD         | 8             |
+| Crypto / ETH         | 18            |
+| Forex                | 8             |
+| Precious metals      | 8             |
+| Commodities / Energy | 8             |
+| All others           | Feed-specific |
+
+These standards are subject to change, individual feeds can differ, and some networks use a single precision for all feeds. For example, feeds on [Stellar](/data-feeds/stellar) and [Aptos](/data-feeds/aptos) use 18 decimals. This applies to every network, EVM and non-EVM: always read the precision of each feed you use from the feed contract instead of hardcoding a value based on the table above. On EVM chains, call the [`decimals()`](/data-feeds/api-reference#decimals) function on the feed's proxy contract. On other networks, use the equivalent function described in that network's guide. You can also verify the decimals for a feed on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by selecting **More Details**.
+
+Decimal precision is not changed on live feeds. If an asset's price moves to a level where the feed's precision is no longer sufficient for your use case, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) about launching a new feed.
 
 ---
 
@@ -5484,7 +5503,7 @@ The consumer contract contains two functions that you interact with in this exam
    status: success
    ```
 
-   The answer on the ETH / USD feed uses 8 decimal places, so an answer of `354661371569` indicates an ETH / USD price of `3546.61371569`. Each feed uses a different number of decimal places for answers. You can find the correct number of decimal places on the [Price Feed addresses](/data-feeds/price-feeds/addresses?network=starknet) page by clicking the Show more details checkbox.
+   The answer on the ETH / USD feed uses 8 decimal places, so an answer of `354661371569` indicates an ETH / USD price of `3546.61371569`. Each feed uses a different number of decimal places for answers. You can find the correct number of decimal places on the [Price Feed addresses](/data-feeds/price-feeds/addresses?network=starknet) page by clicking the **More Details** checkbox.
 
 ---
 
@@ -7667,6 +7686,16 @@ Bidding for bundle events is very similar to single transaction events. As a sea
 # Base Tokenized Equities (Coinbase B20)
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/coinbase
 
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
+
 Chainlink provides tokenized equity feeds for Coinbase tokenized stocks on Base. Each tokenized stock is a B20 token, Base's native token standard for real-world assets, an extension of ERC-20, identified by its contract address rather than its ticker. The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read from Coinbase's on-chain oracle registry.
 
 These feeds use the standard Chainlink V3 aggregator interface (`latestRoundData()`), so any consumer reads the published price through the proxy in the same way as a crypto price feed. They are push-based oracles intended for compliance reference pricing, protocol integration, and similar use cases.
@@ -7789,6 +7818,16 @@ See [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds) for the shared 
 # Tokenized Equity Feeds
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds
 
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
+
 ## What are tokenized equities?
 
 Tokenized equities are blockchain tokens that represent ownership or economic exposure to traditional stocks and ETFs. These tokens are distinct financial instruments issued by token issuers, not the underlying equities themselves. Tokenized equity feeds deliver the **primary market price representing the intrinsic value of the equity token** – this is the calculated theoretical token value and may account for long-term total return adjustments such as dividends or corporate actions.
@@ -7854,10 +7893,10 @@ Please note that while intelligent smoothing is designed to mitigate these issue
 Tokenized equity feeds combine multiple input sources:
 
 - **Regular hours data**: Multi-sourced from consolidated tape data with deep liquidity
-- **Extended hours data**: Pre-market and post-market venue data
+- **Extended hours data**: Multi-sourced from pre-market and post-market venue data
 - **Overnight data**: Data from overnight trading venues
 
-*Extended and overnight session data may be sourced from fewer providers than regular hours data, reflecting the reduced number of venues operating during these periods. See the [Limited Provider Coverage](#limited-provider-coverage-during-extended-and-overnight-sessions) risk section for details.*
+*Overnight session data may be sourced from fewer providers than regular and extended hours data, reflecting the reduced number of venues operating during this period. See the [Limited Provider Coverage](#limited-provider-coverage-during-overnight-sessions) risk section for details.*
 
 ## Key differences from standard feeds
 
@@ -7884,7 +7923,7 @@ The reliability and accuracy of tokenized equity feeds varies by trading session
 | Session   | Data Quality | Provider Coverage      | Update Frequency |
 | :-------- | :----------- | :--------------------- | :--------------- |
 | Regular   | Highest      | Multiple providers     | Highest          |
-| Extended  | Moderate     | Limited providers      | Moderate         |
+| Extended  | Moderate     | Multiple providers     | Moderate         |
 | Overnight | Lower        | Very limited           | Lower            |
 | Weekend   | N/A          | No traditional trading | Stale            |
 
@@ -7898,13 +7937,13 @@ Tokenized equity feeds for assets from different issuers may differ in terms of 
 
 Tokenized equity feeds introduce specific risks related to the nature of traditional equity markets, multi-session data aggregation, smoothing algorithms, and data sourcing. Users must understand these factors and implement appropriate safeguards.
 
-### Limited provider coverage during extended and overnight sessions
+### Limited provider coverage during overnight sessions
 
-Extended and overnight session price data is sourced from a more limited number of data providers compared to regular hours, making these sessions less reliable than regular hours feeds, which are aggregated from a broader set of providers.
+Overnight session price data is sourced from a more limited number of data providers compared to regular and extended hours, making this session less reliable than regular and extended hours feeds, which are aggregated from a broader set of providers.
 
 If providers experience downtime, technical failures, or connectivity disruption, the feed may flatline or report stale values. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
 
-**Overnight and extended sessions** carry additional nuance: liquidity is thinner and fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
+**Overnight and extended sessions** carry additional nuance: liquidity is thinner than during regular hours, and overnight fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
 
 #### Mitigation
 
@@ -8083,6 +8122,16 @@ These values are sourced from the asset issuer. Learn more in the [Provider Cata
 # Ondo Finance Global Markets (GM)
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/ondo
 
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
+
 Chainlink provides tokenized equity feeds for Ondo Finance Global Markets (GM) tokenized equities. These feeds differ from standard market-rate feeds in that they report **Total Return Values** rather than raw equity prices.
 
 ## Available Ondo tokenized equity feeds
@@ -8206,6 +8255,16 @@ For Oracle Extractable Value (OEV) and how SVR relates to standard feeds, use [S
 # Asset Issuer Catalog
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/providers
 
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
+
 Tokenized equity feeds have issuer-specific implementations that affect pricing methodology, data handling, and operational behavior. This page catalogs the available issuers and their key characteristics.
 
 ## Available providers
@@ -8224,6 +8283,16 @@ Each provider may implement tokenized equity feeds differently based on their to
 
 # Robinhood Tokenized Equities
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/robinhood
+
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
 
 Chainlink provides tokenized equity feeds for Robinhood tokenized stocks. Each Robinhood tokenized stock is represented by its own ERC-20 token contract, deployed on Robinhood Chain (one contract per ticker). The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read directly from the Robinhood token contract, rather than the raw equity price.
 

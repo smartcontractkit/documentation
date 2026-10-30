@@ -1,0 +1,142 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "ReportVersions v0.3.1 API Reference"
+metadata:
+  description: "API documentation for ReportVersions in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## ReportVersions
+
+An abstract contract that defines the Data Streams report schemas (`ReportV1` through `ReportV13`).
+
+[`ReportVersions`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/data-streams/ReportVersions.sol)
+
+<Aside>
+  These structs mirror the Data Streams report schemas. For the schema reference, see the [Data Streams report
+  schemas](https://docs.chain.link/data-streams/reference/report-schema-overview).
+  [`MockReportGenerator`](/chainlink-local/api-reference/v0.3.1/mock-report-generator) inherits from this contract and
+  generates signed reports for each version.
+</Aside>
+
+## Structs
+
+### ReportV1
+
+<Aside type="caution" title="Deprecated">
+  The v1 schema (early crypto report with block metadata) is deprecated; it is included for historical reference and
+  backwards compatibility with legacy streams.
+</Aside>
+
+| Field                 | Type      | Description                                          |
+| --------------------- | --------- | ---------------------------------------------------- |
+| feedId                | `bytes32` | The stream ID the report has data for                |
+| observationsTimestamp | `uint32`  | Observation timestamp in seconds                     |
+| benchmarkPrice        | `int192`  | DON consensus median benchmark price                 |
+| bid                   | `int192`  | Bid-side price estimate                              |
+| ask                   | `int192`  | Ask-side price estimate                              |
+| currentBlockNum       | `uint64`  | Current block number used by the report              |
+| currentBlockHash      | `bytes32` | Current block hash used by the report                |
+| validFromBlockNum     | `uint64`  | Earliest block number from which the report is valid |
+| currentBlockTimestamp | `uint64`  | Current block timestamp in seconds                   |
+
+### ReportV2
+
+<Aside>
+  Crypto streams schema. The `benchmarkPrice` value is carried to either 8 or 18 decimal places, depending on the
+  stream.
+</Aside>
+
+| Field                 | Type      | Description                                                |
+| --------------------- | --------- | ---------------------------------------------------------- |
+| feedId                | `bytes32` | The feed ID the report has data for                        |
+| validFromTimestamp    | `uint32`  | Earliest timestamp for which price is applicable           |
+| observationsTimestamp | `uint32`  | Latest timestamp for which price is applicable             |
+| nativeFee             | `uint192` | Base cost to validate a transaction, in the native token   |
+| linkFee               | `uint192` | Base cost to validate a transaction, in LINK               |
+| expiresAt             | `uint32`  | Latest timestamp where the report can be verified on-chain |
+| benchmarkPrice        | `int192`  | DON consensus median price                                 |
+
+### ReportV3
+
+<Aside>
+  Crypto streams schema with bid/ask. The `price`, `bid`, and `ask` values are carried to either 8 or 18 decimal places,
+  depending on the stream.
+</Aside>
+
+| Field                 | Type      | Description                                                                        |
+| --------------------- | --------- | ---------------------------------------------------------------------------------- |
+| feedId                | `bytes32` | The stream ID the report has data for                                              |
+| validFromTimestamp    | `uint32`  | Earliest timestamp for which price is applicable                                   |
+| observationsTimestamp | `uint32`  | Latest timestamp for which price is applicable                                     |
+| nativeFee             | `uint192` | Base cost to validate a transaction, in the native token                           |
+| linkFee               | `uint192` | Base cost to validate a transaction, in LINK                                       |
+| expiresAt             | `uint32`  | Latest timestamp where the report can be verified on-chain                         |
+| price                 | `int192`  | DON consensus median price                                                         |
+| bid                   | `int192`  | Simulated price impact of a buy order up to the X% depth of liquidity utilisation  |
+| ask                   | `int192`  | Simulated price impact of a sell order up to the X% depth of liquidity utilisation |
+
+### ReportV4
+
+<Aside>
+  RWA stream schema. The `price` value is carried to either 8 or 18 decimal places. `marketStatus` indicates whether the
+  market is currently open: `0` (`Unknown`), `1` (`Closed`), `2` (`Open`).
+</Aside>
+
+| Field                 | Type      | Description                                                 |
+| --------------------- | --------- | ----------------------------------------------------------- |
+| feedId                | `bytes32` | The stream ID the report has data for                       |
+| validFromTimestamp    | `uint32`  | Earliest timestamp for which price is applicable            |
+| observationsTimestamp | `uint32`  | Latest timestamp for which price is applicable              |
+| nativeFee             | `uint192` | Base cost to validate a transaction, in the native token    |
+| linkFee               | `uint192` | Base cost to validate a transaction, in LINK                |
+| expiresAt             | `uint32`  | Latest timestamp where the report can be verified on-chain  |
+| price                 | `int192`  | DON consensus median benchmark price                        |
+| marketStatus          | `uint32`  | The DON's consensus on whether the market is currently open |
+
+### ReportV5
+
+<Aside>Rate report schema.</Aside>
+
+| Field                 | Type      | Description                                                |
+| --------------------- | --------- | ---------------------------------------------------------- |
+| feedId                | `bytes32` | The stream ID the report has data for                      |
+| validFromTimestamp    | `uint32`  | Earliest timestamp for which the report is applicable      |
+| observationsTimestamp | `uint32`  | Latest timestamp for which the report is applicable        |
+| nativeFee             | `uint192` | Base cost to validate a transaction, in the native token   |
+| linkFee               | `uint192` | Base cost to validate a transaction, in LINK               |
+| expiresAt             | `uint32`  | Latest timestamp where the report can be verified on-chain |
+| rate                  | `int192`  | Reported rate value                                        |
+| timestamp             | `uint32`  | Rate timestamp in seconds                                  |
+| duration              | `uint32`  | Duration window in seconds                                 |
+
+### ReportV6
+
+<Aside>Multi-price report schema.</Aside>
+
+| Field                 | Type      | Description                                                |
+| --------------------- | --------- | ---------------------------------------------------------- |
+| feedId                | `bytes32` | The stream ID the report has data for                      |
+| validFromTimestamp    | `uint32`  | Earliest timestamp for which the report is applicable      |
+| observationsTimestamp | `uint32`  | Latest timestamp for which the report is applicable        |
+| nativeFee             | `uint192` | Base cost to validate a transaction, in the native token   |
+| linkFee               | `uint192` | Base cost to validate a transaction, in LINK               |
+| expiresAt             | `uint32`  | Latest timestamp where the report can be verified on-chain |
+| price                 | `int192`  | Primary price value                                        |
+| price2                | `int192`  | Secondary price value                                      |
+| price3                | `int192`  | Third price value                                          |
+| price4                | `int192`  | Fourth price value                                         |
+| price5                | `int192`  | Fifth price value                                          |
+
+### ReportV7 through ReportV13
+
+<Aside>
+  `ReportV7` through `ReportV13` follow the same base layout (feed ID, validity timestamps, native and LINK fees,
+  expiry) with schema-specific payload fields. See the [Data Streams report schema
+  overview](https://docs.chain.link/data-streams/reference/report-schema-overview) for each schema's fields.
+</Aside>
