@@ -2043,7 +2043,7 @@ This section provides detailed guides for each available trigger type:
 
 # Testing HTTP Triggers in Simulation
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation
-Last Updated: 2026-06-11
+Last Updated: 2026-10-30
 
 During development, you can test your HTTP trigger workflows locally using the `cre workflow simulate` command. The simulator allows you to provide test payloads without setting up authorization keys or JWT authentication.
 
@@ -2080,21 +2080,36 @@ The simulator will detect your HTTP trigger and prompt you to select it from ava
 
 ## Listen mode
 
-Use `--listen` to keep the simulator alive between runs. Instead of simulating once and exiting, the CLI starts a local HTTP server on port `2000` and re-runs the simulator every time it receives a POST request — no need to restart between tests.
+Use `--listen` to keep the simulator alive between runs. Instead of simulating once and exiting, the CLI starts a local HTTP server on port `2000` and re-runs the simulator every time it receives a POST request — no need to restart between test payloads.
 
 ```bash
 cre workflow simulate my-http-workflow --listen --target staging-settings
 ```
 
-Once running, send payloads with any HTTP client:
+Once running, send payloads to `/trigger` with any HTTP client. Wrap your payload in an `input` field:
 
 ```bash
-curl -X POST http://localhost:2000 \
+curl -X POST http://localhost:2000/trigger \
   -H "Content-Type: application/json" \
-  -d '{"userId":"123","action":"purchase","amount":100}'
+  -d '{"input":{"userId":"123","action":"purchase","amount":100}}'
 ```
 
-Each POST triggers a fresh simulation run. Press `Ctrl+C` to stop.
+Your workflow receives the value of `input` as the trigger payload. Each POST triggers a simulation run. Press `Ctrl+C` to stop.
+
+> **NOTE: Restart to pick up code changes**
+>
+> The simulator compiles your workflow once, when it starts. If you change your workflow code, restart the simulator. To
+> avoid recompiling on every start, see [Simulating with a pre-built
+> binary](/cre/guides/operations/simulating-workflows#simulating-with-a-pre-built-binary).
+
+> **CAUTION: Default limits skip requests sent less than 30 seconds apart**
+>
+> By default, the simulator enforces the production [HTTP trigger quota](/cre/service-quotas#http-trigger): one run per
+> 30 seconds. In listen mode, the simulator skips requests that arrive sooner and still returns `200 OK`. The only sign
+> is a `Trigger rate limited, skipping execution` message in the terminal. To send requests more often, add `--limits
+>   none`. See [Testing Production Limits](/cre/guides/operations/understanding-limits).
+
+For the full list of listen mode behavior, including queuing and error handling, see [Listen mode](/cre/guides/operations/simulating-workflows#listen-mode).
 
 ## Providing input data
 
@@ -2349,6 +2364,30 @@ This helps you verify error handling and edge cases before deployment.
 >
 > Simulation allows empty authorization configs for convenience, but **deployed workflows require `authorizedKeys`**.
 > The CLI will reject deployments with HTTP triggers that lack authorization configuration.
+
+## Local listener vs the deployed gateway
+
+If your backend triggers deployed workflows through the CRE gateway, you may want to send the same requests to the local simulator. The local HTTP server that `--listen` starts is not a copy of the gateway. Use this table to see what differs:
+
+| Aspect                 | Local simulator (`--listen`)                                                                                   | Deployed workflow (gateway)                                                                                                                                                                  |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Endpoint**           | `POST http://localhost:2000/trigger`                                                                           | The [gateway URL](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#gateway-urls) for your workflow's DON                                                       |
+| **Request format**     | `{"input": { ... }}`                                                                                           | JSON-RPC `workflows.execute` request with the payload in `params.input`. See [Request format](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#request-format) |
+| **Workflow selection** | One workflow and trigger per simulator process. The request does not choose a workflow                         | The request selects the workflow, for example with `params.workflow.workflowID`                                                                                                              |
+| **Authorization**      | None. The simulator does not check a JWT or `authorizedKeys`                                                   | JWT signed with a key listed in `authorizedKeys`. See [JWT authentication](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#jwt-authentication)                |
+| **Response**           | Empty `200 OK`, returned before the workflow runs. Results appear in the terminal                              | JSON-RPC response with `result.status` set to `ACCEPTED`. See [Response format](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#response-format)              |
+| **Execution**          | One run at a time. Up to 16 requests wait in a queue                                                           | Asynchronous on the DON                                                                                                                                                                      |
+| **Rate limit**         | One run per 30 seconds by default. Skipped requests still return `200 OK`. Disable with `--limits none`        | Production [HTTP trigger quota](/cre/service-quotas#http-trigger)                                                                                                                            |
+| **Invalid requests**   | `400 Bad Request` if the body isn't valid JSON. If `input` is missing, the workflow runs with an empty payload | JSON-RPC error response. See [Error response](/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows#error-response)                                                 |
+
+To send gateway-format requests to the simulator, unwrap `params.input` in your own code and send it as `{"input": ...}` to `/trigger`. To run several workflows locally, start one simulator per workflow, each with its own `--http-trigger-port`. To test JWT authorization, use a deployed workflow. See [Testing with Local JWT Server](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool).
+
+> **NOTE: Two tools can use port 2000**
+>
+> The `cre-http-trigger` tool in [Testing with Local JWT
+> Server](/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool) also listens on `localhost:2000/trigger`,
+> but it forwards your request to a deployed workflow. It does not run the simulator. If you run both at the same time,
+> start the simulator on another port with `--http-trigger-port`.
 
 ## Next steps
 
@@ -2728,7 +2767,7 @@ Manual JWT generation is complex and error-prone. For development and testing:
 
 # Testing with Local JWT Server
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/local-testing-tool
-Last Updated: 2026-01-14
+Last Updated: 2026-10-30
 
 The [`cre-http-trigger` TypeScript package](https://github.com/smartcontractkit/cre-sdk-typescript/tree/main/packages/cre-http-trigger) simplifies testing deployed workflows with HTTP triggers by handling JWT generation, signing, and request formatting automatically. It provides a local HTTP server that acts as a proxy between your test requests and the CRE gateway.
 
@@ -2745,6 +2784,12 @@ The `cre-http-trigger` tool eliminates this complexity by:
 >
 > This tool is designed for **development and testing** of deployed workflows. For production integrations, implement
 > JWT generation directly in your backend service for better security and control.
+
+> **NOTE: Looking to test without deploying?**
+>
+> This tool sends requests to a **deployed** workflow through the gateway. To test an HTTP trigger locally before you
+> deploy, use [`cre workflow simulate`](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation). Both
+> listen on `localhost:2000/trigger` by default, but they do different things.
 
 ## Prerequisites
 
@@ -5862,7 +5907,7 @@ By following this pattern, you can manage your secrets securely without ever exp
 
 # Simulating Workflows
 Source: https://docs.chain.link/cre/guides/operations/simulating-workflows
-Last Updated: 2026-10-19
+Last Updated: 2026-10-30
 
 Workflow simulation is a local execution environment that **compiles your workflow to [WebAssembly (WASM)](https://webassembly.org)** and runs it on **your machine**. It allows you to test and debug your workflow logic before deploying it. The simulator makes real calls to public testnets and live HTTP endpoints, giving you high confidence that your code will work as expected when deployed.
 
@@ -5893,7 +5938,7 @@ cre workflow simulate my-workflow --target staging-settings
 
 ### What happens during simulation
 
-1. **Compilation**: The CLI compiles your workflow to WebAssembly (WASM).
+1. **Compilation**: The CLI compiles your workflow to WebAssembly (WASM). If you pass a pre-built binary with `--wasm`, the CLI skips this step. See [Simulating with a pre-built binary](#simulating-with-a-pre-built-binary).
 2. **Trigger selection**: You're prompted to select which trigger to test (cron, HTTP, EVM log, or Solana log).
 3. **Execution**: The workflow runs locally, making real calls to configured RPCs and HTTP endpoints.
 4. **Output**: The simulator displays logs from your workflow and the final execution result.
@@ -5970,14 +6015,67 @@ cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target s
 
 The `--listen` flag keeps the simulator alive and re-runs it for each incoming trigger event, instead of compiling and executing once then exiting.
 
-- **HTTP triggers**: starts a local HTTP server on port `2000`. Each POST request triggers a fresh simulation run.
+- **HTTP triggers**: starts a local HTTP server on port `2000` (change it with `--http-trigger-port`). Each POST request to `/trigger` triggers a simulation run.
 - **EVM log triggers**: watches the configured chain and re-runs on each matching log event.
 
 ```bash
 cre workflow simulate my-workflow --listen --target staging-settings
 ```
 
-This is useful during active development — make a code change, resave, send another event, and see the result immediately without restarting the CLI. See [Testing HTTP Triggers in Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for a detailed walkthrough with HTTP triggers.
+This is useful when you want to send many test events without restarting the CLI. The simulator compiles your workflow once, when it starts, so restart it after you change your workflow code.
+
+### How listen mode handles HTTP requests
+
+Keep the following behavior in mind when you send requests to the local HTTP server:
+
+- **Request format**: Send a `POST` request to `http://localhost:2000/trigger` with a JSON body of the form `{"input": { ... }}`. The simulator passes the value of `input` to your workflow as the trigger payload. Other body shapes, such as a gateway `workflows.execute` request, are not unwrapped. If `input` is missing, your workflow runs with an empty payload.
+- **Response**: The server returns an empty `200 OK` as soon as it accepts the request, before the workflow runs. Logs and the workflow result appear in the terminal where the simulator is running, not in the HTTP response. A body that isn't valid JSON returns `400 Bad Request` and does not start a run.
+- **One run at a time**: The simulator runs requests in order. It holds up to 16 pending requests and returns `429 Too Many Requests` after that.
+- **Rate limit**: By default, the simulator enforces the production HTTP trigger [service quota](/cre/service-quotas#http-trigger): one run per 30 seconds. The simulator skips requests that arrive sooner, prints `Trigger rate limited, skipping execution` in the terminal, and still returns `200 OK` to the caller. To send requests more often, run with `--limits none`. See [Testing Production Limits](/cre/guides/operations/understanding-limits).
+- **Errors**: If your workflow returns an error, the simulator logs it and keeps listening. Errors raised by the simulation engine itself, such as exceeding a resource limit, end the session.
+- **One workflow per simulator**: Each `--listen` process serves a single workflow and trigger. To serve several workflows locally, start one simulator per workflow, each with its own `--http-trigger-port`.
+
+> **NOTE: Using --listen with --non-interactive**
+>
+> If you combine `--listen` with `--non-interactive` for an HTTP trigger, you must also pass `--http-payload`. The
+> simulator runs that payload first, then keeps listening for more requests.
+
+See [Testing HTTP Triggers in Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for a detailed walkthrough with HTTP triggers, including how the local server differs from the deployed gateway.
+
+## Simulating with a pre-built binary
+
+By default, each `cre workflow simulate` run compiles your workflow to WASM. If you build the binary once and simulate it many times, for example in a CI/CD pipeline or from a script that starts several simulations, you can skip compilation.
+
+There are two ways to do this:
+
+- **`--wasm` flag**: Build the binary with [`cre workflow build`](/cre/reference/cli/workflow#cre-workflow-build), then pass it to `simulate`. Your `workflow.yaml` stays unchanged.
+- **Custom build**: Convert the workflow with [`cre workflow custom-build`](/cre/guides/operations/custom-build). The CLI then runs the binary at `wasm/workflow.wasm` that your `Makefile` produces. This changes your `workflow.yaml` permanently.
+
+**Example using `--wasm`:**
+
+```bash
+# Build once. The binary is written to ./my-workflow/binary.wasm by default
+cre workflow build ./my-workflow --target staging-settings
+
+# Simulate the pre-built binary as many times as you like
+cre workflow simulate ./my-workflow --wasm ./binary.wasm --target staging-settings
+```
+
+When you pass `--wasm`:
+
+- The simulator runs the binary as-is and does not read your workflow source. If you change your code, rebuild the binary.
+- The simulator still reads your `workflow.yaml` for the config and secrets paths, and the target settings.
+- You can start several simulations at the same time against the same binary. They don't write build output, so they don't overwrite each other.
+- A relative path is resolved from the workflow directory, not from where you ran the command. In the example above, `./binary.wasm` points to `./my-workflow/binary.wasm`.
+- A local path can be at most 97 characters. If your path is longer, use a shorter location or a relative path.
+- The value can also be a URL, which the CLI downloads before it simulates.
+
+> **TIP: Same binary for simulate, hash, and deploy**
+>
+> The `--wasm` flag is also available on [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash) and [`cre
+>   workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy). Building once and passing the same binary to each
+> command ensures you simulate the exact artifact you deploy. The binary hash printed during simulation matches the hash
+> printed by `cre workflow build`.
 
 ## The `--broadcast` flag
 
@@ -6258,7 +6356,7 @@ Despite these limitations, simulation is an essential tool for catching bugs, va
 
 # Testing Production Limits
 Source: https://docs.chain.link/cre/guides/operations/understanding-limits
-Last Updated: 2026-03-19
+Last Updated: 2026-10-30
 
 Simulation limits let you test your workflows against production constraints locally before deploying. By enforcing the same quotas that apply in production, you can catch violations early and avoid surprises at deploy time.
 
@@ -6310,6 +6408,16 @@ cre workflow simulate my-workflow --limits ./my-limits.json --target staging-set
 ```
 
 See [Customizing limits](#customizing-limits) for how to create a custom limits file.
+
+### Limits in listen mode
+
+Simulation limits apply to every run in [listen mode](/cre/guides/operations/simulating-workflows#listen-mode). The default HTTP trigger quota allows one run per 30 seconds, so the simulator skips HTTP requests that arrive sooner. The simulator prints `Trigger rate limited, skipping execution` in the terminal, but the HTTP response is still `200 OK`. To send requests more often while you develop, run with `--limits none`:
+
+```bash
+cre workflow simulate my-workflow --listen --limits none --target staging-settings
+```
+
+See the [HTTP trigger quota](/cre/service-quotas#http-trigger) for the production value.
 
 ## Viewing default limits
 
@@ -7736,7 +7844,7 @@ time=2025-10-26T13:19:57.055Z level=INFO msg="Waiting for write report response"
 
 # Custom WASM Builds
 Source: https://docs.chain.link/cre/guides/operations/custom-build
-Last Updated: 2026-02-26
+Last Updated: 2026-10-30
 
 By default, `cre workflow deploy` and `cre workflow simulate` compile your Go or TypeScript source to a WASM binary automatically — no build configuration required. This works for most workflows.
 
@@ -7852,6 +7960,19 @@ cre workflow simulate ./my-workflow --target staging-settings
 When `make build` runs you'll see `Running my custom build step...` printed before compilation.
 
 Swap the `echo` for any real step: type checking, linting, code generation, or a custom compiler invocation.
+
+## Build once without converting your workflow
+
+If you only need to compile once and reuse the binary, for example to run many simulations against the same build, you don't have to convert your workflow. Build the binary with `cre workflow build`, then pass it with `--wasm`:
+
+```bash
+cre workflow build ./my-workflow
+cre workflow simulate ./my-workflow --wasm ./binary.wasm --target staging-settings
+```
+
+This leaves your `workflow.yaml` unchanged, so you can still let the CLI compile your source at any time. The `--wasm` flag is available on [`cre workflow simulate`](/cre/reference/cli/workflow#cre-workflow-simulate), [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash), and [`cre workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy). For details on how `simulate` resolves the path, see [Simulating with a pre-built binary](/cre/guides/operations/simulating-workflows#simulating-with-a-pre-built-binary).
+
+Choose `custom-build` when you need to change how the binary is compiled. Choose `build` with `--wasm` when you only need to compile once.
 
 ## Generated Makefile
 
@@ -9207,7 +9328,7 @@ When you run this command, the CLI will:
 
 # Workflow Commands
 Source: https://docs.chain.link/cre/reference/cli/workflow
-Last Updated: 2026-10-19
+Last Updated: 2026-10-30
 
 The `cre workflow` commands manage workflows throughout their entire lifecycle, from local testing to deployment and ongoing management.
 
@@ -9266,7 +9387,7 @@ For CI/CD usage, see [Deploying Workflows](/cre/guides/operations/deploying-to-o
 > Account](/chainlink-platform/creating-an-account?parent=cre) and [Logging in with the CLI](/cre/guides/cli/cli-login)
 > for further details.
 
-Compiles your workflow to WASM and executes it in a local simulation environment. This is the core command for testing and debugging your workflow.
+Compiles your workflow to WASM and executes it in a local simulation environment. This is the core command for testing and debugging your workflow. To skip compilation and run a binary you built earlier, pass it with `--wasm`.
 
 **Usage:**
 
@@ -9280,21 +9401,23 @@ cre workflow simulate <workflow-name-or-path> [flags]
 
 **Flags:**
 
-| Flag                               | Description                                                                                                                                                                                                                                                                                                                                             |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--broadcast`                      | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                                                                                                      |
-| `-g, --engine-logs`                | Enable non-fatal engine logging                                                                                                                                                                                                                                                                                                                         |
-| `--listen`                         | Keep the simulator alive and re-run it for each incoming trigger event. For HTTP triggers, listens for POST requests on port `2000`. For EVM log triggers, watches the chain and re-runs on each matching event. Not supported for Solana log triggers. Useful when iterating on trigger-driven workflows without restarting the simulator between runs |
-| `--non-interactive`                | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                                                                                           |
-| `--trigger-index <int>`            | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                                                                                                    |
-| `--http-payload <string>`          | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                                                                                         |
-| `--evm-tx-hash <string>`           | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                                                                                                 |
-| `--evm-event-index <int>`          | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                                                                                       |
-| `--evm-receipt-timeout <duration>` | How long to wait for an EVM transaction receipt before timing out (e.g. `30s`, `2m`). For EVM log triggers only (default: `1m`)                                                                                                                                                                                                                         |
-| `--solana-tx-sig <string>`         | Base58 transaction signature containing the event that triggered your workflow. For Solana log triggers only                                                                                                                                                                                                                                            |
-| `--solana-event-index <int>`       | Which event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For Solana log triggers only                                                                                                                                                                        |
-| `--limits <string>`                | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`)                                                                        |
-| `--skip-type-checks`               | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                                                                             |
+| Flag                               | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--broadcast`                      | Broadcast onchain write transactions (default: `false`). Without this flag, a dry run is performed                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `-g, --engine-logs`                | Enable non-fatal engine logging                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `--listen`                         | Keep the simulator alive and re-run it for each incoming trigger event. For HTTP triggers, listens for POST requests on `http://localhost:2000/trigger` (change the port with `--http-trigger-port`). For EVM log triggers, watches the chain and re-runs on each matching event. Not supported for Solana log triggers. The simulator compiles your workflow once, when it starts, so restart it to pick up code changes. See [Listen mode](/cre/guides/operations/simulating-workflows#listen-mode) for request format, limits, and error behavior |
+| `--non-interactive`                | Run without prompts; requires `--trigger-index` (see the line below) and inputs for the selected trigger type                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `--trigger-index <int>`            | Selects which handler to run (0-based position). If your workflow has multiple handlers, `0` is the first, `1` is the second, etc. Required with `--non-interactive`                                                                                                                                                                                                                                                                                                                                                                                 |
+| `--http-payload <string>`          | HTTP trigger payload as JSON string or path to a JSON file. File paths are resolved relative to the directory where you ran the command. For HTTP triggers only                                                                                                                                                                                                                                                                                                                                                                                      |
+| `--http-trigger-port <int>`        | Port for the local HTTP trigger server that `--listen` starts (default: `2000`). For HTTP triggers only                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `--evm-tx-hash <string>`           | Transaction hash (`0x...`) containing the event that triggered your workflow. For EVM log triggers only                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `--evm-event-index <int>`          | Which log/event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For EVM log triggers only                                                                                                                                                                                                                                                                                                                                                                    |
+| `--evm-receipt-timeout <duration>` | How long to wait for an EVM transaction receipt before timing out (e.g. `30s`, `2m`). For EVM log triggers only (default: `1m`)                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `--solana-tx-sig <string>`         | Base58 transaction signature containing the event that triggered your workflow. For Solana log triggers only                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `--solana-event-index <int>`       | Which event within the transaction to use (0-based position). If the transaction emitted multiple events, `0` is the first, `1` is the second, etc. For Solana log triggers only                                                                                                                                                                                                                                                                                                                                                                     |
+| `--limits <string>`                | Production limits to enforce during simulation: `default` (embedded prod limits), a path to a limits JSON file (e.g. from `cre workflow limits export`), or `none` to disable. See [Testing Production Limits](/cre/guides/operations/understanding-limits) (default: `default`)                                                                                                                                                                                                                                                                     |
+| `--wasm <string>`                  | Path or URL to a pre-built WASM binary. Skips compilation, so the simulator runs the binary as-is and ignores changes to your workflow source. A local path can be at most 97 characters, and a relative path is resolved from the workflow directory, not from where you ran the command. Use with [`cre workflow build`](#cre-workflow-build). See [Simulating with a pre-built binary](/cre/guides/operations/simulating-workflows#simulating-with-a-pre-built-binary)                                                                            |
+| `--skip-type-checks`               | Skip TypeScript type checking during compilation. Speeds up iteration in development; not recommended for production builds                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 **Examples:**
 
@@ -9331,6 +9454,22 @@ cre workflow simulate <workflow-name-or-path> [flags]
   cre workflow simulate ./my-workflow --listen --target local-simulation
   ```
 
+- Listen mode — custom port, with simulation limits disabled so requests sent less than 30 seconds apart all run
+
+  ```bash
+  cre workflow simulate ./my-workflow --listen --http-trigger-port 2055 --limits none --target local-simulation
+  ```
+
+- Simulate a pre-built binary (skips compilation)
+
+  ```bash
+  # Build once. The binary is written to ./my-workflow/binary.wasm by default
+  cre workflow build ./my-workflow
+
+  # A relative --wasm path is resolved from the workflow directory, so ./binary.wasm points to ./my-workflow/binary.wasm
+  cre workflow simulate ./my-workflow --wasm ./binary.wasm --target local-simulation
+  ```
+
 - Listen mode — re-run on every matching EVM log event
 
   ```bash
@@ -9348,6 +9487,10 @@ cre workflow simulate <workflow-name-or-path> [flags]
 > **NOTE: Listen mode is not supported for Solana log triggers**
 >
 > Unlike EVM log triggers, Solana log triggers do not support `--listen`. You always provide a transaction signature for a transaction that already emitted the event, using `--solana-tx-sig` and `--solana-event-index`.
+
+> **NOTE: Listen mode and non-interactive mode**
+>
+> When you combine `--listen` with `--non-interactive` for an HTTP trigger, you must also pass `--http-payload`. The simulator runs that payload first, then keeps listening for more requests. Without `--non-interactive`, you don't need an initial payload.
 
 > **NOTE: Dry run by default**
 >

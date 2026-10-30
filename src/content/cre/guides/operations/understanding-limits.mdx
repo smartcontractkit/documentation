@@ -5,7 +5,7 @@ title: "Testing Production Limits"
 metadata:
   description: "Test workflows against production limits locally: use the --limits flag to enforce, disable, or customize simulation limits before deploying."
   datePublished: "2026-03-19"
-  lastModified: "2026-03-19"
+  lastModified: "2026-10-30"
 ---
 
 import { Aside, CodeSample } from "@components"
@@ -60,6 +60,16 @@ cre workflow simulate my-workflow --limits ./my-limits.json --target staging-set
 ```
 
 See [Customizing limits](#customizing-limits) for how to create a custom limits file.
+
+### Limits in listen mode
+
+Simulation limits apply to every run in [listen mode](/cre/guides/operations/simulating-workflows#listen-mode). The default HTTP trigger quota allows one run per 30 seconds, so the simulator skips HTTP requests that arrive sooner. The simulator prints `Trigger rate limited, skipping execution` in the terminal, but the HTTP response is still `200 OK`. To send requests more often while you develop, run with `--limits none`:
+
+```bash
+cre workflow simulate my-workflow --listen --limits none --target staging-settings
+```
+
+See the [HTTP trigger quota](/cre/service-quotas#http-trigger) for the production value.
 
 ## Viewing default limits
 

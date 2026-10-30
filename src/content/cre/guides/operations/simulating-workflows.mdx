@@ -5,7 +5,7 @@ title: "Simulating Workflows"
 metadata:
   description: "Simulate your workflows: learn to simulate CRE workflows with real API and testnet calls before deploying them."
   datePublished: "2025-11-04"
-  lastModified: "2026-10-19"
+  lastModified: "2026-10-30"
 ---
 
 import { Aside, CopyText } from "@components"
@@ -39,7 +39,7 @@ cre workflow simulate my-workflow --target staging-settings
 
 ### What happens during simulation
 
-1. **Compilation**: The CLI compiles your workflow to WebAssembly (WASM).
+1. **Compilation**: The CLI compiles your workflow to WebAssembly (WASM). If you pass a pre-built binary with `--wasm`, the CLI skips this step. See [Simulating with a pre-built binary](#simulating-with-a-pre-built-binary).
 1. **Trigger selection**: You're prompted to select which trigger to test (cron, HTTP, EVM log, or Solana log).
 1. **Execution**: The workflow runs locally, making real calls to configured RPCs and HTTP endpoints.
 1. **Output**: The simulator displays logs from your workflow and the final execution result.
@@ -116,14 +116,67 @@ cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target s
 
 The `--listen` flag keeps the simulator alive and re-runs it for each incoming trigger event, instead of compiling and executing once then exiting.
 
-- **HTTP triggers**: starts a local HTTP server on port `2000`. Each POST request triggers a fresh simulation run.
+- **HTTP triggers**: starts a local HTTP server on port `2000` (change it with `--http-trigger-port`). Each POST request to `/trigger` triggers a simulation run.
 - **EVM log triggers**: watches the configured chain and re-runs on each matching log event.
 
 ```bash
 cre workflow simulate my-workflow --listen --target staging-settings
 ```
 
-This is useful during active development — make a code change, resave, send another event, and see the result immediately without restarting the CLI. See [Testing HTTP Triggers in Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for a detailed walkthrough with HTTP triggers.
+This is useful when you want to send many test events without restarting the CLI. The simulator compiles your workflow once, when it starts, so restart it after you change your workflow code.
+
+### How listen mode handles HTTP requests
+
+Keep the following behavior in mind when you send requests to the local HTTP server:
+
+- **Request format**: Send a `POST` request to `http://localhost:2000/trigger` with a JSON body of the form `{"input": { ... }}`. The simulator passes the value of `input` to your workflow as the trigger payload. Other body shapes, such as a gateway `workflows.execute` request, are not unwrapped. If `input` is missing, your workflow runs with an empty payload.
+- **Response**: The server returns an empty `200 OK` as soon as it accepts the request, before the workflow runs. Logs and the workflow result appear in the terminal where the simulator is running, not in the HTTP response. A body that isn't valid JSON returns `400 Bad Request` and does not start a run.
+- **One run at a time**: The simulator runs requests in order. It holds up to 16 pending requests and returns `429 Too Many Requests` after that.
+- **Rate limit**: By default, the simulator enforces the production HTTP trigger [service quota](/cre/service-quotas#http-trigger): one run per 30 seconds. The simulator skips requests that arrive sooner, prints `Trigger rate limited, skipping execution` in the terminal, and still returns `200 OK` to the caller. To send requests more often, run with `--limits none`. See [Testing Production Limits](/cre/guides/operations/understanding-limits).
+- **Errors**: If your workflow returns an error, the simulator logs it and keeps listening. Errors raised by the simulation engine itself, such as exceeding a resource limit, end the session.
+- **One workflow per simulator**: Each `--listen` process serves a single workflow and trigger. To serve several workflows locally, start one simulator per workflow, each with its own `--http-trigger-port`.
+
+<Aside type="note" title="Using --listen with --non-interactive">
+  If you combine `--listen` with `--non-interactive` for an HTTP trigger, you must also pass `--http-payload`. The
+  simulator runs that payload first, then keeps listening for more requests.
+</Aside>
+
+See [Testing HTTP Triggers in Simulation](/cre/guides/workflow/using-triggers/http-trigger/testing-in-simulation) for a detailed walkthrough with HTTP triggers, including how the local server differs from the deployed gateway.
+
+## Simulating with a pre-built binary
+
+By default, each `cre workflow simulate` run compiles your workflow to WASM. If you build the binary once and simulate it many times, for example in a CI/CD pipeline or from a script that starts several simulations, you can skip compilation.
+
+There are two ways to do this:
+
+- **`--wasm` flag**: Build the binary with [`cre workflow build`](/cre/reference/cli/workflow#cre-workflow-build), then pass it to `simulate`. Your `workflow.yaml` stays unchanged.
+- **Custom build**: Convert the workflow with [`cre workflow custom-build`](/cre/guides/operations/custom-build). The CLI then runs the binary at `wasm/workflow.wasm` that your `Makefile` produces. This changes your `workflow.yaml` permanently.
+
+**Example using `--wasm`:**
+
+```bash
+# Build once. The binary is written to ./my-workflow/binary.wasm by default
+cre workflow build ./my-workflow --target staging-settings
+
+# Simulate the pre-built binary as many times as you like
+cre workflow simulate ./my-workflow --wasm ./binary.wasm --target staging-settings
+```
+
+When you pass `--wasm`:
+
+- The simulator runs the binary as-is and does not read your workflow source. If you change your code, rebuild the binary.
+- The simulator still reads your `workflow.yaml` for the config and secrets paths, and the target settings.
+- You can start several simulations at the same time against the same binary. They don't write build output, so they don't overwrite each other.
+- A relative path is resolved from the workflow directory, not from where you ran the command. In the example above, `./binary.wasm` points to `./my-workflow/binary.wasm`.
+- A local path can be at most 97 characters. If your path is longer, use a shorter location or a relative path.
+- The value can also be a URL, which the CLI downloads before it simulates.
+
+<Aside type="tip" title="Same binary for simulate, hash, and deploy">
+  The `--wasm` flag is also available on [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash) and [`cre
+  workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy). Building once and passing the same binary to each
+  command ensures you simulate the exact artifact you deploy. The binary hash printed during simulation matches the hash
+  printed by `cre workflow build`.
+</Aside>
 
 ## The `--broadcast` flag
 

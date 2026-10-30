@@ -5,7 +5,7 @@ title: "Custom WASM Builds"
 metadata:
   description: "Learn how to take ownership of the WASM build step in CRE workflows using cre workflow custom-build and a custom Makefile."
   datePublished: "2026-02-26"
-  lastModified: "2026-02-26"
+  lastModified: "2026-10-30"
 ---
 
 import { Aside } from "@components"
@@ -115,6 +115,19 @@ cre workflow simulate ./my-workflow --target staging-settings
 When `make build` runs you'll see `Running my custom build step...` printed before compilation.
 
 Swap the `echo` for any real step: type checking, linting, code generation, or a custom compiler invocation.
+
+## Build once without converting your workflow
+
+If you only need to compile once and reuse the binary, for example to run many simulations against the same build, you don't have to convert your workflow. Build the binary with `cre workflow build`, then pass it with `--wasm`:
+
+```bash
+cre workflow build ./my-workflow
+cre workflow simulate ./my-workflow --wasm ./binary.wasm --target staging-settings
+```
+
+This leaves your `workflow.yaml` unchanged, so you can still let the CLI compile your source at any time. The `--wasm` flag is available on [`cre workflow simulate`](/cre/reference/cli/workflow#cre-workflow-simulate), [`cre workflow hash`](/cre/reference/cli/workflow#cre-workflow-hash), and [`cre workflow deploy`](/cre/reference/cli/workflow#cre-workflow-deploy). For details on how `simulate` resolves the path, see [Simulating with a pre-built binary](/cre/guides/operations/simulating-workflows#simulating-with-a-pre-built-binary).
+
+Choose `custom-build` when you need to change how the binary is compiled. Choose `build` with `--wasm` when you only need to compile once.
 
 ## Generated Makefile
 
