@@ -11,6 +11,6 @@ export const chainlinkForAgents: Solution = {
   datePublished: "2026-10-30",
   nav: [
     { group: "Overview", pages: ["index"] },
-    { group: "Guides", pages: ["guides/link-your-agent", "guides/check-price-and-swap"] },
+    { group: "Guides", pages: ["guides/set-guardrails", "guides/check-price-and-swap"] },
   ],
 }

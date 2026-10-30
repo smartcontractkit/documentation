@@ -1,0 +1,141 @@
+---
+title: "Set up guardrails for your agent"
+description: "Guide to setting up guardrails for your agent on the Chainlink platform."
+---
+
+import { ClickToZoom, GitHubCard, Aside } from "@components"
+
+<Aside type="note" title="Prerequisites">
+  This page assumes that the reader is familiar with the Chainlink for Agents product. If that is not the case, please
+  go through the [Introduction page](/solutions/chainlink-for-agents) first.
+</Aside>
+
+In this guide you will:
+
+1. Learn about Chainlink for Agents' Guardrails
+2. Sign up on the Chainlink platform UI.
+3. Link your agent to your organization.
+4. Set up guardrails for your agent on the Chainlink platform.
+5. Create a fresh chain wallet that your agent will use to interact with Chainlink onchain, bound by the guardrails you set up.
+
+## Chainlink for Agents Guardrails
+
+Guardrails for your agent must be set up by you (the human) in the Chainlink platform, which separates them from the agent's control.
+See below for instructions on creating an account and linking your agent.
+
+The platform offers a suite of guardrails to help you control and limit your agent's actions.
+
+1. **Restricted Mode:** Toggling this on restricts your agent's maximal permission set to just the specific onchain actions that are available to it from [Chainlink For Agents](https://github.com/smartcontractkit/chainlink-for-agents).
+   We highly recommend enabling at least the restricted mode, although best practices would include configuring all guardrails relevant to your operations.
+   With this turned off, your agent won't be restricted by any guardrails at all.
+2. **Send Limits:** Cap the amounts your agent can send/bridge. The platform allows you to configure two types of send limits, in `USD`:
+   - Limits per transaction
+   - Limits per 24 hour period
+3. **Operational Restrictions:** Define the operational boundaries for your agent, such as allowing to only interact with Aave and not Uniswap, or the other way around. We offer the following constraints:
+   - Allow/Disallow interaction with only specific protocols (e.g., Aave, Uniswap),
+   - Allow/Disallow sending tokens to other addresses
+   - Allow/Disallow bridging tokens to other networks using CCIP.
+4. **Allowlisting:** To explicitly restrict your agent to only interact with a select few addresses using our skills.
+
+## Sign up to the Chainlink platform UI
+
+1. Go to the [Chainlink platform](https://app.chain.link/cre/discover) and sign up for an account if you haven't already.
+2. Make sure you have access to the Agents Dashboard. your screen should look something like this. Don't do anything more, you're not quite ready to link your agent to the platform yet.
+
+<ClickToZoom
+  src="/images/solutions/chainlink-for-agents/link-your-agent/link-your-agent-1.png"
+  alt="Screenshot of the Chainlink platform UI showing the Agents Dashboard."
+/>
+
+## Link your agent to the Chainlink Platform
+
+### Generate and fund a wallet address for your agent
+
+1. Just point your agent to the skills repo, and it will set up a new address for you.
+2. Fund the newly created address with some `USDC` on `Base` mainnet, to get started.
+
+<ClickToZoom
+  src="/images/solutions/chainlink-for-agents/link-your-agent/link-your-agent-2.png"
+  alt="Screenshot showing the funded agent address."
+/>
+
+3. Once your address is funded, simply ask your agent to sign up to the Chainlink platform, and the skills repo should guide your agent as needed.
+
+<ClickToZoom
+  src="/images/solutions/chainlink-for-agents/link-your-agent/link-your-agent-3.png"
+  alt="Screenshot showing the agent signing up to the Chainlink platform."
+/>
+
+### Generate a unique token
+
+4. Now, go to the Agents dashboard of the Chainlink platform, and click on `+ Link Agent`.
+5. Paste your agent's address and click on `Generate Token`.
+6. Copy the generated token, and give it back to your agent, simply telling it to continue signing up using the token and the instructions provided by the skills repo.
+
+<ClickToZoom
+  src="/images/solutions/chainlink-for-agents/link-your-agent/link-your-agent-4.png"
+  alt="Screenshot showing the generated token for the agent"
+/>
+
+### Complete the linking process
+
+7. After providing the token to your agent, it will give you back a unique signature payload
+8. Take this payload back to the Chainlink platform's UI, and click on `Link Agent`. This one-time back and forth handshake uniquely ties your wallet address to your Chainlink Platform.
+   Any actions your agent does on your behalf, using the skills we provide, will now be configurable using the platform's UI via guardrails.
+
+<ClickToZoom
+  src="/images/solutions/chainlink-for-agents/link-your-agent/link-your-agent-5.png"
+  alt="Screenshot showing the agent linked to the Chainlink platform."
+/>
+
+## Set up guardrails
+
+1. Go to the [Chainlink platform's agent dashboard](https://app.chain.link/cre/agents), and click on `Add Guardrails`.
+2. Set up minimal guardrails that allow you to follow the tutorial below, without exposing a wider than needed permission set.
+
+<ClickToZoom
+  src="/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-1.png"
+  alt="Screenshot of the Chainlink platform's guardrails panel for the agent. Agent Restriction is on. Send Limit is on, with a per-transaction limit of 10 USD and a 24-hour limit of 15 USD. Under Operations, only Uniswap token swaps is on; Aave deposits and withdrawals, Token Transfers, and Bridge using CCIP are off. The Transfer and Bridge Allowlist is off."
+/>
+
+3. Click on `Apply Settings` and make sure your guardrails are set up.
+
+<Aside type="caution" title="Keep Agent Restriction on">
+  We highly recommend leaving Agent Restriction on, even if you don't configure specific settings. It limits your agent
+  to the workflows in the Chainlink catalog, even if your agent switches itself to unrestricted mode.
+</Aside>
+
+## Create and fund your agent's chain wallet
+
+Give this prompt to your agent to create a fresh, separate chain wallet that it will use to carry out swaps and other onchain operations, bound by the guardrails set up by you in the UI:
+
+```
+Create a chain wallet for yourself on Base and give me its address.
+```
+
+Behind the scenes, Chainlink deploys the wallet contract on Base, and the agent pays a one-time fee for that deployment. It's the biggest fee-paying operation in this guide.
+
+> Please note that since this is a contract deployment, the agent doesn't actually hold the private key to this account, and thus the address generation is non-deterministic.
+> If your agent creates a new chain wallet on another chain, it will have a different address.
+
+<Aside type="tip" title="Agent address vs. chain wallet">
+  Your agent works with two addresses:
+
+- **Agent address:** the address your agent created during sign-up, and the one you linked to your organization. It's your agent's identity, and your agent pays its Chainlink for Agents fees from it.
+- **Chain wallet:** a [smart contract wallet](/crec/concepts/smart-accounts) that Chainlink deploys for your agent on each chain it uses, such as Base. It holds the tokens your agent swaps or sends. It has no private key of its own: it only carries out instructions signed with your agent's key and delivered by Chainlink.
+  - We might also refer to it as an SVA (Signature Verifying Account).
+
+Your agent's swaps run from its chain wallet, so Chainlink for Agents can check each one against your guardrails before it goes onchain. Both addresses belong to the same agent, so your link and your guardrails cover both.
+
+</Aside>
+
+<ClickToZoom
+  src="/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-3.png"
+  alt="Screenshot showing the agent creating a new chain wallet on Base."
+/>
+
+- Send `6 USDC` to the freshly created chain wallet on `Base Mainnet`. You can use [BaseScan](https://basescan.org/) to track balances.
+
+## What's next
+
+- [Check the ETH price and swap USDC on Base](/solutions/chainlink-for-agents/guides/check-price-and-swap): ask your agent for a live price, make a small swap, and see a guardrail block a swap.

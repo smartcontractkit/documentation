@@ -6,7 +6,14 @@ description: "Let your AI agent use Data Streams, Uniswap, Aave and CCIP through
 import { ClickToZoom, GitHubCard, Aside } from "@components"
 
 Chainlink for Agents is a service we built specifically for AI agents, built on [CRE Connect](/crec). \
-Your AI agent uses the service to sign up to our platform, pay fees, and runs workflows automatically.
+It allows you to turn your agent into an onchain operator. Chainlink for Agents lets your agent correctly execute onchain strategies working from verified pricing data and chain events, with the option to strictly lock down its behavior with onchain guardrail enforcement.
+
+Specifically, with Chainlink for Agents your agent can:
+
+1. Query [Chainlink Data Streams](/data-streams/reference/report-schema-overview) for low latency pricing data across crypto, equities, treasuries, and more
+2. Deploy a smart contract wallet for onchain operations
+3. Call curated endpoints to transfer, bridge, trade, or earn yield on tokens
+4. Operate under guardrails set by you and enforced onchain
 
 You use the Chainlink platform UI, a separate web app, to link your agent to your organization and set the guardrails it works within.
 
@@ -29,13 +36,24 @@ Your agent uses the Chainlink catalog, within the guardrails you set. The catalo
 - Check Aave yields and its own positions, and supply tokens to Aave or withdraw them.
 - Bridge tokens to another chain with [Chainlink CCIP](/ccip).
 
+## Quick start
+
+Use this section to get up and running in less than 5 minutes:
+
+> Note: Once you've completed Step 1, your agent will likely prompt you for the remaining steps and should be able to explain each to you as needed.
+
+1. Paste the link to this docs page to have your agent to reach the skills repo: [https://github.com/smartcontractkit/chainlink-for-agents]
+2. Have your agent generate an EVM wallet for signing and paying x402 fees - most agents can do this directly from a simple prompt.
+3. Send some `USDC` on `Base Mainnet` to your agent's new EVM wallet. `5 USDC` is more than sufficient to start with
+4. Ask your agent to deploy its smart contract wallet (cost: `1 USDC`). Your agent will ask you for the public EVM address of a more secure account to use as this smart contract wallet's owner. Pick your preferred address that you control in an existing wallet.
+5. Fund the smart contract wallet with the funds you wish to have your agent control
+6. **OPTIONAL, but recommended:** set up guardrails for your agent's wallet
+
 ## Who is this for
 
-This service is targeted towards, but not limited to, people who want an AI agent to work with Chainlink for them, without writing code.
+This service is targeted towards, but not limited to, crypto traders who want their agent to operate onchain for them.
 
-> Your agent gets ready-made workflows and a way to pay for them, and you still get to set guardrails that your agent can't change.
-
-Your agent works autonomously, yet still operates within the parameters you set for it.
+> Your agent works autonomously, yet still within the parameters you set for it.
 
 ## How your agent connects to Chainlink
 
@@ -51,7 +69,7 @@ You and your agent go through four phases during the linkup process:
 3. **Set guardrails.** In the Chainlink platform, you choose which kinds of actions your agent may take: sending, swapping or bridging tokens, and using Aave. Or maybe you want your agent to not want to do any of those actions? You can set that up too.
    You also choose which wallets your agent may send or bridge tokens to, and how much it may send or bridge per transaction and per rolling 24 hours. Your agent can't change these settings, only you can, using the UI.
 
-4. **Run workflows.** Your agent runs workflows through Chainlink for Agents and pays a small fee for each one. Workflows that move tokens use a chain wallet, a separate wallet your agent creates on each chain. Chainlink for Agents checks every workflow against your guardrails, checks again just before anything is written onchain, and blocks any workflow that breaks a guardrail.
+4. **Execute onchain.** Your agent's onchain calls trigger Chainlink Runtime Environment workflows, each requiring a small fee. Workflows build the appropriate calldata for your agent to sign and then submits signed transactions to chain with redundant RPCs, sponsoring gas and handling retries. Chainlink for Agents checks every workflow against your optionally configured guardrails, checks again just before anything is written onchain, and blocks any workflow that breaks a guardrail.
 
 <Aside type="caution" title="Please Note">
   Without guardrails, your agent can run any workflow in the catalog, with any token, recipient, or bridge destination,
