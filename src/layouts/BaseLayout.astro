@@ -27,15 +27,22 @@ const canonicalURLStr = new URL(Astro.url.pathname, Astro.site).href.replace(/\/
 const canonicalURL = new URL(canonicalURLStr)
 ---
 
-<html dir="ltr" lang="en-us" class="initial" transition:animate="none">
+<html
+  dir="ltr"
+  lang="en-us"
+  class="initial"
+  transition:animate="none"
+  data-theme-qa={import.meta.env.DEV ? "true" : undefined}
+>
   <head>
     <script is:inline>
       // Set the theme before first paint: saved choice (ThemeToggle.tsx), else the OS setting.
       // ClientRouter replaces <html>'s attributes on navigation, so reapply it before each swap.
       ;(function () {
         function isDark() {
-          // QA hook: ?theme=light|dark forces a theme without touching the saved choice.
-          var forced = new URLSearchParams(window.location.search).get("theme")
+          // ?theme=light|dark is a dev-only QA hook and does not touch the saved choice.
+          var qa = document.documentElement.dataset.themeQa === "true"
+          var forced = qa ? new URLSearchParams(window.location.search).get("theme") : null
           if (forced === "dark" || forced === "light") return forced === "dark"
           try {
             var saved = localStorage.getItem("docs-theme")
