@@ -39,7 +39,7 @@ const PageLink = ({ page, currentPath, level }: { page: Page; currentPath: strin
   }, [isActive])
 
   const linkStyle = {
-    backgroundColor: isActive ? "var(--blue-100)" : "transparent",
+    backgroundColor: isActive ? "var(--surface-accent-strong)" : "transparent",
     color: isActive ? "var(--blue-600)" : "inherit",
     fontWeight: isActive ? "500" : "normal",
   }

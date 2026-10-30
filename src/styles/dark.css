@@ -1,0 +1,282 @@
+/*
+ * Dark mode, active when <html> has the `dark` class (BaseLayout.astro, ThemeToggle.tsx).
+ * Builds on the @chainlink/blocks dark tokens. In component CSS, use blocks tokens
+ * (--background, --foreground, --muted, --border) instead of hex or raw palette colors.
+ */
+
+html.dark {
+  color-scheme: dark;
+
+  /* Dark palette */
+  --dark-tint-blue: color-mix(in srgb, var(--blue-500) 12%, transparent);
+  --dark-tint-blue-strong: color-mix(in srgb, var(--blue-500) 20%, transparent);
+  --dark-tint-blue-stronger: color-mix(in srgb, var(--blue-500) 30%, transparent);
+  --dark-tint-green: color-mix(in srgb, var(--green-500) 12%, transparent);
+  --dark-tint-yellow: color-mix(in srgb, var(--yellow-400) 12%, transparent);
+  --dark-tint-red: color-mix(in srgb, var(--red-500) 12%, transparent);
+  --dark-edge-green: color-mix(in srgb, var(--green-500) 40%, transparent);
+  --dark-edge-yellow: color-mix(in srgb, var(--yellow-400) 40%, transparent);
+  --dark-edge-red: color-mix(in srgb, var(--red-500) 40%, transparent);
+  --dark-text-green: var(--green-300);
+  --dark-text-yellow: var(--yellow-300);
+  --dark-text-red: var(--red-300);
+
+  /* blocks' gray-800 border is barely visible on gray-900 */
+  --border: var(--gray-700);
+
+  /* Shared surfaces for tone callouts/status. */
+  --tone-surface: var(--muted);
+  --tone-border: var(--border);
+  --tone-info: var(--blue-500);
+  --tone-success: var(--success-foreground);
+  --tone-warning: var(--yellow-500);
+  --tone-error: var(--red-500);
+
+  /* theme.css */
+  --surface-accent: var(--dark-tint-blue);
+  --surface-accent-strong: var(--dark-tint-blue-strong);
+  --text-accent: var(--blue-400);
+  --color-accent: var(--blue-500);
+  --color-accent-dark: var(--blue-700);
+  --callout-warning-bg: var(--dark-tint-yellow);
+  --callout-warning-text: var(--dark-text-yellow);
+  --callout-info-bg: var(--dark-tint-blue);
+  --callout-info-text: var(--blue-300);
+
+  /* @chainlink/design-system tokens */
+  --color-background-primary: var(--gray-900);
+  --color-background-secondary: var(--gray-800);
+  --color-background-tertiary: var(--gray-800);
+  --color-background-disabled: var(--gray-800);
+  --color-background-info: var(--dark-tint-blue);
+  --color-background-warning: var(--dark-tint-yellow);
+  --color-background-error: var(--dark-tint-red);
+
+  --color-text-primary: var(--gray-300);
+  --color-text-secondary: var(--gray-400);
+  --color-text-heading: var(--gray-50);
+  --color-text-value: var(--gray-50);
+  --color-text-label: var(--blue-200);
+  --color-text-info: var(--blue-300);
+  --color-text-contrast: var(--gray-900);
+  --color-text-disabled: var(--gray-600);
+  --color-text-placeholder: var(--gray-500);
+  --color-text-link: var(--blue-400);
+  --color-text-link-hover: var(--blue-300);
+  --color-text-link-active: var(--blue-200);
+
+  --color-border-primary: var(--gray-800);
+  --color-border-secondary: var(--gray-700);
+  --color-border-separator: var(--gray-800);
+  --color-border-interactive: var(--gray-700);
+  --color-border-disabled: var(--gray-700);
+
+  --theme-divider: var(--gray-800);
+  --theme-text: var(--gray-300);
+  --theme-text-light: var(--gray-400);
+  --theme-bg: var(--gray-900);
+  --theme-bg-hover: var(--gray-800);
+  --theme-bg-offset: var(--gray-800);
+  --theme-navbar-bg: var(--gray-900);
+  --theme-navbar-bg-blur: color-mix(in srgb, var(--gray-900) 85%, transparent);
+  --theme-navbar-border: var(--gray-800);
+  --theme-code-inline-bg: var(--dark-tint-blue);
+  --theme-code-inline-text: var(--blue-100);
+  --theme-selection-color: var(--white);
+  --theme-selection-bg: color-mix(in srgb, var(--blue-500) 40%, transparent);
+  --tertiary-border: var(--gray-600);
+  --tertiary-foreground: var(--gray-50);
+
+  /* Undeclared variables that components read with light fallbacks */
+  --color-background: var(--gray-900);
+  --color-border: var(--gray-800);
+  --color-text: var(--gray-300);
+  --border-color: var(--border);
+  --Page-Background-Alt: var(--background-alt);
+  --Page-Background-Muted: var(--muted);
+  --Page-Accent-Accent: var(--muted);
+  --Page-Border-Border: var(--border);
+  --Page-Foreground-Muted: var(--muted-foreground);
+  --Page-Foreground-Blue: var(--blue-400);
+  --Card-Border: var(--border);
+  --Color-Primary: var(--foreground);
+  --Button-Tertiary-Foreground: var(--foreground);
+  --Button-Tertiary-Background-Selected: var(--muted);
+  --Success-Background: var(--dark-tint-green);
+  --Success-Border: var(--dark-edge-green);
+  --Success-Foreground: var(--dark-text-green);
+  --Warning-Background: var(--dark-tint-yellow);
+  --Warning-Border: var(--dark-edge-yellow);
+  --Warning-Foreground: var(--dark-text-yellow);
+  --Error-Background: var(--dark-tint-red);
+  --Error-Border: var(--dark-edge-red);
+  --Error-Foreground: var(--dark-text-red);
+}
+
+html.dark img[src="/chainlink-docs.svg"] {
+  content: url("/chainlink-docs-dark.svg");
+}
+
+html.dark .newsletter-cta {
+  background-image: none;
+  background-color: var(--background-alt);
+}
+
+html.dark #article :is(h1, h2) {
+  border-bottom-color: var(--gray-800);
+}
+
+html.dark th {
+  background: var(--gray-800);
+  color: var(--color-text-heading);
+}
+
+html.dark #article :is(table, thead, tbody, tr, th, td) {
+  border-color: var(--gray-800);
+}
+
+/* Asides with a tone class set their own tone border (see Aside.astro). */
+html.dark #article aside:not(.note, .tip, .caution, .danger) {
+  border-color: color-mix(in srgb, var(--white) 8%, transparent);
+}
+
+/* Tone asides: neutral surface + tone accent bar in dark. */
+html.dark aside:is(.note, .tip, .caution, .danger) {
+  --aside-bg: var(--tone-surface);
+  --aside-border: var(--tone-border);
+  box-shadow: inset 3px 0 0 var(--aside-accent);
+}
+
+html.dark aside:is(.note, .tip) {
+  --aside-accent: var(--tone-info);
+  --aside-fg: var(--progress-foreground);
+}
+
+html.dark aside.caution {
+  --aside-accent: var(--tone-warning);
+  --aside-fg: var(--warning-foreground);
+}
+
+html.dark aside.danger {
+  --aside-accent: var(--tone-error);
+  --aside-fg: var(--error-foreground);
+}
+
+/* Same treatment for the RateLimitBucket status box (not an aside). */
+html.dark .rlb-status:not([data-tone="neutral"]) {
+  --rlb-tone-bg: var(--tone-surface);
+  --rlb-tone-border: var(--tone-border);
+  box-shadow: inset 3px 0 0 var(--rlb-tone-icon);
+}
+
+/* Opt out with class="no-dark-card"; SVGs are excluded. */
+html.dark #article :is(p, figure, a) > img:not(.no-dark-card):not([src$=".svg" i]) {
+  background: var(--white);
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px var(--gray-700);
+}
+
+/* !important to beat the global code rule in @chainlink/cl-search-frontend's stylesheet */
+html.dark :not(pre) > code:not([class*="language-"]) {
+  background-color: var(--theme-code-inline-bg) !important;
+  border-color: transparent !important;
+  color: var(--theme-code-inline-text) !important;
+}
+
+html.dark a code:not(pre code):not([class*="language-"]) {
+  background-color: var(--dark-tint-blue-strong) !important;
+  color: var(--blue-300) !important;
+}
+
+html.dark a:hover code:not(pre code):not([class*="language-"]) {
+  background-color: var(--dark-tint-blue-stronger) !important;
+  color: var(--blue-200) !important;
+}
+
+html.dark .code-block-container {
+  --code-bg: var(--gray-950);
+  --code-header-bg: var(--gray-800);
+}
+
+html.dark pre[class*="language-"] {
+  background: var(--gray-950);
+}
+
+html.dark .code-sample__header {
+  background: var(--gray-800);
+}
+
+html.dark :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"]), select, textarea) {
+  background-color: transparent;
+  color: var(--foreground);
+}
+
+/* See src/lib/designSystemButton.ts */
+html.dark .ds-button-secondary {
+  background-color: var(--gray-800);
+  border-color: var(--gray-600);
+  color: var(--color-text-link);
+}
+
+html.dark .ds-button-secondary:hover,
+html.dark .ds-button-secondary:focus-visible {
+  background-color: var(--gray-700);
+  border-color: var(--blue-400);
+  color: var(--blue-300);
+}
+
+html.dark .ds-button-secondary:disabled {
+  background-color: transparent;
+  border-color: var(--gray-800);
+  color: var(--gray-600);
+}
+
+html.dark .ds-button-primary:disabled {
+  background-color: var(--gray-800);
+  border-color: var(--gray-800);
+  color: var(--gray-500);
+}
+
+html.dark .copy-iconbutton img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+html.dark .ccip-table__filters__external-button {
+  background-color: transparent;
+  border-color: var(--blue-500);
+  color: var(--color-text-link);
+}
+
+/* Theme toggle cross-fade. (*) because Astro renames and hides the <html> snapshot. */
+html.theme-transition::view-transition-group(*) {
+  animation: none;
+}
+
+html.theme-transition::view-transition-old(*),
+html.theme-transition::view-transition-new(*) {
+  mix-blend-mode: plus-lighter;
+  animation-duration: 200ms;
+  animation-timing-function: ease-in-out;
+  animation-fill-mode: both;
+}
+
+html.theme-transition::view-transition-old(*) {
+  opacity: 1;
+  animation-name: theme-fade-out;
+}
+
+html.theme-transition::view-transition-new(*) {
+  animation-name: theme-fade-in;
+}
+
+@keyframes theme-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes theme-fade-in {
+  from {
+    opacity: 0;
+  }
+}
