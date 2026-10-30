@@ -120,6 +120,12 @@ if (isCanonical) {
   Content = renderResult.Content
   headings = renderResult.headings
 }
+
+// Declares values for the `set:html` scripts below (Astro 7's compiler drops `set:html` on a script with `define:vars`)
+const scriptVars = (vars: Record<string, string>) =>
+  Object.entries(vars)
+    .map(([name, value]) => `var ${name} = ${JSON.stringify(value).replace(/</g, "\\u003c")};`)
+    .join("\n")
 ---
 
 <DocsLayout frontmatter={currentEntry.data} {headings}>
@@ -130,11 +136,8 @@ if (isCanonical) {
       <script
         is:inline
         slot="head-scripts"
-        define:vars={{
-          goUrl: `/cre/${goEntry!.id}`,
-          tsUrl: `/cre/${tsEntry!.id}`,
-        }}
         set:html={`(function(){
+          ${scriptVars({ goUrl: `/cre/${goEntry!.id}`, tsUrl: `/cre/${tsEntry!.id}` })}
           try {
             var s = localStorage.getItem("docs-language-preference");
             var l = s === "go" || s === '"go"' ? "go" : "ts";
@@ -158,8 +161,8 @@ if (isCanonical) {
       <script
         is:inline
         slot="head-scripts"
-        define:vars={{ currentLang: entry!.data.sdkLang }}
         set:html={`(function(){
+          ${scriptVars({ currentLang: entry!.data.sdkLang! })}
           try {
             localStorage.setItem("docs-language-preference", currentLang);
           } catch (e) {}
@@ -187,13 +190,11 @@ if (isCanonical) {
   !isCanonical && goEntry && tsEntry && (
     <script
       type="module"
-      define:vars={{
-        goUrl: `/cre/${goEntry.id}`,
-        tsUrl: `/cre/${tsEntry.id}`,
-      }}
-      set:html={`window.addEventListener("languageChanged", function(e) {
+      set:html={`${scriptVars({ goUrl: `/cre/${goEntry.id}`, tsUrl: `/cre/${tsEntry.id}` })}
+      window.addEventListener("languageChanged", function(e) {
         try {
-          var l = e.detail.language;
+          var l = e.detail && e.detail.language;
+          if (!l) return;
           var u = l === "go" ? goUrl : tsUrl;
           var suffix = window.location.search + window.location.hash;
           if (u) window.location.href = u + suffix;
