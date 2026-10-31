@@ -294,7 +294,7 @@ The mechanism by which a DON comes to a single, reliable, and tamper-proof resul
 
 # Service Quotas
 Source: https://docs.chain.link/cre/service-quotas
-Last Updated: 2026-09-16
+Last Updated: 2026-10-29
 
 This page documents the service quotas for Chainlink Runtime Environment (CRE) workflows.
 
@@ -376,12 +376,26 @@ These quotas apply to each individual workflow.
 
 ### Secrets quotas
 
-| Quota Key                                                                     | Description                                                                                                                      | Value |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ----- |
-| [`PerWorkflow.WASMSecretsSizeLimit`](#perworkflow-wasmsecretssizelimit)       | Maximum total size of secrets accessible to a workflow                                                                           | 27 KB |
-| [`PerWorkflow.SecretsConcurrencyLimit`](#perworkflow-secretsconcurrencylimit) | Maximum number of secrets that can be fetched concurrently. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets). | 5     |
-| [`PerWorkflow.Secrets.CallLimit`](#perworkflow-secrets-calllimit)             | Maximum number of secrets fetch calls per workflow execution                                                                     | 5     |
-| [`PerSecret.CipherTextSize`](#persecret-ciphertextsize)                       | Maximum size of a single encrypted secret value                                                                                  | 2 KB  |
+| Quota Key                                                                     | Description                                                                                                                                                                                                                    | Value |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----- |
+| [`PerWorkflow.WASMSecretsSizeLimit`](#perworkflow-wasmsecretssizelimit)       | Maximum total size of secrets accessible to a workflow                                                                                                                                                                         | 27 KB |
+| [`PerWorkflow.SecretsConcurrencyLimit`](#perworkflow-secretsconcurrencylimit) | Maximum number of secret fetch calls that can be in flight at the same time. A batch call counts as one. [Learn how to fetch multiple secrets](/cre/guides/workflow/secrets/using-secrets-deployed#fetching-multiple-secrets). | 5     |
+| [`PerWorkflow.Secrets.CallLimit`](#perworkflow-secrets-calllimit)             | Maximum number of secret fetch calls per workflow execution. A single call and a batch call each count as one.                                                                                                                 | 5     |
+| [`VaultRequestBatchSizeLimit`](#vaultrequestbatchsizelimit)                   | Maximum number of secrets in a single request: one batch fetch, or one `cre secrets create`, `update`, or `delete` file. This is not the total you can store (see `PerOwner.VaultSecretsLimit`).                               | 10    |
+| [`PerSecret.CipherTextSize`](#persecret-ciphertextsize)                       | Maximum size of a single encrypted secret value                                                                                                                                                                                | 2 KB  |
+
+> **NOTE: Secrets per owner vs. secrets per request**
+>
+> `PerOwner.VaultSecretsLimit` (in the owner quotas above) is the total number of secrets you can store.
+> `VaultRequestBatchSizeLimit` limits a single request: how many secrets one `cre secrets` file can contain, and how
+> many secrets one batch fetch can request. To store more secrets than fit in one request, upload them in several files.
+> `PerWorkflow.Secrets.CallLimit` limits how many fetch calls one execution can make, whether each call fetches one
+> secret or a batch.
+
+> **NOTE: Confidential Workflows**
+>
+> Secret fetches from a Confidential Workflow count against the same per-execution fetch call limit as fetches from a
+> regular workflow.
 
 ### Consensus quotas
 
@@ -5378,7 +5392,7 @@ Complete TypeScript reference implementations, available as templates:
 
 # Managing Secrets
 Source: https://docs.chain.link/cre/guides/workflow/secrets
-Last Updated: 2026-10-01
+Last Updated: 2026-10-29
 
 Secrets are sensitive values like API keys, private keys, database URLs, and authentication tokens that your workflow needs to access at runtime. CRE provides different approaches for managing secrets depending on whether you're developing locally or running workflows in production.
 
@@ -5450,6 +5464,8 @@ apiKey := secret.Value
 
 The CRE runtime automatically handles retrieving the secret from the appropriate source based on your environment.
 
+To fetch several secrets in one call, use the batch API (`runtime.getSecrets()` in TypeScript, `runtime.GetSecrets()` in Go). Limits apply to how many secrets a batch can contain and how many fetch calls one execution can make, and they are separate from the limits on uploading secrets. See [Fetching multiple secrets](/cre/guides/workflow/secrets/using-secrets-deployed#fetching-multiple-secrets) and the [secrets quotas](/cre/service-quotas#secrets-quotas).
+
 > **NOTE: Fetch secrets only inside trigger handlers**
 >
 > When your workflow starts, the DON first runs your top-level code to register (subscribe) trigger handlers. During this trigger subscription phase, all capability calls and secret retrieval (Go: `runtime.GetSecrets()` / TS: `runtime.getSecret()`) are blocked. A `GetSecrets()` call made while registering handlers fails. Call it from inside a trigger handler instead — secrets are fetched on each execution, after the trigger fires.
@@ -5470,7 +5486,7 @@ For detailed CLI command documentation, see:
 
 # Using Secrets with Deployed Workflows
 Source: https://docs.chain.link/cre/guides/workflow/secrets/using-secrets-deployed
-Last Updated: 2026-10-26
+Last Updated: 2026-10-29
 
 When your workflow is deployed, it cannot access your local `.env` file or environment variables. Instead, secrets must be stored in the **Vault DON**—a decentralized, secure secret storage system that your deployed workflows can access at runtime.
 
@@ -5519,6 +5535,17 @@ The workflow is similar to local development, but with a critical difference in 
 - **Local simulation**: Secrets read from your environment variables or `.env` file on your machine
 - **Deployed workflows**: Secrets retrieved from Vault DON by the workflow
 
+## Secrets limits
+
+Four separate limits apply to secrets. They apply at different times, so a value that is allowed for one can still be rejected by another:
+
+- **Secrets stored in total:** a cap on how many secrets you can keep in the Vault for one owner.
+- **Secrets per upload:** a cap on how many secrets one `cre secrets create`, `update`, or `delete` file can contain. To store more, upload several files.
+- **Secrets per batch fetch:** a cap on how many secrets one `getSecrets()` / `GetSecrets()` call can request.
+- **Fetch calls per execution:** a cap on how many times one workflow execution can fetch secrets. A single-secret call and a batch call each count as one.
+
+See [Secrets quotas](/cre/service-quotas#secrets-quotas) for the current values and for the secret size limits.
+
 ## Step-by-step guide
 
 ### Step 1: Create a secrets YAML file
@@ -5542,6 +5569,10 @@ secretsNames:
 - Each secret has:
   - **Key** (e.g., `API_KEY`) — The identifier your workflow code will use
   - **Value** — An array containing the environment variable name that holds the actual value
+
+> **NOTE: Limit on secrets per file**
+>
+> A single file can only contain a limited number of secrets. The CLI rejects larger files with `cannot have more than N items in a single payload; check your secrets YAML`. Split larger sets across multiple files. This limit applies to one upload only. It is separate from the limit on the total number of stored secrets and from the limit on secrets per batch fetch (see [Secrets limits](#secrets-limits) and [Secrets quotas](/cre/service-quotas#secrets-quotas)).
 
 > **CAUTION: Don't commit secrets files**
 >
@@ -5668,6 +5699,31 @@ Secret identifier: secret_id=DATABASE_URL, owner=<your-owner-address>, namespace
 >
 > The `list` command only shows secret identifiers, never the actual secret values. Secret values are only accessible to your deployed workflows at runtime.
 
+## Fetching multiple secrets
+
+Use the batch API to fetch several secrets in one call. A batch call counts as a single fetch call against your [service quotas](/cre/service-quotas#secrets-quotas).
+
+```go
+secrets, err := runtime.GetSecrets([]*protos.SecretRequest{
+{Id: "API_KEY"},
+{Id: "DATABASE_URL"},
+}).Await()
+if err != nil {
+return nil, err
+}
+
+// Secrets are returned in the same order as the requests.
+apiKey := secrets[0].Value
+databaseUrl := secrets[1].Value
+```
+
+> **NOTE: Secrets fetch limits**
+>
+> - Each execution has a limit on the number of fetch calls. A single-secret call and a batch call each count as one, so combine fetches into batch calls.
+> - A batch has a limit on the number of secrets it can contain. This is separate from the limits on uploading secrets.
+> - Batches are all-or-nothing: if any secret in the batch fails to fetch, the call returns an error that lists every failure.
+> - See [Secrets quotas](/cre/service-quotas#secrets-quotas) for the values.
+
 ## Managing secrets lifecycle
 
 ### Updating secrets
@@ -5750,6 +5806,45 @@ For complete multi-sig setup and usage, see [Using Multi-sig Wallets](/cre/guide
 1. Verify the secret exists: `cre secrets list --target production-settings`
 2. Check that the secret ID in your code matches exactly
 3. Recreate the secret if necessary: `cre secrets create ...`
+
+### "Secret not found" but the secret exists in `cre secrets list`
+
+**Problem:** `cre secrets list` shows the secret, but the workflow can't find it.
+
+**Solution:**
+`cre secrets create`, `update`, and `delete` always use the `"main"` namespace, and `GetSecret` / `getSecret` default to `"main"` when you don't pass one. If your workflow code requests a different namespace (for example `"default"`), the lookup fails with an error such as `vault error for secret default/API_KEY: key does not exist`. Remove the `Namespace` field or set it to `"main"`.
+
+### "request batch size exceeds maximum"
+
+**Problem:** A batch fetch, or a `cre secrets` request, contains more secrets than a single request allows.
+
+**Solution:**
+Split the request into smaller batches. For `cre secrets create`, `update`, and `delete`, split the YAML file. The CLI reports this as `cannot have more than N items in a single payload; check your secrets YAML`. A workflow that fetches too many secrets in one batch gets `request batch size exceeds maximum of N: VaultRequestBatchSizeLimit limited: ...`. See `VaultRequestBatchSizeLimit` in [Secrets quotas](/cre/service-quotas#secrets-quotas) for the value.
+
+### One missing secret fails the whole batch
+
+**Problem:** A batch fetch fails, even though most of the secrets in it exist.
+
+**Solution:**
+Batches are all-or-nothing. If any secret in the batch doesn't exist (or isn't in the namespace you requested), the whole call fails, and the error names the secret, for example `vault error for secret main/MISSING_KEY: key does not exist`. Check that every ID in the batch appears in `cre secrets list`.
+
+### Secrets fetch call limit exceeded
+
+**Problem:** A workflow execution fails when it fetches secrets, and it makes many separate fetch calls.
+
+**Solution:**
+Each execution has a limit on secret fetch calls (`PerWorkflow.Secrets.CallLimit`, see [Secrets quotas](/cre/service-quotas#secrets-quotas)), and a batch call counts as one. Combine your fetches into batch calls. See [Fetching multiple secrets](#fetching-multiple-secrets).
+
+In a regular workflow, the call that goes over the limit fails with `PerWorkflow.Secrets.CallLimit limited for workflow[...]: cannot use N, limit is M`.
+
+In a Confidential Workflow, the same limit currently surfaces as `relay quorum unreachable: 0 signed responses, ...` instead of naming the limit. If you see that error and your workflow makes several fetch calls in one execution, reduce the number of fetch calls first.
+
+### Secrets errors end with "Verify the secret name is correct..."
+
+**Problem:** A secrets error ends with `Verify the secret name is correct and that the secret has been configured for this workflow` (or `Verify the host response is complete...`), but the secret name is fine.
+
+**Solution:**
+Those closing hints are generic and are added to every secrets error. The text before them names the actual cause, such as a limit being exceeded or a key that doesn't exist. Read that part of the message first.
 
 ### "Timeout expired" error
 
@@ -10135,7 +10230,7 @@ Exact registries depend on your organization. Some environments list only on-cha
 
 # Secrets Management Commands
 Source: https://docs.chain.link/cre/reference/cli/secrets
-Last Updated: 2026-04-10
+Last Updated: 2026-10-29
 
 > **NOTE: Authentication required**
 >
@@ -10240,6 +10335,10 @@ secretsNames:
 - Each secret key (e.g., `API_KEY`) maps to an array containing an environment variable name
 - Secret values are read from environment variables or `.env` file
 
+> **NOTE: Limit on secrets per file**
+>
+> A single file can only contain a limited number of secrets. The CLI rejects larger files with `cannot have more than N items in a single payload; check your secrets YAML`. Split larger sets across multiple files. This limit applies to one request only. It is separate from the limit on the total number of stored secrets and from the limit on secrets per batch fetch in workflow code. See [Secrets quotas](/cre/service-quotas#secrets-quotas) for the values.
+
 > **NOTE: Default namespace**
 >
 > Secrets are stored in the `"main"` namespace automatically. Custom namespace support may be added in future CLI versions.
@@ -10288,7 +10387,7 @@ cre secrets update [SECRETS_FILE_PATH] [flags]
 
 ### Input file format
 
-Same YAML format as `create`.
+Same YAML format as `create`, including the limit on secrets per file.
 
 ### Examples
 
@@ -10332,7 +10431,7 @@ cre secrets delete [SECRETS_FILE_PATH] [flags]
 
 ### Input file format
 
-YAML file with a simple list of secret identifiers to delete:
+YAML file with a simple list of secret identifiers to delete (the same per-file limit as `create` applies):
 
 ```yaml
 secretsNames:
@@ -17068,7 +17167,7 @@ For the full list of types and methods available on the Confidential HTTP client
 
 # Making a Workflow Confidential
 Source: https://docs.chain.link/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go
-Last Updated: 2026-07-28
+Last Updated: 2026-10-29
 
 Some workflows need to keep sensitive inputs and the computation over them—not just a single outbound request—confidential from node operators: risk thresholds, proprietary scoring, multi-step reasoning over sensitive data. Confidential Workflows are designed to make this possible by running your handler's callback inside a secure [enclave](/cre/key-terms#enclave), a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment) intended to keep that computation and data confidential from the machine's own operator while it runs.
 
@@ -17165,6 +17264,11 @@ if err != nil {
 > [`VaultDonSecrets`](/cre/reference/sdk/confidential-http-client-go#confidentialhttpconfidentialhttprequest), there's
 > nothing to declare ahead of time. The secret is requested and decrypted inside the enclave at the moment
 > [`GetSecret()`](/cre/reference/sdk/confidential-workflows-client-go#runtimegetsecret) runs.
+
+> **NOTE: Secrets fetch limits**
+>
+> Secret fetches from inside the enclave count against the same limits as fetches from a regular workflow, including the
+> limit on fetch calls per execution. See [Service Quotas](/cre/service-quotas#secrets-quotas).
 
 ### Step 3: Make a capability call from inside the enclave
 
@@ -25130,7 +25234,7 @@ You can apply the `consensus_aggregation` tag to the fields of your struct.
 
 # SDK Reference: Core
 Source: https://docs.chain.link/cre/reference/sdk/core-go
-Last Updated: 2026-05-20
+Last Updated: 2026-10-29
 
 This page provides a reference for the core data structures and functions of the CRE Go SDK. These are the fundamental building blocks that every workflow uses, regardless of trigger types or capabilities.
 
@@ -25419,7 +25523,7 @@ import "github.com/smartcontractkit/cre-sdk-go/cre"
 func onTrigger(config *Config, runtime cre.Runtime, ...) (string, error) {
     secretPromise := runtime.GetSecret(&cre.SecretRequest{
         Id:        "my-api-key",
-        Namespace: "default",
+        Namespace: "main",
     })
 
     secret, err := secretPromise.Await()

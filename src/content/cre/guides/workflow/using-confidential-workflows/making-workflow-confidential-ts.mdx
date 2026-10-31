@@ -7,7 +7,7 @@ pageId: "guides-workflow-confidential-workflows-making-workflow-confidential"
 metadata:
   description: "Run workflow logic inside a secure enclave in TypeScript: register a TEE handler, fetch secrets dynamically, and cross back to the DON for consensus."
   datePublished: "2026-07-21"
-  lastModified: "2026-07-28"
+  lastModified: "2026-10-29"
 ---
 
 import { Aside } from "@components"
@@ -82,6 +82,11 @@ const secret = runtime.getSecret({ id: "MY_API_KEY" }).result()
   [`vaultDonSecrets`](/cre/reference/sdk/confidential-http-client-ts#confidentialhttprequest--confidentialhttprequestjson),
   there's nothing to declare ahead of time. The secret is requested and decrypted inside the enclave at the moment
   [`getSecret()`](/cre/reference/sdk/confidential-workflows-client-ts#runtimegetsecret) runs.
+</Aside>
+
+<Aside type="note" title="Secrets fetch limits">
+  Secret fetches from inside the enclave count against the same limits as fetches from a regular workflow, including the
+  limit on fetch calls per execution. See [Service Quotas](/cre/service-quotas#secrets-quotas).
 </Aside>
 
 ### Step 3: Make a capability call from inside the enclave
