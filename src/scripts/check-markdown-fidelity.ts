@@ -158,6 +158,7 @@ const containerElements: Record<string, true> = {
   Fragment: true,
   GitHubCards: true,
   OverviewWrapper: true,
+  VaultAdapterComparison: true,
   ol: true,
   li: true,
 }
