@@ -366,6 +366,16 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
       },
 
       // ---------------------------------------------
+      // CCIP Intents (EVM)
+      // ---------------------------------------------
+      {
+        title: "CCIP Intents",
+        pageId: "ccip-evm-concepts-intents",
+        url: "ccip/evm/concepts/ccip-intents",
+        chainTypes: ["evm"],
+      },
+
+      // ---------------------------------------------
       // Canton — minimal, enterprise-focused IA (independent of other chain families)
       // ---------------------------------------------
       {
