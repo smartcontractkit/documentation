@@ -6,11 +6,11 @@ description: "Guide to interacting with Chainlink via your agent on the Base net
 import { ClickToZoom, GitHubCard, Aside } from "@components"
 
 <Aside type="note" title="Prerequisites">
-1. This guide assumes that you have already linked your agent to the Chainlink platform, and have created a fresh wallet for it, using [our guide here](/solutions/chainlink-for-agents/guides/set-guardrails). You also need:
+1. This guide assumes that you have already linked your agent to the Chainlink platform, and have created a fresh wallet for it, using [Set up guardrails for your agent](/solutions/chainlink-for-agents/guides/set-guardrails). You also need:
     - A few USDC on Base left in your agent's address, to pay this guide's fees.
     - About 6 USDC on Base in the new chain wallet.
-    - Your agent doesn't need any ETH: it pays its fees in USDC, and Chainlink covers the gas for its chain wallet.
-1. This guide assumed you have set up appropriate guardrails relevant to your needs, as described in [our guide here](/solutions/chainlink-for-agents/guides/set-guardrails).
+    - Your agent doesn't need any ETH: it pays its fees in USDC, and Chainlink for Agents sponsors the gas for its chain wallet.
+1. This guide assumes you have set up appropriate guardrails relevant to your needs, as described in [Set up guardrails for your agent](/solutions/chainlink-for-agents/guides/set-guardrails#set-up-guardrails).
 
 </Aside>
 
@@ -25,8 +25,8 @@ In this tutorial, you will:
   Your agent works with two addresses:
 
 - **Agent address:** the address your agent created during sign-up, and the one you linked to your organization. It's your agent's identity, and your agent pays its Chainlink for Agents fees from it.
-- **Chain wallet:** a [smart contract wallet](/crec/concepts/smart-accounts) that Chainlink deploys for your agent on each chain it uses, such as Base. It holds the tokens your agent swaps or sends. It has no private key of its own: it only carries out instructions signed with your agent's key and delivered by Chainlink.
-  - We might also refer to it as an SVA (Signature Verifying Account).
+- **Chain wallet:** a [smart contract wallet](/crec/concepts/smart-accounts) that Chainlink for Agents deploys for your agent on each chain it uses, such as Base. It holds the tokens your agent swaps or sends. It has no private key of its own: it only carries out instructions signed with your agent's key and delivered by Chainlink for Agents.
+  - The Chainlink platform and the skills repo also call it an SVA (Signature Verifying Account).
 
 Your agent's swaps run from its chain wallet, so Chainlink for Agents can check each one against your guardrails before it goes onchain. Your link covers both addresses, but guardrails only apply to what your agent does from its chain wallet.
 
@@ -43,7 +43,7 @@ What's the current price of ETH in US dollars? Get it from Chainlink Data Stream
 ```
 
 The agent should be able to fetch the latest price straight from the platform via Chainlink Data Streams.
-Simply reading the data doesn't require us to set up a separate chain wallet, but the next step does.
+Simply reading the data doesn't require you to set up a separate chain wallet, but the next step does.
 
 <ClickToZoom
   src="/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-2.png"
@@ -52,7 +52,7 @@ Simply reading the data doesn't require us to set up a separate chain wallet, bu
 
 ## Swap USDC for ETH using Uniswap
 
-Remember the guardrails we set up earlier? We allowed our wallet to be able to swap tokens on Uniswap. Let us see if that works.
+In [Set up guardrails](/solutions/chainlink-for-agents/guides/set-guardrails#set-up-guardrails), you allowed your agent's chain wallet to swap tokens on Uniswap. This swap confirms that your guardrails allow it.
 
 Give this prompt to your agent to initiate the swap:
 
@@ -73,15 +73,15 @@ Before you sign, show me what I'll get and wait for my confirmation.
 
 ## Watch a guardrail block a swap
 
-1. Go to the [Chainlink platform's agent dashboard](https://app.chain.link/cre/agents), and locate your agent.
-1. Click on the `Settings` icon and configure your existing settings to turn off `Uniswap` token swaps. Click on `Apply Settings`.
+1. Go to the [Chainlink platform's Agents dashboard](https://app.chain.link/cre/agents), and locate your agent.
+1. Click on the **Settings** icon and configure your existing settings to turn off **Uniswap - token swaps**. Click on **Apply Settings**.
 1. Paste this prompt to try and swap your remaining `USDC` for `ETH` **after turning** off Uniswap swaps from inside the UI.
 
    ```
    Swap 1 USDC for ETH on Base please.
    ```
 
-   Your agent should now refuse to execute the swap, as the guardrail for Uniswap swaps has been turned off.
+   Your agent should now refuse to execute the swap, because Uniswap swaps are no longer allowed. It may still pay the small quote fee before the swap is blocked.
 
    <ClickToZoom
      src="/images/solutions/chainlink-for-agents/check-price-and-swap/check-price-and-swap-5.png"
@@ -94,7 +94,7 @@ You've seen your guardrails allow one swap and block the next. From here, try ch
 
 Some ideas:
 
-- **Earn yield on Aave**: Turn on the `Aave - deposits and withdrawals` setting, then ask your agent to interact with the protocol.
-- **Bridge using CCIP**: Turn on the setting and try sending a cross-chain swap. Maybe configure an allowlist and try sending tokens to a wallet that is **NOT** on the allowlist?
+- **Earn yield on Aave**: Turn on the **Aave - deposits and withdrawals** setting, then ask your agent to interact with the protocol.
+- **Bridge using CCIP**: Turn on the **Bridge using CCIP** setting and try a cross-chain token transfer. You can also turn on the **Transfer and Bridge Allowlist** setting and try bridging tokens to an address that isn't on the allowlist.
 
 To see everything else your agent can do, go back to [What can your agent do](/solutions/chainlink-for-agents#what-can-your-agent-do).
