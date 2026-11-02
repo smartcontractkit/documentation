@@ -1,0 +1,136 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockVerifierProxy v0.3.0 API Reference"
+metadata:
+  description: "API documentation for MockVerifierProxy in Solidity, version v0.3.0."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage030" />
+
+## MockVerifierProxy
+
+Mock Data Streams verifier proxy.
+
+[MockVerifierProxy](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.0/src/data-streams/MockVerifierProxy.sol)
+
+## Variables
+
+### s_feeManager
+
+```solidity
+IVerifierFeeManager public s_feeManager
+```
+
+### s_verifier
+
+```solidity
+address internal s_verifier
+```
+
+## Errors
+
+### FeeManagerNotExpected
+
+```solidity
+error FeeManagerNotExpected(string message);
+```
+
+### FeeManagerRequired
+
+```solidity
+error FeeManagerRequired(string message);
+```
+
+### VerifierInvalid
+
+```solidity
+error VerifierInvalid();
+```
+
+### VerifierNotFound
+
+```solidity
+error VerifierNotFound();
+```
+
+### ZeroAddress
+
+```solidity
+error ZeroAddress();
+```
+
+## Events
+
+### VerifierInitialized
+
+```solidity
+event VerifierInitialized(address indexed verifierAddress);
+```
+
+## Functions
+
+### \_validateBillingMechanism
+
+Validates billing mechanism configuration and provides helpful error messages
+
+This validation helps developers catch billing mechanism mismatches early in
+development
+
+```solidity
+function _validateBillingMechanism(address feeManagerAddress, bytes calldata parameterPayload) internal pure;
+```
+
+**Parameters**
+
+| Name                | Type      | Description                                                   |
+| ------------------- | --------- | ------------------------------------------------------------- |
+| `feeManagerAddress` | `address` | Current fee manager address (address(0) if off-chain billing) |
+| `parameterPayload`  | `bytes`   | The parameter payload from the consumer contract              |
+
+### \_verify
+
+```solidity
+function _verify(bytes calldata payload) internal returns (bytes memory);
+```
+
+### getVerifier
+
+```solidity
+function getVerifier(
+    bytes32 /*configDigest*/
+)
+    external
+    view
+    returns (address);
+```
+
+### initializeVerifier
+
+```solidity
+function initializeVerifier(address verifierAddress) external onlyOwner onlyValidVerifier(verifierAddress);
+```
+
+### setFeeManager
+
+```solidity
+function setFeeManager(IVerifierFeeManager feeManager) external;
+```
+
+### verify
+
+```solidity
+function verify(bytes calldata payload, bytes calldata parameterPayload) external payable returns (bytes memory);
+```
+
+### verifyBulk
+
+```solidity
+function verifyBulk(bytes[] calldata payloads, bytes calldata parameterPayload)
+    external
+    payable
+    returns (bytes[] memory verifiedReports);
+```

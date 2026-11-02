@@ -1,6 +1,12 @@
 import type { ChainNetwork } from "~/features/data/chains.ts"
-import type { SchemaFilterValue, StreamsRwaFeedTypeValue, TradingHoursFilterValue } from "../types.ts"
+import type {
+  SchemaFilterValue,
+  StreamsRwaFeedTypeValue,
+  TradingHoursFilterValue,
+  TwentyFourSevenFilterValue,
+} from "../types.ts"
 import { getFeedTypeFlags } from "../types.ts"
+import { matches247StreamFilter } from "./twentyFourSeven.ts"
 import {
   enrichFeedWithCategory,
   matches24x5StreamFilter,
@@ -24,6 +30,8 @@ export interface FeedTableFilterParams {
   showOnlySVR?: boolean
   visibilityOptions?: FeedVisibilityOptions
   show24x5Feeds?: boolean
+  show247Streams?: boolean
+  twentyFourSevenFilter?: TwentyFourSevenFilterValue
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
   tradingHoursFilter?: TradingHoursFilterValue
@@ -43,6 +51,8 @@ export function filterFeedTableRows({
   showOnlySVR = false,
   visibilityOptions = {},
   show24x5Feeds,
+  show247Streams,
+  twentyFourSevenFilter,
   showApacEquitiesFeeds,
   showFuturesFeeds,
   tradingHoursFilter,
@@ -60,6 +70,7 @@ export function filterFeedTableRows({
       return isFeedVisible(metadata, dataFeedType as never, ecosystem, visibilityOptions)
     })
     .filter((metadata) => matches24x5StreamFilter(metadata, show24x5Feeds, tradingHoursFilter))
+    .filter((metadata) => matches247StreamFilter(metadata, show247Streams, twentyFourSevenFilter))
     .filter((metadata) => matchesApacEquitiesStreamFilter(metadata, showApacEquitiesFeeds))
     .filter((metadata) => matchesFuturesStreamFilter(metadata, showFuturesFeeds))
     .filter((metadata) => matchesSelectedFeedCategories(metadata, selectedFeedCategories, isSmartData))

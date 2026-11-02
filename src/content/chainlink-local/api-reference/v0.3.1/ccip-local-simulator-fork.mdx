@@ -1,0 +1,541 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulatorFork v0.3.1 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalSimulatorFork in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## CCIPLocalSimulatorFork
+
+A contract that simulates CCIP (Cross-Chain Interoperability Protocol) message routing in a Foundry test environment, for every CCIP era: pre-1.6 (`EVM2EVMOnRamp`), 1.6 and CCIP 2.0 (CCV-based lanes, which live testnet lanes run today).
+
+[`CCIPLocalSimulatorFork`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/ccip/CCIPLocalSimulatorFork.sol)
+
+<Aside>
+This contract provides utilities for testing cross-chain message routing by simulating message sending and receiving between different blockchain networks in a Foundry test environment. Works with Foundry only. Fork tests need `evm_version = "cancun"` or later (deployed CCIP 2.0 contracts use Cancun opcodes) and Foundry >= 1.5.1.
+</Aside>
+
+## Enums
+
+### CCIPEra
+
+```solidity
+enum CCIPEra { UNKNOWN, PRE_V1_DOT_6, V1_DOT_6, V2 }
+```
+
+<Aside>The CCIP protocol version of a lane, detected from the OnRamp's `typeAndVersion()`.</Aside>
+
+### V2VerificationMode
+
+```solidity
+enum V2VerificationMode { STRICT, HYBRID, SYNTHETIC_ONLY, OFFRAMP_DERIVED }
+```
+
+<Aside>
+  How CCIP 2.0 messages are verified when routed. The default is `OFFRAMP_DERIVED`: the CCV selection is derived from
+  the destination OffRamp's `getCCVsForMessage(encodedMessage)` and the raw encoded message is executed through the
+  permissionless `execute` entrypoint, so routing does not depend on the local `MessageV1` codec. CCV attestations are
+  simulated with a synthetic no-op verifier.
+</Aside>
+
+### V2ExecutionMode
+
+```solidity
+enum V2ExecutionMode { AUTO, RESPECT_NO_EXEC, MANUAL_ONLY }
+```
+
+<Aside>
+  How `NO_EXECUTION_ADDRESS` (manual execution) messages are handled. The default is `RESPECT_NO_EXEC`: they are queued
+  for `executePendingV2Message` instead of executed.
+</Aside>
+
+### MessageStatus
+
+```solidity
+enum MessageStatus { NOT_FOUND, QUEUED, FAILED, SUCCESS }
+```
+
+<Aside>
+  Outcome of a captured CCIP message (see `getMessageStatus`). `NOT_FOUND`: never captured by this simulator. `QUEUED`:
+  a CCIP 2.0 `NO_EXECUTION_ADDRESS` message waiting for `executePendingV2Message`, or a 1.6 / 2.0 message whose
+  destination fork was not passed to `switchChainAndRouteMessage` yet (a later call that includes it routes the
+  message). `FAILED`: not routed, or execution did not succeed (the reason is recorded).
+</Aside>
+
+## Structs
+
+### MessageOutcome
+
+```solidity
+struct MessageOutcome {
+  MessageStatus status;
+  bytes reason;
+}
+```
+
+| Field  | Type            | Description                                                                                                      |
+| ------ | --------------- | ---------------------------------------------------------------------------------------------------------------- |
+| status | `MessageStatus` | The outcome of the message                                                                                       |
+| reason | `bytes`         | For `FAILED`: the revert data, or an `Error(string)` explaining why the message was not routed. Empty otherwise. |
+
+## Errors
+
+### CCIPLocalSimulatorFork\_\_MessageNotRouted
+
+```solidity
+error CCIPLocalSimulatorFork__MessageNotRouted(bytes32 messageId, string reason)
+```
+
+<Aside>Strict routing: a captured CCIP message was not routed to any destination fork.</Aside>
+
+### CCIPLocalSimulatorFork\_\_MessageExecutionFailed
+
+```solidity
+error CCIPLocalSimulatorFork__MessageExecutionFailed(bytes32 messageId, bytes reason)
+```
+
+<Aside>
+  Strict routing: a routed message did not execute successfully. `reason` is the revert data of the execution (for CCIP
+  2.0, the OffRamp's recorded failure).
+</Aside>
+
+## Variables
+
+### i_register
+
+```solidity
+Register immutable i_register
+```
+
+<Aside>
+  The immutable Register contract instance used to store network configuration details. Placed with `vm.etch` rather
+  than deployed, together with the `RegisterData` shards, so deploying the simulator does not cost the size of the
+  Register code in gas.
+</Aside>
+
+### LINK_FAUCET
+
+```solidity
+address constant LINK_FAUCET = 0x4281eCF07378Ee595C564a59048801330f3084eE
+```
+
+<Aside>The address of the LINK token faucet contract, impersonated by `requestLinkFromFaucet`.</Aside>
+
+### s_processedMessages
+
+```solidity
+mapping(bytes32 messageId => bool isProcessed) internal s_processedMessages
+```
+
+<Aside>Internal mapping to track which messages have been processed to prevent duplicate processing.</Aside>
+
+### s_messageOutcomes
+
+```solidity
+mapping(bytes32 messageId => MessageOutcome outcome) internal s_messageOutcomes
+```
+
+<Aside>Outcome of every captured message, read with `getMessageStatus`.</Aside>
+
+### s_strictRouting
+
+```solidity
+bool internal s_strictRouting
+```
+
+<Aside>
+  When true (the default), routing reverts on a message that is not routed or does not execute successfully. Toggle with
+  `setStrictRouting`.
+</Aside>
+
+### s_ccipV2Routers
+
+```solidity
+mapping(uint256 chainId => address router) internal s_ccipV2Routers
+```
+
+<Aside>
+  CCIP 2.0 routers deployed next to the Register router (which `getNetworkDetails` returns). Hand-maintained: `Register`
+  is generated from the CCIP docs API and only carries one router per chain. Read and override with
+  `getCCIPV2RouterAddress` / `setCCIPV2RouterAddress`.
+</Aside>
+
+## Functions
+
+### constructor
+
+Initializes the contract and sets up logging and persistence.
+
+```solidity
+constructor()
+```
+
+<Aside>
+Initializes the contract by:
+
+- Starting log recording (`vm.recordLogs`)
+- Placing the Register and its `RegisterData` shards with `vm.etch` at deterministic addresses, and making them persistent
+- Setting the default `V2VerificationMode` to `OFFRAMP_DERIVED`, strict routing to enabled, and `V2ExecutionMode` to `RESPECT_NO_EXEC`
+- Pre-registering the verified CCIP 2.0 routers for Ethereum Sepolia (`0x784d49a71BB4C48eB7dA4cD7e6Ecb424f9b5EAB1`) and Avalanche Fuji (`0x7C9B8B4e8024e5Ee8A630F6FCe9015e470dA5763`)
+
+</Aside>
+
+### switchChainAndRouteMessage
+
+Routes a cross-chain message on the destination network after switching to the specified fork.
+
+```solidity
+function switchChainAndRouteMessage(uint256 forkId) external
+```
+
+<Aside>
+To be called after sending a cross-chain message (`ccipSend`). The function:
+
+- Searches past logs for the supported CCIP send events (all eras)
+- Switches to the destination network fork
+- Routes the sent message on the destination network
+- If you sent more than one message, it tries to route all of them to `forkId`. A 1.6 or 2.0 message to another chain is kept (status `QUEUED`) and routed by a later call that includes its destination fork.
+
+`forkId` is the active fork when the call returns.
+
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                                                                                 |
+| --------- | --------- | ------------------------------------------------------------------------------------------- |
+| forkId    | `uint256` | The ID of the destination network fork (returned by `createFork()` or `createSelectFork()`) |
+
+<Aside type="caution">
+
+**Possible Reverts**
+
+With strict routing enabled (the default), reverts with `CCIPLocalSimulatorFork__MessageNotRouted(messageId, reason)` when a captured message cannot be routed to any of the given forks, and with `CCIPLocalSimulatorFork__MessageExecutionFailed(messageId, reason)` when a routed message does not execute successfully. Call `setStrictRouting(false)` to record failures instead and read them with `getMessageStatus`.
+
+</Aside>
+
+### switchChainAndRouteMessage (multiple forks)
+
+Override variant of `switchChainAndRouteMessage(uint256 forkId)` for multiple destination forks.
+
+```solidity
+function switchChainAndRouteMessage(uint256[] memory forkIds) external
+```
+
+<Aside>
+  Goes through the provided `forkIds` and routes messages to the matching destination. A 1.6 or 2.0 message to a chain
+  that is not in `forkIds` is kept (status `QUEUED`) for a later call. With several destinations, either pass every
+  destination fork at once with this overload, or call `switchChainAndRouteMessage` once per destination fork.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type        | Description                              |
+| --------- | ----------- | ---------------------------------------- |
+| forkIds   | `uint256[]` | The IDs of the destination network forks |
+
+### getNetworkDetails
+
+Returns the network configuration details for a specified chain ID.
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (Register.NetworkDetails memory)
+```
+
+<Aside>
+  Returns the default values for currently CCIP supported networks. If a network is not present or values have changed,
+  new network details can be added using `setNetworkDetails`.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                                                           |
+| --------- | --------- | --------------------------------------------------------------------- |
+| chainId   | `uint256` | The blockchain network chain ID (e.g., 11155111 for Ethereum Sepolia) |
+
+#### Returns
+
+| Parameter | Type             | Description                                               |
+| --------- | ---------------- | --------------------------------------------------------- |
+| (unnamed) | `NetworkDetails` | The network configuration details for the specified chain |
+
+### setNetworkDetails
+
+Updates or adds new network configuration details for a specified chain ID.
+
+```solidity
+function setNetworkDetails(uint256 chainId, Register.NetworkDetails memory networkDetails) external
+```
+
+<Aside>
+  Used to add or update network details when they are not present or have changed from default values.
+  `getNetworkDetails` returns an all-zero struct for a chain ID that is not in `Register`.
+</Aside>
+
+#### Parameters
+
+| Parameter      | Type             | Description                                                           |
+| -------------- | ---------------- | --------------------------------------------------------------------- |
+| chainId        | `uint256`        | The blockchain network chain ID (e.g., 11155111 for Ethereum Sepolia) |
+| networkDetails | `NetworkDetails` | The network configuration details to be stored                        |
+
+### getCCIPV2RouterAddress
+
+Returns the CCIP 2.0 router for a chain, or `address(0)` if none is known.
+
+```solidity
+function getCCIPV2RouterAddress(uint256 chainId) external view returns (address)
+```
+
+<Aside>
+  Returns the CCIP 2.0 router deployed next to the Register router on `chainId`, or `address(0)` if none is known. Send
+  through this router (and point receivers at it) to use its CCIP 2.0 lanes; messages sent through either router are
+  routed by `switchChainAndRouteMessage`.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                     |
+| --------- | --------- | ------------------------------- |
+| chainId   | `uint256` | The blockchain network chain ID |
+
+### setCCIPV2RouterAddress
+
+Manually sets the CCIP 2.0 router for a chain.
+
+```solidity
+function setCCIPV2RouterAddress(uint256 chainId, address router) external
+```
+
+<Aside>Use `address(0)` to route through the Register router only.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                        |
+| --------- | --------- | ---------------------------------- |
+| chainId   | `uint256` | The blockchain network chain ID    |
+| router    | `address` | The CCIP 2.0 router address to set |
+
+### getOffRampForLane
+
+Returns the destination OffRamp configured for a source OnRamp on the given fork.
+
+```solidity
+function getOffRampForLane(uint256 forkId, uint64 sourceChainSelector, address sourceOnRamp) external returns (address offRamp)
+```
+
+<Aside>
+  Useful to configure CCIP 2.0 lane CCVs (see `setLaneDefaultCCVs`) before routing a message. Returns `address(0)` when
+  not found.
+</Aside>
+
+#### Parameters
+
+| Parameter           | Type      | Description                                   |
+| ------------------- | --------- | --------------------------------------------- |
+| forkId              | `uint256` | The ID of the destination network fork        |
+| sourceChainSelector | `uint64`  | The chain selector of the source chain        |
+| sourceOnRamp        | `address` | The address of the OnRamp on the source chain |
+
+#### Returns
+
+| Parameter | Type      | Description                                                  |
+| --------- | --------- | ------------------------------------------------------------ |
+| offRamp   | `address` | The matching OffRamp address, or `address(0)` when not found |
+
+### setLaneDefaultCCVs
+
+Points a destination lane's default CCVs at a CCV address by impersonating the OffRamp owner.
+
+```solidity
+function setLaneDefaultCCVs(uint256 forkId, address offRamp, uint64 sourceChainSelector, address ccv) external
+```
+
+<Aside>
+  Fork-only testing helper for CCIP 2.0 lanes: the mocked CCV must be configured on the destination lane before a
+  captured message can be routed through the permissionless execution path. Router, enabled flag, OnRamp bindings and
+  lane-mandated CCVs are preserved, so the fork lane is never less strict than production.
+</Aside>
+
+#### Parameters
+
+| Parameter           | Type      | Description                                        |
+| ------------------- | --------- | -------------------------------------------------- |
+| forkId              | `uint256` | The ID of the destination network fork             |
+| offRamp             | `address` | The destination OffRamp that holds the lane config |
+| sourceChainSelector | `uint64`  | The chain selector of the source chain             |
+| ccv                 | `address` | The CCV address to set as the lane default         |
+
+### requestLinkFromFaucet
+
+Requests LINK tokens from the faucet for a specified address.
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+<Aside>
+  Transfers the specified amount of LINK tokens from the faucet (impersonated) to the provided destination address, on
+  the active fork.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                            |
+| --------- | --------- | -------------------------------------- |
+| to        | `address` | The address to receive the LINK tokens |
+| amount    | `uint256` | The amount of LINK tokens to transfer  |
+
+#### Returns
+
+| Parameter | Type   | Description                                       |
+| --------- | ------ | ------------------------------------------------- |
+| success   | `bool` | Returns true if the token transfer was successful |
+
+### setStrictRouting
+
+Enables or disables strict routing (enabled by default).
+
+```solidity
+function setStrictRouting(bool strict) external
+```
+
+<Aside>
+  When enabled, `switchChainAndRouteMessage` and `executePendingV2Message` revert with
+  `CCIPLocalSimulatorFork__MessageNotRouted` when a captured CCIP message cannot be routed to any of the given forks,
+  and with `CCIPLocalSimulatorFork__MessageExecutionFailed` when a routed message does not execute successfully. When
+  disabled, failures are logged and recorded (see `getMessageStatus`) and routing continues.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type   | Description                                                |
+| --------- | ------ | ---------------------------------------------------------- |
+| strict    | `bool` | Whether to enable (true) or disable (false) strict routing |
+
+### getStrictRouting
+
+Returns whether strict routing is enabled.
+
+```solidity
+function getStrictRouting() external view returns (bool strict)
+```
+
+### getMessageStatus
+
+Returns the outcome of a captured CCIP message.
+
+```solidity
+function getMessageStatus(bytes32 messageId) external view returns (MessageStatus status, bytes memory reason)
+```
+
+#### Parameters
+
+| Parameter | Type      | Description         |
+| --------- | --------- | ------------------- |
+| messageId | `bytes32` | The CCIP message ID |
+
+#### Returns
+
+| Parameter | Type            | Description                                                                                                                       |
+| --------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| status    | `MessageStatus` | `NOT_FOUND`, `QUEUED`, `FAILED` or `SUCCESS`                                                                                      |
+| reason    | `bytes`         | For `FAILED`: the revert data of the execution, or an `Error(string)` explaining why the message was not routed. Empty otherwise. |
+
+### setV2VerificationMode
+
+Sets how CCIP 2.0 messages are verified when routed.
+
+```solidity
+function setV2VerificationMode(V2VerificationMode mode) external
+```
+
+<Aside>The default is `OFFRAMP_DERIVED`. See the `V2VerificationMode` enum for the available modes.</Aside>
+
+#### Parameters
+
+| Parameter | Type                 | Description                  |
+| --------- | -------------------- | ---------------------------- |
+| mode      | `V2VerificationMode` | The verification mode to set |
+
+### getV2VerificationMode
+
+Returns the current CCIP 2.0 verification mode.
+
+```solidity
+function getV2VerificationMode() external view returns (V2VerificationMode mode)
+```
+
+### setV2ExecutionMode
+
+Sets how `NO_EXECUTION_ADDRESS` (manual execution) CCIP 2.0 messages are handled.
+
+```solidity
+function setV2ExecutionMode(V2ExecutionMode mode) external
+```
+
+<Aside>
+  The default is `RESPECT_NO_EXEC`: such messages are queued for `executePendingV2Message` instead of executed.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type              | Description               |
+| --------- | ----------------- | ------------------------- |
+| mode      | `V2ExecutionMode` | The execution mode to set |
+
+### getV2ExecutionMode
+
+Returns the current CCIP 2.0 execution mode.
+
+```solidity
+function getV2ExecutionMode() external view returns (V2ExecutionMode mode)
+```
+
+### getPendingV2MessageIds
+
+Returns the message IDs of pending CCIP 2.0 `NO_EXECUTION_ADDRESS` messages on the current route scope.
+
+```solidity
+function getPendingV2MessageIds() external view returns (bytes32[] memory messageIds)
+```
+
+### isPendingV2Message
+
+Checks whether a CCIP 2.0 message is pending manual execution.
+
+```solidity
+function isPendingV2Message(bytes32 messageId) external view returns (bool isPending)
+```
+
+### executePendingV2Message
+
+Executes a pending CCIP 2.0 `NO_EXECUTION_ADDRESS` message on the current fork.
+
+```solidity
+function executePendingV2Message(bytes32 messageId) external returns (bool attempted)
+```
+
+<Aside>
+  Routes the pending message through the destination OffRamp's permissionless `execute` entrypoint. Returns `false` (and
+  records a `FAILED` outcome) when no OffRamp on the current fork serves the message's lane. The message is dequeued
+  once processed.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                    |
+| --------- | --------- | ------------------------------ |
+| messageId | `bytes32` | The CCIP message ID to execute |
+
+#### Returns
+
+| Parameter | Type   | Description                                            |
+| --------- | ------ | ------------------------------------------------------ |
+| attempted | `bool` | Whether an execution was attempted on the current fork |

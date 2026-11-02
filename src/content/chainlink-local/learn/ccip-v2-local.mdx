@@ -1,0 +1,72 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIP 2.0 behavior in Chainlink Local"
+isIndex: false
+---
+
+import { Aside } from "@components"
+
+Chainlink Local `v0.3.x` (V3) targets CCIP 2.0: it pins `@chainlink/contracts-ccip` 2.0.0, and both the local-mode router and the fork simulator apply the CCIP 2.0 message rules. This page describes what those rules are in each mode, so you know what a passing local test proves before you move to a fork or a live lane.
+
+Read the [CCIP 2.0 concepts](/ccip/evm/concepts/best-practices) for the protocol itself; this page covers only the Chainlink Local behavior.
+
+## Local mode (no fork)
+
+`CCIPLocalSimulator` deploys a [`CCIPLocalRouter`](/chainlink-local/api-reference/v0.3.1/ccip-local-router) that delivers messages synchronously inside `ccipSend`. The router mirrors `MockCCIPRouter` from `@chainlink/contracts-ccip` 2.0.0 (same ABI, events and behaviour) and additionally applies the CCIP 2.0 OnRamp and OffRamp message rules, so a test that passes locally does not fail on a fork or in production.
+
+### Enforced at send time
+
+- **Finality**: the requested finality of `ExtraArgsV3` must use a single mode (the OnRamp check). A Faster-Than-Finality message that is not a token-only transfer is only delivered to a receiver whose `getCCVsAndFinalityConfig` allows the requested finality (the OffRamp check). Receivers without `IAny2EVMMessageReceiverV2` accept finalized messages only.
+- **One token per message**: more than one token in `tokenAmounts` reverts with `CanOnlySendOneTokenPerMessage`.
+- **No zero amounts**: a zero-amount token reverts with `CannotSendZeroTokens`.
+- **No V3 `tokenReceiver` on EVM lanes**: `GenericExtraArgsV3.tokenReceiver` reverts with `TokenReceiverNotAllowed`.
+- **Receiver CCV config validation**: duplicate required/optional CCVs and `optionalThreshold > optionalCCVs.length` are rejected the same way the OffRamp rejects them.
+- **Gas limit**: only V1/V2 extraArgs gas limits above `uint32` revert `MessageGasLimitTooHigh`. Local mode has no lane config, so lower lane caps are not enforced.
+
+### Not simulated in local mode
+
+- **Token pools**: pool finality policies, rate limits and pool-required CCVs are not enforced; tokens go directly to the receiver.
+- **CCVs and block confirmations**: receiver CCV lists are validated, not verified. There are no CCV verifiers, so no quorum check happens.
+- **The supported-token list**: `getSupportedTokens` is informational.
+- **Manual execution**: `NO_EXECUTION_ADDRESS` messages are executed immediately.
+- **The lane's `maxPerMsgGasLimit`**: only the `uint32` ceiling above is enforced.
+
+Use fork mode to test these against the real contracts.
+
+### Fees and message IDs
+
+The local router charges only what `router.setFee(...)` sets (default 0), in the fee token you choose (native or LINK). It returns a mock message ID that is not calculated from the message contents the way a real message ID is, so the `CCIPMessageSent` event some tools look for is never emitted locally.
+
+## Fork mode
+
+`CCIPLocalSimulatorFork` (Foundry) and the Hardhat 3 JavaScript helper route messages on forked networks for every CCIP era: pre-1.6 (`EVM2EVMOnRamp`), 1.6 and CCIP 2.0 (CCV-based lanes, which live testnet lanes run today).
+
+### CCIP 2.0 routing
+
+On CCIP 2.0 lanes the destination OffRamp selects the CCVs and executes the message. The default `V2VerificationMode` is `OFFRAMP_DERIVED`: the CCV selection is derived from the destination OffRamp's `getCCVsForMessage(encodedMessage)` and the raw encoded message is executed through the permissionless `execute` entrypoint, so routing does not depend on the local `MessageV1` codec. CCV attestations are simulated with a synthetic no-op verifier.
+
+Fast Transfer messages with data are only delivered to receivers that opt in through `getCCVsAndFinalityConfig`, as in production.
+
+### Strict routing and message status
+
+Routing is strict by default: `switchChainAndRouteMessage` reverts with `CCIPLocalSimulatorFork__MessageNotRouted(messageId, reason)` when a captured message cannot be routed to any of the given forks, and with `CCIPLocalSimulatorFork__MessageExecutionFailed(messageId, reason)` (the decoded revert data) when it does not execute successfully. Call `setStrictRouting(false)` to record failures instead and read them with `getMessageStatus(messageId)`, which returns `NOT_FOUND`, `QUEUED`, `FAILED` or `SUCCESS`.
+
+With several destinations, either pass every destination fork at once with the `uint256[] forkIds` overload, or call `switchChainAndRouteMessage` once per destination fork: a 1.6 or 2.0 message to a chain that is not in the call stays `QUEUED` and is routed by the call that includes its destination fork.
+
+### CCIP 2.0 routers
+
+Some chains have a dedicated CCIP 2.0 router deployed next to the router that `getNetworkDetails` returns (the `Register` is generated from the CCIP docs API and only carries one router per chain). Read it with `getCCIPV2RouterAddress(chainId)` (Ethereum Sepolia and Avalanche Fuji are pre-registered) or set it with `setCCIPV2RouterAddress`. Send through the CCIP 2.0 router to use its CCIP 2.0 lanes; messages sent through either router are routed by `switchChainAndRouteMessage`.
+
+### Manual execution
+
+`NO_EXECUTION_ADDRESS` messages follow the CCIP 2.0 manual execution path: with the default `V2ExecutionMode.RESPECT_NO_EXEC`, they are queued instead of executed. List them with `getPendingV2MessageIds` and execute one with `executePendingV2Message(messageId)`.
+
+### Not simulated in fork mode
+
+Real CCV attestations, RMN and executor fees are not modelled; CCVs on the lane are replaced by a synthetic verifier, and `executePendingV2Message` executes without charging the executor fee a real manual execution costs. Pinned fork state never sees testnet upgrades, so green tests only prove your code against that snapshot.
+
+## Requirements
+
+- Fork tests need `evm_version = "cancun"` or later (deployed CCIP 2.0 contracts use Cancun opcodes; `paris` fails with `EvmError: NotActivated`) and Foundry >= 1.5.1.
+- Hardhat 3 (Node.js 22) is required for the JavaScript fork helper; Hardhat 2 is not supported in `0.3.x` (the contracts do not compile, `HH411`). Hardhat 2 users stay on `0.2.x` (`npm install @chainlink/local@0.2.9`), which supports pre-1.6 fork routing only.

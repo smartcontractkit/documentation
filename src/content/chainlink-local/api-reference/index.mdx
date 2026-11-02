@@ -13,11 +13,18 @@ import { Aside } from "@components"
 
 ### Latest Release
 
-- **[Chainlink Local v0.2.3](/chainlink-local/api-reference/v0.2.3)** (Current Version)
-  - Added support for `EVMExtraArgsV2` and OZ's `AccessControl` in CCIPLocalSimulator
-  - Added `supportNewTokenViaAccessControlDefaultAdmin` function
-  - Bumped `@chainlink/contracts-ccip` to `1.5.1-beta.0`
-  - Enhanced token pool support and EVMExtraArgsV2 compatibility
+- **[Chainlink Local v0.3.1](/chainlink-local/api-reference/v0.3.1)** (Current Version)
+  - Targets CCIP 2.0: pins `@chainlink/contracts-ccip` 2.0.0 and `@chainlink/contracts` 1.5.0
+  - New `CCIPLocalRouter` applies the CCIP 2.0 OnRamp and OffRamp message rules in local mode
+  - `CCIPLocalSimulatorFork` and the Hardhat 3 JavaScript helper route CCIP 2.0 (CCV-based) lanes alongside the pre-1.6 and 1.6 eras
+  - New fork-simulator surface: `getMessageStatus`, `setStrictRouting`, CCIP 2.0 router lookups (`getCCIPV2RouterAddress` / `setCCIPV2RouterAddress`), lane CCV configuration
+  - Data Streams contracts: `DataStreamsLocalSimulator`, `DataStreamsLocalSimulatorFork`, mock verifier/proxy/fee manager/reward manager, `MockReportGenerator`, `ReportVersions`
+
+<Aside type="note" title="Hardhat 2 users">
+  Chainlink Local `0.3.x` does not compile under Hardhat 2 (the contracts use `@openzeppelin/contracts@4.8.3`-style
+  imports that Hardhat 2 cannot resolve, `HH411`). Hardhat 2 users stay on the `0.2.x` line (`npm install
+  @chainlink/local@0.2.9`), whose latest documented API reference is [v0.2.3](/chainlink-local/api-reference/v0.2.3).
+</Aside>
 
 ### Previous Versions
 
@@ -37,6 +44,7 @@ import { Aside } from "@components"
 Each version includes detailed documentation for:
 
 - CCIP Components (Router, Simulator)
+- Data Streams Components (Simulator, Verifier, Report Generator)
 - Data Feed Contracts
 - Token Implementations
 - JavaScript Utilities

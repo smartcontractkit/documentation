@@ -1,0 +1,133 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "DataStreamsLocalSimulator v0.3.1 API Reference"
+metadata:
+  description: "API documentation for DataStreamsLocalSimulator in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## DataStreamsLocalSimulator
+
+A contract that simulates local Data Streams operations for testing and development purposes.
+
+[`DataStreamsLocalSimulator`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/data-streams/DataStreamsLocalSimulator.sol)
+
+<Aside>
+  This contract deploys the mock verifier, verifier proxy, fee manager and reward manager, plus the LINK and wrapped
+  native tokens, and lets you switch between on-chain and off-chain billing mechanisms. Reports are generated with
+  [`MockReportGenerator`](/chainlink-local/api-reference/v0.3.1/mock-report-generator) and verified through the
+  [`MockVerifierProxy`](/chainlink-local/api-reference/v0.3.1/mock-verifier-proxy).
+</Aside>
+
+## Variables
+
+### feeManagerEnabled
+
+```solidity
+bool public feeManagerEnabled
+```
+
+<Aside>Whether the on-chain billing mechanism (fee manager) is enabled. On-chain billing is enabled by default.</Aside>
+
+## Functions
+
+### configuration
+
+Returns the configuration details for pre-deployed contracts and services needed for local Data Streams simulations.
+
+```solidity
+function configuration() public view returns (WETH9 wrappedNative_, LinkToken linkToken_, MockVerifier mockVerifier_, MockVerifierProxy mockVerifierProxy_, MockFeeManager mockFeeManager_, MockRewardManager mockRewardManager_)
+```
+
+<Aside>
+  The returned fee manager reflects the current billing state: it is the fee manager currently set on the verifier
+  proxy, and the reward manager is `address(0)` when off-chain billing is enabled.
+</Aside>
+
+#### Returns
+
+| Parameter           | Type                | Description                                                                 |
+| ------------------- | ------------------- | --------------------------------------------------------------------------- |
+| wrappedNative\_     | `WETH9`             | The wrapped native token                                                    |
+| linkToken\_         | `LinkToken`         | The LINK token                                                              |
+| mockVerifier\_      | `MockVerifier`      | The mock verifier contract                                                  |
+| mockVerifierProxy\_ | `MockVerifierProxy` | The mock verifier proxy contract                                            |
+| mockFeeManager\_    | `MockFeeManager`    | The mock fee manager contract (what is currently set on the verifier proxy) |
+| mockRewardManager\_ | `MockRewardManager` | The mock reward manager contract (`address(0)` if fee manager is disabled)  |
+
+### constructor
+
+Initializes the contract with pre-deployed instances.
+
+```solidity
+constructor()
+```
+
+<Aside>
+  Deploys WETH9, LinkToken, the mock verifier proxy and mock verifier, and (by default) the fee manager and reward
+  manager for on-chain billing.
+</Aside>
+
+### enableOffChainBilling
+
+Enables the off-chain billing mechanism by removing the fee manager.
+
+```solidity
+function enableOffChainBilling() external
+```
+
+<Aside>
+  Simulates chains that don't have FeeManager contracts deployed. After this call, `verify` and `verifyBulk` expect an
+  empty `parameterPayload`.
+</Aside>
+
+### enableOnChainBilling
+
+Enables the on-chain billing mechanism by deploying/setting the fee manager.
+
+```solidity
+function enableOnChainBilling() external
+```
+
+<Aside>
+  Simulates chains that have FeeManager contracts deployed. After this call, `verify` and `verifyBulk` expect a fee
+  token address in `parameterPayload`.
+</Aside>
+
+### getBillingMechanism
+
+Returns the current billing mechanism type.
+
+```solidity
+function getBillingMechanism() external view returns (string memory billingType)
+```
+
+<Aside>Returns `"on-chain"` if the fee manager is enabled, `"off-chain"` if disabled.</Aside>
+
+### requestLinkFromFaucet
+
+Requests LINK tokens from the faucet.
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+<Aside>The provided amount of tokens is transferred to the provided destination address.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                                     |
+| --------- | --------- | ----------------------------------------------- |
+| to        | `address` | The address to which LINK tokens are to be sent |
+| amount    | `uint256` | The amount of LINK tokens to send               |
+
+#### Returns
+
+| Parameter | Type   | Description                                             |
+| --------- | ------ | ------------------------------------------------------- |
+| success   | `bool` | Returns `true` if the transfer of tokens was successful |

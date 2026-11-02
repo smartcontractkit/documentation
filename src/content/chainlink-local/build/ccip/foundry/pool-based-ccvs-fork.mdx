@@ -1,0 +1,165 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Pool-based CCV requirements on AdvancedPoolHooks in forked environments"
+isIndex: false
+---
+
+import Common from "@features/chainlink-local/Common.astro"
+import { Aside } from "@components"
+
+<Common callout="importPackage" />
+
+This tutorial walks you through testing pool-based Cross-Chain Verifier (CCV) requirements on `AdvancedPoolHooks`, using the [CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry)'s Example 09 (CCT 04). You will deploy a `CrossChainToken` with an `AdvancedPoolHooks` hook and a BurnMint pool on forks of _Ethereum Sepolia_ and _Polygon Amoy_, configure the hook to require a CCV for transfers, and observe the source OnRamp consult it outbound and the destination OffRamp verify with it inbound.
+
+Pool-required CCVs are the one CCIP 2.0 feature that local mode cannot exercise at all: local mode has no token pools, so pool-required CCVs are not enforced. Only the fork tests run them against the real OnRamp and OffRamp.
+
+## How pool-based CCVs work
+
+A token pool can require specific CCVs for its transfers. When a pool requires CCVs:
+
+- the source OnRamp consults the pool's `getRequiredCCVs(...)` outbound and calls each CCV's `getOutboundImplementation` and `forwardToVerifier` on the source chain
+- the destination OffRamp resolves the same CCV addresses on the destination chain and calls `getInboundImplementation` and `verifyMessage` before releasing or minting tokens
+
+Because the destination OffRamp resolves the same address, **a pool-required CCV must exist at the same address on both chains**. Real CCVs are CREATE2-deployed to matching addresses on each chain.
+
+`AdvancedPoolHooks` exposes this through per-remote-chain CCV configs:
+
+- `outboundCCVs` / `inboundCCVs`: base CCVs, always required for transfers to/from that chain
+- `thresholdOutboundCCVs` / `thresholdInboundCCVs`: additional CCVs, required only when the transfer amount is at or above `thresholdAmountForAdditionalCCVs`
+- `address(0)` in a base list means "use the lane defaults alongside the other listed CCVs"
+
+Threshold CCV lists require non-empty base lists (use `address(0)` in the base list if you want defaults below the threshold). Duplicates within and across lists are rejected.
+
+## Prerequisites
+
+<Aside type="note" title="Prerequisites">
+  Complete the [CCT burn and mint tutorial](/chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork) first: it covers
+  the kit setup, the keystore, the fork profile, and the Example 06 deployment and lane-linking scripts this tutorial
+  reuses. Example 09 continues the setup from Example 08 (token + hook + pool with `AdvancedPoolHooks`).
+</Aside>
+
+## Run the fork test
+
+The kit's `test/fork/Example09.fork.t.sol` runs this flow against pinned forks of the live testnets. The file contains five test cases:
+
+1. **Config storage**: `applyCCVConfigUpdates` stores the CCV config on both hooks.
+1. **Both-sides consultation**: A transfer succeeds end to end while the source OnRamp consults the CCV outbound and the destination OffRamp verifies with it inbound.
+1. **Threshold CCVs**: Threshold CCVs are required only at or above the threshold amount.
+1. **Clearing**: Re-running the config script with empty lists removes the config.
+1. **Validation**: Threshold CCVs without base CCVs revert with `MustSpecifyUnderThresholdCCVsForThresholdCCVs`.
+
+In your terminal, run the following command to execute the test:
+
+    ```shell
+    FOUNDRY_PROFILE=fork forge test --match-contract Example09ForkTest -j 1
+    ```
+
+Example output:
+
+    ```text
+    $ FOUNDRY_PROFILE=fork forge test --match-contract Example09ForkTest -j 1
+    Ran 5 tests for test/fork/Example09.fork.t.sol:Example09ForkTest
+    [PASS] test_send_poolRequiredCCVIsConsultedOnBothSides() (gas: 2304798)
+    [PASS] test_send_thresholdCCVsAreRequiredAboveThresholdAmount() (gas: 4369395)
+    [PASS] test_setPoolCCVConfig_clearingWithEmptyListsRemovesConfig() (gas: 380961)
+    [PASS] test_setPoolCCVConfig_revertsWhenThresholdCCVsHaveNoBaseCCVs() (gas: 64126)
+    [PASS] test_setPoolCCVConfig_storesConfigOnBothHooks() (gas: 528563)
+    Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 2.19s (13.67ms CPU time)
+
+    Ran 1 test suite in 2.20s (2.19s CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)
+    ```
+
+## Examine the code
+
+### Setup
+
+The shared base contract `test/fork/utils/AdvancedPoolHooksForkTest.sol` extends the CCT fork setup: it deploys a `CrossChainToken`, an `AdvancedPoolHooks` hook and a BurnMint pool on both forks, and links the lanes, so each Example 08-10 test file only adds the hook feature it covers. The hook is deployed with `thresholdAmountForAdditionalCCVs = 1`, so threshold CCVs are effectively always required until you raise the threshold.
+
+`Example09ForkTest.setUp()` adds the CCV. The test deploys a `CountingCCV` (a no-op CCV that counts consultations and verifications) once and makes it persistent, so it exists at the same address on both chains:
+
+```solidity
+vm.selectFork(sepoliaFork);
+ccv = CountingCCV(_persistent(address(new CountingCCV())));
+thresholdCCV = CountingCCV(_persistent(address(new CountingCCV())));
+```
+
+Real CCVs are CREATE2-deployed to matching addresses on each chain; the persistent test contract achieves the same property. Like the simulator's own CCVs, it performs no real verification.
+
+### Configure the CCV on both hooks
+
+The `Example09SetPoolCCVConfig` script wraps `AdvancedPoolHooks.applyCCVConfigUpdates`. The test requires the CCV for both outbound and inbound traffic on each side of the lane:
+
+```solidity
+_setCCVConfig(sepoliaFork, sepoliaHook, amoy.chainSelector, address(ccv));
+_setCCVConfig(amoyFork, amoyHook, sepolia.chainSelector, address(ccv));
+```
+
+`test_setPoolCCVConfig_storesConfigOnBothHooks` then reads the config back from both hooks and asserts the CCV appears in the outbound and inbound lists.
+
+### Observe the CCV consulted on both sides
+
+`test_send_poolRequiredCCVIsConsultedOnBothSides` sends a default-finality transfer Sepolia → Amoy and routes it with `switchChainAndRouteMessage`, then asserts three things:
+
+```solidity
+_sendDefaultFinalityAndRoute(sepoliaToken, TRANSFER_AMOUNT);
+
+// The transfer still succeeds end to end.
+assertEq(_balanceOnFork(amoyFork, amoyToken, receiver), TRANSFER_AMOUNT);
+assertEq(_supplyOnFork(amoyFork, amoyToken), destinationSupplyBefore + TRANSFER_AMOUNT);
+
+// The source OnRamp consulted the CCV outbound (getOutboundImplementation + forwardToVerifier).
+vm.selectFork(sepoliaFork);
+assertEq(ccv.outboundConsultations(), 1, "source OnRamp did not consult the pool-required CCV");
+
+// The destination OffRamp verified the message inbound (getInboundImplementation + verifyMessage).
+vm.selectFork(amoyFork);
+assertEq(ccv.inboundVerifications(), 1, "destination OffRamp did not verify with the pool-required CCV");
+```
+
+The counters prove the pool-required CCV participated on both chains: one outbound consultation on the source, one inbound verification on the destination.
+
+### Threshold CCVs
+
+`test_send_thresholdCCVsAreRequiredAboveThresholdAmount` configures base CCVs plus threshold CCVs, then moves the threshold around the transfer amount:
+
+```solidity
+// Raise the threshold above the transfer amount: only the base CCV is required.
+_setThreshold(sepoliaFork, sepoliaHook, TRANSFER_AMOUNT + 1);
+_setThreshold(amoyFork, amoyHook, TRANSFER_AMOUNT + 1);
+_setCCVConfigWithThreshold(sepoliaFork, sepoliaHook, amoy.chainSelector, address(ccv), address(thresholdCCV));
+_setCCVConfigWithThreshold(amoyFork, amoyHook, sepolia.chainSelector, address(ccv), address(thresholdCCV));
+
+_sendDefaultFinalityAndRoute(sepoliaToken, TRANSFER_AMOUNT);
+
+vm.selectFork(sepoliaFork);
+assertEq(thresholdCCV.outboundConsultations(), 0, "threshold CCV consulted below threshold");
+
+// Now lower the threshold to 1 wei: the same transfer amount requires the threshold CCV too.
+_setThreshold(sepoliaFork, sepoliaHook, 1);
+_setThreshold(amoyFork, amoyHook, 1);
+
+_sendDefaultFinalityAndRoute(sepoliaToken, TRANSFER_AMOUNT);
+
+vm.selectFork(sepoliaFork);
+assertEq(thresholdCCV.outboundConsultations(), 1, "threshold CCV not consulted at/above threshold");
+```
+
+The same transfer amount flips between requiring and not requiring the threshold CCV as the threshold moves, on both the outbound and inbound side.
+
+## Run the same flow on a live testnet
+
+The kit's book chapter lists the script commands for the live-testnet flow: deploy the token, hook and pool on both chains (Example 08 steps), set the pool CCV config on both hooks with `Example09SetPoolCCVConfig`, send with the Example 06 sender, adjust the threshold with `Example09SetThresholdAmount`, and clear the config by re-running the config script with empty lists. See the [Example 09 chapter](https://smartcontractkit.github.io/ccip-starter-kit-foundry/examples/example09-cct04-pool-based-ccvs-on-advanced-pool-hooks.html) of the kit's book.
+
+<Aside type="note" title="Real CCVs">
+  The starter kit does not deploy a real CCV; its tests use a counting no-op CCV. To try pool-based CCVs end to end on
+  the live testnets, deploy your own CCV with the [CCV starter kit](https://docs.chain.link/ccip/ccv-starter-kit) and
+  use its resolver address as the CCV address. Use the resolver address, not the committee verifier implementation: a
+  pool that lists the implementation address reverts during the fee quote.
+</Aside>
+
+## Next steps
+
+- Example 10 attaches an ACE policy engine to the same hook (`Example10.fork.t.sol`); see [Enforce ACE policies](/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry) for the live-testnet flow.
+- Example 08 covers the sender allowlist on the same hook; see [Configure a sender allowlist](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry).
+- For an index of every kit example and where its topic is documented, read the [CCIP starter kit examples map](/chainlink-local/learn/starter-kit-examples).

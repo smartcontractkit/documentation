@@ -1,0 +1,220 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockOffchainAggregator v0.3.0 API Reference"
+metadata:
+  description: "API documentation for MockOffchainAggregator in Solidity, version v0.3.0."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage030" />
+
+## MockOffchainAggregator
+
+Mock implementation of off-chain aggregator.
+
+[MockOffchainAggregator](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.0/src/data-feeds/MockOffchainAggregator.sol)
+
+## Variables
+
+### decimals
+
+The number of decimals used by the aggregator.
+
+```solidity
+uint8 public decimals
+```
+
+### getAnswer
+
+Mapping to get the answer for a specific round ID.
+
+```solidity
+mapping(uint256 => int256) public getAnswer
+```
+
+### getStartedAt
+
+Mapping to get the start time for a specific round ID.
+
+```solidity
+mapping(uint256 => uint256) private getStartedAt
+```
+
+### getTimestamp
+
+Mapping to get the timestamp for a specific round ID.
+
+```solidity
+mapping(uint256 => uint256) public getTimestamp
+```
+
+### latestAnswer
+
+The latest answer reported by the aggregator.
+
+```solidity
+int256 public latestAnswer
+```
+
+### latestRound
+
+The latest round ID.
+
+```solidity
+uint256 public latestRound
+```
+
+### latestTimestamp
+
+The timestamp of the latest answer.
+
+```solidity
+uint256 public latestTimestamp
+```
+
+### MAX_ANSWER_POSSIBLE
+
+The maximum possible answer the aggregator can report.
+
+```solidity
+int192 private constant MAX_ANSWER_POSSIBLE = 95780971304118053647396689196894323976171195136475135
+```
+
+### maxAnswer
+
+The maximum answer the aggregator is allowed to report.
+
+```solidity
+int192 public maxAnswer
+```
+
+### MIN_ANSWER_POSSIBLE
+
+The minimum possible answer the aggregator can report.
+
+```solidity
+int192 private constant MIN_ANSWER_POSSIBLE = 1
+```
+
+### minAnswer
+
+The minimum answer the aggregator is allowed to report.
+
+```solidity
+int192 public minAnswer
+```
+
+## Functions
+
+### constructor
+
+Constructor to initialize the MockOffchainAggregator contract with initial
+parameters.
+
+```solidity
+constructor(uint8 _decimals, int256 _initialAnswer) ;
+```
+
+**Parameters**
+
+| Name             | Type     | Description                                            |
+| ---------------- | -------- | ------------------------------------------------------ |
+| `_decimals`      | `uint8`  | - The number of decimals for the aggregator.           |
+| `_initialAnswer` | `int256` | - The initial answer to be set in the mock aggregator. |
+
+### getRoundData
+
+Gets the round data for a specific round ID.
+
+```solidity
+function getRoundData(uint80 _roundId)
+    external
+    view
+    returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+```
+
+**Parameters**
+
+| Name       | Type     | Description                         |
+| ---------- | -------- | ----------------------------------- |
+| `_roundId` | `uint80` | - The round ID to get the data for. |
+
+**Returns**
+
+| Name              | Type      | Description                                      |
+| ----------------- | --------- | ------------------------------------------------ |
+| `roundId`         | `uint80`  | - The round ID.                                  |
+| `answer`          | `int256`  | - The answer for the round.                      |
+| `startedAt`       | `uint256` | - The timestamp when the round started.          |
+| `updatedAt`       | `uint256` | - The timestamp when the round was updated.      |
+| `answeredInRound` | `uint80`  | - The round ID in which the answer was computed. |
+
+### latestRoundData
+
+Gets the latest round data.
+
+```solidity
+function latestRoundData()
+    external
+    view
+    returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound);
+```
+
+**Returns**
+
+| Name              | Type      | Description                                             |
+| ----------------- | --------- | ------------------------------------------------------- |
+| `roundId`         | `uint80`  | - The latest round ID.                                  |
+| `answer`          | `int256`  | - The latest answer.                                    |
+| `startedAt`       | `uint256` | - The timestamp when the latest round started.          |
+| `updatedAt`       | `uint256` | - The timestamp when the latest round was updated.      |
+| `answeredInRound` | `uint80`  | - The round ID in which the latest answer was computed. |
+
+### updateAnswer
+
+Updates the answer in the mock aggregator.
+
+```solidity
+function updateAnswer(int256 _answer) public;
+```
+
+**Parameters**
+
+| Name      | Type     | Description                 |
+| --------- | -------- | --------------------------- |
+| `_answer` | `int256` | - The new answer to be set. |
+
+### updateMinAndMaxAnswers
+
+Updates the minimum and maximum answers the aggregator can report.
+
+```solidity
+function updateMinAndMaxAnswers(int192 _minAnswer, int192 _maxAnswer) external;
+```
+
+**Parameters**
+
+| Name         | Type     | Description               |
+| ------------ | -------- | ------------------------- |
+| `_minAnswer` | `int192` | - The new minimum answer. |
+| `_maxAnswer` | `int192` | - The new maximum answer. |
+
+### updateRoundData
+
+Updates the round data in the mock aggregator.
+
+```solidity
+function updateRoundData(uint80 _roundId, int256 _answer, uint256 _timestamp, uint256 _startedAt) public;
+```
+
+**Parameters**
+
+| Name         | Type      | Description                             |
+| ------------ | --------- | --------------------------------------- |
+| `_roundId`   | `uint80`  | - The round ID to be updated.           |
+| `_answer`    | `int256`  | - The new answer to be set.             |
+| `_timestamp` | `uint256` | - The timestamp to be set.              |
+| `_startedAt` | `uint256` | - The timestamp when the round started. |

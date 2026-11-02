@@ -1,0 +1,311 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulatorFork v0.2.6 API Reference"
+metadata:
+  description: "API documentation for CCIPLocalSimulatorFork in Solidity, version v0.2.6."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage026" />
+
+## CCIPLocalSimulatorFork
+
+CCIP simulator for forked networks.
+
+[CCIPLocalSimulatorFork](https://github.com/smartcontractkit/chainlink-local/blob/v0.2.6/src/ccip/CCIPLocalSimulatorFork.sol)
+
+## Structs
+
+### EVM2EVMMessage
+
+```solidity
+struct EVM2EVMMessage {
+  uint64 sourceChainSelector;
+  address sender;
+  address receiver;
+  uint64 sequenceNumber;
+  uint256 gasLimit;
+  bool strict;
+  uint64 nonce;
+  address feeToken;
+  uint256 feeTokenAmount;
+  bytes data;
+  struct Client.EVMTokenAmount[] tokenAmounts;
+  bytes[] sourceTokenData;
+  bytes32 messageId;
+}
+```
+
+### OffRamp
+
+Structure representing an offRamp configuration
+
+#### Parameters
+
+| Name | Type | Description |
+| ---- | ---- | ----------- |
+
+```solidity
+struct OffRamp {
+  uint64 sourceChainSelector;
+  address offRamp;
+}
+```
+
+## Variables
+
+### DEFAULT_GAS_LIMIT
+
+```solidity
+uint32 DEFAULT_GAS_LIMIT
+```
+
+### i_register
+
+```solidity
+contract Register i_register
+```
+
+The immutable register instance
+
+### LINK_FAUCET
+
+```solidity
+address LINK_FAUCET
+```
+
+The address of the LINK faucet
+
+### s_processedMessages
+
+```solidity
+mapping(bytes32 => bool) s_processedMessages
+```
+
+Mapping to track processed messages
+
+## Errors
+
+### InvalidExtraArgsTag
+
+```solidity
+error InvalidExtraArgsTag()
+```
+
+## Events
+
+### CCIPMessageSent
+
+```solidity
+event CCIPMessageSent(uint64 destChainSelector, uint64 sequenceNumber, struct Internal.EVM2AnyRampMessage message)
+```
+
+### CCIPSendRequested
+
+```solidity
+event CCIPSendRequested(struct InternalPreV1dot6.EVM2EVMMessage message)
+```
+
+Events emitted when a CCIP send request is made
+
+## Functions
+
+### \_fromBytes
+
+```solidity
+function _fromBytes(bytes extraArgs) internal pure returns (struct Client.GenericExtraArgsV2)
+```
+
+Internal helper function to decode extraArgs bytes to GenericExtraArgsV2 struct.
+Supports decoding of both GenericExtraArgsV2 and EVMExtraArgsV1 structs.
+
+#### Parameters
+
+| Name      | Type  | Description                                   |
+| --------- | ----- | --------------------------------------------- |
+| extraArgs | bytes | - The bytes representing the extra arguments. |
+
+#### Returns
+
+| Name | Type                             | Description                                               |
+| ---- | -------------------------------- | --------------------------------------------------------- |
+| [0]  | struct Client.GenericExtraArgsV2 | genericExtraArgs - The decoded GenericExtraArgsV2 struct. |
+
+### \_routeCapturedMessages
+
+```solidity
+function _routeCapturedMessages(uint256[] forkIds, uint256 sourceForkId, address sourceRouterAddress) internal
+```
+
+Internal function to route captured messages to their respective destination
+forks.
+
+#### Parameters
+
+| Name                | Type      | Description                                                                                                                        |
+| ------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| forkIds             | uint256[] | - The IDs of the destination network forks. These are the returned values of `createFork()` or `createSelectFork()`, not chainIds. |
+| sourceForkId        | uint256   | - The ID of the source network fork. This is the returned value of `createFork()` or `createSelectFork()`, not chainId.            |
+| sourceRouterAddress | address   | - The address of the Router on the source chain.                                                                                   |
+
+### constructor
+
+```solidity
+constructor() public
+```
+
+Constructor to initialize the contract
+
+### executeSingleMessage
+
+```solidity
+function executeSingleMessage(struct Internal.Any2EVMRampMessage message, bytes[] offchainTokenData, uint32[] tokenGasOverrides) external
+```
+
+Executes a single CCIP message on the offRamp
+
+#### Parameters
+
+| Name              | Type                               | Description                       |
+| ----------------- | ---------------------------------- | --------------------------------- |
+| message           | struct Internal.Any2EVMRampMessage | - The CCIP message to be executed |
+| offchainTokenData | bytes[]                            | - Additional offchain token data  |
+| tokenGasOverrides | uint32[]                           |                                   |
+
+### executeSingleMessage
+
+```solidity
+function executeSingleMessage(struct InternalPreV1dot6.EVM2EVMMessage message, bytes[] offchainTokenData, uint32[] tokenGasOverrides) external
+```
+
+Works with Foundry only
+
+### getNetworkDetails
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (struct Register.NetworkDetails)
+```
+
+Returns the default values for currently CCIP supported networks. If network is
+not present or some of the values are changed, user can manually add new network
+details using the `setNetworkDetails` function.
+
+#### Parameters
+
+| Name    | Type    | Description                                                                                            |
+| ------- | ------- | ------------------------------------------------------------------------------------------------------ |
+| chainId | uint256 | - The blockchain network chain ID. For example 11155111 for Ethereum Sepolia. Not CCIP chain selector. |
+
+#### Returns
+
+| Name | Type                           | Description                                                                                                                                                                                                                                                                                                                                                                                         |
+| ---- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [0]  | struct Register.NetworkDetails | networkDetails - The tuple containing: chainSelector - The unique CCIP Chain Selector. routerAddress - The address of the CCIP Router contract. linkAddress - The address of the LINK token. wrappedNativeAddress - The address of the wrapped native token that can be used for CCIP fees. ccipBnMAddress - The address of the CCIP BnM token. ccipLnMAddress - The address of the CCIP LnM token. |
+
+### getOffRamps
+
+```solidity
+function getOffRamps() external view returns (struct IRouterFork.OffRamp[])
+```
+
+Gets the list of offRamps
+
+#### Returns
+
+| Name | Type                         | Description                         |
+| ---- | ---------------------------- | ----------------------------------- |
+| [0]  | struct IRouterFork.OffRamp[] | offRamps - Array of OffRamp structs |
+
+### getOnRamp
+
+```solidity
+function getOnRamp(uint64 destChainSelector) external view returns (address)
+```
+
+Return the configured onramp for specific a destination chain. @param
+destChainSelector The destination chain Id to get the onRamp for.
+
+#### Returns
+
+| Name | Type    | Description                |
+| ---- | ------- | -------------------------- |
+| [0]  | address | The address of the onRamp. |
+
+### requestLinkFromFaucet
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+Requests LINK tokens from the faucet. The provided amount of tokens are
+transferred to provided destination address.
+
+#### Parameters
+
+| Name   | Type    | Description                                        |
+| ------ | ------- | -------------------------------------------------- |
+| to     | address | - The address to which LINK tokens are to be sent. |
+| amount | uint256 | - The amount of LINK tokens to send.               |
+
+#### Returns
+
+| Name    | Type | Description                                                                   |
+| ------- | ---- | ----------------------------------------------------------------------------- |
+| success | bool | - Returns `true` if the transfer of tokens was successful, otherwise `false`. |
+
+### setNetworkDetails
+
+```solidity
+function setNetworkDetails(uint256 chainId, struct Register.NetworkDetails networkDetails) external
+```
+
+If network details are not present or some of the values are changed, user can
+manually add new network details using the `setNetworkDetails` function.
+
+#### Parameters
+
+| Name           | Type                           | Description                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| chainId        | uint256                        | - The blockchain network chain ID. For example 11155111 for Ethereum Sepolia. Not CCIP chain selector.                                                                                                                                                                                                                                                                               |
+| networkDetails | struct Register.NetworkDetails | - The tuple containing: chainSelector - The unique CCIP Chain Selector. routerAddress - The address of the CCIP Router contract. linkAddress - The address of the LINK token. wrappedNativeAddress - The address of the wrapped native token that can be used for CCIP fees. ccipBnMAddress - The address of the CCIP BnM token. ccipLnMAddress - The address of the CCIP LnM token. |
+
+### switchChainAndRouteMessage
+
+```solidity
+function switchChainAndRouteMessage(uint256 forkId) external
+```
+
+To be called after the sending of the cross-chain message (`ccipSend`). Goes
+through the list of past logs and looks for the `CCIPSendRequested` and
+`CCIPMessageSent` events. Switches to a destination network fork. Routes the
+sent cross-chain message on the destination network. If you sent more than one
+message, it will try to route all of them to `forkId`.
+
+#### Parameters
+
+| Name   | Type    | Description                                                                                                    |
+| ------ | ------- | -------------------------------------------------------------------------------------------------------------- |
+| forkId | uint256 | - The ID of the destination network fork. This is the returned value of `createFork()` or `createSelectFork()` |
+
+### switchChainAndRouteMessage
+
+```solidity
+function switchChainAndRouteMessage(uint256[] forkIds) external
+```
+
+To be called after the sending of the cross-chain message (`ccipSend`). Override
+variant of the `switchChainAndRouteMessage(uint256 forkId)` function in case of
+multiple destination forks. Goes through the list of past logs and looks for the
+`CCIPSendRequested` and `CCIPMessageSent` events. Loops through provided
+`forkIds` and tries to route the message to correct destination. If you haven't
+provide correct `forkId`, the message will get lost. If you sent more than one
+message, it will try to route all of them to correct destinations.
+
+#### Parameters
+
+| Name    | Type      | Description                                                                                                         |
+| ------- | --------- | ------------------------------------------------------------------------------------------------------------------- |
+| forkIds | uint256[] | - The IDs of the destination network forks. These are the returned values of `createFork()` or `createSelectFork()` |

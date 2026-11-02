@@ -36,6 +36,7 @@ const TableOfContents: FunctionalComponent<{
   useEffect(() => {
     const elements = document.querySelectorAll(
       [
+        "article > :where(h1, h2, h3, h4)",
         "article section > :where(h1, h2, h3, h4)",
         "article [data-product-section] > :where(h1, h2, h3, h4)",
         "article astro-anchored-accordion[data-toc-depth]",
@@ -63,7 +64,7 @@ const TableOfContents: FunctionalComponent<{
       }
     })
 
-    setHeadings(newHeadings)
+    if (newHeadings.length > 0) setHeadings(newHeadings)
   }, [$shouldUpdateToc])
 
   useEffect(() => {

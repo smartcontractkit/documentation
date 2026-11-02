@@ -23,6 +23,11 @@ export type DataFeedType =
 export type SchemaFilterValue = "all" | "v2" | "v3" | "v3-dex" | "v8" | "v11" | "v14"
 export type StreamsRwaFeedTypeValue = "all" | "datalink" | "equities" | "forex" | "futures"
 export type TradingHoursFilterValue = "all" | "regular" | "extended" | "overnight"
+/** Top-level availability filter: 24/5 session streams vs 24/7 streams. */
+export type MarketHoursFilterValue = "all" | "24x5" | "24x7"
+/** 24/7 sub-products, keyed by RDD attribute type. "smoothed" is a Data Feeds product, not a stream. */
+export type TwentyFourSevenCategory = "twap" | "perps" | "smoothed"
+export type TwentyFourSevenFilterValue = "all" | "twap" | "perps"
 
 /** Flags derived from the active feed page type. Used by tables and FeedList. */
 export interface FeedTypeFlags {

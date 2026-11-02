@@ -1,0 +1,121 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "DataStreamsLocalSimulatorFork v0.2.8 API Reference"
+metadata:
+  description: "API documentation for DataStreamsLocalSimulatorFork in Solidity, version v0.2.8."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage028" />
+
+## DataStreamsLocalSimulatorFork
+
+Data Streams simulator for forked networks.
+
+[DataStreamsLocalSimulatorFork](https://github.com/smartcontractkit/chainlink-local/blob/v0.2.8/src/data-streams/DataStreamsLocalSimulatorFork.sol)
+
+## Variables
+
+### i_register
+
+```solidity
+contract Register i_register
+```
+
+The immutable register instance
+
+### LINK_FAUCET
+
+```solidity
+address LINK_FAUCET
+```
+
+The address of the LINK faucet
+
+## Functions
+
+### constructor
+
+```solidity
+constructor() public
+```
+
+Constructor to initialize the contract
+
+### getNetworkDetails
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (struct Register.NetworkDetails)
+```
+
+Returns the default values for currently Data Streams supported networks. If
+network is not present or some of the values are changed, user can manually add
+new network details using the `setNetworkDetails` function.
+
+#### Parameters
+
+| Name    | Type    | Description                                                                   |
+| ------- | ------- | ----------------------------------------------------------------------------- |
+| chainId | uint256 | - The blockchain network chain ID. For example 11155111 for Ethereum Sepolia. |
+
+#### Returns
+
+| Name | Type                           | Description                                                                                                                                                  |
+| ---- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [0]  | struct Register.NetworkDetails | networkDetails - The tuple containing: verifierProxyAddress - The address of the Verifier Proxy smart contract. linkAddress - The address of the LINK token. |
+
+### requestLinkFromFaucet
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+Requests LINK tokens from the faucet. The provided amount of tokens are
+transferred to provided destination address.
+
+#### Parameters
+
+| Name   | Type    | Description                                        |
+| ------ | ------- | -------------------------------------------------- |
+| to     | address | - The address to which LINK tokens are to be sent. |
+| amount | uint256 | - The amount of LINK tokens to send.               |
+
+#### Returns
+
+| Name    | Type | Description                                                                   |
+| ------- | ---- | ----------------------------------------------------------------------------- |
+| success | bool | - Returns `true` if the transfer of tokens was successful, otherwise `false`. |
+
+### requestNativeFromFaucet
+
+```solidity
+function requestNativeFromFaucet(address to, uint256 amount) external
+```
+
+Requests native coints from the faucet.
+
+#### Parameters
+
+| Name   | Type    | Description                                         |
+| ------ | ------- | --------------------------------------------------- |
+| to     | address | - The address to which native coins are to be sent. |
+| amount | uint256 | - The amount of native coins to send.               |
+
+### setNetworkDetails
+
+```solidity
+function setNetworkDetails(uint256 chainId, struct Register.NetworkDetails networkDetails) external
+```
+
+If network details are not present or some of the values are changed, user can
+manually add new network details using the `setNetworkDetails` function.
+
+#### Parameters
+
+| Name           | Type                           | Description                                                                                                                                   |
+| -------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| chainId        | uint256                        | - The blockchain network chain ID. For example 11155111 for Ethereum Sepolia.                                                                 |
+| networkDetails | struct Register.NetworkDetails | - The tuple containing: verifierProxyAddress - The address of the Verifier Proxy smart contract. linkAddress - The address of the LINK token. |

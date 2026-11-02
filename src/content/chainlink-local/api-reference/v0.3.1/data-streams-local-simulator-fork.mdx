@@ -1,0 +1,136 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "DataStreamsLocalSimulatorFork v0.3.1 API Reference"
+metadata:
+  description: "API documentation for DataStreamsLocalSimulatorFork in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## DataStreamsLocalSimulatorFork
+
+A contract that simulates Data Streams operations on forked networks in a Foundry test environment.
+
+[`DataStreamsLocalSimulatorFork`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/data-streams/DataStreamsLocalSimulatorFork.sol)
+
+<Aside>
+  Works with Foundry only. Use this simulator when your consumer contract needs the real `VerifierProxy` deployed on a
+  live network; use [`DataStreamsLocalSimulator`](/chainlink-local/api-reference/v0.3.1/data-streams-local-simulator)
+  for local mode.
+</Aside>
+
+## Variables
+
+### i_register
+
+```solidity
+Register immutable i_register
+```
+
+<Aside>The immutable Register contract instance used to store Data Streams network configuration details.</Aside>
+
+### LINK_FAUCET
+
+```solidity
+address constant LINK_FAUCET = 0x4281eCF07378Ee595C564a59048801330f3084eE
+```
+
+<Aside>The address of the LINK token faucet contract, impersonated by `requestLinkFromFaucet`.</Aside>
+
+## Functions
+
+### constructor
+
+Initializes the contract.
+
+```solidity
+constructor()
+```
+
+<Aside>Deploys the Data Streams `Register` with the built-in network details.</Aside>
+
+### getNetworkDetails
+
+Returns the default values for currently Data Streams supported networks.
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (Register.NetworkDetails memory)
+```
+
+<Aside>
+  If a network is not present or some of the values have changed, add new network details with `setNetworkDetails`.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                                                         |
+| --------- | --------- | ------------------------------------------------------------------- |
+| chainId   | `uint256` | The blockchain network chain ID (e.g., 421614 for Arbitrum Sepolia) |
+
+#### Returns
+
+| Parameter      | Type             | Description                                                      |
+| -------------- | ---------------- | ---------------------------------------------------------------- |
+| networkDetails | `NetworkDetails` | `verifierProxyAddress` and `linkAddress` for the specified chain |
+
+### setNetworkDetails
+
+Sets the network details for a given chain ID.
+
+```solidity
+function setNetworkDetails(uint256 chainId, Register.NetworkDetails memory networkDetails) external
+```
+
+#### Parameters
+
+| Parameter      | Type             | Description                                           |
+| -------------- | ---------------- | ----------------------------------------------------- |
+| chainId        | `uint256`        | The blockchain network chain ID                       |
+| networkDetails | `NetworkDetails` | The network details to set for the specified chain ID |
+
+### requestLinkFromFaucet
+
+Requests LINK tokens from the faucet.
+
+```solidity
+function requestLinkFromFaucet(address to, uint256 amount) external returns (bool success)
+```
+
+<Aside>
+  Impersonates the LINK faucet and transfers LINK (at the address from the current chain's network details) to the
+  destination address, on the active fork.
+</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                            |
+| --------- | --------- | -------------------------------------- |
+| to        | `address` | The address to receive the LINK tokens |
+| amount    | `uint256` | The amount of LINK tokens to transfer  |
+
+#### Returns
+
+| Parameter | Type   | Description                                       |
+| --------- | ------ | ------------------------------------------------- |
+| success   | `bool` | Returns true if the token transfer was successful |
+
+### requestNativeFromFaucet
+
+Requests native coins from the faucet.
+
+```solidity
+function requestNativeFromFaucet(address to, uint256 amount) external
+```
+
+<Aside>Deals the amount of native coins to the destination address with `vm.deal`.</Aside>
+
+#### Parameters
+
+| Parameter | Type      | Description                             |
+| --------- | --------- | --------------------------------------- |
+| to        | `address` | The address to receive the native coins |
+| amount    | `uint256` | The amount of native coins to send      |

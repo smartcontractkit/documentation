@@ -1,0 +1,137 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockReportGenerator v0.3.1 API Reference"
+metadata:
+  description: "API documentation for MockReportGenerator in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## MockReportGenerator
+
+A contract that generates signed Data Streams reports for local testing.
+
+[`MockReportGenerator`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/data-streams/MockReportGenerator.sol)
+
+<Aside>
+  This contract generates reports for every report schema (`ReportV1` through `ReportV13`), signs them with a generated
+  mock DON key, and returns the ABI-encoded signed report that a consumer passes to
+  [`MockVerifierProxy.verify`](/chainlink-local/api-reference/v0.3.1/mock-verifier-proxy#verify). The report contents
+  (price, bid/ask, fees, expiry, market status) are set with the `update*` functions.
+</Aside>
+
+## Errors
+
+### MockReportGenerator\_\_InvalidBid
+
+```solidity
+error MockReportGenerator__InvalidBid()
+```
+
+### MockReportGenerator\_\_InvalidAsk
+
+```solidity
+error MockReportGenerator__InvalidAsk()
+```
+
+### MockReportGenerator\_\_CastOverflow
+
+```solidity
+error MockReportGenerator__CastOverflow()
+```
+
+## Functions
+
+### constructor
+
+Initializes the generator with an initial price.
+
+```solidity
+constructor(int192 initialPrice)
+```
+
+<Aside>
+  Sets the price, bid and ask to `initialPrice`, the expiry period to 1 day, and the market status to `2` (Open). The
+  DON address and key are generated with `makeAddrAndKey("Mock Data Streams DON")`.
+</Aside>
+
+#### Parameters
+
+| Parameter    | Type     | Description              |
+| ------------ | -------- | ------------------------ |
+| initialPrice | `int192` | The initial report price |
+
+### generateReportV1..V13
+
+Generates a signed report for a specific schema version.
+
+```solidity
+function generateReportV3() external returns (bytes memory signedReport, ReportV3 memory report)
+```
+
+<Aside>
+  One `generateReportVn()` function exists per schema version (`generateReportV1` through `generateReportV13`),
+  returning the signed report and the decoded report struct. Each version uses its own mock feed ID (for example
+  `0x00037777…` for V3). Overloads that take a calldata report struct (`generateReport(ReportV3 calldata report)`) are
+  also available.
+</Aside>
+
+#### Returns
+
+| Parameter    | Type       | Description                   |
+| ------------ | ---------- | ----------------------------- |
+| signedReport | `bytes`    | The ABI-encoded signed report |
+| report       | `ReportVn` | The generated report struct   |
+
+### updatePrice
+
+Updates the price used in generated reports.
+
+```solidity
+function updatePrice(int192 price) public
+```
+
+### updatePriceBidAndAsk
+
+Updates the price, bid and ask used in generated reports.
+
+```solidity
+function updatePriceBidAndAsk(int192 price, int192 bid, int192 ask) external
+```
+
+### updateExpiresPeriod
+
+Updates the report expiry period.
+
+```solidity
+function updateExpiresPeriod(uint32 period) external
+```
+
+<Aside>The report `expiresAt` is `block.timestamp + period` at generation time.</Aside>
+
+### updateMarketStatus
+
+Updates the market status used in generated reports.
+
+```solidity
+function updateMarketStatus(uint32 status) external
+```
+
+<Aside>`0` (Unknown), `1` (Closed) or `2` (Open).</Aside>
+
+### updateFees
+
+Updates the native and LINK fees carried in generated reports.
+
+```solidity
+function updateFees(uint192 nativeFee, uint192 linkFee) external
+```
+
+<Aside>
+  Both default to 0. The fees are charged by the
+  [`MockFeeManager`](/chainlink-local/api-reference/v0.3.1/mock-fee-manager) when on-chain billing is enabled.
+</Aside>
