@@ -31,6 +31,7 @@ import {
   getSchemaVersion,
   getMarketStatusDocLink,
   getTradingHoursDocLink,
+  is247USEquitiesStream,
   isApacEquitiesStreamFeed,
   getTwapWindowSeconds,
 } from "~/features/feeds/utils/feedMetadata.ts"
@@ -1430,7 +1431,7 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 Datalink
               </a>
             )}
-            {is247Stream(metadata) && (
+            {(is247Stream(metadata) || is247USEquitiesStream(metadata)) && (
               <span className={tableStyles.feedVariantBadge} title="24/7 stream">
                 24/7
               </span>
@@ -1596,7 +1597,7 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 </dt>
                 <dd>
                   <a href="/data-streams/market-hours" target="_blank">
-                    {is247Stream(metadata) ? "24/7" : metadata.docs.marketHours}
+                    {is247Stream(metadata) || is247USEquitiesStream(metadata) ? "24/7" : metadata.docs.marketHours}
                   </a>
                 </dd>
               </div>
@@ -1658,6 +1659,7 @@ export const MainnetTable = ({
   streamCategoryFilter,
   show24x5Feeds,
   show247Streams,
+  show247USEquities,
   twentyFourSevenFilter,
   showApacEquitiesFeeds,
   showFuturesFeeds,
@@ -1687,6 +1689,7 @@ export const MainnetTable = ({
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex" | "futures"
   show24x5Feeds?: boolean
   show247Streams?: boolean
+  show247USEquities?: boolean
   twentyFourSevenFilter?: TwentyFourSevenFilterValue
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
@@ -1712,7 +1715,7 @@ export const MainnetTable = ({
 
   // While a market-hours filter is active the schema/category dropdowns are hidden.
   // Ignore any leftover values so they can't silently empty the table (e.g. from a URL).
-  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams)
+  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams || show247USEquities)
 
   const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
     network,
@@ -1724,6 +1727,7 @@ export const MainnetTable = ({
     showOnlySVR,
     show24x5Feeds,
     show247Streams,
+    show247USEquities,
     twentyFourSevenFilter,
     showApacEquitiesFeeds,
     showFuturesFeeds,
@@ -1737,6 +1741,7 @@ export const MainnetTable = ({
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
       extendedHoursCategory: forceExtendedHoursCategory,
+      show247USEquities,
     },
   })
 
@@ -1848,6 +1853,7 @@ export const TestnetTable = ({
   streamCategoryFilter,
   show24x5Feeds,
   show247Streams,
+  show247USEquities,
   twentyFourSevenFilter,
   showApacEquitiesFeeds,
   showFuturesFeeds,
@@ -1874,6 +1880,7 @@ export const TestnetTable = ({
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex" | "futures"
   show24x5Feeds?: boolean
   show247Streams?: boolean
+  show247USEquities?: boolean
   twentyFourSevenFilter?: TwentyFourSevenFilterValue
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
@@ -1893,7 +1900,7 @@ export const TestnetTable = ({
 
   // While a market-hours filter is active the schema/category dropdowns are hidden.
   // Ignore any leftover values so they can't silently empty the table (e.g. from a URL).
-  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams)
+  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams || show247USEquities)
 
   const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
     network,
@@ -1904,6 +1911,7 @@ export const TestnetTable = ({
     searchVariant: "testnet",
     show24x5Feeds,
     show247Streams,
+    show247USEquities,
     twentyFourSevenFilter,
     showApacEquitiesFeeds,
     showFuturesFeeds,
@@ -1917,6 +1925,7 @@ export const TestnetTable = ({
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
       extendedHoursCategory: forceExtendedHoursCategory,
+      show247USEquities,
     },
   })
 

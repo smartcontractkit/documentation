@@ -8,6 +8,7 @@ jest.unstable_mockModule("../../../db/supabase.ts", () => ({
 }))
 
 const { is247Stream, get247Category, matches247StreamFilter } = await import("./twentyFourSeven.ts")
+const { is247USEquitiesStream, matches247USEquitiesStreamFilter } = await import("./feedMetadata.ts")
 const { isFeedVisible, shouldHideStreamFeedId } = await import("./feedVisibility.ts")
 
 const verifierStream = (docs: Record<string, unknown>, overrides: Record<string, unknown> = {}) => ({
@@ -79,6 +80,30 @@ describe("isFeedVisible for streamsRwa", () => {
     ).toBe(false)
   })
 
+  it("includes 24/7 US Equities streams only when explicitly opted in", () => {
+    const feed = verifierStream({
+      attributeType: "247CustomPrice",
+      feedType: "247Price",
+      schema: "v11",
+      assetClass: "Equities",
+    })
+
+    expect(isFeedVisible(feed, "streamsRwa")).toBe(false)
+    expect(isFeedVisible(feed, "streamsRwa", "", { show247USEquities: true })).toBe(true)
+  })
+
+  it("still respects the hidden flag for 24/7 US Equities streams", () => {
+    const feed = verifierStream({
+      attributeType: "247CustomPrice",
+      feedType: "247Price",
+      schema: "v11",
+      assetClass: "Equities",
+      hidden: true,
+    })
+
+    expect(isFeedVisible(feed, "streamsRwa", "", { show247USEquities: true })).toBe(false)
+  })
+
   it("still hides streams flagged hidden in the reference data", () => {
     expect(
       isFeedVisible(
@@ -108,14 +133,59 @@ describe("shouldHideStreamFeedId", () => {
     expect(shouldHideStreamFeedId(verifierStream({ attributeType: "247Perps", feedType: "247Price" }))).toBe(true)
   })
 
-  it("leaves regular TWAP, smoothed, and ordinary streams alone", () => {
+  it("hides feed IDs for 24/7 US Equities streams", () => {
+    expect(
+      shouldHideStreamFeedId(
+        verifierStream({
+          attributeType: "247CustomPrice",
+          feedType: "247Price",
+          schema: "v11",
+          assetClass: "Equities",
+        })
+      )
+    ).toBe(true)
+  })
+
+  it("leaves regular TWAP and ordinary streams alone", () => {
     expect(shouldHideStreamFeedId(verifierStream({ attributeType: "TWAP", feedType: "Crypto", schema: "v2" }))).toBe(
       false
     )
     expect(
-      shouldHideStreamFeedId(verifierStream({ attributeType: "247CustomPrice", feedType: "247Price", schema: "v11" }))
+      shouldHideStreamFeedId(
+        verifierStream({ attributeType: "247CustomPrice", feedType: "247Price", schema: "v11", assetClass: "Crypto" })
+      )
     ).toBe(false)
     expect(shouldHideStreamFeedId(verifierStream({ attributeType: "EquityPrice", feedType: "Equities" }))).toBe(false)
+  })
+})
+
+describe("is247USEquitiesStream", () => {
+  const usEquities = (docs: Record<string, unknown>) =>
+    verifierStream({
+      attributeType: "247CustomPrice",
+      feedType: "247Price",
+      schema: "v11",
+      assetClass: "Equities",
+      ...docs,
+    })
+
+  it("detects v11 24/7 equity streams", () => {
+    expect(is247USEquitiesStream(usEquities({}))).toBe(true)
+    expect(is247USEquitiesStream(usEquities({ attributeType: "247Smoothed" }))).toBe(true)
+  })
+
+  it("rejects other 24/7 products and schemas", () => {
+    expect(is247USEquitiesStream(usEquities({ schema: "v2" }))).toBe(false)
+    expect(is247USEquitiesStream(usEquities({ assetClass: "Futures" }))).toBe(false)
+    expect(is247USEquitiesStream(usEquities({ attributeType: "EquityPrice" }))).toBe(false)
+  })
+
+  it("filters rows only when the 24/7 US Equities filter is on", () => {
+    const ordinary = verifierStream({ attributeType: "EquityPrice", feedType: "Equities" })
+
+    expect(matches247USEquitiesStreamFilter(ordinary, false)).toBe(true)
+    expect(matches247USEquitiesStreamFilter(ordinary, true)).toBe(false)
+    expect(matches247USEquitiesStreamFilter(usEquities({}), true)).toBe(true)
   })
 })
 

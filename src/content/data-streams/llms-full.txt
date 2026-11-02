@@ -7222,11 +7222,15 @@ The RWA Advanced (v11) schema supports 24/5 streams with a DON consensus `mid` p
 > and `askVolume` reported come from one specific order book at a time, not an aggregate across all venues. These values
 > should not be treated as a proxy for total market liquidity and are primarily informational.
 
+## Available Streams
+
+The table below shows all available 24/5 US Equities streams. Use the **Time segment** filter to view streams for specific trading sessions.
+
 ## Feeds
 
 Each instrument is exposed through three distinct data streams feeds, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
 
-You can view all available 24/5 US Equities streams in the [stream table viewer](/data-streams/stream-ids) or see the [complete list below](#available-streams).
+You can view all available 24/5 US Equities streams in the [stream table viewer](/data-streams/stream-ids) or see the [complete list above](#available-streams).
 
 For example, **TSLA** is available via the following streams:
 
@@ -7588,10 +7592,6 @@ Consumers must:
 
 For detailed market hours and trading schedules, see the [Market Hours](/data-streams/market-hours) documentation.
 
-## Available Streams
-
-The table below shows all available 24/5 US Equities streams. Use the **Time segment** filter to view streams for specific trading sessions.
-
 ---
 
 # 24/7 US Equities User Guide
@@ -7639,7 +7639,136 @@ The 24/5 streams remain available and are still the right choice if you want ses
 
 The 24/7 streams do not carry corporate action fields such as the multiplier and activation fields in the [Tokenized Asset (v10) schema](/data-streams/reference/report-schema-v10). Track corporate actions offchain.
 
-## Fast price and slow price
+## Available Streams
+
+The table below shows all available 24/7 US Equities streams.
+
+### Asset coverage
+
+24/7 pricing depends on liquid perpetual futures markets during off-hours, so not every US equity is covered. Each asset is reviewed individually before launch, including its off-hours trading volume and how much it would cost to move its off-hours price. This review lowers risk but does not remove it: covered assets can still be manipulated or dislocated during off-hours, and the [risks](#risks) below apply to every one of them. Assets that are not covered remain available on the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). Coverage will expand as off-hours perpetual futures markets deepen. To request an asset, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+
+## Consuming the stream
+
+Each asset has one stream. Use the table above to find its name and feed ID, then fetch or stream reports with the Data Streams SDK. Reports use the v11 layout, so existing v11 decoding code works unchanged. You do not switch streams by session or by `marketStatus`.
+
+- [Sign up for Data Streams](/data-streams/sign-up) to get API credentials
+- [Look up stream IDs programmatically](/data-streams/reference/data-streams-api/discovery-endpoint), including hidden streams your key is entitled to
+- [Fetch and decode reports](/data-streams/tutorials/ts-sdk-fetch) with the TypeScript, Go, or Rust SDK
+- [Stream reports](/data-streams/tutorials/ts-sdk-stream) for a continuous connection
+- [Verify reports onchain](/data-streams/tutorials/evm-onchain-report-verification) using the verifier addresses in the streams table
+
+Two timestamps matter for freshness. `observationsTimestamp` is when the report was generated. `lastSeenTimestampNs` is when the `mid` input last changed, so a fresh report can carry an older `lastSeenTimestampNs`. Use `observationsTimestamp` to judge report freshness and `lastSeenTimestampNs` to judge `mid` freshness. Use `marketStatus` to determine the session. If `marketStatus = 0` (Unknown), treat the price as unavailable rather than guessing the session. See [Last Seen Timestamp](/data-streams/reference/report-schema-v11#last-seen-timestamp) for field scope and non-monotonic behavior.
+
+The example below reads the slow price for collateral and liquidations. Use `mid` instead for a perpetual futures mark or index price.
+
+### TypeScript
+
+```typescript
+import { createClient, decodeReport } from "@chainlink/data-streams-sdk"
+
+const STALE_AFTER_MS = 5 * 60 * 1000
+
+function isPriceUsable(marketStatus: number, midAgeMs: number): boolean {
+  return marketStatus !== 0 && midAgeMs <= STALE_AFTER_MS
+}
+
+async function getPrice(feedId: string) {
+  const client = createClient({ apiKey, userSecret, endpoint })
+  const report = await client.getLatestReport(feedId)
+  const decoded = decodeReport(report.fullReport, report.feedID)
+
+  if (decoded.version !== "V11") throw new Error(`Expected a v11 report, got ${decoded.version}`)
+
+  const reportAgeMs = Date.now() - report.observationsTimestamp * 1000
+  const midAgeMs = Number((BigInt(Date.now()) * 1_000_000n - decoded.lastSeenTimestampNs) / 1_000_000n)
+
+  if (!isPriceUsable(decoded.marketStatus, midAgeMs)) return undefined
+
+  return {
+    slowPrice: decoded.lastTradedPrice, // collateral, liquidations
+    fastPrice: decoded.mid, // perpetual futures mark or index price
+    reportAgeMs,
+  }
+}
+```
+
+### Go
+
+```go
+import (
+    "context"
+    "fmt"
+    "time"
+
+    streams "github.com/smartcontractkit/data-streams-sdk/go/v2"
+    feed "github.com/smartcontractkit/data-streams-sdk/go/v2/feed"
+    report "github.com/smartcontractkit/data-streams-sdk/go/v2/report"
+    v11 "github.com/smartcontractkit/data-streams-sdk/go/v2/report/v11"
+)
+
+const staleAfter = 5 * time.Minute
+
+func isPriceUsable(marketStatus uint32, midAge time.Duration) bool {
+    return marketStatus != 0 && midAge <= staleAfter
+}
+
+func getPrice(ctx context.Context, client streams.Client, feedID feed.ID) (*v11.Data, error) {
+    response, err := client.GetLatestReport(ctx, feedID)
+    if err != nil {
+        return nil, err
+    }
+
+    decoded, err := report.Decode[v11.Data](response.FullReport)
+    if err != nil {
+        return nil, err
+    }
+
+    d := decoded.Data
+    if !isPriceUsable(d.MarketStatus, time.Since(d.LastSeenTimestampNs)) {
+        return nil, fmt.Errorf("price unavailable: marketStatus=%d", d.MarketStatus)
+    }
+
+    // d.LastTradedPrice is the slow price; d.Mid is the fast price.
+    return &d, nil
+}
+```
+
+### Rust
+
+```rust
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+use chainlink_data_streams_report::feed_id::ID;
+use chainlink_data_streams_report::report::{decode_full_report, v11::ReportDataV11};
+use chainlink_data_streams_sdk::client::Client;
+
+const STALE_AFTER: Duration = Duration::from_secs(5 * 60);
+
+fn is_price_usable(market_status: u32, mid_age: Duration) -> bool {
+    market_status != 0 && mid_age <= STALE_AFTER
+}
+
+async fn get_price(client: &Client, feed_id: ID) -> Result<Option<ReportDataV11>, Box<dyn std::error::Error>> {
+    let response = client.get_latest_report(feed_id).await?;
+    let full_report = hex::decode(&response.report.full_report[2..])?;
+    let (_report_context, report_blob) = decode_full_report(&full_report)?;
+    let data = ReportDataV11::decode(&report_blob)?;
+
+    let now_ms = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as u64;
+    let mid_age = Duration::from_millis(now_ms.saturating_sub(data.last_seen_timestamp_ns / 1_000_000));
+
+    if !is_price_usable(data.market_status, mid_age) {
+        return Ok(None);
+    }
+
+    // data.last_traded_price is the slow price; data.mid is the fast price.
+    Ok(Some(data))
+}
+```
+
+## Feeds
+
+### Fast price and slow price
 
 Both prices are published in every report, during every session, not only on weekends.
 
@@ -7649,6 +7778,42 @@ Both prices are published in every report, during every session, not only on wee
 | Slow price (Oracle Price) | `lastTradedPrice`   | Smoothed, and referenced to the last equity close during off-hours. Follows sustained moves gradually rather than immediately. | Collateral valuation, liquidations, other value-securing uses |
 
 The slow price is intentionally lagged against live order books. Do not use it to hedge or execute against a specific venue.
+
+### Market status
+
+`marketStatus` identifies which session is active and which source is driving the price. The values match the [24/5 mapping](/data-streams/market-hours#v11-24-5-feeds), but `5` has a different practical meaning on 24/7 streams: prices keep updating.
+
+| Value | Status        | Hours (ET)                                       | Price source                          |
+| :---- | :------------ | :----------------------------------------------- | :------------------------------------ |
+| `0`   | Unknown       | N/A                                              | None. Treat as unavailable            |
+| `1`   | Pre-market    | 4:00 AM–9:30 AM Mon–Fri                          | Extended hours session                |
+| `2`   | Regular hours | 9:30 AM–4:00 PM Mon–Fri                          | Regular hours session                 |
+| `3`   | Post-market   | 4:00 PM–8:00 PM Mon–Fri                          | Extended hours session                |
+| `4`   | Overnight     | 8:00 PM–4:00 AM Sun–Fri                          | Overnight session                     |
+| `5`   | Closed        | 8:00 PM Fri–8:00 PM Sun, plus US market holidays | Off-hours perpetual futures composite |
+
+### Field behavior by session
+
+| Field                     | Regular and extended hours          | Overnight                      | Closed (off-hours)                                        | Session transitions            |
+| :------------------------ | :---------------------------------- | :----------------------------- | :-------------------------------------------------------- | :----------------------------- |
+| `mid`                     | Active session `mid`, unsmoothed    | Overnight `mid`, unsmoothed    | Off-hours composite `mid`                                 | Smoothed blend between sources |
+| `bid` / `ask`             | Active session values               | Overnight session values       | Off-hours composite `bid` / `ask`                         | Smoothed blend between sources |
+| `lastTradedPrice`         | Same as `mid`                       | EMA of overnight `mid`         | Smoothed off-hours price                                  | Smoothed blend between sources |
+| `lastSeenTimestampNs`     | Last `mid` update in active session | Last `mid` update in overnight | Last time an off-hours composite price was received       | Active session value           |
+| `bidVolume` / `askVolume` | Active session values               | Overnight session values       | May be zero. Do not rely on these fields during off-hours | Active session values          |
+| `marketStatus`            | `1`, `2`, or `3`                    | `4`                            | `5`                                                       | Current session                |
+
+As with the 24/5 streams, `lastSeenTimestampNs` applies to `mid` only. It is not a freshness signal for `bid`, `ask`, the volume fields, or `lastTradedPrice`.
+
+### Which price to use
+
+| Use case                                           | Recommended field                | Why                                                                                         |
+| :------------------------------------------------- | :------------------------------- | :------------------------------------------------------------------------------------------ |
+| Lending collateral, liquidations, borrowing limits | `lastTradedPrice` (slow price)   | Less sensitive to short-lived dislocations in thin off-hours markets, at the cost of lag    |
+| Perpetual futures mark or index price              | `mid` (fast price), `bid`, `ask` | Tracks the current tradable price without smoothing or caps                                 |
+| Monitoring and alerting                            | Both                             | The gap between fast and slow prices shows how far the market has moved from the slow price |
+
+These are different risk profiles served from the same report. If you need the slow price onchain without running your own Data Streams integration, see [24/7 Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
 
 ## How pricing works
 
@@ -7677,48 +7842,6 @@ When off-hours begins, both prices start from the equity close and blend onto th
 
 The true Sunday open is not knowable until the market opens. Expect the published price to close any remaining weekend gap to the live equity market over the short reopen window, not instantly. See [Reopen convergence](#reopen-convergence).
 
-## Market status
-
-`marketStatus` identifies which session is active and which source is driving the price. The values match the [24/5 mapping](/data-streams/market-hours#v11-24-5-feeds), but `5` has a different practical meaning on 24/7 streams: prices keep updating.
-
-| Value | Status        | Hours (ET)                                       | Price source                          |
-| :---- | :------------ | :----------------------------------------------- | :------------------------------------ |
-| `0`   | Unknown       | N/A                                              | None. Treat as unavailable            |
-| `1`   | Pre-market    | 4:00 AM–9:30 AM Mon–Fri                          | Extended hours session                |
-| `2`   | Regular hours | 9:30 AM–4:00 PM Mon–Fri                          | Regular hours session                 |
-| `3`   | Post-market   | 4:00 PM–8:00 PM Mon–Fri                          | Extended hours session                |
-| `4`   | Overnight     | 8:00 PM–4:00 AM Sun–Fri                          | Overnight session                     |
-| `5`   | Closed        | 8:00 PM Fri–8:00 PM Sun, plus US market holidays | Off-hours perpetual futures composite |
-
-## Field behavior by session
-
-| Field                     | Regular and extended hours          | Overnight                      | Closed (off-hours)                                        | Session transitions            |
-| :------------------------ | :---------------------------------- | :----------------------------- | :-------------------------------------------------------- | :----------------------------- |
-| `mid`                     | Active session `mid`, unsmoothed    | Overnight `mid`, unsmoothed    | Off-hours composite `mid`                                 | Smoothed blend between sources |
-| `bid` / `ask`             | Active session values               | Overnight session values       | Off-hours composite `bid` / `ask`                         | Smoothed blend between sources |
-| `lastTradedPrice`         | Same as `mid`                       | EMA of overnight `mid`         | Smoothed off-hours price                                  | Smoothed blend between sources |
-| `lastSeenTimestampNs`     | Last `mid` update in active session | Last `mid` update in overnight | Last time an off-hours composite price was received       | Active session value           |
-| `bidVolume` / `askVolume` | Active session values               | Overnight session values       | May be zero. Do not rely on these fields during off-hours | Active session values          |
-| `marketStatus`            | `1`, `2`, or `3`                    | `4`                            | `5`                                                       | Current session                |
-
-As with the 24/5 streams, `lastSeenTimestampNs` applies to `mid` only. It is not a freshness signal for `bid`, `ask`, the volume fields, or `lastTradedPrice`.
-
-## Which price to use
-
-| Use case                                           | Recommended field                | Why                                                                                         |
-| :------------------------------------------------- | :------------------------------- | :------------------------------------------------------------------------------------------ |
-| Lending collateral, liquidations, borrowing limits | `lastTradedPrice` (slow price)   | Less sensitive to short-lived dislocations in thin off-hours markets, at the cost of lag    |
-| Perpetual futures mark or index price              | `mid` (fast price), `bid`, `ask` | Tracks the current tradable price without smoothing or caps                                 |
-| Monitoring and alerting                            | Both                             | The gap between fast and slow prices shows how far the market has moved from the slow price |
-
-These are different risk profiles served from the same report. If you need the slow price onchain without running your own Data Streams integration, see [24/7 Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
-
-## Asset coverage
-
-24/7 pricing depends on liquid perpetual futures markets during off-hours, so not every US equity is covered. Each asset is reviewed individually before launch, including its off-hours trading volume and how much it would cost to move its off-hours price. This review lowers risk but does not remove it: covered assets can still be manipulated or dislocated during off-hours, and the [risks](#risks) below apply to every one of them. Assets that are not covered remain available on the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). Coverage will expand as off-hours perpetual futures markets deepen. To request an asset, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
-
-### Available streams
-
 ## Risks
 
 24/7 streams remove the need to build session-switching logic, but they do not remove the underlying market risks. They also add risks that the 24/5 streams do not have, mainly from pricing the weekend off derivatives. The [24/5 risks](/data-streams/rwa-streams/24-5-us-equities-user-guide#risks) for overnight data, illiquid sessions, corporate actions, and trading halts still apply during the trading week.
@@ -7732,6 +7855,16 @@ The slow price is designed to trail the market during the overnight session and 
 - Size loan-to-value ratios, liquidation thresholds, and supply caps for a lagging price, not a real-time one
 - Monitor the gap between `mid` and `lastTradedPrice`, and alert when it is large or persistent
 - Test your parameters against historical weekend moves and earnings gaps before going live
+
+### Pre-market to regular hours is a step change
+
+Session transitions are smoothed except one: pre-market into regular hours. At 9:30 AM ET the stream passes the move directly through rather than blending it, because a move at that boundary is usually real price discovery. The slow price can step at the open instead of catching up gradually, which is the opposite of its behavior everywhere else.
+
+#### Mitigation
+
+- Treat 9:30 AM ET as a distinct event when your risk model assumes a lagging slow price
+- Apply deviation bounds, or pause new borrowing and liquidations briefly around the open, if a step change would be unsafe
+- Test parameters against days with large pre-market moves and earnings releases
 
 ### Off-hours prices come from perpetual futures
 

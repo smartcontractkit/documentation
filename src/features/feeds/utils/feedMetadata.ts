@@ -181,6 +181,30 @@ export function matchesApacEquitiesStreamFilter(
   return isApacEquitiesStreamFeed(metadata)
 }
 
+/**
+ * 24/7 US Equities streams are the v11 fast/slow-price streams that keep
+ * publishing on weekends and holidays. They are a Data Streams product but
+ * share the RDD `247` attribute prefix (currently `247CustomPrice`), so they
+ * are not part of the generic 24/7 TWAP / Perpetual Markets filter.
+ */
+export function is247USEquitiesStream(metadata: FeedMetadata): boolean {
+  const attributeType = metadata.docs?.attributeType
+  if (typeof attributeType !== "string" || !/^247/i.test(attributeType)) return false
+  if (getSchemaVersion(metadata) !== "v11") return false
+
+  const assetClass = metadata.docs?.assetClass
+  return assetClass === "Equities" || assetClass === "Equity"
+}
+
+/** 24/7 US Equities stream filter used by the dedicated 24/7 page. */
+export function matches247USEquitiesStreamFilter(
+  metadata: FeedMetadata,
+  show247USEquities: boolean | undefined
+): boolean {
+  if (!show247USEquities) return true
+  return is247USEquitiesStream(metadata)
+}
+
 /** Futures streams use the v14 schema. */
 export function isFuturesStreamFeed(metadata: FeedMetadata): boolean {
   return getSchemaVersion(metadata) === "v14"
@@ -209,6 +233,9 @@ export function getMarketStatusDocLink(
     if (isApacEquitiesStreamFeed(metadata)) {
       return { label: "Status values", href: "/data-streams/reference/report-schema-v11#standard-hours-feeds" }
     }
+    if (is247USEquitiesStream(metadata)) {
+      return { label: "Market status", href: "/data-streams/rwa-streams/24-7-us-equities#market-status" }
+    }
     if (isV1124x5SessionFeed(metadata)) {
       return { label: "Status values", href: "/data-streams/reference/report-schema-v11#24-5-us-equities-feeds" }
     }
@@ -230,6 +257,10 @@ export function getTradingHoursDocLink(
 
   if (isApacEquitiesStreamFeed(metadata)) {
     return { label: "Trading hours", href: "/data-streams/market-hours#apac-equities" }
+  }
+
+  if (is247USEquitiesStream(metadata)) {
+    return { label: "Trading hours", href: "/data-streams/market-hours#24-7-us-equities" }
   }
 
   if (schemaKey === "v11" && isV1124x5SessionFeed(metadata)) {

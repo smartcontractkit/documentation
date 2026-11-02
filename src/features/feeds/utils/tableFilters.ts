@@ -10,6 +10,7 @@ import { matches247StreamFilter } from "./twentyFourSeven.ts"
 import {
   enrichFeedWithCategory,
   matches24x5StreamFilter,
+  matches247USEquitiesStreamFilter,
   matchesApacEquitiesStreamFilter,
   matchesFeedSearch,
   matchesFuturesStreamFilter,
@@ -31,6 +32,7 @@ export interface FeedTableFilterParams {
   visibilityOptions?: FeedVisibilityOptions
   show24x5Feeds?: boolean
   show247Streams?: boolean
+  show247USEquities?: boolean
   twentyFourSevenFilter?: TwentyFourSevenFilterValue
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
@@ -52,6 +54,7 @@ export function filterFeedTableRows({
   visibilityOptions = {},
   show24x5Feeds,
   show247Streams,
+  show247USEquities,
   twentyFourSevenFilter,
   showApacEquitiesFeeds,
   showFuturesFeeds,
@@ -63,16 +66,23 @@ export function filterFeedTableRows({
     enrichFeedWithCategory(metadata, network, batchedCategoryData)
   )
 
-  return enrichedMetadata
-    .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
-    .filter((metadata) => {
-      if (showOnlySVR && !metadata.secondaryProxyAddress) return false
-      return isFeedVisible(metadata, dataFeedType as never, ecosystem, visibilityOptions)
-    })
-    .filter((metadata) => matches24x5StreamFilter(metadata, show24x5Feeds, tradingHoursFilter))
-    .filter((metadata) => matches247StreamFilter(metadata, show247Streams, twentyFourSevenFilter))
-    .filter((metadata) => matchesApacEquitiesStreamFilter(metadata, showApacEquitiesFeeds))
-    .filter((metadata) => matchesFuturesStreamFilter(metadata, showFuturesFeeds))
-    .filter((metadata) => matchesSelectedFeedCategories(metadata, selectedFeedCategories, isSmartData))
-    .filter((metadata) => matchesFeedSearch(metadata, searchValue, searchVariant))
+  return (
+    enrichedMetadata
+      .sort((a, b) => (a.name.toUpperCase() < b.name.toUpperCase() ? -1 : 1))
+      .filter((metadata) => {
+        if (showOnlySVR && !metadata.secondaryProxyAddress) return false
+        return isFeedVisible(metadata, dataFeedType as never, ecosystem, visibilityOptions)
+      })
+      .filter((metadata) => matches24x5StreamFilter(metadata, show24x5Feeds, tradingHoursFilter))
+      // The dedicated 24/7 US Equities page owns this family; the generic 24/7
+      // TWAP / Perpetual Markets filter deliberately excludes it.
+      .filter((metadata) => matches247USEquitiesStreamFilter(metadata, show247USEquities))
+      .filter(
+        (metadata) => show247USEquities || matches247StreamFilter(metadata, show247Streams, twentyFourSevenFilter)
+      )
+      .filter((metadata) => matchesApacEquitiesStreamFilter(metadata, showApacEquitiesFeeds))
+      .filter((metadata) => matchesFuturesStreamFilter(metadata, showFuturesFeeds))
+      .filter((metadata) => matchesSelectedFeedCategories(metadata, selectedFeedCategories, isSmartData))
+      .filter((metadata) => matchesFeedSearch(metadata, searchValue, searchVariant))
+  )
 }

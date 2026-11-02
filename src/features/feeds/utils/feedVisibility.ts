@@ -1,6 +1,7 @@
 import type { DataFeedType } from "../types.ts"
 import {
   getSchemaVersion,
+  is247USEquitiesStream,
   isApacEquitiesStreamFeed,
   isFuturesStreamFeed,
   normalizeCategoryKey,
@@ -96,7 +97,12 @@ export const HIDE_247_STREAM_FEED_IDS = true
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideStreamFeedId(feed: any): boolean {
-  return isApacEquitiesStreamFeed(feed) || isFuturesStreamFeed(feed) || (HIDE_247_STREAM_FEED_IDS && is247Stream(feed))
+  return (
+    isApacEquitiesStreamFeed(feed) ||
+    isFuturesStreamFeed(feed) ||
+    is247USEquitiesStream(feed) ||
+    (HIDE_247_STREAM_FEED_IDS && is247Stream(feed))
+  )
 }
 
 /**
@@ -123,6 +129,12 @@ export interface FeedVisibilityOptions {
   tokenizedEquityProvider?: string
   /** When set, only show extended-hours feeds in this category (e.g. "preciousMetals"). */
   extendedHoursCategory?: ExtendedHoursCategory
+  /**
+   * When set, include the 24/7 US Equities stream family. These rows are hidden
+   * in the RDD until launch; the hidden flag is still respected upstream, so the
+   * table populates once data ops clears it.
+   */
+  show247USEquities?: boolean
 }
 
 /**
@@ -144,6 +156,7 @@ export function isFeedVisible(
   const isTokenizedEquity = dataFeedType === "tokenizedEquity"
   const isExtendedHours = dataFeedType === "extendedHours"
   const isSvr = dataFeedType === "svr" || dataFeedType === "svrAtlas"
+  const is247USEquities = options.show247USEquities === true && is247USEquitiesStream(feed)
   if (feed.docs?.hidden && !isTokenizedEquity && !isExtendedHours && !isSvr) return false
 
   const isDeprecating = ecosystem === "deprecating"
@@ -190,7 +203,8 @@ export function isFeedVisible(
         }
       } else if (dataFeedType === "streamsRwa") {
         // 24/7 streams span multiple schemas but all belong on the RWA page.
-        isVisible = ["Equities", "Forex", "Futures"].includes(feed.docs?.feedType) || is247Stream(feed)
+        isVisible =
+          ["Equities", "Forex", "Futures"].includes(feed.docs?.feedType) || is247Stream(feed) || is247USEquities
       } else if (dataFeedType === "streamsNav") {
         isVisible = getSchemaVersion(feed) === "v9"
       } else if (dataFeedType === "streamsExRate") {
