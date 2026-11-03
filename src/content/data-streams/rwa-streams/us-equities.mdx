@@ -1,0 +1,46 @@
+---
+section: dataStreams
+date: Last Modified
+title: "US Equities"
+metadata:
+  title: "US Equities | Chainlink Data Streams"
+  description: "Overview of Chainlink Data Streams for US equities and ETFs, including the 24/5 and 24/7 stream families and how to choose between them."
+---
+
+Chainlink Data Streams offers two families for US single-name equities and ETFs: [24/5 streams](/data-streams/rwa-streams/24-5-us-equities-user-guide) and [24/7 streams](/data-streams/rwa-streams/24-7-us-equities). Both cover US equities, but they differ in how sessions are handled, which fields you consume, and what happens when the market is closed.
+
+## 24/5 vs 24/7 <span id="24-5-vs-24-7"></span>
+
+The table below compares the two families on the details that apply across both: stream count, session handling, weekends and holidays, and the price fields they publish.
+
+|                       | [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide) | [24/7 US Equities](/data-streams/rwa-streams/24-7-us-equities)   |
+| :-------------------- | :------------------------------------------------------------------------ | :--------------------------------------------------------------- |
+| Streams per asset     | Three (Regular, Extended, Overnight)                                      | One per product                                                  |
+| Session switching     | Integrator chooses the session stream using `marketStatus`                | No session switching; the stream publishes continuously          |
+| Weekends and holidays | Market closed; prices resume at the next open                             | Continues publishing through weekends and holidays               |
+| Price fields          | `mid`, `bid`, `ask` per session                                           | TWAP: single `price`<br />Perpetual Markets: `mid`, `bid`, `ask` |
+
+For field-level behavior by product, see the [24/7 US Equities User Guide](/data-streams/rwa-streams/24-7-us-equities).
+
+## Which should I use?
+
+- **[24/5](/data-streams/rwa-streams/24-5-us-equities-user-guide#available-streams)** if you want session-level control and full control over how regular, extended, and overnight prices are combined.
+- **[24/7 for Perpetual Markets](/data-streams/rwa-streams/24-7-us-equities#24-7-for-perpetual-markets)** if you need a continuous fast price (`mid`, `bid`, `ask`) through weekends and holidays.
+- **[24/7 TWAP](/data-streams/rwa-streams/24-7-us-equities#24-7-twap)** if you need a single continuous TWAP price per asset.
+
+For lending, use [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7), which publish the slow price onchain.
+
+## Guides
+
+Each guide covers the integration details for one family: stream structure, field behavior, and risks.
+
+| Guide                                                                                | What it covers                                                                                                                                                                |
+| :----------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) | Three session-specific streams (regular, extended, and overnight), `marketStatus`-driven stream selection, transition and staleness edge cases, available streams, and risks. |
+| [24/7 US Equities User Guide](/data-streams/rwa-streams/24-7-us-equities)            | One continuous stream per asset, with separate sections for 24/7 TWAP and Perpetual Markets: fast and slow price fields, market status, off-hours pricing, and risks.         |
+
+## Next steps
+
+- Find stream IDs and report schemas: [Streams & Schemas](/data-streams/reference/report-schema-overview) or the [RWA stream directory](/data-streams/rwa-streams).
+- Fetch, stream, decode, or verify reports: [Integration Tutorials](/data-streams/tutorials/overview).
+- Need the slow price onchain for lending: [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).

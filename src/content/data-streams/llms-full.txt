@@ -425,7 +425,7 @@ For best practices regarding stock splits and reverse splits for tokenized asset
 
 ## Report Timestamps
 
-Each report applies to a span of time defined by `validFromTimestamp` and `observationsTimestamp`, and that span can vary in width. Read both fields from each report rather than assuming a fixed cadence or deriving the window from your own clock. See [How Report Timestamps Work](/data-streams/how-report-timestamps-work) for details, including how gaps between reports are absorbed and how timestamps apply to TWAP streams.
+Each report applies to a span of time defined by `validFromTimestamp` and `observationsTimestamp`, and that span can vary in width. Read both fields from each report rather than assuming a fixed cadence or deriving the window from your own clock. See [How Report Timestamps Work](/data-streams/how-report-timestamps-work) for report windows and gap absorption, and [TWAP Streams](/data-streams/concepts/twap-streams) for how TWAP windows are built.
 
 ## Rate Limits
 
@@ -822,6 +822,51 @@ In these examples, Liquidity-Weighted Bid and Ask prices, along with the spread 
 
 ---
 
+# Pricing Methods
+Source: https://docs.chain.link/data-streams/concepts/pricing-methods
+
+Many Data Streams aggregate prices from multiple independent providers. The pages below cover the standard crypto bid/ask construction and the specialized or derived methods used by specific stream families. They are not an exhaustive list of every stream; they explain the methods that differ from default aggregation.
+
+| Method                                                                                    | Type                    | How the price is built                                                         | Where it applies                     |
+| :---------------------------------------------------------------------------------------- | :---------------------- | :----------------------------------------------------------------------------- | :----------------------------------- |
+| [TWAP Streams](/data-streams/concepts/twap-streams)                                       | Time-weighted average   | Average price over a rolling window, updated with each report                  | 24/7 TWAP streams                    |
+| [Liquidity-Weighted Bid and Ask prices](/data-streams/concepts/liquidity-weighted-prices) | Standard crypto pricing | Bid, ask, and mid weighted by order-book depth                                 | Crypto streams                       |
+| [DEX State Price Streams](/data-streams/concepts/dex-state-price-streams)                 | Specialized             | Aggregated from DEX pool state for assets whose liquidity is primarily onchain | DEX-dominant or DEX-exclusive assets |
+| [Crypto Top-of-Book Streams](/data-streams/concepts/crypto-top-of-book-and-mark-price)    | Specialized             | Best bid and ask from a single exchange's order book                           | Perpetual futures markets            |
+| [Calculated Streams](/data-streams/concepts/calculated-streams)                           | Derived                 | Values computed from multiple inputs using predefined formulas                 | Streams whose values are derived     |
+
+For default data sourcing by asset class, see [Data Sources](/data-streams/data-sources). For the streams available in each category, see [Streams & Schemas](/data-streams/reference/report-schema-overview).
+
+---
+
+# TWAP Streams
+Source: https://docs.chain.link/data-streams/concepts/twap-streams
+
+Time Weighted Average Price (TWAP) streams report the average price over a rolling window, rather than a single observed price. A TWAP report is an **aggregated calculation** derived from the underlying reports. See the [TWAP report schema](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap) for the full field definitions.
+
+## How the window works
+
+A TWAP window is anchored to the latest observation and moves forward with each new report. Unlike standard streams, it doesn't align to the clock or snap to round numbers.
+
+For example, a 60-second TWAP requested "at `12:05:01`" covers `12:04:01` → `12:05:01`.
+
+## Formula
+
+```
+TWAP = (sum of price × duration for each report in the window) / window length in seconds
+```
+
+- 30-second TWAP → divide by 30
+- 60-second TWAP → divide by 60
+
+## Gaps
+
+The TWAP is constructed from the underlying reports that fall within its window. Each underlying report normally covers about 1 second, but if a report's window is wider because it absorbed a gap, its price is weighted across the full window it covers.
+
+For how report windows and timestamps work, see [How Report Timestamps Work](/data-streams/how-report-timestamps-work).
+
+---
+
 # Cryptocurrency Data Streams
 Source: https://docs.chain.link/data-streams/crypto-streams
 
@@ -1012,7 +1057,7 @@ Every Data Streams report carries two timestamps:
 - **`validFromTimestamp`** — when the report's price *starts being valid*
 - **`observationsTimestamp`** — when the report's price *was last observed*.
 
-Together, they describe a window of time rather than a single instant. This page explains how the two timestamps define a [report's window](#report-windows), what to expect when [no report exists for a given moment](#determining-current-price), and how timestamps apply to [Time Weighted Average Price (TWAP) streams](#twap-streams).
+Together, they describe a window of time rather than a single instant. This page explains how the two timestamps define a [report's window](#report-windows), what to expect when [no report exists for a given moment](#determining-current-price), and how they apply to [TWAP streams](#twap-streams).
 
 ## Report windows
 
@@ -1043,22 +1088,7 @@ Because windows can vary in width, **do not assume every report covers the same 
 
 ## TWAP streams
 
-Time Weighted Average Price (TWAP) streams report the average price over a rolling window, rather than a single observed price. A TWAP report is an **aggregated calculation** derived from the underlying reports. See the [TWAP report schema](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap) for the full field definitions.
-
-A TWAP window is anchored to the latest observation and moves forward with each new report. Unlike standard streams, it doesn't align to the clock or snap to round numbers.
-
-For example, a 60-second TWAP requested "at `12:05:01`" covers `12:04:01` → `12:05:01`.
-
-**Formula:**
-
-```
-TWAP = (sum of price × duration for each report in the window) / window length in seconds
-```
-
-- 30-second TWAP → divide by 30
-- 60-second TWAP → divide by 60
-
-The TWAP is constructed from the underlying reports that fall within its window. Each underlying report normally covers about 1 second, but if a report's window is wider because it absorbed a gap, its price is weighted across the full window it covers.
+TWAP streams aggregate the reports in a rolling window rather than publishing a single observed price. See [TWAP Streams](/data-streams/concepts/twap-streams) for the window mechanics and formula.
 
 ---
 
@@ -1067,6 +1097,30 @@ Source: https://docs.chain.link/data-streams
 Last Updated: 2026-09-16
 
 
+
+---
+
+# Market Guides
+Source: https://docs.chain.link/data-streams/market-guides
+
+These guides cover specific Data Streams markets and instruments, including how each stream is structured, how its fields behave across sessions, and the risks to account for when integrating.
+
+Start with the guide for the market you're integrating. It covers the data you receive and what your protocol is responsible for.
+
+| Guide                                                    | Covers                                                                      |
+| :------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| [US Equities](/data-streams/rwa-streams/us-equities)     | 24/5 and 24/7 US equity streams, including TWAP and perpetual markets       |
+| [APAC Equities](/data-streams/rwa-streams/apac-equities) | Asia-Pacific indices and single-name stocks during each exchange's sessions |
+| [Futures](/data-streams/rwa-streams/futures)             | US oil, UK oil, and natural gas futures                                     |
+
+## Not sure where to start?
+
+- Looking for a stream ID or report schema? See [Streams & Schemas](/data-streams/reference/report-schema-overview) or the [RWA stream directory](/data-streams/rwa-streams).
+- Looking for code to fetch, stream, decode, or verify reports? See [Integration Tutorials](/data-streams/tutorials/overview).
+- Looking for API or SDK details? See [API & SDK Reference](/data-streams/reference/overview).
+- Integrating on Canton? See [Canton Integration](/data-streams/canton-integration).
+
+For schema-level market-hours and corporate-action guidance, see [Handling Market Events (RWA)](/data-streams/rwa-streams/handling-market-events).
 
 ---
 
@@ -1090,6 +1144,7 @@ This page covers trading schedules and `marketStatus` value mappings for each Ch
 | [**Crypto**](#cryptocurrency)                                                       | 24/7/365                                         | —                                                | None                  | None                                                                                           |
 | [**US Equities and ETFs**](#v11-standard-hours-feeds) (Standard)                    | **09:30 Mon**                                    | **16:00 Fri**                                    | 16:00–09:30 daily     | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
 | [**24/5 US Equities and ETFs**](#24-5-us-equities)                                  | **20:00 Sun**                                    | **20:00 Fri**                                    | None                  | [NYSE holiday calendar](https://www.nyse.com/markets/hours-calendars)                          |
+| [**24/7 US Equities and ETFs**](#24-7-us-equities)                                  | 24/7/365                                         | —                                                | None                  | Priced as off-hours (`marketStatus = 5`)                                                       |
 | [**APAC Equities**](#apac-equities)(indices & single-name stocks)                   | Varies by exchange ([see below](#apac-equities)) | Varies by exchange ([see below](#apac-equities)) | Varies by exchange    | Consult each exchange's official holiday calendar                                              |
 | [**FX Majors**](#forex-precious-metals-and-commodities)(G10 + KRW, SGD, HKD, CNH …) | **17:00 Sun**                                    | **17:00 Fri**                                    | None                  | Jan 1, Dec 25                                                                                  |
 | [**Precious Metals Spot**](#forex-precious-metals-and-commodities)(XAU, XAG)        | **18:00 Sun**                                    | **17:00 Fri**                                    | 17:00–18:00 Mon–Thu   | Major US holidays ([early closures](#precious-metals-early-closures)); Jan 1, Good Fri, Dec 25 |
@@ -1137,6 +1192,19 @@ Standard US Equities streams cover regular NYSE/NASDAQ trading sessions only (9:
 | `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                 | Extended hours after regular trading session                                           |
 | `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                               |
 | `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; \~8:00pm Fri–8:00pm Sun ET) |
+
+### 24/7 US Equities&#x20;
+
+24/7 US Equities streams publish one continuous stream per asset per product. The v11 Perpetual Markets and Lending streams use the same `marketStatus` values as the 24/5 streams, but prices keep updating while `marketStatus` is `5`: the stream switches to an off-hours price derived from perpetual futures markets. TWAP streams publish a single TWAP price. See the [24/7 US Equities User Guide](/data-streams/rwa-streams/24-7-us-equities) for how each product is priced.
+
+| Value | Status            | Hours (ET)                                     | Price source                          |
+| ----- | ----------------- | ---------------------------------------------- | ------------------------------------- |
+| `0`   | **Unknown**       | N/A                                            | None. Treat as unavailable            |
+| `1`   | **Pre-market**    | 4:00am–9:30am Mon–Fri                          | Extended hours session                |
+| `2`   | **Regular hours** | 9:30am–4:00pm Mon–Fri                          | Regular hours session                 |
+| `3`   | **Post-market**   | 4:00pm–8:00pm Mon–Fri                          | Extended hours session                |
+| `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning          | Overnight session                     |
+| `5`   | **Closed**        | 8:00pm Fri–8:00pm Sun, plus US market holidays | Off-hours perpetual futures composite |
 
 ***
 
@@ -6796,6 +6864,16 @@ Used by [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide
 | `4`   | **Overnight**     | 8:00pm–4:00am Sun evening–Fri morning | Overnight session with limited liquidity                                               |
 | `5`   | **Closed**        | N/A                                   | Market closed (weekends, holidays, or unexpected closures; \~8:00pm Fri–8:00pm Sun ET) |
 
+#### 24/7 US Equities feeds
+
+Used by the v11 [24/7 Perpetual Markets and Lending streams](/data-streams/rwa-streams/24-7-us-equities). The values are the same as the 24/5 mapping above, with one difference: when `marketStatus` is `5` (Closed), the stream keeps publishing an off-hours price derived from perpetual futures markets.
+
+> **NOTE: lastTradedPrice on 24/7 streams**
+>
+> On 24/7 Perpetual Markets and Lending streams, `lastTradedPrice` carries the Oracle Price, a smoothed price intended
+> for collateral valuation. It is fully supported on these streams. See the [24/7 US Equities User
+> Guide](/data-streams/rwa-streams/24-7-us-equities#field-behavior-by-session) for how each field behaves by session.
+
 Implement appropriate safeguards based on market status — such as pausing trading, adjusting risk parameters, or adding staleness checks during non-regular or closed periods. See [Market Hours](/data-streams/market-hours) for guidance.
 
 ### Notes
@@ -6916,7 +6994,7 @@ Cryptocurrency streams adhere to the report schema outlined below.
 
 ## Time-Weighted Average Price (TWAP)
 
-The v2 schema is used by TWAP streams. The `price` field carries the time-weighted average price for the stream's configured window, not a spot or median price. Each TWAP stream is scoped to one asset and one window length (for example, 30 seconds or 60 seconds). The window length is part of the stream's name and metadata. See [How Report Timestamps Work](/data-streams/how-report-timestamps-work) for how timestamps apply to TWAP streams.
+The v2 schema is used by TWAP streams. The `price` field carries the time-weighted average price for the stream's configured window, not a spot or median price. Each TWAP stream is scoped to one asset and one window length (for example, 30 seconds or 60 seconds). The window length is part of the stream's name and metadata. See [TWAP Streams](/data-streams/concepts/twap-streams) for the window mechanics and formula, and [How Report Timestamps Work](/data-streams/how-report-timestamps-work) for the underlying report timestamps.
 
 ## Schema Fields
 
@@ -7181,6 +7259,10 @@ Chainlink 24/5 U.S. Equities Streams provide real-time equity pricing data acros
 
 The data referenced in this document covers 24/5 trading hours in US equities on a range of traditional venues. While there is currently no trading activity in traditional markets over the weekend on any venue, protocols can extend their pricing coverage to 24/7 in multiple ways, such as leveraging the pricing of [tokenized stocks](#stream-switching-example-logic) on secondary markets such as CEXes and DEXes.
 
+For a select set of assets, Chainlink also offers [24/7 US Equities streams](/data-streams/rwa-streams/24-7-us-equities): one continuous stream per product that handles session switching and transitions for you, and keeps publishing on weekends and holidays using an off-hours price derived from perpetual futures markets.
+
+For a side-by-side comparison, see the [US Equities overview](/data-streams/rwa-streams/us-equities#24-5-vs-24-7).
+
 Developers are responsible for choosing the appropriate feed and ensuring that the operation and performance of their choice matches expectations. For more information, please visit the Chainlink [documentation](/data-streams/developer-responsibilities).
 
 ## Schema
@@ -7212,11 +7294,15 @@ The RWA Advanced (v11) schema supports 24/5 streams with a DON consensus `mid` p
 > and `askVolume` reported come from one specific order book at a time, not an aggregate across all venues. These values
 > should not be treated as a proxy for total market liquidity and are primarily informational.
 
+## Available Streams
+
+The table below shows all available 24/5 US Equities streams. Use the **Time segment** filter to view streams for specific trading sessions.
+
 ## Feeds
 
 Each instrument is exposed through three distinct data streams feeds, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
 
-You can view all available 24/5 US Equities streams in the [stream table viewer](/data-streams/stream-ids) or see the [complete list below](#available-streams).
+Use the table above to view the available 24/5 US Equities streams, or browse the [RWA stream directory](/data-streams/rwa-streams).
 
 For example, **TSLA** is available via the following streams:
 
@@ -7290,6 +7376,8 @@ Consumers must treat `marketStatus = 0` (Unknown) as a valid state and define de
 #### Closed (`marketStatus = 5`)
 
 Market status `5` indicates the market is closed, which includes weekends, public holidays, and unexpected market closures. During these periods, all three feeds will carry stale values. This reflects true underlying market inactivity rather than an outage or failure.
+
+If you need prices during these periods, check whether the asset is covered by the [24/7 US Equities streams](/data-streams/rwa-streams/24-7-us-equities).
 
 ##### Mitigation
 
@@ -7576,9 +7664,390 @@ Consumers must:
 
 For detailed market hours and trading schedules, see the [Market Hours](/data-streams/market-hours) documentation.
 
+## Support
+
+For inquiries related to a data outage, contact Chainlink Labs at [data_support@chain.link](mailto:data_support@chain.link).
+
+---
+
+# 24/7 US Equities User Guide
+Source: https://docs.chain.link/data-streams/rwa-streams/24-7-us-equities
+
+> **NOTE: Early access**
+>
+> 24/7 US Equities streams are available to a limited set of integrators. To request access, contact
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+
+Chainlink 24/7 US Equities Streams keep pricing US equities around the clock, including weekends and US market holidays. The family has two Data Streams products, with one stream per asset per product:
+
+- **[24/7 TWAP](#24-7-twap)** publishes a single [TWAP](/data-streams/concepts/twap-streams) price.
+- **[24/7 for Perpetual Markets](#24-7-for-perpetual-markets)** publishes a fast price for perpetual futures protocols.
+
+For lending, use the [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7), which publish the slow price onchain.
+
+During the trading week, pricing is built from the same regular, extended, and overnight session data as the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). When the equity market is closed, the stream switches to an off-hours price derived from perpetual futures markets, then hands back to equity pricing when the market reopens.
+
+Unlike the 24/5 streams, you consume one stream per product instead of three session-specific streams, and you do not build session-switching logic yourself. Session selection, transitions, and off-hours pricing happen before the report is produced.
+
+Developers are responsible for choosing the appropriate stream and price field and ensuring that the operation and performance of their choice matches expectations. For more information, see the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance. For a side-by-side comparison with the 24/5 streams, see the [US Equities overview](/data-streams/rwa-streams/us-equities#24-5-vs-24-7).
+
+## Schema
+
+The family uses two schemas because its products publish different data. TWAP streams publish one TWAP price per asset. Perpetual Markets streams publish the full multi-field report, including fast and slow prices, bid and ask, volumes, and market status. The sections below cover each schema.
+
+### v11: Perpetual Markets
+
+Perpetual Markets streams use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11), the same schema as the 24/5 streams. It includes `mid`, `bid`, `ask`, the volume fields, `lastTradedPrice`, and `marketStatus`, so an existing v11 decoder works unchanged. Read [Field behavior by session](#field-behavior-by-session) before integrating, even if you already consume the 24/5 streams.
+
+> **CAUTION: lastTradedPrice has a different meaning on 24/7 streams**
+>
+> On 24/5 US Equities streams, `lastTradedPrice` is deprecated and should not be used. On 24/7 v11 Perpetual Markets
+> streams, `lastTradedPrice` carries the **Oracle Price (slow price)** and is fully supported. If you already decode the
+> 24/5 streams, make sure your logic does not ignore or discard this field.
+
+These streams do not carry corporate action fields such as the multiplier and activation fields in the [Tokenized Asset (v10) schema](/data-streams/reference/report-schema-v10). Track corporate actions offchain.
+
+### v2: 24/7 TWAP
+
+TWAP streams publish one continuous TWAP price per asset. They use the [v2 schema](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap), which carries a single price field rather than the multi-field [v11 layout](/data-streams/reference/report-schema-v11). See [Available Streams](#available-streams) for the TWAP streams.
+
 ## Available Streams
 
-The table below shows all available 24/5 US Equities streams. Use the **Time segment** filter to view streams for specific trading sessions.
+The family has two Data Streams products. Choose the one that matches your use case.
+
+| Product                                                   | Use case                         | Fields                                                                                           |
+| :-------------------------------------------------------- | :------------------------------- | :----------------------------------------------------------------------------------------------- |
+| [24/7 TWAP](#24-7-twap)                                   | Continuous TWAP                  | One TWAP price ([v2](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap)) |
+| [24/7 for Perpetual Markets](#24-7-for-perpetual-markets) | Perpetual futures mark and index | `mid`, `bid`, `ask` ([v11](/data-streams/reference/report-schema-v11))                           |
+
+For lending, use [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
+
+### 24/7 TWAP&#x20;
+
+One continuous TWAP price per asset. TWAP streams use the [v2 schema](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap) and do not carry the [v11 price fields](/data-streams/reference/report-schema-v11) described below. See [TWAP Streams](/data-streams/concepts/twap-streams) for how the window is calculated.
+
+### 24/7 for Perpetual Markets&#x20;
+
+These streams use the [v11 schema](/data-streams/reference/report-schema-v11) and publish the fast price (`mid`, `bid`, `ask`) for perpetual futures mark and index prices.
+
+### Asset coverage
+
+24/7 pricing depends on liquid perpetual futures markets during off-hours, so not every US equity is covered. Each asset is reviewed individually before launch, including its off-hours trading volume and how much it would cost to move its off-hours price. This review lowers risk but does not remove it: covered assets can still be manipulated or dislocated during off-hours, and the [risks](#risks) below apply to every one of them. Assets that are not covered remain available on the [24/5 US Equities streams](/data-streams/rwa-streams/24-5-us-equities-user-guide). Coverage will expand as off-hours perpetual futures markets deepen. To request an asset, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com).
+
+## Consuming the stream
+
+Each asset has one stream per product. Use the tables above to find the stream for your use case, then fetch or stream reports with the Data Streams SDK. Perpetual Markets streams use the [v11 layout](/data-streams/reference/report-schema-v11); TWAP streams use [v2](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap). For lending, use [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7). You do not switch streams by session or by `marketStatus`.
+
+- [Sign up for Data Streams](/data-streams/sign-up) to get API credentials
+- [Look up stream IDs programmatically](/data-streams/reference/data-streams-api/discovery-endpoint), including hidden streams your key is entitled to
+- [Fetch and decode reports](/data-streams/tutorials/ts-sdk-fetch) with the TypeScript, Go, or Rust SDK
+- [Stream reports](/data-streams/tutorials/ts-sdk-stream) for a continuous connection
+- [Verify reports onchain](/data-streams/tutorials/evm-onchain-report-verification) using the verifier addresses in the streams table
+
+Two timestamps matter, and they answer different questions:
+
+- `observationsTimestamp`: when was the report generated?
+- `lastSeenTimestampNs`: when did the `mid` price last change?
+
+`lastSeenTimestampNs` tracks `mid` only, not `bid`, `ask`, or `lastTradedPrice`.
+
+They can differ: a fresh report can carry an older `mid`. Use `observationsTimestamp` to judge report freshness and `lastSeenTimestampNs` to judge `mid` freshness.
+
+Use `marketStatus` to determine the session; do not infer it from either timestamp. If `marketStatus = 0` (Unknown), treat the price as unavailable.
+
+For field scope and non-monotonic behavior, see [Last Seen Timestamp](/data-streams/reference/report-schema-v11#last-seen-timestamp).
+
+The example below reads the slow price (`lastTradedPrice`) for collateral and liquidations from a [v11 stream](/data-streams/reference/report-schema-v11). Use `mid` instead for a perpetual futures mark or index price. For 24/7 TWAP streams, decode the [v2](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap) report and read `price` instead.
+
+### TypeScript
+
+```typescript
+import { createClient, decodeReport } from "@chainlink/data-streams-sdk"
+
+const STALE_AFTER_MS = 5 * 60 * 1000
+
+function isPriceUsable(marketStatus: number, midAgeMs: number): boolean {
+  return marketStatus !== 0 && midAgeMs <= STALE_AFTER_MS
+}
+
+async function getPrice(feedId: string) {
+  const client = createClient({ apiKey, userSecret, endpoint })
+  const report = await client.getLatestReport(feedId)
+  const decoded = decodeReport(report.fullReport, report.feedID)
+
+  if (decoded.version !== "V11") throw new Error(`Expected a v11 report, got ${decoded.version}`)
+
+  const reportAgeMs = Date.now() - report.observationsTimestamp * 1000
+  const midAgeMs = Number((BigInt(Date.now()) * 1_000_000n - decoded.lastSeenTimestampNs) / 1_000_000n)
+
+  if (!isPriceUsable(decoded.marketStatus, midAgeMs)) return undefined
+
+  return {
+    slowPrice: decoded.lastTradedPrice, // collateral, liquidations
+    fastPrice: decoded.mid, // perpetual futures mark or index price
+    reportAgeMs,
+  }
+}
+```
+
+### Go
+
+```go
+import (
+    "context"
+    "fmt"
+    "time"
+
+    streams "github.com/smartcontractkit/data-streams-sdk/go/v2"
+    feed "github.com/smartcontractkit/data-streams-sdk/go/v2/feed"
+    report "github.com/smartcontractkit/data-streams-sdk/go/v2/report"
+    v11 "github.com/smartcontractkit/data-streams-sdk/go/v2/report/v11"
+)
+
+const staleAfter = 5 * time.Minute
+
+func isPriceUsable(marketStatus uint32, midAge time.Duration) bool {
+    return marketStatus != 0 && midAge <= staleAfter
+}
+
+func getPrice(ctx context.Context, client streams.Client, feedID feed.ID) (*v11.Data, error) {
+    response, err := client.GetLatestReport(ctx, feedID)
+    if err != nil {
+        return nil, err
+    }
+
+    decoded, err := report.Decode[v11.Data](response.FullReport)
+    if err != nil {
+        return nil, err
+    }
+
+    d := decoded.Data
+    if !isPriceUsable(d.MarketStatus, time.Since(d.LastSeenTimestampNs)) {
+        return nil, fmt.Errorf("price unavailable: marketStatus=%d", d.MarketStatus)
+    }
+
+    // d.LastTradedPrice is the slow price; d.Mid is the fast price.
+    return &d, nil
+}
+```
+
+### Rust
+
+```rust
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
+use chainlink_data_streams_report::feed_id::ID;
+use chainlink_data_streams_report::report::{decode_full_report, v11::ReportDataV11};
+use chainlink_data_streams_sdk::client::Client;
+
+const STALE_AFTER: Duration = Duration::from_secs(5 * 60);
+
+fn is_price_usable(market_status: u32, mid_age: Duration) -> bool {
+    market_status != 0 && mid_age <= STALE_AFTER
+}
+
+async fn get_price(client: &Client, feed_id: ID) -> Result<Option<ReportDataV11>, Box<dyn std::error::Error>> {
+    let response = client.get_latest_report(feed_id).await?;
+    let full_report = hex::decode(&response.report.full_report[2..])?;
+    let (_report_context, report_blob) = decode_full_report(&full_report)?;
+    let data = ReportDataV11::decode(&report_blob)?;
+
+    let now_ms = SystemTime::now().duration_since(UNIX_EPOCH)?.as_millis() as u64;
+    let mid_age = Duration::from_millis(now_ms.saturating_sub(data.last_seen_timestamp_ns / 1_000_000));
+
+    if !is_price_usable(data.market_status, mid_age) {
+        return Ok(None);
+    }
+
+    // data.last_traded_price is the slow price; data.mid is the fast price.
+    Ok(Some(data))
+}
+```
+
+## Stream behavior
+
+### Fast price and slow price
+
+The [v11 sections](/data-streams/reference/report-schema-v11) from here through [Which price to use](#which-price-to-use) describe the v11 Perpetual Markets streams. TWAP streams use [v2](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap) and are covered in [Available Streams](#available-streams). For lending, use [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
+
+Both prices are published in every report, during every session, not only on weekends.
+
+| Price                     | v11 field           | Behavior                                                                                                                       | Typical use                                                   |
+| :------------------------ | :------------------ | :----------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------ |
+| Fast price                | `mid`, `bid`, `ask` | Tracks the market as closely as the inputs allow. No continuous smoothing, no cap on how quickly it moves.                     | Perpetual futures mark and index prices, monitoring           |
+| Slow price (Oracle Price) | `lastTradedPrice`   | Smoothed, and referenced to the last equity close during off-hours. Follows sustained moves gradually rather than immediately. | Collateral valuation, liquidations, other value-securing uses |
+
+The slow price is intentionally lagged against live order books. Do not use it to hedge or execute against a specific venue.
+
+### Market status
+
+`marketStatus` identifies which session is active and which source is driving the price. The values match the [24/5 mapping](/data-streams/market-hours#v11-24-5-feeds), but `5` has a different practical meaning on 24/7 streams: prices keep updating.
+
+| Value | Status        | Hours (ET)                                       | Price source                          |
+| :---- | :------------ | :----------------------------------------------- | :------------------------------------ |
+| `0`   | Unknown       | N/A                                              | None. Treat as unavailable            |
+| `1`   | Pre-market    | 4:00 AM–9:30 AM Mon–Fri                          | Extended hours session                |
+| `2`   | Regular hours | 9:30 AM–4:00 PM Mon–Fri                          | Regular hours session                 |
+| `3`   | Post-market   | 4:00 PM–8:00 PM Mon–Fri                          | Extended hours session                |
+| `4`   | Overnight     | 8:00 PM–4:00 AM Sun–Fri                          | Overnight session                     |
+| `5`   | Closed        | 8:00 PM Fri–8:00 PM Sun, plus US market holidays | Off-hours perpetual futures composite |
+
+### Field behavior by session
+
+| Field                     | Regular and extended hours          | Overnight                      | Closed (off-hours)                                        | Session transitions            |
+| :------------------------ | :---------------------------------- | :----------------------------- | :-------------------------------------------------------- | :----------------------------- |
+| `mid`                     | Active session `mid`, unsmoothed    | Overnight `mid`, unsmoothed    | Off-hours composite `mid`                                 | Smoothed blend between sources |
+| `bid` / `ask`             | Active session values               | Overnight session values       | Off-hours composite `bid` / `ask`                         | Smoothed blend between sources |
+| `lastTradedPrice`         | Same as `mid`                       | EMA of overnight `mid`         | Smoothed off-hours price                                  | Smoothed blend between sources |
+| `lastSeenTimestampNs`     | Last `mid` update in active session | Last `mid` update in overnight | Last time an off-hours composite price was received       | Active session value           |
+| `bidVolume` / `askVolume` | Active session values               | Overnight session values       | May be zero. Do not rely on these fields during off-hours | Active session values          |
+| `marketStatus`            | `1`, `2`, or `3`                    | `4`                            | `5`                                                       | Current session                |
+
+As with the 24/5 streams, `lastSeenTimestampNs` applies to `mid` only. It is not a freshness signal for `bid`, `ask`, the volume fields, or `lastTradedPrice`.
+
+### Which price to use
+
+| Use case                                           | Recommended field                | Why                                                                                         |
+| :------------------------------------------------- | :------------------------------- | :------------------------------------------------------------------------------------------ |
+| Lending collateral, liquidations, borrowing limits | `lastTradedPrice` (slow price)   | Less sensitive to short-lived dislocations in thin off-hours markets, at the cost of lag    |
+| Perpetual futures mark or index price              | `mid` (fast price), `bid`, `ask` | Tracks the current tradable price without smoothing or caps                                 |
+| Monitoring and alerting                            | Both                             | The gap between fast and slow prices shows how far the market has moved from the slow price |
+
+These are different risk profiles served from the same report. If you need the slow price onchain without running your own Data Streams integration, see [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
+
+## How pricing works
+
+This section describes the v11 Perpetual Markets streams. TWAP streams publish a single price; see the [v2 schema](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap). For lending, use [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
+
+### Trading week
+
+From the Sunday 8:00 PM ET overnight open to the Friday 8:00 PM ET post-market close, the stream follows the active 24/5 session: pre-market, regular hours, post-market, or overnight. The fast price is the `mid` of that session. The slow price equals the fast price during regular and extended hours, and is an exponential moving average (EMA) of the overnight `mid` during the overnight session, where liquidity is thinnest.
+
+Regular, extended, and overnight trading happen on different venues with different levels of liquidity, so the price can shift when one session hands off to the next. The stream smooths each transition over a short window. The one exception is **pre-market into regular hours**: the regular session is the deepest market of the day, and a move at that boundary is almost always real price discovery, so it is passed through unsmoothed.
+
+### Off-hours
+
+From the Friday post-market close to the Sunday overnight open, and on US market holidays, no spot equity market is open. During this window the stream prices the asset from **perpetual futures** markets, which keep trading through the weekend.
+
+> **CAUTION: Off-hours prices come from derivatives**
+>
+> The off-hours price is built entirely from perpetual futures. It is not derived from spot trading in the underlying
+> shares, and it does not use secondary market prices of tokenized equities, which are too thin to price against safely.
+
+The fast price during off-hours is a USD composite of quotes from several perpetual futures venues, weighted toward the more liquid venues. Venues that stop updating drop out. Weighting limits the influence of any one venue, but does not remove it. The composite publishes a `bid` and `ask` as well as a `mid`. If no venue has fresh data, no new off-hours price is computed. The stream does not fabricate a price.
+
+The slow price during off-hours is referenced to the last equity close before off-hours begin and follows the fast price gradually. Short-lived dislocations have little effect on it, while sustained moves are followed in full over time, so large moves can take hours to be fully reflected.
+
+### Entering and leaving off-hours
+
+When off-hours begins, both prices start from the equity close and blend onto the off-hours price over a short window. When the equity market reopens, both prices blend back onto the equity session price the same way, so there is no step change at either boundary.
+
+The true Sunday open is not knowable until the market opens. Expect the published price to close any remaining weekend gap to the live equity market over the short reopen window, not instantly. See [Reopen convergence](#reopen-convergence).
+
+## Risks
+
+24/7 streams remove the need to build session-switching logic, but they do not remove the underlying market risks. They also add risks that the 24/5 streams do not have, mainly from pricing the weekend off derivatives. The [24/5 risks](/data-streams/rwa-streams/24-5-us-equities-user-guide#risks) for overnight data, illiquid sessions, corporate actions, and trading halts still apply during the trading week.
+
+The risks below focus on the v11 Perpetual Markets streams. TWAP streams publish a single price; see the [v2 schema](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap). For lending, use [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
+
+### Slow price lag
+
+The slow price is designed to trail the market during the overnight session and off-hours. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately. A large weekend move can take hours to be fully reflected. This reduces liquidations caused by brief dislocations, but it also means liquidations after a sustained move can happen later than they would against a live market price, and can leave room for arbitrage.
+
+#### Mitigation
+
+- Size loan-to-value ratios, liquidation thresholds, and supply caps for a lagging price, not a real-time one
+- Monitor the gap between `mid` and `lastTradedPrice`, and alert when it is large or persistent
+- Test your parameters against historical weekend moves and earnings gaps before going live
+
+### Pre-market to regular hours is a step change
+
+Session transitions are smoothed except one: pre-market into regular hours. At 9:30 AM ET the stream passes the move directly through rather than blending it, because a move at that boundary is usually real price discovery. The slow price can step at the open instead of catching up gradually, which is the opposite of its behavior everywhere else.
+
+#### Mitigation
+
+- Treat 9:30 AM ET as a distinct event when your risk model assumes a lagging slow price
+- Apply deviation bounds, or pause new borrowing and liquidations briefly around the open, if a step change would be unsafe
+- Test parameters against days with large pre-market moves and earnings releases
+
+### Off-hours prices come from perpetual futures
+
+A perpetual futures contract is a derivative. Its price can carry a basis to the underlying shares, influenced by funding rates and by each venue's contract design. Venues occasionally change contract specifications, including index construction and funding mechanics. Weekend perpetual futures volumes are also a fraction of weekday spot volumes, so it can take less capital to move them. Off-hours prices can be manipulated, and smoothing in the slow price reduces the effect but does not prevent it.
+
+#### Mitigation
+
+- Treat the off-hours price as an estimate of where the equity would trade, not as a traded price
+- Apply tighter exposure limits or supply caps during `marketStatus = 5`
+- Do not assume the off-hours price will match the reopen price
+
+### Single provider and single venue dependencies
+
+Two separate single-source dependencies exist:
+
+- **Overnight:** As with the 24/5 streams, only one traditional venue trades during the overnight session.
+- **Off-hours:** Perpetual futures data is currently delivered through a single data provider. Using several venues reduces the impact of a bad price on one exchange, but does not help with an outage or bad data at the provider.
+
+If the provider stops delivering data, no new off-hours price can be computed. If it delivers incorrect data, cross-venue checks reduce the impact but cannot remove it.
+
+#### Mitigation
+
+- Check `lastSeenTimestampNs` against your own staleness threshold during off-hours
+- Define what your protocol does when no fresh price is available: pause new borrowing, hold the last valid price within bounds, or both
+
+### Fewer contributing venues
+
+The composite keeps publishing as venues drop out. A price built from all venues and a price built from one or two are published the same way, but they are not equally robust. With fewer venues, the remaining ones have more influence and the cost to move the price falls.
+
+#### Mitigation
+
+- Monitor the fast price against independent references during off-hours
+- Apply value bounds and per-update deviation limits
+
+### Slow price unavailable
+
+The slow price depends on the last equity close and on a continuous series of inputs. Two cases matter:
+
+- **Missing close:** If the equity close cannot be determined at the start of off-hours, for example because the final equity reports before the close are missing, the stream cannot produce a slow price for that off-hours period. In the worst case, an entire weekend can go without a slow price.
+- **Interrupted inputs:** If inputs are missing for too long, the slow price stops updating, and it needs a recovery period after inputs return before it publishes again. Before it stops, the last value may be repeated for a short time, so a slow price that is not moving is not proof that it is current.
+
+#### Mitigation
+
+- Define protocol behavior for an unavailable slow price before going live, including a full-weekend outage
+- Pause new borrowing and size liquidation buffers to tolerate a stale valuation
+- Alert on a flat `lastTradedPrice` while `mid` keeps moving
+
+### Reopen convergence
+
+The true reopen price is only known when the equity market opens. At the reopen, both prices close any remaining weekend gap to the equity market over a short window. Positions that degraded over the weekend can still become liquidatable around the reopen, just not in a single jump.
+
+#### Mitigation
+
+- Account for the reopen window in latency-sensitive logic
+- Consider tighter limits on new positions in the minutes before and after the Sunday 8:00 PM ET open
+
+### Corporate actions over a weekend
+
+Splits, reverse splits, large special dividends, and symbol changes can move the true price sharply at the reopen. During off-hours, perpetual futures may price the event before the equity market does, and the slow price will follow that move slowly because it is referenced to the pre-event close. The stream does not adjust for corporate actions.
+
+#### Mitigation
+
+- Monitor corporate action announcements for the assets you support
+- Pause markets or adjust parameters around corporate action dates
+
+### Market holidays and halts
+
+Market holidays are priced as off-hours (`marketStatus = 5`). Trading halts only occur while the market is open and are not flagged in `marketStatus`. During a halt, `marketStatus` shows the active session while `lastSeenTimestampNs` stops advancing. A halt that runs into a scheduled open holds the transition until the equity price resumes.
+
+#### Mitigation
+
+- Use an authoritative exchange holiday calendar alongside `marketStatus`
+- Monitor exchange halt notices independently
+
+For trading schedules, see [Market Hours](/data-streams/market-hours#24-7-us-equities).
+
+## Support
+
+For inquiries related to a data outage, contact Chainlink Labs at [data_support@chain.link](mailto:data_support@chain.link).
 
 ---
 
@@ -7620,6 +8089,8 @@ APAC Equities data is delivered using the [RWA Advanced (v11) schema](/data-stre
 
 For `marketStatus` value mappings, see [Standard-hours feeds (v11)](/data-streams/reference/report-schema-v11#standard-hours-feeds). For exchange schedules, see [Market Hours (APAC Equities)](/data-streams/market-hours#apac-equities).
 
+## Available Streams
+
 ## Coverage
 
 APAC Equities streams cover major indices and single-name stocks across Asia-Pacific exchanges. Data is quoted in each exchange's local currency (for example, `/JPY` for Japanese equities).
@@ -7639,7 +8110,7 @@ APAC Equities streams cover major indices and single-name stocks across Asia-Pac
 
 APAC equities trade during each exchange's standard local sessions (Mon–Fri). Schedules, lunch breaks, and closing auction behavior are documented on the [Market Hours](/data-streams/market-hours#apac-equities) page.
 
-## Risk considerations
+## Risks
 
 Integrating protocols are responsible for implementing appropriate monitoring and risk mitigation mechanisms to ensure safe market operation.
 
@@ -7721,8 +8192,6 @@ Recommended safeguards include:
 - Pause or restrict market activity when data quality signals are triggered
 - Review the [Developer Responsibilities](/data-streams/developer-responsibilities) guidance before integration
 
-## Available streams
-
 ## Support
 
 For inquiries related to a data outage, contact Chainlink Labs at [data_support@chain.link](mailto:data_support@chain.link).
@@ -7761,7 +8230,7 @@ In addition to the raw generic feed prices above — which switch entirely to th
 
 For the complete field list and definitions, see the [Futures (v14) schema](/data-streams/reference/report-schema-v14).
 
-## Available streams
+## Available Streams
 
 > **NOTE: Feed availability**
 >
@@ -8218,7 +8687,7 @@ When the September contract expires, the front feed moves to October, the second
 
 Futures streams follow the trading hours of the underlying market, with a scheduled break each trading day. Because schedules can change, each feed's `marketStatus` field reflects the current status for that instrument. Use it in each report rather than an expected session schedule. For the value mapping, see [Market Hours](/data-streams/market-hours#futures-v14).
 
-## Risk considerations
+## Risks
 
 Integrating protocols are responsible for implementing appropriate monitoring and risk mitigation mechanisms to ensure safe market operation.
 
@@ -8563,6 +9032,49 @@ Announcements can cause sharp price spikes or sustained moves.
 Source: https://docs.chain.link/data-streams/rwa-streams
 
 Live values such as feed contract addresses are not inlined here. Wait for the official API to obtain current data.
+
+---
+
+# US Equities
+Source: https://docs.chain.link/data-streams/rwa-streams/us-equities
+
+Chainlink Data Streams offers two families for US single-name equities and ETFs: [24/5 streams](/data-streams/rwa-streams/24-5-us-equities-user-guide) and [24/7 streams](/data-streams/rwa-streams/24-7-us-equities). Both cover US equities, but they differ in how sessions are handled, which fields you consume, and what happens when the market is closed.
+
+## 24/5 vs 24/7&#x20;
+
+The table below compares the two families on the details that apply across both: stream count, session handling, weekends and holidays, and the price fields they publish.
+
+|                       | [24/5 US Equities](/data-streams/rwa-streams/24-5-us-equities-user-guide) | [24/7 US Equities](/data-streams/rwa-streams/24-7-us-equities) |
+| :-------------------- | :------------------------------------------------------------------------ | :------------------------------------------------------------- |
+| Streams per asset     | Three (Regular, Extended, Overnight)                                      | One per product                                                |
+| Session switching     | Integrator chooses the session stream using `marketStatus`                | No session switching; the stream publishes continuously        |
+| Weekends and holidays | Market closed; prices resume at the next open                             | Continues publishing through weekends and holidays             |
+| Price fields          | `mid`, `bid`, `ask` per session                                           | TWAP: single `price`Perpetual Markets: `mid`, `bid`, `ask`     |
+
+For field-level behavior by product, see the [24/7 US Equities User Guide](/data-streams/rwa-streams/24-7-us-equities).
+
+## Which should I use?
+
+- **[24/5](/data-streams/rwa-streams/24-5-us-equities-user-guide#available-streams)** if you want session-level control and full control over how regular, extended, and overnight prices are combined.
+- **[24/7 for Perpetual Markets](/data-streams/rwa-streams/24-7-us-equities#24-7-for-perpetual-markets)** if you need a continuous fast price (`mid`, `bid`, `ask`) through weekends and holidays.
+- **[24/7 TWAP](/data-streams/rwa-streams/24-7-us-equities#24-7-twap)** if you need a single continuous TWAP price per asset.
+
+For lending, use [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7), which publish the slow price onchain.
+
+## Guides
+
+Each guide covers the integration details for one family: stream structure, field behavior, and risks.
+
+| Guide                                                                                | What it covers                                                                                                                                                                |
+| :----------------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide) | Three session-specific streams (regular, extended, and overnight), `marketStatus`-driven stream selection, transition and staleness edge cases, available streams, and risks. |
+| [24/7 US Equities User Guide](/data-streams/rwa-streams/24-7-us-equities)            | One continuous stream per asset, with separate sections for 24/7 TWAP and Perpetual Markets: fast and slow price fields, market status, off-hours pricing, and risks.         |
+
+## Next steps
+
+- Find stream IDs and report schemas: [Streams & Schemas](/data-streams/reference/report-schema-overview) or the [RWA stream directory](/data-streams/rwa-streams).
+- Fetch, stream, decode, or verify reports: [Integration Tutorials](/data-streams/tutorials/overview).
+- Need the slow price onchain for lending: [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7).
 
 ---
 
@@ -10783,7 +11295,7 @@ In this example, the application logs the structured report data to the terminal
 
 ---
 
-# Data Streams Tutorials
+# Data Streams Integration Tutorials
 Source: https://docs.chain.link/data-streams/tutorials/overview
 
 > **NOTE: Get started**
@@ -10791,7 +11303,7 @@ Source: https://docs.chain.link/data-streams/tutorials/overview
 > Data Streams is self-serve, no sales call required. [Sign up](https://app.chain.link) to get started, or follow the
 > [sign-up guide](/data-streams/sign-up).
 
-Explore several tutorials to learn how to use the Data Streams.
+These integration tutorials show how to fetch, stream, decode, and verify Data Streams reports in your application.
 
 ## Fetch, Stream, and Decode Reports
 
