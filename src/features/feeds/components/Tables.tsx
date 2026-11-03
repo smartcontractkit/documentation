@@ -31,7 +31,9 @@ import {
   getSchemaVersion,
   getMarketStatusDocLink,
   getTradingHoursDocLink,
+  is247Product,
   is247USEquitiesStream,
+  is24x5StreamFeed,
   isApacEquitiesStreamFeed,
   getTwapWindowSeconds,
 } from "~/features/feeds/utils/feedMetadata.ts"
@@ -1409,6 +1411,12 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
   // 24/7 TWAP product, which carries attributeType "247" instead of "TWAP".
   const isTwapStream =
     schemaKey === "v2" && (metadata.docs?.attributeType === "TWAP" || get247Category(metadata) === "twap")
+  const is247USEquities = is247USEquitiesStream(metadata)
+  const twentyFourSevenHref = is247Product(metadata, "twap")
+    ? "/data-streams/rwa-streams/24-7-us-equities#24-7-twap"
+    : is247Product(metadata, "perps")
+      ? "/data-streams/rwa-streams/24-7-us-equities#24-7-for-perpetual-markets"
+      : "/data-streams/rwa-streams/24-7-us-equities"
 
   return (
     <tr>
@@ -1436,11 +1444,31 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 Datalink
               </a>
             )}
-            {(is247Stream(metadata) || is247USEquitiesStream(metadata)) && (
-              <span className={tableStyles.feedVariantBadge} title="24/7 stream">
-                24/7
-              </span>
+            {is24x5StreamFeed(metadata) && (
+              <a
+                href="/data-streams/rwa-streams/24-5-us-equities-user-guide"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="24/5 US Equities stream"
+              >
+                24/5
+              </a>
             )}
+            {(is247Stream(metadata) || is247USEquities) &&
+              (is247USEquities ? (
+                <a
+                  href={twentyFourSevenHref}
+                  target="_blank"
+                  className={tableStyles.feedVariantBadge}
+                  title="24/7 US Equities stream"
+                >
+                  24/7
+                </a>
+              ) : (
+                <span className={tableStyles.feedVariantBadge} title="24/7 stream">
+                  24/7
+                </span>
+              ))}
             {isTwapStream && (
               <a
                 href="/data-streams/reference/report-schema-v2#time-weighted-average-price-twap"
