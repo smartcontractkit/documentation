@@ -1,0 +1,54 @@
+name: Check if chainlink node config docs are up to date
+
+on:
+  schedule:
+    - cron: '59 23 * * */7'
+  workflow_dispatch:
+
+jobs:
+  check-chainlink-node-config:
+    permissions:
+      pull-requests: write
+      contents: write
+    name: Check if chainlink node config docs are up to date
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v6
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: '**/package-lock.json'
+      - name: Install Dependencies
+        run: npm i
+      - name: Sync node config docs from the latest chainlink release
+        run: npm run sync-chainlink-node-config
+      - name: Read sync report
+        id: sync_report
+        run: |
+          echo "tag=$(jq -r .tag reports/node-config-sync.json)" >> $GITHUB_OUTPUT
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@c0f553fe549906ede9cf27b5156039d195d2ece0 # v8.1.0
+        with:
+          branch: 'chainlink_node_config/pr-${{ steps.sync_report.outputs.tag }}'
+          commit-message: 'chainlink node config docs updated to ${{ steps.sync_report.outputs.tag }}'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: 'Update chainlink node config docs to ${{ steps.sync_report.outputs.tag }}'
+          delete-branch: true
+          body: |
+            Regenerated `node-config.mdx` and `secrets-config.mdx` from [smartcontractkit/chainlink ${{ steps.sync_report.outputs.tag }}](https://github.com/smartcontractkit/chainlink/releases/tag/${{ steps.sync_report.outputs.tag }}) (`docs/CONFIG.md` + `docs/SECRETS.md`).
+
+            Review notes:
+            - Check the diff renders correctly (frontmatter, `<Aside>` components, see-also links).
+            - CI runs the internal link check on the built site; fix any new relative links that break it.
+            - The page carries the source tag in its DO-NOT-EDIT marker line.
+
+            Re-run locally with `npm run sync-chainlink-node-config`.
+          labels: |
+            enhancement
+            ready to merge
