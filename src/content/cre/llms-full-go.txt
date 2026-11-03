@@ -2362,7 +2362,7 @@ Once you've tested your workflow locally:
 
 # Triggering Deployed Workflows
 Source: https://docs.chain.link/cre/guides/workflow/using-triggers/http-trigger/triggering-deployed-workflows
-Last Updated: 2026-07-05
+Last Updated: 2026-11-02
 
 Once you've [deployed a workflow](/cre/guides/operations/deploying-workflows) with an HTTP trigger, you can execute it by sending authenticated HTTP requests to the CRE gateway. This guide explains how to trigger deployed workflows in production.
 
@@ -2606,7 +2606,7 @@ Here's what a complete curl request looks like (using the public DON gateway —
 ```bash
 curl -X POST https://01.gateway.zone-a.cre.chain.link \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer eyJhbGciOiJFVEgiLCJ0eXAiOiJKV1QifQ.eyJkaWdlc3QiOiIweDRhMWYyYjNjNGQ1ZTZmN2E4YjljMGQxZTJmM2E0YjVjNmQ3ZThmOWEwYjFjMmQzZTRmNWE2YjdjOGQ5ZTBmMWEiLCJpc3MiOiIweGIwOEUwMDRiZDJiNWFGZjFGNUY5NTBkMTQxZjQ0OUIxYzA1ODAwZWIiLCJpYXQiOjE3MzM4MzIwMDAsImV4cCI6MTczMzgzMjMwMCwianRpIjoiNTUwZTg0MDAtZTI5Yi00MWQ0LWE3MTYtNDQ2NjU1NDQwMDAwIn0.r7s8v9recoveryId..." \
+  -H "Authorization: Bearer <JWT_TOKEN>" \
   -d '{
     "jsonrpc": "2.0",
     "id": "req-123",
@@ -2677,8 +2677,60 @@ If the request fails (e.g., invalid JWT, unauthorized key, workflow not found), 
 
 > **NOTE: HTTP status codes**
 >
-> Error responses typically return HTTP status `400 Bad Request`. The JSON-RPC error object provides detailed
-> information about what went wrong.
+> Most error responses return HTTP status `400 Bad Request`. The JSON-RPC error object provides detailed information
+> about what went wrong. Rate limit errors are the exception and return `429 Too Many Requests`; see [Rate limit
+> error](#rate-limit-error).
+
+### Rate limit error
+
+If a workflow exceeds its configured HTTP trigger rate limit, the gateway rejects the request before dispatching it to
+the DON. The response uses HTTP status `429 Too Many Requests` with JSON-RPC error code `-32002`:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Content-Type: application/jsonrpc
+
+{
+  "jsonrpc": "2.0",
+  "id": "req-123",
+  "method": "",
+  "error": {
+    "code": -32002,
+    "message": "rate limit exceeded"
+  }
+}
+```
+
+When you receive a `429`:
+
+- **The request was not executed and was not queued.** No workflow run was started for it.
+- **The limit is applied per workflow.** The configured HTTP trigger quota is documented in
+  [Service Quotas](/cre/service-quotas#http-trigger). Limits can be raised for a workflow, owner, or organization.
+- **No retry hint is returned.** The response does not include `Retry-After` or `X-RateLimit-*` headers, so your
+  client must decide when to retry.
+- **Only rate limit errors use `429`.** Other `4xx` responses (for example, `-32600` auth failures or `-32700` parse
+  errors) indicate a problem with the request itself. Fix the request instead of retrying it unchanged.
+
+### Backoff and retry
+
+Because the gateway does not return a `Retry-After` value, implement exponential backoff with jitter:
+
+1. Treat HTTP `429` as retryable. Do not blindly retry other `4xx` responses.
+2. Wait before retrying: start with a short delay (for example, one second), double it on each attempt, and add random
+   jitter so many clients do not retry simultaneously. Cap the delay and the total number of attempts.
+3. Generate a **new JWT for every retry**. The `jti` must be new, and `iat`/`exp` must reflect the retry time. If you
+   change the request body, recompute the `digest` as well.
+4. If retries are exhausted, surface the `429` to your caller and log it. Do not keep retrying indefinitely.
+
+A `429` means the request was rejected before execution, so retrying it does not double-execute the workflow.
+
+> **NOTE: Local simulation behaves differently**
+>
+> `cre workflow simulate --listen` enforces the same HTTP trigger quota differently: it skips rate-limited requests and
+> still returns `200 OK`, printing `Trigger rate limited, skipping execution` in the terminal. Do not build your
+> production retry logic on the simulator's `200` response. See [Simulating
+> Workflows](/cre/guides/operations/simulating-workflows#listen-mode) and [Testing Production
+> Limits](/cre/guides/operations/understanding-limits).
 
 ## Verifying execution
 
