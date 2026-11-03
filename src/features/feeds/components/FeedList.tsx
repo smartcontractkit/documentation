@@ -8,7 +8,7 @@ import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains.
 import { useGetChainMetadata } from "./useGetChainMetadata.ts"
 import { ChainMetadata } from "~/features/data/api/index.ts"
 import useQueryString from "~/hooks/useQueryString.ts"
-import { RefObject } from "preact"
+import { ComponentChildren, RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
 import button from "@chainlink/design-system/button.module.css"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
@@ -42,6 +42,7 @@ import {
   type StreamsRwaFeedTypeValue,
   type TradingHoursFilterValue,
   type TwentyFourSevenFilterValue,
+  type TwentyFourSevenProduct,
   getFeedTypeFlags,
 } from "../types.ts"
 import { updateUrlClean } from "./urlStateHelpers.ts"
@@ -174,6 +175,27 @@ const FilterDropdown = <T extends string>({
   )
 }
 
+/** Renders a section heading unless the page already provides one. */
+const FeedSection = ({
+  title,
+  id,
+  embedded,
+  children,
+}: {
+  title: string
+  id: string
+  embedded: boolean
+  children: ComponentChildren
+}) => {
+  if (embedded) return <>{children}</>
+
+  return (
+    <SectionWrapper title={title} depth={2} idOverride={id}>
+      {children}
+    </SectionWrapper>
+  )
+}
+
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -181,8 +203,11 @@ export const FeedList = ({
   initialCache,
   allowNetworkTableExpansion = false,
   defaultNetworkTableExpanded = false,
+  embedded = false,
   force24x5Only = false,
   force24x7Only = false,
+  force247Product,
+  force247TokenizedEquity = false,
   forceApacEquitiesOnly = false,
   forceFuturesOnly = false,
   forceStreamCategoryFilter,
@@ -196,9 +221,15 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
   allowNetworkTableExpansion?: boolean
   defaultNetworkTableExpanded?: boolean
+  /** Use when the page provides its own section headings around multiple tables. Hides the internal heading, TOC entry, and verifier address block. */
+  embedded?: boolean
   force24x5Only?: boolean
   /** Locks the table to 24/7 US Equities streams (v11 fast/slow price). */
   force24x7Only?: boolean
+  /** Narrows a forced 24/7 table to one product line. */
+  force247Product?: TwentyFourSevenProduct
+  /** Locks the table to 24/7 Tokenized Equity Data Feeds. */
+  force247TokenizedEquity?: boolean
   forceApacEquitiesOnly?: boolean
   forceFuturesOnly?: boolean
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
@@ -588,6 +619,7 @@ export const FeedList = ({
       chainHasVisibleFeeds((metadataCache as Record<string, any>)[chain.page], dataFeedType, ecosystem, {
         tokenizedEquityProvider,
         extendedHoursCategory: forceExtendedHoursCategory,
+        show247TokenizedEquity: force247TokenizedEquity,
       })
     )
   }, [
@@ -598,6 +630,7 @@ export const FeedList = ({
     ecosystem,
     tokenizedEquityProvider,
     forceExtendedHoursCategory,
+    force247TokenizedEquity,
   ])
 
   // When lockedNetwork is set, restrict the selectable chains to that single chain.
@@ -649,6 +682,7 @@ export const FeedList = ({
     ecosystem,
     tokenizedEquityProvider,
     forceExtendedHoursCategory,
+    force247TokenizedEquity,
   ])
 
   useEffect(() => {
@@ -664,6 +698,7 @@ export const FeedList = ({
       tokenizedEquityProvider,
       streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
       extendedHoursCategory: forceExtendedHoursCategory,
+      show247TokenizedEquity: force247TokenizedEquity,
     }
 
     const types = new Set<string>()
@@ -935,6 +970,7 @@ export const FeedList = ({
           streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
           extendedHoursCategory: forceExtendedHoursCategory,
           show247USEquities: isStreams && force24x7Only,
+          show247TokenizedEquity: force247TokenizedEquity,
         }
 
         if (isStreams && force24x5Only) {
@@ -995,6 +1031,7 @@ export const FeedList = ({
     forceStreamCategoryFilter,
     force24x5Only,
     force24x7Only,
+    force247TokenizedEquity,
     forceApacEquitiesOnly,
     forceFuturesOnly,
     forceExtendedHoursCategory,
@@ -1093,10 +1130,19 @@ export const FeedList = ({
     )
   }
 
+  const forced24x7Label =
+    force247Product === "twap"
+      ? "24/7 TWAP Streams"
+      : force247Product === "perps"
+        ? "24/7 Perpetual Markets Streams"
+        : force247Product === "lending"
+          ? "24/7 Lending Streams"
+          : "24/7 US Equities Streams"
+
   const forcedCategoryLabel = forceApacEquitiesOnly
     ? "APAC Equities Streams"
     : force24x7Only
-      ? "24/7 US Equities Streams"
+      ? forced24x7Label
       : forceFuturesOnly
         ? "Futures Streams"
         : forceStreamCategoryFilter === "datalink"
@@ -1365,6 +1411,7 @@ export const FeedList = ({
         streamCategoryFilter: forceStreamCategoryFilter,
         extendedHoursCategory: forceExtendedHoursCategory,
         show247USEquities: force24x7Only,
+        show247TokenizedEquity: force247TokenizedEquity,
       }
 
       if (force24x5Only) {
@@ -1416,7 +1463,7 @@ export const FeedList = ({
       <>
         {renderNetworkTypeSwitcher(availableNetworkTypes)}
 
-        {!isDeprecating && (
+        {!isDeprecating && !embedded && (
           <>
             {allowNetworkTableExpansion ? (
               <div style={{ marginBottom: "var(--space-2x)" }}>
@@ -1441,10 +1488,10 @@ export const FeedList = ({
         )}
 
         {selectedNetworkType === "mainnet" && (
-          <SectionWrapper
+          <FeedSection
             title={streamsMainnetSectionTitle}
-            depth={2}
-            idOverride={streamsMainnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+            id={streamsMainnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+            embedded={embedded}
           >
             <div className={feedList.tableFilters}>
               <div className={feedList.filterControls}>
@@ -1636,6 +1683,7 @@ export const FeedList = ({
                   show247Streams={show247Streams}
                   show247USEquities={show247USEquities}
                   twentyFourSevenFilter={twentyFourSevenFilter}
+                  twentyFourSevenProduct={force247Product}
                   showApacEquitiesFeeds={showApacEquitiesFeeds}
                   showFuturesFeeds={showFuturesFeeds}
                   tradingHoursFilter={tradingHoursFilter}
@@ -1656,14 +1704,14 @@ export const FeedList = ({
             ) : (
               <p>No Mainnet feeds available.</p>
             )}
-          </SectionWrapper>
+          </FeedSection>
         )}
 
         {selectedNetworkType === "testnet" && (
-          <SectionWrapper
+          <FeedSection
             title={streamsTestnetSectionTitle}
-            depth={2}
-            idOverride={streamsTestnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+            id={streamsTestnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+            embedded={embedded}
           >
             <div className={feedList.tableFilters}>
               <div className={feedList.filterControls}>
@@ -1857,6 +1905,7 @@ export const FeedList = ({
                   show247Streams={show247StreamsTestnet}
                   show247USEquities={show247USEquitiesTestnet}
                   twentyFourSevenFilter={testnetTwentyFourSevenFilter}
+                  twentyFourSevenProduct={force247Product}
                   showApacEquitiesFeeds={showApacEquitiesFeedsTestnet}
                   showFuturesFeeds={showFuturesFeedsTestnet}
                   tradingHoursFilter={testnetTradingHoursFilter}
@@ -1873,7 +1922,7 @@ export const FeedList = ({
             ) : (
               <p>No Testnet feeds available.</p>
             )}
-          </SectionWrapper>
+          </FeedSection>
         )}
       </>
     )
@@ -1916,6 +1965,7 @@ export const FeedList = ({
           ?.filter((network: ChainNetwork) => {
             const hasVisibleFeeds = networkHasVisibleFeeds(network, dataFeedType, ecosystem, {
               tokenizedEquityProvider,
+              show247TokenizedEquity: force247TokenizedEquity,
             })
 
             if (isDeprecating && hasVisibleFeeds && network.networkType === selectedNetworkType) {
@@ -2262,6 +2312,7 @@ export const FeedList = ({
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
                         forceExtendedHoursCategory={forceExtendedHoursCategory}
+                        show247TokenizedEquity={force247TokenizedEquity}
                         isSvr={isSvr}
                         svrTypeFilters={svrTypeFilters}
                       />
@@ -2473,6 +2524,7 @@ export const FeedList = ({
                         searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
                         forceExtendedHoursCategory={forceExtendedHoursCategory}
+                        show247TokenizedEquity={force247TokenizedEquity}
                       />
                     </>
                   )}

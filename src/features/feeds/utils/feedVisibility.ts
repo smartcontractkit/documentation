@@ -1,6 +1,7 @@
 import type { DataFeedType } from "../types.ts"
 import {
   getSchemaVersion,
+  is247TokenizedEquityFeed,
   is247USEquitiesStream,
   isApacEquitiesStreamFeed,
   isFuturesStreamFeed,
@@ -135,6 +136,8 @@ export interface FeedVisibilityOptions {
    * table populates once data ops clears it.
    */
   show247USEquities?: boolean
+  /** When set, include 24/7 Tokenized Equity Data Feeds on the dedicated page. */
+  show247TokenizedEquity?: boolean
 }
 
 /**
@@ -238,10 +241,12 @@ export function isFeedVisible(
     // Generic equity price feeds (e.g. RefPrice) are excluded — they are not
     // tokenized equity instruments and should not appear here.
     const assetClass = feed.docs?.assetClass
+    const is247TokenizedEquity = options.show247TokenizedEquity === true && is247TokenizedEquityFeed(feed)
     isVisible =
-      (assetClass === "Equity" || assetClass === "Equities") &&
-      feed.contractType !== "verifier" &&
-      feed.docs?.productTypeCode === "primaryTokenizedPrice"
+      is247TokenizedEquity ||
+      ((assetClass === "Equity" || assetClass === "Equities") &&
+        feed.contractType !== "verifier" &&
+        feed.docs?.productTypeCode === "primaryTokenizedPrice")
   } else if (isExtendedHours) {
     const proxy = feed.proxyAddress?.toLowerCase()
     isVisible = ALL_EXTENDED_HOURS_PROXY_ADDRESSES.has(proxy)

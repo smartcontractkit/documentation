@@ -1658,10 +1658,70 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
     },
     getAccountOrganizationSection(SIDEBAR_SECTIONS.DATA_STREAMS),
     {
-      section: "Streams & Report Schemas",
+      section: "Concepts",
       contents: [
         {
-          title: "Overview",
+          title: "Architecture",
+          url: "data-streams/architecture",
+        },
+        {
+          title: "Market Hours",
+          url: "data-streams/market-hours",
+        },
+        {
+          title: "Handling Market Events (RWA)",
+          url: "data-streams/rwa-streams/handling-market-events",
+          highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
+        },
+        {
+          title: "How Report Timestamps Work",
+          url: "data-streams/how-report-timestamps-work",
+        },
+        {
+          title: "Selecting Quality Data Streams",
+          url: "data-streams/selecting-data-streams",
+        },
+        {
+          title: "Pricing Methods",
+          url: "data-streams/concepts/pricing-methods",
+          children: [
+            {
+              title: "TWAP Streams",
+              url: "data-streams/concepts/twap-streams",
+            },
+            {
+              title: "Calculated Streams",
+              url: "data-streams/concepts/calculated-streams",
+            },
+            {
+              title: "Liquidity-Weighted Bid and Ask prices",
+              url: "data-streams/concepts/liquidity-weighted-prices",
+            },
+            {
+              title: "DEX State Price Streams",
+              url: "data-streams/concepts/dex-state-price-streams",
+            },
+            {
+              title: "Crypto Top-of-Book Streams",
+              url: "data-streams/concepts/crypto-top-of-book-and-mark-price",
+            },
+          ],
+        },
+        {
+          title: "Best Practices",
+          url: "data-streams/concepts/best-practices",
+        },
+        {
+          title: "Deprecating Streams",
+          url: "data-streams/deprecating-streams",
+        },
+      ],
+    },
+    {
+      section: "Streams & Schemas",
+      contents: [
+        {
+          title: "Report Schema Overview",
           url: "data-streams/reference/report-schema-overview",
         },
         {
@@ -1708,27 +1768,6 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               title: "Report Schema v14 (Futures)",
               url: "data-streams/reference/report-schema-v14",
             },
-            {
-              title: "Handling Market Events",
-              url: "data-streams/rwa-streams/handling-market-events",
-              highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
-            },
-            {
-              title: "24/5 US Equities User Guide",
-              url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
-            },
-            {
-              title: "24/7 US Equities User Guide",
-              url: "data-streams/rwa-streams/24-7-us-equities",
-            },
-            {
-              title: "APAC Equities",
-              url: "data-streams/rwa-streams/apac-equities",
-            },
-            {
-              title: "Futures",
-              url: "data-streams/rwa-streams/futures",
-            },
           ],
         },
         {
@@ -1749,28 +1788,43 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               title: "Report Schema v10 (Tokenized Asset)",
               url: "data-streams/reference/report-schema-v10",
             },
-            {
-              title: "Handling Stock Splits",
-              url: "data-streams/tokenized-asset-streams/handling-stock-splits",
-            },
           ],
-        },
-        {
-          title: "Market Hours",
-          url: "data-streams/market-hours",
-        },
-        {
-          title: "Selecting Quality Data Streams",
-          url: "data-streams/selecting-data-streams",
-        },
-        {
-          title: "Deprecating Streams",
-          url: "data-streams/deprecating-streams",
         },
       ],
     },
     {
-      section: "Tutorials",
+      section: "Market Guides",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams/market-guides",
+        },
+        {
+          title: "US Equities",
+          url: "data-streams/rwa-streams/us-equities",
+          children: [
+            {
+              title: "24/5 sessions",
+              url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
+            },
+            {
+              title: "24/7 continuous",
+              url: "data-streams/rwa-streams/24-7-us-equities",
+            },
+          ],
+        },
+        {
+          title: "APAC Equities",
+          url: "data-streams/rwa-streams/apac-equities",
+        },
+        {
+          title: "Futures",
+          url: "data-streams/rwa-streams/futures",
+        },
+      ],
+    },
+    {
+      section: "Integration Tutorials",
       contents: [
         {
           title: "Overview",
@@ -1787,17 +1841,22 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           highlightAsCurrent: ["data-streams/tutorials/rust-sdk-stream", "data-streams/tutorials/ts-sdk-stream"],
         },
         {
-          title: "Verify report data (EVM)",
-          url: "data-streams/tutorials/evm-onchain-report-verification",
-        },
-        {
-          title: "Verify report data (Solana)",
-          url: "data-streams/tutorials/solana-onchain-report-verification",
-          highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
-        },
-        {
-          title: "Verify report data (Stellar)",
-          url: "data-streams/tutorials/stellar-onchain-report-verification",
+          title: "Verify report data",
+          children: [
+            {
+              title: "EVM",
+              url: "data-streams/tutorials/evm-onchain-report-verification",
+            },
+            {
+              title: "Solana",
+              url: "data-streams/tutorials/solana-onchain-report-verification",
+              highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
+            },
+            {
+              title: "Stellar",
+              url: "data-streams/tutorials/stellar-onchain-report-verification",
+            },
+          ],
         },
         {
           title: "Canton Integration",
@@ -1806,47 +1865,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
       ],
     },
     {
-      section: "Concepts",
-      contents: [
-        {
-          title: "Architecture",
-          url: "data-streams/architecture",
-        },
-        {
-          title: "How Report Timestamps Work",
-          url: "data-streams/how-report-timestamps-work",
-        },
-        {
-          title: "Best Practices",
-          url: "data-streams/concepts/best-practices",
-        },
-        {
-          title: "Calculated Streams",
-          url: "data-streams/concepts/calculated-streams",
-        },
-        {
-          title: "Liquidity-Weighted Bid and Ask prices",
-          url: "data-streams/concepts/liquidity-weighted-prices",
-        },
-        {
-          title: "DEX State Price Streams",
-          url: "data-streams/concepts/dex-state-price-streams",
-        },
-        {
-          title: "Crypto Top-of-Book Streams",
-          url: "data-streams/concepts/crypto-top-of-book-and-mark-price",
-        },
-      ],
-    },
-    {
-      section: "Reference",
+      section: "API & SDK Reference",
       contents: [
         {
           title: "Overview",
           url: "data-streams/reference/overview",
         },
         {
-          title: "Data Streams Reference",
+          title: "Data Streams API",
           url: "data-streams/reference/data-streams-api",
           children: [
             {
@@ -1900,10 +1926,6 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
             {
               title: "Settlement Verifier",
               url: "data-streams/reference/data-streams-api/settlement-verifier",
-            },
-            {
-              title: "Onchain report verification (Stellar)",
-              url: "data-streams/tutorials/stellar-onchain-report-verification",
             },
           ],
         },

@@ -8,7 +8,8 @@ jest.unstable_mockModule("../../../db/supabase.ts", () => ({
 }))
 
 const { is247Stream, get247Category, matches247StreamFilter } = await import("./twentyFourSeven.ts")
-const { is247USEquitiesStream, matches247USEquitiesStreamFilter } = await import("./feedMetadata.ts")
+const { is247USEquitiesStream, matches247USEquitiesStreamFilter, is247TokenizedEquityFeed } =
+  await import("./feedMetadata.ts")
 const { isFeedVisible, shouldHideStreamFeedId } = await import("./feedVisibility.ts")
 
 const verifierStream = (docs: Record<string, unknown>, overrides: Record<string, unknown> = {}) => ({
@@ -159,6 +160,41 @@ describe("shouldHideStreamFeedId", () => {
   })
 })
 
+describe("is247TokenizedEquityFeed", () => {
+  const dataFeed = (docs: Record<string, unknown>, overrides: Record<string, unknown> = {}) => ({
+    contractType: "aggregator",
+    ...overrides,
+    docs,
+  })
+
+  it("detects non-verifier 24/7 smoothed feeds", () => {
+    expect(is247TokenizedEquityFeed(dataFeed({ attributeType: "247Smoothed", assetClass: "Equities" }))).toBe(true)
+    expect(is247TokenizedEquityFeed(dataFeed({ attributeType: "247CustomPrice" }))).toBe(true)
+  })
+
+  it("excludes verifier streams and ordinary tokenized equity feeds", () => {
+    expect(is247TokenizedEquityFeed(dataFeed({ attributeType: "247CustomPrice" }, { contractType: "verifier" }))).toBe(
+      false
+    )
+    expect(is247TokenizedEquityFeed(dataFeed({ attributeType: "TotalReturnMultiplier" }))).toBe(false)
+  })
+
+  it("is visible on the tokenized equity page only when opted in", () => {
+    const feed = dataFeed({ attributeType: "247Smoothed", assetClass: "Equities" })
+
+    expect(isFeedVisible(feed, "tokenizedEquity")).toBe(false)
+    expect(isFeedVisible(feed, "tokenizedEquity", "", { show247TokenizedEquity: true })).toBe(true)
+  })
+
+  it("keeps the existing tokenized-equity behavior for hidden entries", () => {
+    // Tokenized equity pages have always allowed hidden entries through
+    // isFeedVisible; the server still drops hidden entries earlier.
+    const feed = dataFeed({ attributeType: "247Smoothed", assetClass: "Equities", hidden: true })
+
+    expect(isFeedVisible(feed, "tokenizedEquity", "", { show247TokenizedEquity: true })).toBe(true)
+  })
+})
+
 describe("is247USEquitiesStream", () => {
   const usEquities = (docs: Record<string, unknown>) =>
     verifierStream({
@@ -169,23 +205,45 @@ describe("is247USEquitiesStream", () => {
       ...docs,
     })
 
-  it("detects v11 24/7 equity streams", () => {
+  it("detects both v2 24/7 TWAP and v11 fast/slow equity streams", () => {
     expect(is247USEquitiesStream(usEquities({}))).toBe(true)
     expect(is247USEquitiesStream(usEquities({ attributeType: "247Smoothed" }))).toBe(true)
+    expect(is247USEquitiesStream(usEquities({ attributeType: "247", schema: "v2" }))).toBe(true)
   })
 
-  it("rejects other 24/7 products and schemas", () => {
-    expect(is247USEquitiesStream(usEquities({ schema: "v2" }))).toBe(false)
+  it("rejects non-equity 24/7 products and ordinary equity streams", () => {
     expect(is247USEquitiesStream(usEquities({ assetClass: "Futures" }))).toBe(false)
+    expect(is247USEquitiesStream(usEquities({ assetClass: "Forex" }))).toBe(false)
     expect(is247USEquitiesStream(usEquities({ attributeType: "EquityPrice" }))).toBe(false)
   })
 
   it("filters rows only when the 24/7 US Equities filter is on", () => {
     const ordinary = verifierStream({ attributeType: "EquityPrice", feedType: "Equities" })
+    const v2 = usEquities({ attributeType: "247", schema: "v2" })
 
     expect(matches247USEquitiesStreamFilter(ordinary, false)).toBe(true)
     expect(matches247USEquitiesStreamFilter(ordinary, true)).toBe(false)
     expect(matches247USEquitiesStreamFilter(usEquities({}), true)).toBe(true)
+    expect(matches247USEquitiesStreamFilter(v2, true)).toBe(true)
+  })
+
+  it("makes v2 24/7 equity streams visible on the dedicated page", () => {
+    const v2 = verifierStream({ attributeType: "247", feedType: "247Price", schema: "v2", assetClass: "Equities" })
+
+    expect(isFeedVisible(v2, "streamsRwa", "", { show247USEquities: true })).toBe(true)
+  })
+
+  it("splits the 24/7 equity family into product sections", () => {
+    const twap = usEquities({ attributeType: "247", schema: "v2" })
+    const perps = usEquities({ attributeType: "247Perps" })
+    const lending = usEquities({ attributeType: "247CustomPrice" })
+
+    expect(matches247USEquitiesStreamFilter(twap, true, "twap")).toBe(true)
+    expect(matches247USEquitiesStreamFilter(twap, true, "perps")).toBe(false)
+    expect(matches247USEquitiesStreamFilter(perps, true, "perps")).toBe(true)
+    expect(matches247USEquitiesStreamFilter(perps, true, "twap")).toBe(false)
+    expect(matches247USEquitiesStreamFilter(lending, true, "lending")).toBe(true)
+    expect(matches247USEquitiesStreamFilter(lending, true, "perps")).toBe(false)
   })
 })
 

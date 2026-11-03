@@ -37,7 +37,12 @@ import {
 } from "~/features/feeds/utils/feedMetadata.ts"
 import { get247Category, is247Stream } from "~/features/feeds/utils/twentyFourSeven.ts"
 import { isFeedIdAddressedNetwork } from "~/features/feeds/utils/feedIdAddressedNetworks.ts"
-import { getFeedTypeFlags, type SchemaFilterValue, type TwentyFourSevenFilterValue } from "~/features/feeds/types.ts"
+import {
+  getFeedTypeFlags,
+  type SchemaFilterValue,
+  type TwentyFourSevenFilterValue,
+  type TwentyFourSevenProduct,
+} from "~/features/feeds/types.ts"
 import { useFilteredFeedMetadata } from "~/features/feeds/hooks/useFilteredFeedMetadata.ts"
 
 const feedItems = monitoredFeeds.mainnet
@@ -1660,7 +1665,9 @@ export const MainnetTable = ({
   show24x5Feeds,
   show247Streams,
   show247USEquities,
+  show247TokenizedEquity,
   twentyFourSevenFilter,
+  twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
   tradingHoursFilter,
@@ -1690,7 +1697,9 @@ export const MainnetTable = ({
   show24x5Feeds?: boolean
   show247Streams?: boolean
   show247USEquities?: boolean
+  show247TokenizedEquity?: boolean
   twentyFourSevenFilter?: TwentyFourSevenFilterValue
+  twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
@@ -1728,7 +1737,9 @@ export const MainnetTable = ({
     show24x5Feeds,
     show247Streams,
     show247USEquities,
+    show247TokenizedEquity,
     twentyFourSevenFilter,
+    twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
     tradingHoursFilter,
@@ -1742,6 +1753,7 @@ export const MainnetTable = ({
       tokenizedEquityProvider,
       extendedHoursCategory: forceExtendedHoursCategory,
       show247USEquities,
+      show247TokenizedEquity,
     },
   })
 
@@ -1854,7 +1866,9 @@ export const TestnetTable = ({
   show24x5Feeds,
   show247Streams,
   show247USEquities,
+  show247TokenizedEquity,
   twentyFourSevenFilter,
+  twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
   tradingHoursFilter,
@@ -1881,7 +1895,9 @@ export const TestnetTable = ({
   show24x5Feeds?: boolean
   show247Streams?: boolean
   show247USEquities?: boolean
+  show247TokenizedEquity?: boolean
   twentyFourSevenFilter?: TwentyFourSevenFilterValue
+  twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
@@ -1912,7 +1928,9 @@ export const TestnetTable = ({
     show24x5Feeds,
     show247Streams,
     show247USEquities,
+    show247TokenizedEquity,
     twentyFourSevenFilter,
+    twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
     tradingHoursFilter,
@@ -1926,6 +1944,7 @@ export const TestnetTable = ({
       tokenizedEquityProvider,
       extendedHoursCategory: forceExtendedHoursCategory,
       show247USEquities,
+      show247TokenizedEquity,
     },
   })
 

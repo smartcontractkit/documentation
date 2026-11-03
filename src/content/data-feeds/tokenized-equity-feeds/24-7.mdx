@@ -21,11 +21,13 @@ whatsnext:
     "Learn about Tokenized Equity Feeds": "/data-feeds/tokenized-equity-feeds",
     "Learn about 24/7 US Equities on Data Streams": "/data-streams/rwa-streams/24-7-us-equities",
     "View the Asset Issuer Catalog": "/data-feeds/tokenized-equity-feeds/providers",
+    "Find Price Feed Addresses": "/data-feeds/price-feeds/addresses",
     "Learn about developer responsibilities": "/data-feeds/developer-responsibilities",
   }
 ---
 
 import { Aside } from "@components"
+import { FeedList } from "@features/feeds"
 
 <Aside type="note" title="Contact us before integrating">
   24/7 Tokenized Equity Feeds are built for lending protocols and have different behavior and risks from both standard
@@ -46,7 +48,7 @@ A 24/7 feed lets the onchain price move gradually over the weekend, so risk buil
 
 Each feed publishes the **Oracle Price**, a slow price built for collateral valuation, multiplied by the asset issuer's multiplier. As with 24/5 tokenized equity feeds, the answer is the value of the token, not the raw equity price. Multiplier sourcing and issuer-specific methodology are unchanged. See the [Asset Issuer Catalog](/data-feeds/tokenized-equity-feeds/providers) for details.
 
-The Oracle Price comes from the same source as the `lastTradedPrice` field on [24/7 US Equities streams](/data-streams/rwa-streams/24-7-us-equities). That page covers the methodology in detail. In short:
+The Oracle Price comes from the same source as the `lastTradedPrice` field on the [24/7 Perpetual Markets and Lending streams](/data-streams/rwa-streams/24-7-us-equities). That page covers the methodology in detail. In short:
 
 | Period                                                | Source of the Oracle Price                                                               |
 | :---------------------------------------------------- | :--------------------------------------------------------------------------------------- |
@@ -65,11 +67,17 @@ Like other Data Feeds, these feeds update onchain when the price moves beyond th
 
 The feed does not expose a market status or session flag onchain, and the `updatedAt` value returned by `latestRoundData` is the time of the last onchain update, not the time the underlying inputs were last observed.
 
+### Consuming the feed
+
+Read the feed like any other Data Feed, using `AggregatorV3Interface.latestRoundData()` and `decimals()`. Compare `updatedAt` against the feed's heartbeat to detect a missed update. See [API Reference](/data-feeds/api-reference) and [Using Data Feeds](/data-feeds/using-data-feeds) for the interfaces and examples. Feed addresses are listed in the table below and in [Price Feed Addresses](/data-feeds/price-feeds/addresses).
+
 ### Available assets
 
 24/7 coverage depends on liquid perpetual futures markets during off-hours, so not every tokenized equity has a 24/7 feed. Each asset is reviewed individually before launch, including its off-hours trading volume and how much it would cost to move its off-hours price, and the asset issuer must support it. This review lowers risk but does not remove it: covered assets can still be manipulated or dislocated during off-hours, and the [risks](#risks) below apply to every one of them. Other tokenized equities remain on 24/5 feeds. Coverage will expand as off-hours perpetual futures markets deepen.
 
-{/* DOCS TEAM: add the link or FeedList filter for 24/7 Tokenized Equity Feeds here. */}
+The table below shows the available 24/7 Tokenized Equity Feeds.
+
+<FeedList client:idle initialNetwork="ethereum-mainnet" dataFeedType="tokenizedEquity" force247TokenizedEquity={true} />
 
 ## Key differences from 24/5 tokenized equity feeds
 
@@ -87,7 +95,7 @@ All risks on the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds#ris
 
 ### Slow price, delayed liquidations
 
-The Oracle Price is designed to move gradually. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately, and a large weekend move can take hours to be fully reflected. This reduces the chance of borrowers being liquidated on a brief dislocation, but it also means liquidations after a sustained move can happen later than they would against a live market price, and arbitrage opportunities can appear in the meantime.
+The Oracle Price is designed to move gradually. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately, and a large weekend move can take hours to be fully reflected. This reduces the chance of borrowers being liquidated on a brief dislocation, but it also means liquidations after a sustained move can happen later than they would against a live market price, and arbitrage opportunities can appear in the meantime. The one exception is pre-market into regular hours, where the Oracle Price steps at 9:30 AM ET instead of blending. See [Pre-market to regular hours is a step change](/data-streams/rwa-streams/24-7-us-equities#pre-market-to-regular-hours-is-a-step-change) on the streams page.
 
 #### Mitigation
 
@@ -117,7 +125,7 @@ In both cases, the last onchain answer stands. Because the feed updates on devia
 
 - Check `updatedAt` against the feed's heartbeat and treat a missed heartbeat as stale
 - Define protocol behavior for a full weekend without updates, such as pausing new borrowing and capping liquidations
-- Integrators who need finer staleness signals can subscribe to the matching [24/7 US Equities stream](/data-streams/rwa-streams/24-7-us-equities) and read `marketStatus` and `lastSeenTimestampNs`
+- Integrators who need finer staleness signals can subscribe to the matching [24/7 Perpetual Markets or Lending stream](/data-streams/rwa-streams/24-7-us-equities) and read `marketStatus` and `lastSeenTimestampNs`
 
 ### Sunday reopen
 
@@ -137,3 +145,5 @@ US market holidays are priced as off-hours. The feed does not flag them.
 
 - Monitor corporate action announcements for every asset you list
 - Use an authoritative exchange holiday calendar
+
+For integration responsibilities, see [Developer Responsibilities](/data-feeds/developer-responsibilities).

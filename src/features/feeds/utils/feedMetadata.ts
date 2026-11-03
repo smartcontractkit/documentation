@@ -1,6 +1,6 @@
 import { resolveFeedCategory } from "~/db/feedCategories.js"
 import type { ChainNetwork } from "~/features/data/chains.ts"
-import type { TradingHoursFilterValue } from "../types.ts"
+import type { TradingHoursFilterValue, TwentyFourSevenProduct } from "../types.ts"
 import type { FeedCategoryData } from "../components/useBatchedFeedCategories.ts"
 import { getFeedCategoryFromBatch, getNetworkIdentifier } from "../components/useBatchedFeedCategories.ts"
 import { getStreamCategoryFromBatch } from "../components/useBatchedStreamCategories.ts"
@@ -182,27 +182,61 @@ export function matchesApacEquitiesStreamFilter(
 }
 
 /**
- * 24/7 US Equities streams are the v11 fast/slow-price streams that keep
- * publishing on weekends and holidays. They are a Data Streams product but
- * share the RDD `247` attribute prefix (currently `247CustomPrice`), so they
- * are not part of the generic 24/7 TWAP / Perpetual Markets filter.
+ * 24/7 US Equities streams are the equity members of the RDD `247` family.
+ * The family spans schemas: the live public streams are v2 `247` (TWAP), and
+ * the fast/slow-price product is v11 `247CustomPrice`. Both belong on the
+ * dedicated 24/7 page, so do not require a schema version here.
  */
 export function is247USEquitiesStream(metadata: FeedMetadata): boolean {
   const attributeType = metadata.docs?.attributeType
   if (typeof attributeType !== "string" || !/^247/i.test(attributeType)) return false
-  if (getSchemaVersion(metadata) !== "v11") return false
 
   const assetClass = metadata.docs?.assetClass
   return assetClass === "Equities" || assetClass === "Equity"
 }
 
+/** Match one 24/7 product line by RDD attribute type. */
+export function is247Product(metadata: FeedMetadata, product: TwentyFourSevenProduct): boolean {
+  const attributeType = metadata.docs?.attributeType
+  if (typeof attributeType !== "string") return false
+
+  if (product === "twap") return /^247(-twap)?$/i.test(attributeType)
+  if (product === "perps") return /^247perps/i.test(attributeType)
+  return /^247(customprice|smoothed)/i.test(attributeType)
+}
+
 /** 24/7 US Equities stream filter used by the dedicated 24/7 page. */
 export function matches247USEquitiesStreamFilter(
   metadata: FeedMetadata,
-  show247USEquities: boolean | undefined
+  show247USEquities: boolean | undefined,
+  product?: TwentyFourSevenProduct
 ): boolean {
   if (!show247USEquities) return true
-  return is247USEquitiesStream(metadata)
+  if (!is247USEquitiesStream(metadata)) return false
+  if (!product) return true
+
+  return is247Product(metadata, product)
+}
+
+/**
+ * 24/7 Tokenized Equity Data Feeds are the onchain Oracle Price feeds derived
+ * from 24/7 US Equities streams. They are non-verifier feeds and carry a 24/7
+ * attribute type (currently `247CustomPrice` / `247Smoothed`).
+ */
+export function is247TokenizedEquityFeed(metadata: FeedMetadata): boolean {
+  if (metadata.contractType === "verifier") return false
+
+  const attributeType = metadata.docs?.attributeType
+  return typeof attributeType === "string" && /^247(customprice|smoothed)/i.test(attributeType)
+}
+
+/** 24/7 Tokenized Equity feed filter used by the dedicated 24/7 page. */
+export function matches247TokenizedEquityFeedFilter(
+  metadata: FeedMetadata,
+  show247TokenizedEquity: boolean | undefined
+): boolean {
+  if (!show247TokenizedEquity) return true
+  return is247TokenizedEquityFeed(metadata)
 }
 
 /** Futures streams use the v14 schema. */
