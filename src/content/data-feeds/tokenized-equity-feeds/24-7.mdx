@@ -1,10 +1,10 @@
 ---
 section: dataFeeds
 date: "Last Modified"
-title: "24/7 Tokenized Equity Feeds"
+title: "24/7 Smoothed Tokenized Equity Feeds"
 metadata:
-  title: "24/7 Tokenized Equity Feeds | Chainlink Data Feeds"
-  description: "Learn how Chainlink 24/7 Tokenized Equity Feeds price tokenized stocks and ETFs through weekends and holidays, how they differ from 24/5 feeds, and the risks lending protocols should account for."
+  title: "24/7 Smoothed Tokenized Equity Feeds | Chainlink Data Feeds"
+  description: "Learn how Chainlink 24/7 Smoothed Tokenized Equity Feeds price tokenized stocks and ETFs through weekends and holidays, how they differ from 24/5 feeds, and the risks lending protocols should account for."
   keywords:
     [
       "Tokenized Equities",
@@ -30,13 +30,13 @@ import { Aside } from "@components"
 import { FeedList } from "@features/feeds"
 
 <Aside type="note" title="Contact us before integrating">
-  24/7 Tokenized Equity Feeds are built for lending protocols and have different behavior and risks from both standard
-  price feeds and 24/5 [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds). All developers must contact
-  [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) before integrating these
-  feeds.
+  24/7 Smoothed Tokenized Equity Feeds are built for lending protocols and have different behavior and risks from both
+  standard price feeds and 24/5 [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds). All developers must
+  contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) before integrating
+  these feeds.
 </Aside>
 
-24/7 Tokenized Equity Feeds keep publishing the value of a tokenized stock or ETF when the US equity market is closed. During the trading week they behave like the existing [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds). On weekends and US market holidays, instead of holding the last Friday price, they continue to update from an off-hours price derived from perpetual futures markets.
+24/7 Smoothed Tokenized Equity Feeds keep publishing the value of a tokenized stock or ETF when the US equity market is closed. During the trading week they behave like the existing [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds). On weekends and US market holidays, instead of holding the last Friday price, they continue to update from an off-hours price derived from perpetual futures markets.
 
 ## Why 24/7?
 
@@ -48,7 +48,7 @@ A 24/7 feed lets the onchain price move gradually over the weekend, so risk buil
 
 Each feed publishes the **Oracle Price**, a slow price built for collateral valuation, multiplied by the asset issuer's multiplier. As with 24/5 tokenized equity feeds, the answer is the value of the token, not the raw equity price. Multiplier sourcing and issuer-specific methodology are unchanged. See the [Asset Issuer Catalog](/data-feeds/tokenized-equity-feeds/providers) for details.
 
-The Oracle Price comes from the same source as the `lastTradedPrice` field on the [24/7 Perpetual Markets and Lending streams](/data-streams/rwa-streams/24-7-us-equities). That page covers the methodology in detail. In short:
+The Oracle Price comes from the same source as the `lastTradedPrice` field on the underlying [24/7 US Equities v11 streams](/data-streams/rwa-streams/24-7-us-equities). That page covers the methodology in detail. In short:
 
 | Period                                                | Source of the Oracle Price                                                               |
 | :---------------------------------------------------- | :--------------------------------------------------------------------------------------- |
@@ -75,13 +75,13 @@ Read the feed like any other Data Feed, using `AggregatorV3Interface.latestRound
 
 24/7 coverage depends on liquid perpetual futures markets during off-hours, so not every tokenized equity has a 24/7 feed. Each asset is reviewed individually before launch, including its off-hours trading volume and how much it would cost to move its off-hours price, and the asset issuer must support it. This review lowers risk but does not remove it: covered assets can still be manipulated or dislocated during off-hours, and the [risks](#risks) below apply to every one of them. Other tokenized equities remain on 24/5 feeds. Coverage will expand as off-hours perpetual futures markets deepen.
 
-The table below shows the available 24/7 Tokenized Equity Feeds.
+The table below shows the available 24/7 Smoothed Tokenized Equity Feeds.
 
 <FeedList client:idle initialNetwork="ethereum-mainnet" dataFeedType="tokenizedEquity" force247TokenizedEquity={true} />
 
 ## Key differences from 24/5 tokenized equity feeds
 
-|                        | 24/5 Tokenized Equity Feeds         | 24/7 Tokenized Equity Feeds                          |
+|                        | 24/5 Tokenized Equity Feeds         | 24/7 Smoothed Tokenized Equity Feeds                 |
 | :--------------------- | :---------------------------------- | :--------------------------------------------------- |
 | Weekends and holidays  | Holds the last value until the open | Continues to update from the off-hours price         |
 | Off-hours price source | None                                | Perpetual futures composite, smoothed                |
@@ -125,7 +125,7 @@ In both cases, the last onchain answer stands. Because the feed updates on devia
 
 - Check `updatedAt` against the feed's heartbeat and treat a missed heartbeat as stale
 - Define protocol behavior for a full weekend without updates, such as pausing new borrowing and capping liquidations
-- Integrators who need finer staleness signals can subscribe to the matching [24/7 Perpetual Markets or Lending stream](/data-streams/rwa-streams/24-7-us-equities) and read `marketStatus` and `lastSeenTimestampNs`
+- Integrators who need finer staleness signals can subscribe to the matching [24/7 US Equities stream](/data-streams/rwa-streams/24-7-us-equities) and read `marketStatus` and `lastSeenTimestampNs`
 
 ### Sunday reopen
 

@@ -1327,7 +1327,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               title: "Tokenized Equity Feeds",
               url: "data-feeds/tokenized-equity-feeds",
               children: [
-                { title: "24/7 Tokenized Equity Feeds", url: "data-feeds/tokenized-equity-feeds/24-7" },
+                { title: "24/7 Smoothed", url: "data-feeds/tokenized-equity-feeds/24-7" },
                 {
                   title: "Provider Catalog",
                   url: "data-feeds/tokenized-equity-feeds/providers",
