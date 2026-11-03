@@ -1,5 +1,6 @@
 import { GraphQLClient } from "graphql-request"
 import type { TypedDocumentNode } from "@graphql-typed-document-node/core"
+import { getSecret } from "astro:env/server"
 
 const GRAPHQL_CONFIG = {
   MAX_RETRIES: 3,
@@ -30,8 +31,9 @@ let clientInstance: GraphQLClient | null = null
 export function getGraphQLClient(): GraphQLClient {
   if (clientInstance) return clientInstance
 
-  const endpoint = import.meta.env.CCIP_GRAPHQL_ENDPOINT
-  const apiKey = import.meta.env.CCIP_GRAPHQL_API_KEY
+  // Read at runtime (not inlined at build), including from .env.local / .env.[mode] files in development
+  const endpoint = getSecret("CCIP_GRAPHQL_ENDPOINT")
+  const apiKey = getSecret("CCIP_GRAPHQL_API_KEY")
 
   if (!endpoint) throw new Error("CCIP_GRAPHQL_ENDPOINT is not configured")
   if (!apiKey) throw new Error("CCIP_GRAPHQL_API_KEY is not configured")

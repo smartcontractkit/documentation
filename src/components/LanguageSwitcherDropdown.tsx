@@ -50,7 +50,8 @@ export function LanguageSwitcherDropdown() {
 
     // Listen for languageChanged events from other components (like CodeHighlightBlockMulti)
     const handleLanguageChanged = (event: CustomEvent) => {
-      const newLang = event.detail.language as SupportedLanguage
+      const newLang = event.detail?.language as SupportedLanguage | undefined
+      if (newLang !== "go" && newLang !== "ts") return
       // Update nanostore to sync all components
       selectedLanguage.set(newLang)
     }
