@@ -98,6 +98,18 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
           about integrating Chainlink Data Streams with your applications.
         </p>
       </Aside>
+      {(dataFeedType === "streamsNav" || dataFeedType === "streamsExRate") && (
+        <Aside type="caution" title="Single source risk">
+          <p>
+            {dataFeedType === "streamsNav"
+              ? "NAV and Proof of Reserve values typically come from a single issuer, fund administrator, custodian, or attestor."
+              : "Exchange rates are typically read from a single onchain contract or calculated by a single issuing protocol."}{" "}
+            Review{" "}
+            <a href="/data-streams/selecting-data-streams#single-source-data-providers">Single Source Data Providers</a>{" "}
+            and implement the safeguards described there before using these streams.
+          </p>
+        </Aside>
+      )}
     </>
   ) : dataFeedType === "smartdata" ? (
     <>
@@ -175,7 +187,10 @@ const feedItems: FeedDataItem[] = monitoredFeeds.mainnet
           Proof of Reserve feeds can vary in their configurations. Please be careful with the configuration of the feeds
           used by your smart contracts. You are solely responsible for reviewing the quality of the data (e.g., a Proof
           of Reserve feed) that you integrate into your smart contracts and assume full responsibility for any damage,
-          injury, or any other loss caused by your use of the feeds used by your smart contracts.
+          injury, or any other loss caused by your use of the feeds used by your smart contracts. Many Proof of Reserve
+          and NAV feeds rely on a single data provider. Review{" "}
+          <a href="/data-feeds/selecting-data-feeds#single-source-data-providers">Single Source Data Providers</a> for
+          the associated risks and required safeguards.{" "}
           <a href="/data-feeds/selecting-data-feeds#risk-mitigation">
             Learn more about making responsible data quality decisions.
           </a>
