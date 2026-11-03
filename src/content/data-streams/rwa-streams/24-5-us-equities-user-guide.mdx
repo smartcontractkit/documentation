@@ -22,6 +22,10 @@ Chainlink 24/5 U.S. Equities Streams provide real-time equity pricing data acros
 
 The data referenced in this document covers 24/5 trading hours in US equities on a range of traditional venues. While there is currently no trading activity in traditional markets over the weekend on any venue, protocols can extend their pricing coverage to 24/7 in multiple ways, such as leveraging the pricing of [tokenized stocks](#stream-switching-example-logic) on secondary markets such as CEXes and DEXes.
 
+For a select set of assets, Chainlink also offers [24/7 US Equities streams](/data-streams/rwa-streams/24-7-us-equities): one continuous stream per product that handles session switching and transitions for you, and keeps publishing on weekends and holidays using an off-hours price derived from perpetual futures markets.
+
+For a side-by-side comparison, see the [US Equities overview](/data-streams/rwa-streams/us-equities#24-5-vs-24-7).
+
 Developers are responsible for choosing the appropriate feed and ensuring that the operation and performance of their choice matches expectations. For more information, please visit the Chainlink [documentation](/data-streams/developer-responsibilities).
 
 ## Schema
@@ -54,11 +58,17 @@ This change does not apply to other streams using the RWA Advanced (v11) schema.
   should not be treated as a proxy for total market liquidity and are primarily informational.
 </Aside>
 
+## Available Streams
+
+The table below shows all available 24/5 US Equities streams. Use the **Time segment** filter to view streams for specific trading sessions.
+
+<FeedList client:idle initialNetwork="arbitrum" dataFeedType="streamsRwa" force24x5Only={true} embedded={true} />
+
 ## Feeds
 
 Each instrument is exposed through three distinct data streams feeds, each corresponding to a specific trading phase: **Regular Hours**, **Extended Hours**, and **Overnight Hours**.
 
-You can view all available 24/5 US Equities streams in the [stream table viewer](/data-streams/stream-ids) or see the [complete list below](#available-streams).
+Use the table above to view the available 24/5 US Equities streams, or browse the [RWA stream directory](/data-streams/rwa-streams).
 
 For example, **TSLA** is available via the following streams:
 
@@ -135,6 +145,8 @@ Consumers must treat `marketStatus = 0` (Unknown) as a valid state and define de
 #### Closed (`marketStatus = 5`)
 
 Market status `5` indicates the market is closed, which includes weekends, public holidays, and unexpected market closures. During these periods, all three feeds will carry stale values. This reflects true underlying market inactivity rather than an outage or failure.
+
+If you need prices during these periods, check whether the asset is covered by the [24/7 US Equities streams](/data-streams/rwa-streams/24-7-us-equities).
 
 ##### Mitigation
 
@@ -430,14 +442,6 @@ Consumers must:
 
 For detailed market hours and trading schedules, see the [Market Hours](/data-streams/market-hours) documentation.
 
-## Available Streams
+## Support
 
-The table below shows all available 24/5 US Equities streams. Use the **Time segment** filter to view streams for specific trading sessions.
-
-<FeedList
-  client:idle
-  initialNetwork="arbitrum"
-  dataFeedType="streamsRwa"
-  force24x5Only={true}
-  allowNetworkTableExpansion={true}
-/>
+For inquiries related to a data outage, contact Chainlink Labs at [data_support@chain.link](mailto:data_support@chain.link).

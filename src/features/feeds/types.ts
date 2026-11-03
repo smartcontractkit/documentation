@@ -28,6 +28,8 @@ export type MarketHoursFilterValue = "all" | "24x5" | "24x7"
 /** 24/7 sub-products, keyed by RDD attribute type. "smoothed" is a Data Feeds product, not a stream. */
 export type TwentyFourSevenCategory = "twap" | "perps" | "smoothed"
 export type TwentyFourSevenFilterValue = "all" | "twap" | "perps"
+/** 24/7 product lines shown as separate sections on asset guides. */
+export type TwentyFourSevenProduct = "twap" | "perps" | "lending"
 
 /** Flags derived from the active feed page type. Used by tables and FeedList. */
 export interface FeedTypeFlags {
