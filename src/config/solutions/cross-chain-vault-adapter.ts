@@ -4,7 +4,7 @@ export const crossChainVaultAdapter: Solution = {
   slug: "cross-chain-vault-adapter",
   title: "Cross-Chain Vault Adapter",
   description:
-    "A CCIP adapter that lets users on other chains deposit into and redeem from your existing ERC-4626 vault, while vault accounting stays on the hub chain, the chain where the vault and the adapter are deployed.",
+    "Open your existing vault to users on other chains, so they can deposit and withdraw without bridging or switching networks.",
   products: ["ccip"],
   categories: ["cross-chain", "vaults"],
   repoUrl: "https://github.com/smartcontractkit/cross-chain-vault-adapters",

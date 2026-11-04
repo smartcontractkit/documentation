@@ -28,11 +28,11 @@ export type Solution = {
   /**
    * Sidebar section keys of the products this solution uses. Values MUST come from
    * SIDEBAR_SECTIONS in src/config/sidebarSections.ts, for example "ccip", "cre", "dataStreams".
-   * Not display names. This drives which product sidebars show the solution and the hub's
-   * product filter.
+   * Not display names. This drives which product sidebars show the solution and the product
+   * badges on the hub card.
    */
   products: Sections[]
-  /** Free-form use-case tags. Drives the hub's category filter. Keep the vocabulary small. */
+  /** Free-form use-case tags. Not displayed for now (the hub has no category filter). Keep the vocabulary small. */
   categories: string[]
   /** Public repository for the reference implementation. */
   repoUrl?: string
@@ -42,7 +42,7 @@ export type Solution = {
   datePublished?: string
   /**
    * Hides the solution from every rendered surface: no routes, no hub card, no sidebar
-   * entries, no filter facets. The content and manifest stay in the repo, still validated
+   * entries. The content and manifest stay in the repo, still validated
    * by the build guards, so they keep working as copyable examples.
    */
   hidden?: boolean

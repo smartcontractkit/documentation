@@ -63,18 +63,3 @@ export function toPageId(slug: string, entryId: string): string {
 export function toPagePath(slug: string, pageId: string): string {
   return pageId === "index" ? `/solutions/${slug}` : `/solutions/${slug}/${pageId}`
 }
-
-/**
- * Distinct facet values across all solutions, for the hub filters.
- * Never hardcode filter values in the hub markup: adding a solution with a new
- * category must add its filter automatically.
- */
-export function getSolutionFacets() {
-  const products = new Set<string>()
-  const categories = new Set<string>()
-  for (const s of SOLUTIONS) {
-    s.products.forEach((p) => products.add(p))
-    s.categories.forEach((c) => categories.add(c))
-  }
-  return { products: [...products].sort(), categories: [...categories].sort() }
-}

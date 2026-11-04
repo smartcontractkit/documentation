@@ -100,8 +100,8 @@ directions are checked at build time.
 
 In `src/config/solutions/index.ts`, import your manifest and add it to the `ALL_REGISTERED` array. Two lines.
 
-That is the whole change. You do not touch `src/config/sidebar.ts`, any layout, the hub page or the filters.
-Sidebar placement, the hub card, the hub filters, whether a navigation renders, and the legal disclaimer are all
+That is the whole change. You do not touch `src/config/sidebar.ts`, any layout, the hub page.
+Sidebar placement, the hub card, whether a navigation renders, and the legal disclaimer are all
 derived from what you wrote.
 
 ## Complete documentation for AI agents
@@ -146,7 +146,7 @@ While it is `false`:
 
 - `/solutions` is not built (404) and is not in the sitemap
 - the "Solutions" entry is removed from the site header, on desktop and mobile
-- the "All Chainlink Solutions" breadcrumb is removed from the bar above each solution
+- the "All Product Solutions" breadcrumb is removed from the bar above each solution
 
 Solutions that are not `hidden` are unaffected: their pages are built and they appear in the "Solutions" group of
 every product sidebar they declare. This is how solutions ship one at a time before the hub is announced. Flip the

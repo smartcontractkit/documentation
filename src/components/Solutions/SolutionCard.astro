@@ -8,16 +8,9 @@ interface Props {
 const { solution } = Astro.props
 
 const products = solution.products.map((p) => SOLUTION_PRODUCTS[p]).filter(Boolean)
-const displayCategories = solution.categories.slice(0, 3)
 ---
 
-<a
-  href={`/solutions/${solution.slug}`}
-  class="solution-card"
-  data-solution
-  data-products={solution.products.join(",")}
-  data-categories={solution.categories.join(",")}
->
+<a href={`/solutions/${solution.slug}`} class="solution-card">
   <!-- Decorative left strip, same as TemplateCard.astro -->
   <div class="card-strip"></div>
 
@@ -31,9 +24,6 @@ const displayCategories = solution.categories.slice(0, 3)
     <p class="card-description">{solution.description}</p>
 
     <div class="card-footer">
-      <div class="categories">
-        {displayCategories.map((c) => <span class="category-chip">{c}</span>)}
-      </div>
       <svg
         class="arrow-icon"
         width="20"
@@ -63,12 +53,6 @@ const displayCategories = solution.categories.slice(0, 3)
     color: inherit;
     overflow: hidden;
     padding-left: 20px;
-  }
-
-  /* REQUIRED, same reason as .empty-state[hidden] on the hub page: the filter script sets
-     `card.hidden = true` and the UA [hidden] rule loses to `display: flex`. */
-  .solution-card[hidden] {
-    display: none;
   }
 
   .solution-card:hover {
@@ -142,27 +126,10 @@ const displayCategories = solution.categories.slice(0, 3)
   .card-footer {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 12px;
     margin-top: auto;
     padding-top: 24px;
-  }
-
-  .categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .category-chip {
-    font-size: 11px;
-    font-weight: 500;
-    color: #5a6175;
-  }
-
-  .category-chip::before {
-    content: "#";
-    opacity: 0.6;
   }
 
   .arrow-icon {
