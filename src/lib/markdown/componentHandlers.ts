@@ -18,6 +18,7 @@ import {
 } from "../../config/data/ccip/utils.js"
 import { TokenMechanism, type CCIPEventEntry, type CCIPSendErrorEntry } from "../../config/data/ccip/types.js"
 import { REPORT_SCHEMA_DEFINITIONS } from "../../features/feeds/components/reportSchemaData.js"
+import { describeRequiredRole } from "../../components/RequiredRole/roles.js"
 
 type StaticValue = null | boolean | number | string | StaticValue[] | { [key: string]: StaticValue }
 type EstreeNode = {
@@ -192,6 +193,31 @@ export function handleProductOnly(node: MdxJsxNode, parent: Parent, index: numbe
   const allowed = typeof products === "string" ? products.split(",").map((value) => value.trim()) : []
   const include = productContext ? allowed.includes(productContext) : !strict
   return replaceNode(node, parent, index, include ? ((node as Parent).children ?? []) : [])
+}
+
+/**
+ * Projects <RequiredRole> as a sentence, for example:
+ * "**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)".
+ * Any body of the component follows the sentence.
+ */
+export function handleRequiredRole(
+  node: MdxJsxNode,
+  parent: Parent,
+  index: number,
+  context: ComponentContext
+): number | void {
+  const description = describeRequiredRole(staticAttribute(node, "product"), staticAttribute(node, "role"))
+  if (!description) {
+    console.warn(`Unknown or dynamic RequiredRole in ${context.mdxAbsPath}`)
+    return dropNode(parent, index)
+  }
+  const sentence = `${description.name}${description.orHigher ? " or higher" : ""}. `
+  return replaceNode(node, parent, index, [
+    { type: "strong", children: [textNode("Required role:")] } as Parent,
+    textNode(` ${sentence}`),
+    linkNode("What each role can do", description.url),
+    ...((node as Parent).children ?? []),
+  ])
 }
 
 function linkNode(label: string, url: string): Parent {
