@@ -1,10 +1,10 @@
 ---
 section: dataStreams
 date: "Last Modified"
-title: "APAC Equities"
+title: "APAC Equities & Indices"
 metadata:
-  title: "APAC Equities | Chainlink Data Streams"
-  description: "Reference for Chainlink Asia-Pacific (APAC) Equities Data Streams, covering coverage, schema, trading hours, and risk considerations."
+  title: "APAC Equities & Indices | Chainlink Data Streams"
+  description: "Reference for Chainlink Asia-Pacific (APAC) Equities and Indices Data Streams, covering coverage, schema, trading hours, and risk considerations."
 whatsnext:
   {
     "Find the schema of data to expect from Data Streams reports: RWA Advanced (v11)": "/data-streams/reference/report-schema-v11",
@@ -61,6 +61,19 @@ APAC Equities streams cover major indices and single-name stocks across Asia-Pac
 | Shenzhen Stock Exchange | SZSE | CNY            | Available |
 | Taiwan Stock Exchange   | TWSE | TWD            | Available |
 | Hong Kong Exchange      | HKEX | HKD            | Available |
+
+### Indices <span id="indices"></span>
+
+Index streams track the level of major APAC equity indices. They follow the same schema, trading hours, and `marketStatus` behavior as single-name streams on the same exchange, including the TSE lunch break.
+
+Index streams publish `mid`, `bid`, and `ask`. Indices are not traded directly, so `lastTradedPrice` is not populated for index streams.
+
+| Stream       | Exchange | Tracks                                                                |
+| :----------- | :------- | :-------------------------------------------------------------------- |
+| 225.JP/JPY   | TSE      | A price-weighted index of 225 large-cap stocks listed on the TSE      |
+| KR200.KR/KRW | KRX      | A capitalization-weighted index of 200 large-cap stocks listed on KRX |
+
+Stream names describe the benchmark each stream tracks. They are not official index names, and these streams are not affiliated with, sponsored, or endorsed by any index provider. Like all APAC Equities streams, index streams are [single-source](#single-source-data); see [Index streams](#index-streams) for index-specific risks.
 
 ## Trading hours
 
@@ -134,9 +147,17 @@ Protocols are responsible for detecting halt conditions and implementing safegua
 
 Equities are subject to corporate actions (for example, stock splits, reverse splits, and dividends) that can materially impact price and position value between trading sessions. Protocols should monitor corporate action events and adjust pricing logic, collateral parameters, and open positions accordingly. This may include pausing markets during corporate action windows to prevent unfair liquidations.
 
+### Index streams
+
+[Index streams](#indices) carry additional considerations beyond those of single-name stocks:
+
+- **Not the official index level.** The stream value is an independent representation of the index and can differ from the level published by the index provider, including official opening and closing levels. Do not assume the stream will match an official settlement or closing value.
+- **Constituent halts.** Individual constituents can be halted while others continue trading. This is not reflected in `marketStatus`, and the index value may be computed from stale constituent prices during the halt.
+- **Index methodology events.** Rebalances, constituent changes, and divisor adjustments are made by the index provider and can move the index level independently of market activity. Monitor index provider announcements and adjust risk parameters around these events.
+
 ### Single-source data
 
-Each APAC market is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on the underlying provider's data quality and availability. There is no redundant cross-validation between providers for a given feed.
+Each APAC market, including index streams, is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on the underlying provider's data quality and availability. There is no redundant cross-validation between providers for a given feed. See [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) for the associated risks and required safeguards.
 
 If the underlying provider fails to deliver data during an active session, there is no fallback source. A gap in price data during exchange open hours may not be accompanied by a `marketStatus` change — the feed may continue reporting `marketStatus = 2` (Open) while `lastSeenTimestampNs` stops advancing. Staleness monitoring is therefore critical during open sessions, not only when the market is closed.
 

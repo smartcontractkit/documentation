@@ -1,13 +1,17 @@
 ---
 section: dataStreams
 date: Last Modified
-title: "US Equities"
+title: "US Equities & Indices"
 metadata:
-  title: "US Equities | Chainlink Data Streams"
-  description: "Overview of Chainlink Data Streams for US equities and ETFs, including the 24/5 and 24/7 stream families and how to choose between them."
+  title: "US Equities & Indices | Chainlink Data Streams"
+  description: "Overview of Chainlink Data Streams for US equities, ETFs, and equity indices, including the 24/5 and 24/7 stream families, index streams, and how to choose between them."
 ---
 
+import { Aside } from "@components"
+
 Chainlink Data Streams offers two families for US single-name equities and ETFs: [24/5 streams](/data-streams/rwa-streams/24-5-us-equities-user-guide) and [24/7 streams](/data-streams/rwa-streams/24-7-us-equities). Both cover US equities, but they differ in how sessions are handled, which fields you consume, and what happens when the market is closed.
+
+Data Streams also offers [index streams](#indices) that track major US equity indices during regular trading hours.
 
 ## 24/5 vs 24/7 <span id="24-5-vs-24-7"></span>
 
@@ -27,8 +31,39 @@ For field-level behavior by product, see the [24/7 US Equities User Guide](/data
 - **[24/5](/data-streams/rwa-streams/24-5-us-equities-user-guide#available-streams)** if you want session-level control and full control over how regular, extended, and overnight prices are combined.
 - **[24/7 for Perpetual Markets](/data-streams/rwa-streams/24-7-us-equities#24-7-for-perpetual-markets)** if you need a continuous fast price (`mid`, `bid`, `ask`) through weekends and holidays.
 - **[24/7 TWAP](/data-streams/rwa-streams/24-7-us-equities#24-7-twap)** if you need a single continuous TWAP price per asset.
+- **[Indices](#indices)** if you need the level of a major US equity index during regular trading hours.
 
 For lending, use [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7), which publish the slow price onchain.
+
+## Indices <span id="indices"></span>
+
+Index streams track the level of major US equity indices. They publish during regular US trading hours only and use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11), with `marketStatus` handled the same way as the Regular Hours stream in the [24/5 family](/data-streams/rwa-streams/24-5-us-equities-user-guide). There are no Extended Hours, Overnight Hours, or 24/7 index streams.
+
+Index streams publish `mid`, `bid`, and `ask`. Indices are not traded directly, so `lastTradedPrice` is not populated for index streams.
+
+| Stream    | Tracks                                                             |
+| :-------- | :----------------------------------------------------------------- |
+| US500/USD | A broad US large-cap index of 500 leading companies                |
+| US100/USD | A US large-cap index of 100 of the largest non-financial companies |
+| US30/USD  | A price-weighted index of 30 US blue-chip companies                |
+
+Stream names describe the benchmark each stream tracks. They are not official index names, and these streams are not affiliated with, sponsored, or endorsed by any index provider. Find stream IDs in the [RWA stream directory](/data-streams/rwa-streams).
+
+<Aside type="caution" title="Index streams are single-source">
+  US single-name equity streams aggregate data from multiple market data vendors. Index streams do not: each index
+  stream relies on a single data provider, with no cross-validation and no fallback source. Review [Single Source Data
+  Providers](/data-streams/selecting-data-streams#single-source-data-providers) before integrating.
+</Aside>
+
+### Index risks <span id="index-risks"></span>
+
+Integrating protocols are responsible for monitoring and risk controls. In addition to the risks in the [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide), index streams carry the following:
+
+- **Single data provider.** If the provider publishes incorrect data, is delayed, or stops delivering during an open session, the stream reflects that issue. A gap may not be accompanied by a `marketStatus` change: the stream can keep reporting `marketStatus = 2` (Open) while `lastSeenTimestampNs` stops advancing. Monitor freshness during open sessions, apply deviation checks against recent valid observations, and pause or restrict activity when data quality signals trigger.
+- **Not the official index level.** The stream value is an independent representation of the index and can differ from the level published by the index provider, including official opening and closing levels. Do not assume the stream will match an official settlement or closing value.
+- **Regular hours only.** Outside regular trading hours `marketStatus = 5` (Closed) and the price holds at its last value. The first prints after the open can gap materially from the prior close. Don't combine index streams with Extended or Overnight single-name streams and expect a continuous index price.
+- **Market-wide and constituent halts.** Market-wide circuit breakers halt trading across US equities, and individual constituents can be halted while others trade. **Neither is reflected in `marketStatus`.** During a halt, the index value may be frozen or computed from stale constituent prices.
+- **Index methodology events.** Rebalances, constituent changes, and divisor adjustments are made by the index provider and can move the index level independently of market activity. Monitor index provider announcements and adjust risk parameters around these events.
 
 ## Guides
 
