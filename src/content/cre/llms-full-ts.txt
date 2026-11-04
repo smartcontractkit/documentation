@@ -76,7 +76,7 @@ function onCronTrigger(runtime: Runtime<Config>): Record<string, never> {
 
 When a trigger fires, the Workflow DON orchestrates the execution of your callback function on every node in the network. **Each execution is independent and stateless**—your callback runs, performs its work, returns a result, and completes. Inside your callback, you create SDK clients and invoke capabilities.
 
-Each capability call is an **asynchronous operation** that returns a `Promise`—a placeholder for a future result. This allows you to pipeline multiple capability calls and run them in parallel.
+Each capability call is an **asynchronous operation** that returns a `Promise`—a placeholder for a future result. This allows you to pipeline multiple capability calls and run them in parallel. See [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows) for when and how to do this.
 
 Your callback typically follows this pattern:
 
@@ -2021,6 +2021,7 @@ The guides below all run your workflow's logic on Workflow DON nodes, the defaul
 | [Secrets](/cre/guides/workflow/secrets)                                | Manage API keys and credentials safely, in simulation and in deployed workflows.    |
 | [Using Time in Workflows](/cre/guides/workflow/time-in-workflows)      | Get a deterministic, consensus-safe timestamp with `runtime.now()`.                 |
 | [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) | Generate random numbers that stay consistent across nodes so consensus still holds. |
+| [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows)      | Reduce execution time by running independent capability calls in parallel.          |
 
 ---
 
@@ -13783,6 +13784,12 @@ const onTrigger = (runtime: Runtime<Config>): MyResult => {
 
 The key is to call `.result()` in a **fixed, deterministic order** (API 1, then API 2 if needed), not racing them.
 
+> **TIP: Independent calls can still run in parallel**
+>
+> A fallback is sequential because the second API is only used if the first one fails. If the calls are truly
+> independent, start both before resolving either one, then resolve them in a fixed order. See [Optimizing
+> Workflows](/cre/guides/workflow/optimizing-workflows).
+
 > **NOTE: Custom code vs SDK capabilities**
 >
 > You can use `async/await` and Promises in your own custom functions. However, all SDK capabilities (HTTP requests,
@@ -14873,10 +14880,8 @@ const fetchMathResult = (nodeRuntime: NodeRuntime<Config>): bigint => {
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
-  // Step 1: Fetch offchain data (from Part 2)
-  const offchainValue = runtime.runInNodeMode(fetchMathResult, consensusMedianAggregation())().result()
-
-  runtime.log(`Successfully fetched offchain value: ${offchainValue}`)
+  // Step 1: Start the offchain fetch (from Part 2), but don't wait for it yet.
+  const offchainPromise = runtime.runInNodeMode(fetchMathResult, consensusMedianAggregation())()
 
 
   // Get the first EVM configuration from the list.
@@ -14901,16 +14906,20 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   })
 
   // Call the contract
-  const contractCall = evmClient
-    .callContract(runtime, {
-      call: encodeCallMsg({
-        from: zeroAddress,
-        to: evmConfig.storageAddress as `0x${string}`,
-        data: callData,
-      }),
-      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
-    })
-    .result()
+  const contractCallPromise = evmClient.callContract(runtime, {
+    call: encodeCallMsg({
+      from: zeroAddress,
+      to: evmConfig.storageAddress as `0x${string}`,
+      data: callData,
+    }),
+    blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+  })
+
+  // Collect the offchain result, then the onchain result, in a fixed order.
+  const offchainValue = offchainPromise.result()
+  runtime.log(`Successfully fetched offchain value: ${offchainValue}`)
+
+  const contractCall = contractCallPromise.result()
 
   // Decode the result
   const onchainValue = decodeFunctionResult({
@@ -14951,6 +14960,11 @@ export async function main() {
 - **`decodeFunctionResult()`**: From Viem, decodes the contract call response with type inference
 - **`LAST_FINALIZED_BLOCK_NUMBER`**: Constant for reading from the most recent finalized block
 - **Native `bigint`**: TypeScript's built-in big integer type (no external library needed)
+
+> **TIP: Parallelize independent calls**
+>
+> This example starts the offchain fetch and the onchain read before waiting on either result, because neither call
+> depends on the other. For more patterns, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 ## Step 5: Run the simulation and review the output
 
@@ -15197,10 +15211,8 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
     throw new Error(`Unknown chain name: ${evmConfig.chainName}`)
   }
 
-  // Step 1: Fetch offchain data
-  const offchainValue = runtime.runInNodeMode(fetchMathResult, consensusMedianAggregation())().result()
-
-  runtime.log(`Successfully fetched offchain value: ${offchainValue}`)
+  // Step 1: Start the offchain fetch
+  const offchainPromise = runtime.runInNodeMode(fetchMathResult, consensusMedianAggregation())()
 
   // Step 2: Read onchain data using the EVM client
   const evmClient = new EVMClient(network.chainSelector.selector)
@@ -15210,16 +15222,20 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
     functionName: "get",
   })
 
-  const contractCall = evmClient
-    .callContract(runtime, {
-      call: encodeCallMsg({
-        from: zeroAddress,
-        to: evmConfig.storageAddress as `0x${string}`,
-        data: callData,
-      }),
-      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
-    })
-    .result()
+  const contractCallPromise = evmClient.callContract(runtime, {
+    call: encodeCallMsg({
+      from: zeroAddress,
+      to: evmConfig.storageAddress as `0x${string}`,
+      data: callData,
+    }),
+    blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+  })
+
+  // Collect both independent results in a fixed order
+  const offchainValue = offchainPromise.result()
+  runtime.log(`Successfully fetched offchain value: ${offchainValue}`)
+
+  const contractCall = contractCallPromise.result()
 
   const onchainValue = decodeFunctionResult({
     abi: Storage,
@@ -15335,6 +15351,11 @@ export async function main() {
   await runner.run(initWorkflow)
 }
 ```
+
+> **TIP: Parallelize independent calls**
+>
+> This example starts the offchain fetch and the onchain read before waiting on either result, because neither call
+> depends on the other. For more patterns, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 > **NOTE: Optional: Add runtime validation**
 >
@@ -16337,7 +16358,7 @@ Every trigger callback in a CRE workflow runs independently on every DON node an
 
 - **Never call `Date.now()` or `new Date()`.** Always use `runtime.now()` instead, it's available on both `Runtime` and `NodeRuntime`, so you don't need to branch on whether you're inside a `runInNodeMode` block.
 - **`Math.random()` is safe, but only inside the CRE WASM runtime.** The CRE runtime overrides `Math.random()` with a seeded generator so every node produces the same sequence, and it isn't cryptographically secure, so don't use it for anything security-sensitive such as key generation or signing nonces. Randomness computed outside that runtime, such as a pre-computed value passed in or a dependency with its own PRNG, won't go through CRE's override and will diverge across nodes.
-- **Never use `Promise.race()`, `Promise.any()`, or unpredictably-ordered `Promise.all()`** around `.result()` calls. Call `.result()` on each operation in a fixed order instead, for example always try API 1 then fall back to API 2. You can still initiate multiple requests before resolving any of them, as long as the resolution order never varies.
+- **Never use `Promise.race()`, `Promise.any()`, or unpredictably-ordered `Promise.all()`** around `.result()` calls. Call `.result()` on each operation in a fixed order instead, for example always try API 1 then fall back to API 2. You can still initiate multiple requests before resolving any of them, as long as the resolution order never varies. For the recommended pattern, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 - **Prefer `Map`/`Set` over plain objects when output order matters, and avoid `for...in`.** Since ES2015, plain-object key enumeration order is defined by spec (integer-like keys ascending, then string keys in insertion order) and is consistent across DON nodes running the same engine, so it isn't a source of non-determinism on its own. The real risk is `for...in` also walking inherited enumerable properties. Use `Object.keys(obj)`, or `Map`/`Set`, which guarantee insertion order without that gotcha.
 
 See [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-ts) for the complete guide, including LLM output handling.
@@ -16491,6 +16512,182 @@ Before you publish, run through this checklist to confirm your library follows e
 - [SDK Reference: HTTP Client](/cre/reference/sdk/http-client-ts): Full `HTTPClient` API
 - [SDK Reference: Core](/cre/reference/sdk/core-ts): `Runtime`, `NodeRuntime`, and the `.result()` pattern
 - [Secrets](/cre/guides/workflow/secrets): Storing and retrieving secrets for a deployed workflow
+
+---
+
+# Optimizing Workflows
+Source: https://docs.chain.link/cre/guides/workflow/optimizing-workflows-ts
+Last Updated: 2026-11-04
+
+> **NOTE: TL;DR**
+>
+> Most workflow execution time is spent waiting on capability calls. If two capability calls do not depend on each
+> other, start both before you wait for either one. Running independent calls in parallel is the single biggest lever
+> for reducing workflow execution time.
+
+## Why workflows feel slow
+
+Workflows spend most of their time waiting on capability calls: reading a chain, calling an HTTP API, reaching
+consensus, or retrieving secrets. Each call is a round trip that includes the work itself plus consensus across the DON.
+
+When you call `.result()` immediately after each capability call, each round trip waits for the previous one to finish.
+The execution time becomes the sum of every call's latency. If the calls are independent, that waiting adds no value.
+
+## Anti-pattern: serializing independent calls
+
+The most common cause of long executions is a sequence of capability calls that have no data dependency on each other
+but are still resolved one at a time.
+
+### Chain read, then secret
+
+```typescript
+import { EVMClient, LAST_FINALIZED_BLOCK_NUMBER, encodeCallMsg, type Runtime } from "@chainlink/cre-sdk"
+import { zeroAddress } from "viem"
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const evmClient = new EVMClient(config.chainSelector)
+
+  // Chain read (starts and blocks)
+  const readResult = evmClient
+    .callContract(runtime, {
+      call: encodeCallMsg({
+        from: zeroAddress,
+        to: config.contractAddress,
+        data: encodedCallData,
+      }),
+      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+    })
+    .result()
+
+  // Secret retrieval (starts only after the read above finishes)
+  const signingKey = runtime.getSecret({ id: "SIGNING_KEY" }).result().value
+
+  // ...
+  return "done"
+}
+```
+
+Retrieving `SIGNING_KEY` does not use `readResult`. The secret call could have started at the same time as the chain
+read, but here it waits for the read to complete first.
+
+### HTTP + consensus, then secret
+
+The same problem appears with a node-mode HTTP call and its consensus step:
+
+```typescript
+const price = runtime.runInNodeMode(fetchPrice, consensusMedianAggregation<bigint>())().result()
+
+// Starts only after the HTTP call and consensus finish
+const signingKey = runtime.getSecret({ id: "SIGNING_KEY" }).result().value
+```
+
+If the secret is not used to authenticate or build that HTTP request, the two calls are independent.
+
+> **NOTE: Secrets that are request inputs are not independent**
+>
+> If an HTTP request needs a secret for authentication, the secret must be fetched first and passed into the request.
+> That is a real dependency, so keep those calls sequential. The pattern on this page applies to secrets that are used
+> later in the workflow, not to secrets that are inputs to the earlier call.
+
+## Recommended pattern: start first, collect later
+
+In the TypeScript SDK, invoking a capability starts the operation immediately. `.result()` only waits for the result.
+That means you can initiate several independent operations first, then collect their results.
+
+```typescript
+// Start both operations before waiting for either one
+const readCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({
+    from: zeroAddress,
+    to: config.contractAddress,
+    data: encodedCallData,
+  }),
+  blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+})
+
+const secretCall = runtime.getSecret({ id: "SIGNING_KEY" })
+
+// Collect results in a fixed order
+const readResult = readCall.result()
+const signingKey = secretCall.result().value
+```
+
+The HTTP + consensus case follows the same shape. Invoking `runInNodeMode(...)()` starts the node-mode work and the
+consensus step; `.result()` waits for the aggregated result:
+
+```typescript
+const priceCall = runtime.runInNodeMode(fetchPrice, consensusMedianAggregation<bigint>())()
+const secretCall = runtime.getSecret({ id: "SIGNING_KEY" })
+
+const price = priceCall.result()
+const signingKey = secretCall.result().value
+```
+
+This is the same "prepare multiple operations" behavior described in the
+[Core SDK reference](/cre/reference/sdk/core-ts#preparing-multiple-operations). The reference covers the API mechanics;
+this guide covers when and why to use it.
+
+> **NOTE: Keep the order fixed across nodes**
+>
+> Initiate calls in a fixed order, and resolve them in a fixed order. Do not use `Promise.race()` or `Promise.any()`
+> around capability results, and do not let timing decide which result you use. The DON must produce the same result on
+> every node. See [Avoiding Non-Determinism](/cre/concepts/non-determinism-ts).
+
+## Batch multiple secrets
+
+If you need more than one secret, use `runtime.getSecrets()` to retrieve them in a single call instead of calling
+`getSecret()` repeatedly:
+
+```typescript
+const secrets = runtime.getSecrets([{ id: "SIGNING_KEY" }, { id: "WEBHOOK_TOKEN" }]).result()
+
+const signingKey = secrets["SIGNING_KEY"].value
+const webhookToken = secrets["WEBHOOK_TOKEN"].value
+```
+
+You can combine batching with the parallel pattern: start the batch secret call, start any independent chain or HTTP
+calls, then resolve everything. Secrets retrieved in a batch count toward the secrets concurrency limit, so check
+[Service Quotas](/cre/service-quotas) before fetching many secrets at once.
+
+## How to spot the problem
+
+Look for these signs in a workflow:
+
+- **Code:** a long sequence of capability calls where `.result()` is called immediately after each call, and the next
+  call does not use the previous result.
+- **Events tab:** open an execution in the CRE UI and review the **Events** tab. Capability and consensus events have
+  timestamps. Back-to-back events with clearly sequential start times are a candidate for parallelization. See
+  [Monitoring Workflows](/cre/guides/operations/monitoring-workflows#events-tab).
+- **Size:** a run of roughly 20 sequential capability calls is a good candidate to review, even if you are not sure
+  which calls are independent.
+
+Start with the calls that take the longest, such as HTTP requests and chain reads. A good first check is to list every
+capability call in the handler and mark which results are used as inputs to later calls. Calls with no dependency edge
+can usually be started together.
+
+## When not to parallelize
+
+Keep calls sequential when:
+
+- **One call uses another call's result.** For example, the next HTTP request URL comes from a chain read, or a secret
+  is needed to sign or authenticate the next request.
+- **The operation depends on a previous write.** A read-after-write must see the write first, and writes that must happen
+  in a specific order cannot be reordered.
+- **The result depends on timing.** If the workflow chooses a branch based on which call finishes first, parallelizing
+  introduces non-determinism. Use a fixed order instead.
+- **The provider rate-limits you.** Parallel calls can exceed an API's rate limit. Keep those requests sequential, batch
+  them if the API supports it, or use caching where appropriate.
+
+Parallelism is also bounded by workflow quotas. A workflow can have at most 30 concurrent capability calls, and secrets
+have their own concurrency and call limits. See [Service Quotas](/cre/service-quotas) for the current values.
+
+## Related guides
+
+- [API Interactions](/cre/guides/workflow/using-http-client): make HTTP requests and reach consensus on the results.
+- [EVM Chain Interactions](/cre/guides/workflow/using-evm-client/overview): read chain state and write reports.
+- [Managing Secrets](/cre/guides/workflow/secrets): retrieve one or many secrets safely.
+- [Core SDK reference: Preparing multiple operations](/cre/reference/sdk/core-ts#preparing-multiple-operations): the
+  underlying SDK behavior.
 
 ---
 
@@ -16667,7 +16864,7 @@ export API_KEY_ALL="your-api-key-here"
 
 ### Using batch fetch (recommended)
 
-Use `runtime.getSecrets()` to retrieve multiple secrets in a single call. The result is a map keyed by secret ID.
+Use `runtime.getSecrets()` to retrieve multiple secrets in a single call. The result is a map keyed by secret ID. If you also need independent chain or HTTP data, start those calls before resolving the secrets. See [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 Code snippet for Fetching Multiple Secrets with Batch (TypeScript):
 
@@ -18009,6 +18206,11 @@ Reading from a contract follows this pattern:
 7. **Decode the result**: Use [viem's `decodeFunctionResult()`](https://viem.sh/docs/contract/decodeFunctionResult#decodefunctionresult) to decode the returned data
 8. **Await the result**: Call `.result()` on the returned object to get the consensus-verified result
 
+> **TIP: Reading multiple independent values**
+>
+> If you need several independent reads, start all of them before resolving any of them. This is a common way to reduce
+> execution time. See [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
+
 ## Step-by-step example
 
 Let's read a value from a simple `Storage` contract with a `get() view returns (uint256)` function.
@@ -18749,6 +18951,12 @@ This is the recommended approach for most use cases.
 - You need **complex data transformation** (fetching from multiple APIs and combining results)
 
 If you're unsure, start with Section 1. You can always migrate to Section 2 later if your requirements become more complex.
+
+> **TIP: Multiple independent requests**
+>
+> If you need several independent HTTP requests, start all of them before resolving any of them. Do not wait for one
+> request before starting the next unless it depends on the previous response. See
+> [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 ## 1. The `sendRequest` Pattern (Recommended)
 
@@ -25313,25 +25521,27 @@ const fetchPriceData = (sendRequester: HTTPSendRequester, config: Config): Price
 }
 
 const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string => {
+  // Start both independent aggregations before waiting on either one
   // Example 1: Simple median aggregation
-  const simplePrice = runtime.runInNodeMode(fetchSimplePrice, consensusMedianAggregation<bigint>())().result()
-
-  runtime.log(`Simple median price: ${simplePrice}`)
+  const simplePriceCall = runtime.runInNodeMode(fetchSimplePrice, consensusMedianAggregation<bigint>())()
 
   // Example 2: Field-based aggregation
   const httpClient = new HTTPClient()
-  const priceData = httpClient
-    .sendRequest(
-      runtime,
-      fetchPriceData,
-      ConsensusAggregationByFields<PriceData>({
-        price: median, // Median of price values
-        timestamp: median, // Median of timestamps
-        source: identical, // Must be identical across nodes
-      })
-    )(runtime.config)
-    .result()
+  const priceDataCall = httpClient.sendRequest(
+    runtime,
+    fetchPriceData,
+    ConsensusAggregationByFields<PriceData>({
+      price: median, // Median of price values
+      timestamp: median, // Median of timestamps
+      source: identical, // Must be identical across nodes
+    })
+  )(runtime.config)
 
+  // Collect results in a fixed order
+  const simplePrice = simplePriceCall.result()
+  runtime.log(`Simple median price: ${simplePrice}`)
+
+  const priceData = priceDataCall.result()
   runtime.log(`Aggregated price: ${priceData.price} from ${priceData.source}`)
 
   return "Price data aggregated successfully"
@@ -25348,6 +25558,8 @@ export async function main() {
   await runner.run(initWorkflow)
 }
 ```
+
+This example starts both independent aggregations before resolving either one. For more patterns, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 ## Default Values
 
@@ -25564,6 +25776,8 @@ const response2 = request2.result()
 ```
 
 This pattern allows you to prepare operations and then collect their results in the order you need them.
+
+For guidance on which calls are safe to run together—and which must stay sequential—see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 #### Operations that use `.result()`
 

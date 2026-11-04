@@ -76,7 +76,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 
 When a trigger fires, the Workflow DON orchestrates the execution of your callback function on every node in the network. **Each execution is independent and stateless**—your callback runs, performs its work, returns a result, and completes. Inside your callback, you create SDK clients and invoke capabilities.
 
-Each capability call is an **asynchronous operation** that returns a `Promise`—a placeholder for a future result. This allows you to pipeline multiple capability calls and run them in parallel.
+Each capability call is an **asynchronous operation** that returns a `Promise`—a placeholder for a future result. This allows you to pipeline multiple capability calls and run them in parallel. See [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows) for when and how to do this.
 
 Your callback typically follows this pattern:
 
@@ -2021,6 +2021,7 @@ The guides below all run your workflow's logic on Workflow DON nodes, the defaul
 | [Secrets](/cre/guides/workflow/secrets)                                | Manage API keys and credentials safely, in simulation and in deployed workflows.    |
 | [Using Time in Workflows](/cre/guides/workflow/time-in-workflows)      | Get a deterministic, consensus-safe timestamp with `runtime.now()`.                 |
 | [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) | Generate random numbers that stay consistent across nodes so consensus still holds. |
+| [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows)      | Reduce execution time by running independent capability calls in parallel.          |
 
 ---
 
@@ -14720,6 +14721,7 @@ type Config struct {
 }
 
 
+
 type MyResult struct {
 	FinalResult *big.Int
 }
@@ -14745,14 +14747,9 @@ func fetchMathResult(config *Config, logger *slog.Logger, sendRequester *http.Se
 
 func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
 	logger := runtime.Logger()
-	// Step 1: Fetch offchain data (from Part 2)
+	// Step 1: Start the offchain fetch (from Part 2), but don't wait for it yet.
 	client := &http.Client{}
 	mathPromise := http.SendRequest(config, runtime, client, fetchMathResult, cre.ConsensusMedianAggregation[*big.Int]())
-	offchainValue, err := mathPromise.Await()
-	if err != nil {
-		return nil, err
-	}
-	logger.Info("Successfully fetched offchain value", "result", offchainValue)
 
 
 	// Get the first EVM configuration from the list.
@@ -14776,7 +14773,16 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 		return nil, fmt.Errorf("failed to create contract instance: %w", err)
 	}
 
-	onchainValue, err := storageContract.Get(runtime, big.NewInt(-3)).Await() // -3 means finalized block
+	onchainPromise := storageContract.Get(runtime, big.NewInt(-3)) // -3 means finalized block
+
+	// Collect the offchain result, then the onchain result, in a fixed order.
+	offchainValue, err := mathPromise.Await()
+	if err != nil {
+		return nil, err
+	}
+	logger.Info("Successfully fetched offchain value", "result", offchainValue)
+
+	onchainValue, err := onchainPromise.Await()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read onchain value: %w", err)
 	}
@@ -14797,6 +14803,11 @@ func main() {
 	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
 }
 ```
+
+> **TIP: Parallelize independent calls**
+>
+> This example starts the offchain fetch and the onchain read before waiting on either result, because neither call
+> depends on the other. For more patterns, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 ## Step 5: Sync your dependencies
 
@@ -15043,6 +15054,7 @@ type EvmConfig struct {
 }
 
 
+
 type Config struct {
 	Schedule string      `json:"schedule"`
 	ApiUrl   string      `json:"apiUrl"`
@@ -15057,6 +15069,7 @@ type MyResult struct {
 	FinalResult   *big.Int
 	TxHash        string
 }
+
 
 
 func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
@@ -15075,14 +15088,9 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 		return nil, fmt.Errorf("invalid chain name: %w", err)
 	}
 
-	// Step 1: Fetch offchain data
+	// Step 1: Start the offchain fetch
 	client := &http.Client{}
 	mathPromise := http.SendRequest(config, runtime, client, fetchMathResult, cre.ConsensusMedianAggregation[*big.Int]())
-	offchainValue, err := mathPromise.Await()
-	if err != nil {
-		return nil, err
-	}
-	logger.Info("Successfully fetched offchain value", "result", offchainValue)
 
 	// Step 2: Read onchain data using the binding for the Storage contract
 	evmClient := &evm.Client{
@@ -15096,7 +15104,16 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 		return nil, fmt.Errorf("failed to create contract instance: %w", err)
 	}
 
-	onchainValue, err := storageContract.Get(runtime, big.NewInt(-3)).Await()
+	onchainPromise := storageContract.Get(runtime, big.NewInt(-3))
+
+	// Collect both independent results in a fixed order
+	offchainValue, err := mathPromise.Await()
+	if err != nil {
+		return nil, err
+	}
+	logger.Info("Successfully fetched offchain value", "result", offchainValue)
+
+	onchainValue, err := onchainPromise.Await()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read onchain value: %w", err)
 	}
@@ -15186,10 +15203,16 @@ func updateCalculatorResult(config *Config, runtime cre.Runtime, chainSelector u
 }
 
 
+
 func main() {
 	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
 }
 ```
+
+> **TIP: Parallelize independent calls**
+>
+> This example starts the offchain fetch and the onchain read before waiting on either result, because neither call
+> depends on the other. For more patterns, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 ## Step 5: Sync your dependencies
 
@@ -16114,7 +16137,7 @@ The Go SDK doesn't use `async`/`await` keywords, it uses a `Promise[T]` type wit
 The pitfall specific to Go: don't reach for goroutines, channels, or `sync` primitives (`WaitGroup`, `Mutex`, and so on) to run multiple SDK calls "concurrently" inside your library. CRE workflows execute in a single-threaded WASM environment, so using Go's concurrency primitives to fan out capability calls doesn't get you real parallelism, and a `select` across multiple channels picks a ready channel non-deterministically, which will cause consensus failures if the result depends on which one "won."
 
 - Never use `select` with multiple ready channels to decide which result to use or which branch to take, see [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-go#3-concurrency-and-channel-selection).
-- If you need to make several capability calls, initiate them in a fixed order and resolve them (`.Await()`) in that same fixed order. You can build up several `Promise` values before awaiting any of them, but the order you await them in must never vary.
+- If you need to make several capability calls, initiate them in a fixed order and resolve them (`.Await()`) in that same fixed order. You can build up several `Promise` values before awaiting any of them, but the order you await them in must never vary. For the recommended pattern, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 - `cre.Then()` / `cre.ThenPromise()` are the idiomatic way to chain dependent async steps without nested `.Await()` calls, prefer them over manually orchestrating goroutines.
 
 ### Determinism
@@ -16260,6 +16283,209 @@ Before you publish, run through this checklist to confirm your library follows e
 - [SDK Reference: Core](/cre/reference/sdk/core-go): `Runtime`, `NodeRuntime`, `Promise`, and `cre.OrderedEntries`
 - [SDK Reference: Consensus & Aggregation](/cre/reference/sdk/consensus-go): Aggregation functions for `cre.RunInNodeMode`
 - [Secrets](/cre/guides/workflow/secrets): Storing and retrieving secrets for a deployed workflow
+
+---
+
+# Optimizing Workflows
+Source: https://docs.chain.link/cre/guides/workflow/optimizing-workflows-go
+Last Updated: 2026-11-04
+
+> **NOTE: TL;DR**
+>
+> Most workflow execution time is spent waiting on capability calls. If two capability calls do not depend on each
+> other, start both before you wait for either one. Running independent calls in parallel is the single biggest lever
+> for reducing workflow execution time.
+
+## Why workflows feel slow
+
+Workflows spend most of their time waiting on capability calls: reading a chain, calling an HTTP API, reaching
+consensus, or retrieving secrets. Each call is a round trip that includes the work itself plus consensus across the DON.
+
+When you call `.Await()` immediately after each capability call, each round trip waits for the previous one to finish.
+The execution time becomes the sum of every call's latency. If the calls are independent, that waiting adds no value.
+
+## Anti-pattern: serializing independent calls
+
+The most common cause of long executions is a sequence of capability calls that have no data dependency on each other
+but are still resolved one at a time.
+
+### Chain read, then secret
+
+```go
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+    evmClient := &evm.Client{ChainSelector: config.ChainSelector}
+    storageContract, err := storage.NewStorage(evmClient, common.HexToAddress(config.ContractAddress), nil)
+    if err != nil {
+        return nil, fmt.Errorf("failed to create contract instance: %w", err)
+    }
+
+    // Chain read (starts and blocks)
+    storedValue, err := storageContract.Get(runtime, big.NewInt(-3)).Await()
+    if err != nil {
+        return nil, fmt.Errorf("failed to read storage value: %w", err)
+    }
+
+    // Secret retrieval (starts only after the read above finishes)
+    signingKey, err := runtime.GetSecret(&cre.SecretRequest{Id: "SIGNING_KEY"}).Await()
+    if err != nil {
+        return nil, fmt.Errorf("failed to get secret: %w", err)
+    }
+
+    // ...
+    return &MyResult{}, nil
+}
+```
+
+Retrieving `SIGNING_KEY` does not use `storedValue`. The secret call could have started at the same time as the chain
+read, but here it waits for the read to complete first.
+
+### HTTP + consensus, then secret
+
+The same problem appears when an HTTP call is wrapped in node mode and consensus:
+
+```go
+pricePromise := http.SendRequest(config, runtime, &http.Client{},
+    fetchPrice,
+    cre.ConsensusMedianAggregation[float64](),
+)
+price, err := pricePromise.Await()
+if err != nil {
+    return nil, err
+}
+
+// Starts only after the HTTP call and consensus finish
+signingKey, err := runtime.GetSecret(&cre.SecretRequest{Id: "SIGNING_KEY"}).Await()
+if err != nil {
+    return nil, err
+}
+```
+
+If the secret is not used to authenticate or build that HTTP request, the two calls are independent.
+
+> **NOTE: Secrets that are request inputs are not independent**
+>
+> If an HTTP request needs a secret for authentication, the secret must be fetched first and passed into the request.
+> That is a real dependency, so keep those calls sequential. The pattern on this page applies to secrets that are used
+> later in the workflow, not to secrets that are inputs to the earlier call.
+
+## Recommended pattern: start first, collect later
+
+In the Go SDK, calling a capability dispatches the request immediately and returns a
+[`Promise`](/cre/reference/sdk/core-go#promise). `.Await()` only waits for the result. That means you can create several
+independent promises first, then await them.
+
+```go
+// Start both operations before waiting for either one
+storagePromise := storageContract.Get(runtime, big.NewInt(-3))
+secretPromise := runtime.GetSecret(&cre.SecretRequest{Id: "SIGNING_KEY"})
+
+// Await results in a fixed order
+storedValue, err := storagePromise.Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to read storage value: %w", err)
+}
+
+signingKey, err := secretPromise.Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to get secret: %w", err)
+}
+```
+
+The HTTP + consensus case follows the same shape. Creating the promise starts the node-mode call and the consensus step;
+`.Await()` waits for the aggregated result:
+
+```go
+pricePromise := http.SendRequest(config, runtime, &http.Client{},
+    fetchPrice,
+    cre.ConsensusMedianAggregation[float64](),
+)
+secretPromise := runtime.GetSecret(&cre.SecretRequest{Id: "SIGNING_KEY"})
+
+price, err := pricePromise.Await()
+if err != nil {
+    return nil, err
+}
+
+signingKey, err := secretPromise.Await()
+if err != nil {
+    return nil, err
+}
+```
+
+> **NOTE: Keep the order fixed across nodes**
+>
+> Initiate calls in a fixed order, and await them in a fixed order. Do not use `select` across multiple ready channels,
+> and do not let timing decide which result you use. The DON must produce the same result on every node. See [Avoiding
+> Non-Determinism](/cre/concepts/non-determinism-go).
+
+> **CAUTION: Do not use goroutines to parallelize capability calls**
+>
+> CRE Go workflows run in a single-threaded WASM environment. Goroutines, channels, `sync.WaitGroup`, and similar
+> concurrency primitives do not give you real parallelism for capability calls and can break consensus. Use the
+> `Promise`/`Await()` pattern shown on this page. See [Building a Reusable
+> Library](/cre/guides/workflow/building-a-library-go#promiseawait-concurrency-not-goroutines).
+
+## Batch multiple secrets
+
+If you need more than one secret, use `runtime.GetSecrets()` to retrieve them in a single call instead of calling
+`GetSecret()` repeatedly:
+
+```go
+secrets, err := runtime.GetSecrets([]*cre.SecretRequest{
+    {Id: "SIGNING_KEY"},
+    {Id: "WEBHOOK_TOKEN"},
+}).Await()
+if err != nil {
+    return nil, fmt.Errorf("failed to get secrets: %w", err)
+}
+
+signingKey := secrets[0].Value
+webhookToken := secrets[1].Value
+```
+
+Secrets are returned in the same order as the requests. You can combine batching with the parallel pattern: start the
+batch secret call, start any independent chain or HTTP calls, then await everything. Secrets retrieved in a batch count
+toward the secrets concurrency limit, so check [Service Quotas](/cre/service-quotas) before fetching many secrets at
+once.
+
+## How to spot the problem
+
+Look for these signs in a workflow:
+
+- **Code:** a long sequence of capability calls where `.Await()` is called immediately after each call, and the next
+  call does not use the previous result.
+- **Events tab:** open an execution in the CRE UI and review the **Events** tab. Capability and consensus events have
+  timestamps. Back-to-back events with clearly sequential start times are a candidate for parallelization. See
+  [Monitoring Workflows](/cre/guides/operations/monitoring-workflows#events-tab).
+- **Size:** a run of roughly 20 sequential capability calls is a good candidate to review, even if you are not sure
+  which calls are independent.
+
+Start with the calls that take the longest, such as HTTP requests and chain reads. A good first check is to list every
+capability call in the handler and mark which results are used as inputs to later calls. Calls with no dependency edge
+can usually be started together.
+
+## When not to parallelize
+
+Keep calls sequential when:
+
+- **One call uses another call's result.** For example, the next HTTP request URL comes from a chain read, or a secret
+  is needed to sign or authenticate the next request.
+- **The operation depends on a previous write.** A read-after-write must see the write first, and writes that must happen
+  in a specific order cannot be reordered.
+- **The result depends on timing.** If the workflow chooses a branch based on which call finishes first, parallelizing
+  introduces non-determinism. Use a fixed order instead.
+- **The provider rate-limits you.** Parallel calls can exceed an API's rate limit. Keep those requests sequential, batch
+  them if the API supports it, or use caching where appropriate.
+
+Parallelism is also bounded by workflow quotas. A workflow can have at most 30 concurrent capability calls, and secrets
+have their own concurrency and call limits. See [Service Quotas](/cre/service-quotas) for the current values.
+
+## Related guides
+
+- [API Interactions](/cre/guides/workflow/using-http-client): make HTTP requests and reach consensus on the results.
+- [EVM Chain Interactions](/cre/guides/workflow/using-evm-client/overview): read chain state and write reports.
+- [Managing Secrets](/cre/guides/workflow/secrets): retrieve one or many secrets safely.
+- [Core SDK reference: `Promise`](/cre/reference/sdk/core-go#promise): the underlying SDK behavior.
 
 ---
 
@@ -16462,7 +16688,7 @@ export API_KEY_ALL="your-api-key-here"
 
 ### Using batch fetch (recommended)
 
-Use `runtime.GetSecrets()` to retrieve multiple secrets in a single call. Secrets are returned in the same order as the input requests.
+Use `runtime.GetSecrets()` to retrieve multiple secrets in a single call. Secrets are returned in the same order as the input requests. If you also need independent chain or HTTP data, start those calls before awaiting the secrets. See [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 Code snippet for Fetching Multiple Secrets with Batch (Go):
 
@@ -18034,6 +18260,11 @@ Reading from a contract follows a simple pattern:
 3. **Call a read method**: Call the desired function on the binding instance, specifying a block number. This is an asynchronous call that immediately returns a [`Promise`](/cre/reference/sdk/core-go#promise).
 4. **Await the result**: Call `.Await()` on the returned promise to pause execution and wait for the consensus-verified result from the DON.
 
+> **TIP: Reading multiple independent values**
+>
+> If you need several independent reads, start all of them before awaiting any of them. This is a common way to reduce
+> execution time. See [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
+
 ## Step-by-step example
 
 Let's assume you have followed the [generating bindings guide](/cre/guides/workflow/using-evm-client/generating-bindings) and have created a binding for the Storage contract with a `get() view returns (uint256)` function.
@@ -18768,6 +18999,12 @@ This is the recommended approach for most use cases.
 
 If you're unsure, start with Section 1. You can always migrate to Section 2 later if your requirements become more complex.
 
+> **TIP: Multiple independent requests**
+>
+> If you need several independent HTTP requests, start all of them before awaiting any of them. Do not wait for one
+> request before starting the next unless it depends on the previous response. See
+> [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
+
 ## 1. The `http.SendRequest` Pattern (Recommended)
 
 The `http.SendRequest` helper function is the simplest and recommended way to make HTTP calls. It automatically handles the `cre.RunInNodeMode` pattern for you.
@@ -19460,7 +19697,7 @@ For more complex scenarios or when you prefer working directly with the lower-le
 
 > **NOTE: When to use this pattern**
 >
-> Use `cre.RunInNodeMode` when you need more control over the execution flow, such as making multiple sequential HTTP requests with conditional logic, or when you prefer accessing secrets directly within the callback rather than using closures.
+> Use `cre.RunInNodeMode` when you need more control over the execution flow, such as making multiple dependent HTTP requests with conditional logic, or when you prefer accessing secrets directly within the callback rather than using closures. If the requests are independent, start them before awaiting any of them. See [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 ### Example with secrets
 
@@ -27676,7 +27913,7 @@ This demo showcases several important patterns and features of the Go SDK:
 - **Generated Contract Bindings**: The workflow uses type-safe Go bindings generated from contract ABIs, providing compile-time safety for contract interactions.
 - **Multiple Trigger Handlers**: A single workflow can register multiple handlers for different trigger types using `cre.Handler()`.
 - **Consensus Aggregation from Tags**: The HTTP capability uses `cre.ConsensusAggregationFromTags[*ReserveInfo]()` to automatically aggregate offchain data based on struct field tags.
-- **Promise-Based Async Operations**: All SDK operations return promises that are awaited with `.Await()`, enabling both sequential and parallel execution patterns.
+- **Promise-Based Async Operations**: All SDK operations return promises that are awaited with `.Await()`, enabling both sequential and parallel execution patterns. For guidance, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 - **Strongly-Typed Event Decoding**: EVM log triggers automatically decode event data into Go structs, eliminating manual topic parsing.
 - **Two-Step Write Pattern**: The workflow uses contract binding's `WriteReportFrom*` methods to generate a signed report and submit it onchain in one call.
 - **Chain Selector Management**: The SDK provides `evm.ChainSelectorFromName()` to convert human-readable chain names to chain selectors.
