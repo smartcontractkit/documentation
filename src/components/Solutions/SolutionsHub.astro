@@ -1,19 +1,16 @@
 ---
 import BaseLayout from "~/layouts/BaseLayout.astro"
 import SolutionCard from "~/components/Solutions/SolutionCard.astro"
-import { getAllSolutions, getSolutionFacets, productLabel } from "~/config/solutions/index.ts"
-import type { Sections } from "~/content.config.ts"
+import { getAllSolutions } from "~/config/solutions/index.ts"
 
 const solutions = getAllSolutions()
-const facets = getSolutionFacets()
 ---
 
 <BaseLayout
-  title="Solutions | Chainlink Documentation"
+  title="Chainlink Product Solutions | Chainlink Documentation"
   metadata={{
-    title: "Chainlink Solutions",
-    description:
-      "Production-shaped ways to apply Chainlink products, from single-product integrations to multi-product architectures.",
+    title: "Chainlink Product Solutions",
+    description: "Explore Chainlink Product Solutions, which combine multiple products to help you build faster.",
   }}
 >
   <main class="hub-page">
@@ -21,11 +18,8 @@ const facets = getSolutionFacets()
     <header class="hero">
       <div class="hero-container">
         <div class="hero-content">
-          <h1 class="hero-title">Chainlink Solutions</h1>
-          <p class="hero-description">
-            Ways to apply Chainlink products to real problems. Each solution is a complete architecture with a reference
-            implementation.
-          </p>
+          <h1 class="hero-title">Chainlink Product Solutions</h1>
+          <p class="hero-description">Solutions that combine multiple Chainlink products to help you build faster.</p>
         </div>
       </div>
     </header>
@@ -33,72 +27,12 @@ const facets = getSolutionFacets()
     <!-- Solutions Section -->
     <div class="solutions-container">
       <section class="solution-section">
-        <div class="section-header" id="section-header">
-          <h2>All solutions</h2>
-          <div class="filter-pills" data-facet="products">
-            <button class="filter-pill active" data-value="all">All products</button>
-            {
-              facets.products.map((p) => (
-                <button class="filter-pill" data-value={p}>
-                  {productLabel(p as Sections)}
-                </button>
-              ))
-            }
-          </div>
-          <div class="filter-pills" data-facet="categories">
-            <button class="filter-pill active" data-value="all">All categories</button>
-            {
-              facets.categories.map((c) => (
-                <button class="filter-pill" data-value={c}>
-                  {c}
-                </button>
-              ))
-            }
-          </div>
-        </div>
-
         <div class="card-grid" id="solution-grid">
           {solutions.map((solution) => <SolutionCard {solution} />)}
-        </div>
-
-        <div class="empty-state" id="empty-state" hidden>
-          <p>No solutions match these filters.</p>
         </div>
       </section>
     </div>
   </main>
-
-  <script>
-    // Vanilla JS, no React island: consistent with the CRE Templates hub and it keeps the page static.
-    const grid = document.getElementById("solution-grid")
-    const emptyState = document.getElementById("empty-state")
-    const selected: Record<string, string> = { products: "all", categories: "all" }
-
-    function apply() {
-      let visible = 0
-      grid?.querySelectorAll<HTMLElement>("[data-solution]").forEach((card) => {
-        const matches = Object.entries(selected).every(([facet, value]) => {
-          if (value === "all") return true
-          return (card.dataset[facet] ?? "").split(",").includes(value)
-        })
-        card.hidden = !matches
-        if (matches) visible++
-      })
-      if (emptyState) emptyState.hidden = visible > 0
-    }
-
-    document.querySelectorAll<HTMLElement>("[data-facet]").forEach((group) => {
-      const facet = group.dataset.facet!
-      group.querySelectorAll<HTMLButtonElement>(".filter-pill").forEach((pill) => {
-        pill.addEventListener("click", () => {
-          selected[facet] = pill.dataset.value!
-          group.querySelectorAll(".filter-pill").forEach((p) => p.classList.remove("active"))
-          pill.classList.add("active")
-          apply()
-        })
-      })
-    })
-  </script>
 
   <style>
     :global(body:has(.hub-page)) {
@@ -193,51 +127,6 @@ const facets = getSolutionFacets()
       width: 100%;
     }
 
-    .section-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .section-header h2 {
-      font-size: 26px;
-      font-weight: 600;
-      color: #0b101c;
-      margin: 0;
-    }
-
-    .filter-pills {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .filter-pill {
-      padding: 6px 14px;
-      background: white;
-      color: #374151;
-      font-size: 13px;
-      font-weight: 500;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .filter-pill:hover {
-      background: #f3f4f6;
-      border-color: #d1d5db;
-    }
-
-    .filter-pill.active {
-      background: #5a6175;
-      color: white;
-      border-color: #5a6175;
-    }
-
     /* Card Grid */
     .card-grid {
       display: grid;
@@ -245,28 +134,6 @@ const facets = getSolutionFacets()
       gap: 0;
       border-left: 1px solid #e5e7eb;
       border-top: 1px solid #e5e7eb;
-    }
-
-    /* Empty State */
-    .empty-state {
-      text-align: center;
-      padding: 64px;
-      background: white;
-      border-radius: 12px;
-      border: 1px solid #e5e7eb;
-    }
-
-    .empty-state p {
-      font-size: 16px;
-      color: #5a6175;
-      margin: 0;
-    }
-
-    /* REQUIRED. The filter script sets `element.hidden = true`, and the UA rule for [hidden]
-       loses to the `display: grid` / `display: flex` declarations above. Without these two
-       rules, filtering appears to do nothing. */
-    .empty-state[hidden] {
-      display: none;
     }
 
     /* Responsive */
@@ -292,11 +159,6 @@ const facets = getSolutionFacets()
 
       .solutions-container {
         padding: 32px 24px 64px;
-      }
-
-      .section-header {
-        flex-direction: column;
-        align-items: flex-start;
       }
 
       .card-grid {
