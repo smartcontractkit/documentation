@@ -39,6 +39,7 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
 ---
 
 <BaseLayout title={formattedContentTitle} metadata={frontmatter.metadata} pageTitle={frontmatter.title}>
+  {includeLinkToWalletScript && <div data-link-to-wallet="true" hidden />}
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
   <DocsNavigation client:load pathname={currentPage} />
 
@@ -188,14 +189,7 @@ const includeLinkToWalletScript = !!Astro.props.frontmatter.metadata?.linkToWall
     }
   </style>
 
-  <script define:vars={{ includeLinkToWalletScript }}>
-    window["includeLinkToWalletScript"] = includeLinkToWalletScript
-  </script>
-
   <script>
     import "~/scripts"
-    if (window["includeLinkToWalletScript"]) {
-      import("~/scripts/link-to-wallet.ts")
-    }
   </script>
 </BaseLayout>
