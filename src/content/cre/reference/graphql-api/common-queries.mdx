@@ -284,7 +284,7 @@ Retrieve success and failure counts bucketed over a time range — useful for he
 #### Query
 
 ```graphql
-query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
+query WorkflowActivity($workflowUUID: String, $from: Time!, $to: Time!) {
   workflowActivity(input: { workflowUUID: $workflowUUID, from: $from, to: $to }) {
     data {
       from
@@ -305,6 +305,8 @@ query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
   "to": "2026-08-31T00:00:00Z"
 }
 ```
+
+Both `from` and `to` are required — omitting either one, or passing `null`, fails GraphQL validation with a `422`. `to` must be after `from`; a range that is empty or reversed (`from` greater than or equal to `to`) returns `INVALID_ARGUMENT`.
 
 #### Response
 
