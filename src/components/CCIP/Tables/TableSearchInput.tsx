@@ -1,4 +1,5 @@
 import { useRef, useState } from "react"
+import { SearchIcon } from "../Search/SearchIcon.tsx"
 import "./TableSearchInput.css"
 import { useClickOutside } from "~/hooks/useClickOutside.tsx"
 
@@ -36,7 +37,7 @@ function TableSearchInput({ search, setSearch }: TableSearchInputProps) {
           : undefined
       }
     >
-      <img src="/assets/icons/search.svg" alt="Search icon" />
+      <SearchIcon />
       {isExpanded ? (
         <input
           type="search"

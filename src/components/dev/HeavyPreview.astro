@@ -1,0 +1,76 @@
+---
+/** Lazy iframe for pages too heavy to mount inline (e.g. ~17 MB address tables). */
+interface Props {
+  title: string
+  description?: string
+  path: string
+  theme?: string | null
+}
+
+const { title, description, path, theme } = Astro.props
+const src = theme ? `${path}?theme=${theme}` : path
+---
+
+<details class="gallery-heavy">
+  <summary>
+    <span class="gallery-heavy__title">{title}</span>
+    <span class="gallery-heavy__action">Load preview</span>
+  </summary>
+  {description && <p class="gallery-heavy__description">{description}</p>}
+  <iframe data-heavy-src={src} title={title} loading="lazy"></iframe>
+</details>
+
+<style>
+  .gallery-heavy {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--background-alt);
+    overflow: hidden;
+  }
+
+  .gallery-heavy > summary {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    color: var(--foreground);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    list-style: none;
+  }
+
+  .gallery-heavy > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .gallery-heavy[open] > summary {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .gallery-heavy__action {
+    margin-left: auto;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    font-weight: 400;
+  }
+
+  .gallery-heavy[open] .gallery-heavy__action {
+    display: none;
+  }
+
+  .gallery-heavy__description {
+    margin: 0;
+    padding: 0.5rem 0.75rem 0;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+  }
+
+  .gallery-heavy iframe {
+    display: block;
+    width: 100%;
+    height: 720px;
+    border: 0;
+    background: var(--background);
+  }
+</style>

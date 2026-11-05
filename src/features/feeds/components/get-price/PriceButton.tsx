@@ -1,5 +1,5 @@
 /** @jsxImportSource preact */
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 
 export const PriceButton = ({
   buttonName,
