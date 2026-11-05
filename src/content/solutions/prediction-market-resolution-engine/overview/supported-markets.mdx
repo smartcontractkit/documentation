@@ -1,0 +1,93 @@
+---
+title: "Supported markets"
+description: "What the Prediction Market Resolution Engine can resolve, current coverage, market and event types, the data-source standard, and how coverage is added."
+---
+
+import { Aside } from "@components"
+
+The engine resolves yes/no questions that independent data providers can answer with structured, final data.
+
+## What can be resolved
+
+The engine is not limited to one kind of event. It can resolve any yes/no question whose answer comes from structured, final data that meets the [data source standard](#the-data-source-standard).
+
+### Coverage today
+
+The [`/taxonomies`](/solutions/prediction-market-resolution-engine/reference/market-registry-api#list-taxonomies) endpoint lists the competitions in coverage.
+
+Coverage is defined per question, not per competition. A covered competition means its match results are supported; a specific statistic, such as a player's passing yards, is supported only when enough providers report it.
+
+Other categories can be added where qualifying data sources exist. To discuss coverage beyond what is currently available, contact the Chainlink team.
+
+## Market types
+
+Every market is a yes/no question. The Market Registry API classifies each one with a `market_type`:
+
+| <div style={{ width: "140px" }}>`market_type`</div> | Market format                                                         | Example question                                      |
+| --------------------------------------------------- | --------------------------------------------------------------------- | ----------------------------------------------------- |
+| `moneyline`                                         | Winner of a match. In a three-way sport, the draw has its own market. | "Will New York Yankees win?"                          |
+| `draw`                                              | The match ends in a draw. Used in sports such as soccer.              | "Will the match end in a draw?"                       |
+| `outright`                                          | Season or tournament winner.                                          | "Will Player A win the tournament?"                   |
+| `spread`                                            | A participant covers the listed line.                                 | "Will Team A win by more than 1.5 runs?"              |
+| `total`                                             | The combined score is over or under the listed line.                  | "Will the match have more than 2.5 total goals?"      |
+| `prop`                                              | A player or team metric against a target.                             | "Will Player A record more than 274.5 passing yards?" |
+| `binary`                                            | Any other yes/no question.                                            | "Will it rain in New York City on August 20?"         |
+
+<Aside
+  type="note"
+  title="  Example questions are illustrations, not a list of markets in coverage.
+"
+></Aside>
+
+A market resolves to `YES`, `NO`, or, where its rule allows a tie to pay out 50/50, `PUSH`.
+
+## Event types
+
+Most markets belong to an ordinary fixture, such as one game. Some belong to an event that Chainlink derives from a season or a bracket:
+
+| `event_type`             | Event                                                              |
+| ------------------------ | ------------------------------------------------------------------ |
+| `match`                  | An ordinary fixture.                                               |
+| `championship`           | A season or conference champion, derived from the postseason.      |
+| `series`                 | A playoff series winner, derived from a round and a pair of teams. |
+| `elimination_tournament` | A tournament or elimination draw.                                  |
+
+A `championship` has no scheduled start until its deciding round is scheduled.
+
+## The `data-source` standard
+
+Chainlink resolves a market only when its answer can come from data that meets this standard:
+
+- **At least two independent providers.** Automated resolution requires agreement between at least two independent providers that report the facts the question needs.
+- **Single authoritative sources by exception.** A single source is accepted only when it is the official origin of the data, such as government-published economic data or a league's official data feed, and only after a review and approval process. Aggregators never qualify.
+- **Machine-readable and tested.** A provider must offer a structured API that the workflow can call without human intervention. Chainlink tests it end to end against historical outcomes before relying on it.
+- **Durable access.** Access must be contracted or officially published. Chainlink does not resolve markets from scraped pages or undocumented endpoints.
+
+Questions without a qualifying source are not resolved automatically. This includes subjective questions and questions that need custom tracking, such as counting a person's social media posts.
+
+## How markets enter the catalog
+
+Chainlink adds and maintains coverage. It registers coverage for a whole season, tournament, or competition, and new events appear in the Market Registry as providers schedule them. Your platform discovers them through the same API, without a per-market request.
+
+Before coverage goes live, Chainlink matches the competition's events to the exact fixtures at each provider and confirms that the markets' rules produce the known results on historical events.
+
+To ask for coverage that is not in the catalog, contact the Chainlink team. **TODO: Add the request channel.**
+
+## Resolution criteria
+
+Every market carries `resolution_criteria`: a one-sentence summary of how it resolves, for example:
+
+> Resolves YES if the New York Yankees win according to SportsDataio and OddsPapi.
+
+The summary is built from the market's question and states:
+
+- The condition that resolves the market `YES`.
+- The data providers, when the event has them.
+- The tie treatment, when a tie pays out 50/50: "In the event of a tie the market resolves 50/50."
+
+`resolution_criteria` is a display summary, not a complete rulebook. Full resolution terms come from your agreement with Chainlink.
+
+## Next steps
+
+- [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling): How agreement is checked and what happens when it fails.
+- [List markets](/solutions/prediction-market-resolution-engine/tutorial/list-markets): Retrieve markets and their resolution criteria through the API.

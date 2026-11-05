@@ -1,0 +1,56 @@
+---
+title: "Outcome delivery"
+description: "How outcomes from the Prediction Market Resolution Engine reach a prediction market, and how the Market Registry API reflects resolution progress."
+---
+
+Chainlink delivers each market's outcome to your platform. How it is delivered is set in your agreement with Chainlink, not through the Market Registry API: the API is a catalog and does not return outcomes.
+
+## What is delivered
+
+Each market resolves to one of three outcomes:
+
+| Outcome | Meaning                                                                          |
+| ------- | -------------------------------------------------------------------------------- |
+| `YES`   | The market's condition held.                                                     |
+| `NO`    | The market's condition did not hold.                                             |
+| `PUSH`  | A tie, on a market whose rule pays out 50/50 on a tie. Both sides are paid half. |
+
+A market whose evidence never supports an answer receives no outcome. An absent outcome is not `NO`.
+
+The DON also records a SHA-256 hash of each outcome in an onchain contract, so the outcome has a public record independent of Chainlink's systems. TODO: Add the network, contract addresses, and how platforms can check a delivered outcome against the record.
+
+## Where outcomes go
+
+Chainlink sends outcomes to the destination agreed for your platform: an API your platform operates, or a contract. The delivery format, credentials, and market identifiers are set up with Chainlink during onboarding.
+
+If your platform holds outcomes for a dispute window before they are final, delivery follows that window in two steps:
+
+1. When the outcome is determined, Chainlink sends it as an indicative outcome. The event's status becomes `final`.
+1. After the dispute window, Chainlink sends the final outcome. It reuses the outcome and evidence already decided; providers are not queried again, so the final outcome cannot drift from the indicative one. The event's status becomes `completed`.
+
+Discuss your platform's settlement flow with the Chainlink team.
+
+TODO: Confirm which delivery destinations and formats are offered without custom work.
+
+## Follow progress in the registry
+
+The Market Registry API does not return outcomes, but each event's `event_status` shows where resolution stands:
+
+| `event_status` | Delivery                                                    |
+| -------------- | ----------------------------------------------------------- |
+| `live`         | No outcome yet. The event is in progress.                   |
+| `unsafe`       | No outcome. The evidence cannot support an answer yet.      |
+| `final`        | Outcomes are determined. Delivery can still be in progress. |
+| `completed`    | Resolution and delivery are complete.                       |
+| `cancelled`    | The event will not occur. No outcome is delivered.          |
+
+See [Track event status](/solutions/prediction-market-resolution-engine/tutorial/track-event-status) to read these statuses from the API.
+
+## One answer for every platform
+
+A market's slug identifies the underlying question. When several platforms list the same market, the engine decides the outcome once and delivers the same outcome to each platform.
+
+## Next steps
+
+- [Before you begin](/solutions/prediction-market-resolution-engine/tutorial/before-you-begin): Start using the Market Registry API.
+- [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle): Every event status and transition.

@@ -1,0 +1,61 @@
+---
+title: "Track event status"
+description: "Poll the Market Registry API for event status changes and new start times, and interpret each status."
+---
+
+**In this step**, you re-read the events from [step 1](/solutions/prediction-market-resolution-engine/tutorial/list-markets) and interpret each event's status. Status is how the Market Registry API reports progress: whether an event is open, delayed, resolving, or done. Every market on an event shares its event's status.
+
+The API has no webhook or change feed. To follow changes, request the same date window again.
+
+**Concepts:** [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling) · [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle)
+
+## Read event statuses
+
+Request the same window as in step 1, this time without the `status` filter, so the response includes events in every status:
+
+```bash filename="Terminal"
+curl --silent --show-error \
+  --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
+  "${MARKETS_API_URL}/events?from=${FROM}&to=${TO}&grouping=${GROUPING}" \
+  | jq -r '.events[] | "\(.event_status)\t\(.scheduled_start // "unscheduled")\t\(.slug)"'
+```
+
+Each line shows an event's status, its current start time, and its slug, for example:
+
+```text filename="Output"
+scheduled	2026-08-20T23:05:00Z	cl-sports-baseball-mlb-260820-nyan
+```
+
+Run the command again later to see statuses change as games are played and resolved.
+
+## Interpret each status
+
+| <div style={{ width: "140px" }}>`event_status`</div> | Meaning                                                                                                                                    | Suggested handling for this tutorial                                        |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| `scheduled`                                          | The event has not started.                                                                                                                 | Treat its markets as open.                                                  |
+| `live`                                               | The event is in progress. No outcome is ready.                                                                                             | Keep the event open.                                                        |
+| `postponed`                                          | The event is delayed and can be rescheduled.                                                                                               | Keep the event pending, and read the new `scheduled_start` when it appears. |
+| `final`                                              | Every market reached a terminal state. Outcomes are determined, except for markets that were cancelled. Delivery can still be in progress. | Stop treating the event as open.                                            |
+| `completed`                                          | Resolution, and delivery where configured, are complete.                                                                                   | Treat the event as closed.                                                  |
+| `cancelled`                                          | The event will not occur.                                                                                                                  | Treat the event as cancelled.                                               |
+| `unsafe`                                             | At least one market has missing or conflicting evidence. The engine keeps checking.                                                        | Keep the event pending. Never show it as `NO`.                              |
+
+`unsafe` is not final: a later round of evidence can move the event to `final`. A market that stays unsafe never receives an outcome.
+
+## Rescheduled events
+
+When a game moves, its `scheduled_start` changes but its slug does not. The date in a slug, such as `260820` in `cl-sports-baseball-mlb-260820-nyan`, is part of the identifier, not the current schedule. Read `scheduled_start` for timing.
+
+A rescheduled event can move outside your date window. To keep following it, widen the window, up to 16 days.
+
+## Troubleshooting
+
+| Symptom                             | Cause and fix                                                                                      |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------- |
+| An event from step 1 is missing     | It was rescheduled outside the window. Widen the window or move it.                                |
+| An event with `unscheduled` appears | A derived event, such as a championship, has no start yet. It appears in every date-bounded query. |
+
+## Next steps
+
+- [Outcome delivery](/solutions/prediction-market-resolution-engine/overview/outcome-delivery): How outcomes reach your platform.
+- [Market Registry API](/solutions/prediction-market-resolution-engine/reference/market-registry-api): Every parameter, field, and error.

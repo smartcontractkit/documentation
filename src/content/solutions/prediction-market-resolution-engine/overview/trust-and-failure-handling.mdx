@@ -1,0 +1,62 @@
+---
+title: "Trust and failure handling"
+description: "What a prediction market relies on when it uses the Prediction Market Resolution Engine, and what the engine does when evidence is missing, late, or contradictory."
+---
+
+This page lists what your platform relies on, how each dependency is protected, and how the engine behaves when something goes wrong.
+
+The rule behind every behavior: **the engine would rather delay than resolve incorrectly.** It does not guess, and it does not lower the evidence requirement to reach an answer.
+
+## What you rely on
+
+| Dependency              | What it does                                   | How it is protected                                                                                                                                       |
+| ----------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Data providers          | Report the real-world result                   | At least two independent providers must agree, and every provider must report a final result. Chainlink monitors providers for outages and discrepancies. |
+| The DON                 | Fetches evidence and applies the market's rule | Every node fetches independently, and nodes must agree on what each provider returned. A hash of each outcome is recorded onchain.                        |
+| Chainlink control plane | Schedules checks and maintains the catalog     | It sends identifiers and rules only. It cannot supply evidence or choose an outcome. The DON keeps no state between runs.                                 |
+| The market's rule       | Turns agreed facts into an outcome             | Checked against historical events before coverage goes live.                                                                                              |
+
+## Provider agreement and DON consensus
+
+The engine applies two separate checks:
+
+- **DON consensus** confirms what each provider said. Every node in the DON calls the provider and the nodes must report identical data, so no single node can misreport a provider's response. See [Consensus computing in CRE](/cre/concepts/consensus-computing).
+- **Provider agreement** confirms that independent providers say the same thing. The workflow normalizes each provider's response into common facts, such as final runs per team, and accepts a fact only when enough providers report the same value.
+
+DON consensus does not replace provider agreement. Many nodes reading one provider still produce one source. Provider agreement is what protects against a provider reporting a wrong result.
+
+Agreement is checked on each fact the market needs. A missing value stays missing; it is never treated as zero. A value reported by only one provider cannot resolve a market that needs two, however confident that provider is.
+
+Agreement reduces source risk but does not remove it. Two providers can share an upstream feed or make the same error.
+
+## When the engine withholds an outcome
+
+An outcome that cannot be supported is never delivered as `NO` or any other value. The engine delivers nothing, and the event's status in the Market Registry shows why:
+
+| Situation                                                           | What the engine does                                                                               | Event status |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------ |
+| The event has not finished, or a provider's result is not yet final | Waits and checks again.                                                                            | `live`       |
+| A provider is unavailable or returns an error                       | Retries automatically.                                                                             | Unchanged    |
+| Providers report different final results                            | Fails closed: delivers nothing, keeps checking for evidence, and escalates to Chainlink operators. | `unsafe`     |
+| The rule cannot decide, for example a tie the rule does not allow   | Fails closed and escalates.                                                                        | `unsafe`     |
+| The event is cancelled                                              | Delivers no outcome.                                                                               | `cancelled`  |
+| The event is postponed                                              | Moves the checks for every market on the event.                                                    | `postponed`  |
+
+`unsafe` is not final. A later round of evidence can resolve the event, which then moves to `final`. A market that stays unsafe never receives an outcome. The [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle) reference lists every status and transition.
+
+## Timing
+
+Resolution follows the real end of the event, not its scheduled start: the engine resolves once the data providers confirm a final result and agree. Overtime, extra innings, and delays move that point.
+
+An outcome can take longer when providers are slow to mark a result final, when they disagree, or when a required statistic arrives late. After the engine delivers, your platform's own dispute window, if any, adds time before positions are final.
+
+## Monitoring and disputes
+
+Chainlink monitors resolution and escalates failures, including every `unsafe` event, to its operators. Chainlink contacts your team about incidents that affect your markets. TODO: Add the incident contact channel and notification commitments.
+
+Your platform runs its own dispute process for traders.
+
+## Next steps
+
+- [Outcome delivery](/solutions/prediction-market-resolution-engine/overview/outcome-delivery): How outcomes reach your platform.
+- [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle): Every event status and what it means.

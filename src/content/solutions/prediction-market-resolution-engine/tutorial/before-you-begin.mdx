@@ -1,0 +1,47 @@
+---
+title: "Before you begin"
+description: "Prerequisites and the path of the Market Registry API tutorial for the Prediction Market Resolution Engine."
+---
+
+This tutorial uses the Market Registry API to find the markets Chainlink resolves and follow their progress. By the end, you will have listed the markets for one competition and read the status of each event.
+
+The Market Registry API is read-only. It returns the catalog: events, their markets, each market's resolution criteria, and each event's status. Outcomes reach your platform separately, as agreed with Chainlink; see [Outcome delivery](/solutions/prediction-market-resolution-engine/overview/outcome-delivery).
+
+## The tutorial path
+
+| Step                                                                                                | You do                                                       | You end with                                          |
+| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------- |
+| [1. List markets](/solutions/prediction-market-resolution-engine/tutorial/list-markets)             | Find a competition in coverage and fetch its upcoming events | Each market's slug, question, and resolution criteria |
+| [2. Track event status](/solutions/prediction-market-resolution-engine/tutorial/track-event-status) | Poll the same date window and read each event's status       | A view of which events are open, resolving, or done   |
+
+Both steps use the same example: Major League Baseball games, grouping `mlb`.
+
+## Prerequisites
+
+- **A Market Registry API key.** Request one from the Chainlink team. The key belongs to your organization and must have Prediction Markets access enabled.
+- **`curl` and `jq`** in a terminal.
+
+## Set your API key
+
+Set the base URL and your key. Run every command in this tutorial in the same terminal.
+
+```bash filename="Terminal"
+export MARKETS_API_URL='https://markets.api.chain.link/user/v1'
+export MARKETS_API_KEY='YOUR_API_KEY'
+```
+
+For this tutorial, keep the key in your terminal session only. Do not ship it in a trader-facing app.
+
+Confirm the key works:
+
+```bash filename="Terminal"
+curl --silent --show-error --output /dev/null --write-out '%{http_code}\n' \
+  --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
+  "${MARKETS_API_URL}/taxonomies"
+```
+
+The command prints `200`. A `401` or `403` means the key is missing, invalid, or not enabled for Prediction Markets; contact the Chainlink team.
+
+## Next step
+
+[1. List markets](/solutions/prediction-market-resolution-engine/tutorial/list-markets)
