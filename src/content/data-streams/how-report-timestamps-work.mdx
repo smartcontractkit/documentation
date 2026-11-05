@@ -34,7 +34,7 @@ Every Data Streams report carries two timestamps:
 - **`validFromTimestamp`** — when the report's price _starts being valid_
 - **`observationsTimestamp`** — when the report's price _was last observed_.
 
-Together, they describe a window of time rather than a single instant. This page explains how the two timestamps define a [report's window](#report-windows), what to expect when [no report exists for a given moment](#determining-current-price), and how timestamps apply to [Time Weighted Average Price (TWAP) streams](#twap-streams).
+Together, they describe a window of time rather than a single instant. This page explains how the two timestamps define a [report's window](#report-windows), what to expect when [no report exists for a given moment](#determining-current-price), and how they apply to [TWAP streams](#twap-streams).
 
 ## Report windows
 
@@ -65,19 +65,4 @@ Because windows can vary in width, **do not assume every report covers the same 
 
 ## TWAP streams
 
-Time Weighted Average Price (TWAP) streams report the average price over a rolling window, rather than a single observed price. A TWAP report is an **aggregated calculation** derived from the underlying reports. See the [TWAP report schema](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap) for the full field definitions.
-
-A TWAP window is anchored to the latest observation and moves forward with each new report. Unlike standard streams, it doesn't align to the clock or snap to round numbers.
-
-For example, a 60-second TWAP requested "at `12:05:01`" covers `12:04:01` → `12:05:01`.
-
-**Formula:**
-
-```
-TWAP = (sum of price × duration for each report in the window) / window length in seconds
-```
-
-- 30-second TWAP → divide by 30
-- 60-second TWAP → divide by 60
-
-The TWAP is constructed from the underlying reports that fall within its window. Each underlying report normally covers about 1 second, but if a report's window is wider because it absorbed a gap, its price is weighted across the full window it covers.
+TWAP streams aggregate the reports in a rolling window rather than publishing a single observed price. See [TWAP Streams](/data-streams/concepts/twap-streams) for the window mechanics and formula.

@@ -31,12 +31,20 @@ import {
   getSchemaVersion,
   getMarketStatusDocLink,
   getTradingHoursDocLink,
+  is247Product,
+  is247USEquitiesStream,
+  is24x5StreamFeed,
   isApacEquitiesStreamFeed,
   getTwapWindowSeconds,
 } from "~/features/feeds/utils/feedMetadata.ts"
 import { get247Category, is247Stream } from "~/features/feeds/utils/twentyFourSeven.ts"
 import { isFeedIdAddressedNetwork } from "~/features/feeds/utils/feedIdAddressedNetworks.ts"
-import { getFeedTypeFlags, type SchemaFilterValue, type TwentyFourSevenFilterValue } from "~/features/feeds/types.ts"
+import {
+  getFeedTypeFlags,
+  type SchemaFilterValue,
+  type TwentyFourSevenFilterValue,
+  type TwentyFourSevenProduct,
+} from "~/features/feeds/types.ts"
 import { useFilteredFeedMetadata } from "~/features/feeds/hooks/useFilteredFeedMetadata.ts"
 
 const feedItems = monitoredFeeds.mainnet
@@ -1403,6 +1411,12 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
   // 24/7 TWAP product, which carries attributeType "247" instead of "TWAP".
   const isTwapStream =
     schemaKey === "v2" && (metadata.docs?.attributeType === "TWAP" || get247Category(metadata) === "twap")
+  const is247USEquities = is247USEquitiesStream(metadata)
+  const twentyFourSevenHref = is247Product(metadata, "twap")
+    ? "/data-streams/rwa-streams/24-7-us-equities#24-7-twap"
+    : is247Product(metadata, "perps")
+      ? "/data-streams/rwa-streams/24-7-us-equities#24-7-for-perpetual-markets"
+      : "/data-streams/rwa-streams/24-7-us-equities"
 
   return (
     <tr>
@@ -1430,11 +1444,31 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 Datalink
               </a>
             )}
-            {is247Stream(metadata) && (
-              <span className={tableStyles.feedVariantBadge} title="24/7 stream">
-                24/7
-              </span>
+            {is24x5StreamFeed(metadata) && (
+              <a
+                href="/data-streams/rwa-streams/24-5-us-equities-user-guide"
+                target="_blank"
+                className={tableStyles.feedVariantBadge}
+                title="24/5 US Equities stream"
+              >
+                24/5
+              </a>
             )}
+            {(is247Stream(metadata) || is247USEquities) &&
+              (is247USEquities ? (
+                <a
+                  href={twentyFourSevenHref}
+                  target="_blank"
+                  className={tableStyles.feedVariantBadge}
+                  title="24/7 US Equities stream"
+                >
+                  24/7
+                </a>
+              ) : (
+                <span className={tableStyles.feedVariantBadge} title="24/7 stream">
+                  24/7
+                </span>
+              ))}
             {isTwapStream && (
               <a
                 href="/data-streams/reference/report-schema-v2#time-weighted-average-price-twap"
@@ -1596,7 +1630,7 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
                 </dt>
                 <dd>
                   <a href="/data-streams/market-hours" target="_blank">
-                    {is247Stream(metadata) ? "24/7" : metadata.docs.marketHours}
+                    {is247Stream(metadata) || is247USEquitiesStream(metadata) ? "24/7" : metadata.docs.marketHours}
                   </a>
                 </dd>
               </div>
@@ -1658,7 +1692,10 @@ export const MainnetTable = ({
   streamCategoryFilter,
   show24x5Feeds,
   show247Streams,
+  show247USEquities,
+  show247TokenizedEquity,
   twentyFourSevenFilter,
+  twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
   tradingHoursFilter,
@@ -1687,7 +1724,10 @@ export const MainnetTable = ({
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex" | "futures"
   show24x5Feeds?: boolean
   show247Streams?: boolean
+  show247USEquities?: boolean
+  show247TokenizedEquity?: boolean
   twentyFourSevenFilter?: TwentyFourSevenFilterValue
+  twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
@@ -1712,7 +1752,7 @@ export const MainnetTable = ({
 
   // While a market-hours filter is active the schema/category dropdowns are hidden.
   // Ignore any leftover values so they can't silently empty the table (e.g. from a URL).
-  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams)
+  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams || show247USEquities)
 
   const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
     network,
@@ -1724,7 +1764,10 @@ export const MainnetTable = ({
     showOnlySVR,
     show24x5Feeds,
     show247Streams,
+    show247USEquities,
+    show247TokenizedEquity,
     twentyFourSevenFilter,
+    twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
     tradingHoursFilter,
@@ -1737,6 +1780,8 @@ export const MainnetTable = ({
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
       extendedHoursCategory: forceExtendedHoursCategory,
+      show247USEquities,
+      show247TokenizedEquity,
     },
   })
 
@@ -1848,7 +1893,10 @@ export const TestnetTable = ({
   streamCategoryFilter,
   show24x5Feeds,
   show247Streams,
+  show247USEquities,
+  show247TokenizedEquity,
   twentyFourSevenFilter,
+  twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
   tradingHoursFilter,
@@ -1874,7 +1922,10 @@ export const TestnetTable = ({
   streamCategoryFilter?: "all" | "datalink" | "equities" | "forex" | "futures"
   show24x5Feeds?: boolean
   show247Streams?: boolean
+  show247USEquities?: boolean
+  show247TokenizedEquity?: boolean
   twentyFourSevenFilter?: TwentyFourSevenFilterValue
+  twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
@@ -1893,7 +1944,7 @@ export const TestnetTable = ({
 
   // While a market-hours filter is active the schema/category dropdowns are hidden.
   // Ignore any leftover values so they can't silently empty the table (e.g. from a URL).
-  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams)
+  const isMarketHoursFilterActive = Boolean(show24x5Feeds || show247Streams || show247USEquities)
 
   const { batchedCategoryData, filteredMetadata, isBatchLoading } = useFilteredFeedMetadata({
     network,
@@ -1904,7 +1955,10 @@ export const TestnetTable = ({
     searchVariant: "testnet",
     show24x5Feeds,
     show247Streams,
+    show247USEquities,
+    show247TokenizedEquity,
     twentyFourSevenFilter,
+    twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
     tradingHoursFilter,
@@ -1917,6 +1971,8 @@ export const TestnetTable = ({
       showOnlyMVRFeeds,
       tokenizedEquityProvider,
       extendedHoursCategory: forceExtendedHoursCategory,
+      show247USEquities,
+      show247TokenizedEquity,
     },
   })
 

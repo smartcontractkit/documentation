@@ -18,6 +18,7 @@ const SECTION_DISPLAY_NAMES: Record<string, string> = {
   "data-feeds": "Data Feeds",
   "data-streams": "Data Streams",
   "dta-technical-standard": "DTA",
+  "chainlink-local": "Chainlink Local",
   quickstarts: "Quickstarts",
   resources: "Resources",
   // Add more as needed
