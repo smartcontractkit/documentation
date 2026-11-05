@@ -20,7 +20,7 @@ const CALLOUT_ICONS = {
 
 export const Callout = ({ type = "note", title, children, className }: CalloutProps) => {
   return (
-    <div className={`${styles.callout} ${styles[type]} ${className || ""}`} aria-label={title}>
+    <div className={`${styles.callout} ${styles[type] ?? ""} ${className || ""}`} aria-label={title}>
       <div className={styles.icon} aria-hidden="true">
         <img
           src={CALLOUT_ICONS[type].src}

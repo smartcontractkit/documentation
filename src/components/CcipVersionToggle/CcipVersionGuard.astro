@@ -21,12 +21,21 @@ interface Props {
 const { redirects } = Astro.props
 ---
 
-<script is:inline define:vars={{ redirects, storageKey: CHAIN_TYPE_STORAGE_KEY }}>
+<!-- Read by BaseLayout.astro to redirect client-side navigations -->
+<meta
+  name="ccip-chain-version-redirects"
+  content={JSON.stringify(redirects)}
+  data-storage-key={CHAIN_TYPE_STORAGE_KEY}
+/>
+
+<script is:inline data-astro-rerun define:vars={{ redirects, storageKey: CHAIN_TYPE_STORAGE_KEY }}>
   try {
     // Read the raw value exactly like initializeChainType() so both agree on the chain family.
     // typeof check: inherited keys ("toString", "__proto__") are never string targets.
     var target = redirects[localStorage.getItem(storageKey)]
-    if (typeof target === "string") {
+    // Skip iframes: in dev, ClientRouter preloads client:only pages in a hidden iframe and waits for
+    // its load event, so redirecting it hangs the navigation.
+    if (typeof target === "string" && window.self === window.top) {
       // Hide the page being replaced; the timeout is a safety net if the navigation never happens.
       document.documentElement.style.visibility = "hidden"
       setTimeout(function () {

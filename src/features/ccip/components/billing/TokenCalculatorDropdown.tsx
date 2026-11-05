@@ -78,8 +78,8 @@ export const TokenCalculatorDropdown = <OptionType,>({
             minWidth: "100%",
             maxWidth: "100%",
             zIndex: 100,
-            border: "1px solid #ddd",
-            backgroundColor: "#fff",
+            border: "1px solid var(--border)",
+            backgroundColor: "var(--background)",
             boxSizing: "border-box",
           }}
         >
@@ -91,7 +91,7 @@ export const TokenCalculatorDropdown = <OptionType,>({
                 style={{
                   padding: "0.5em",
                   cursor: "pointer",
-                  borderBottom: "1px solid #eee",
+                  borderBottom: "1px solid var(--border)",
                   wordBreak: "break-word",
                   boxSizing: "border-box",
                 }}
