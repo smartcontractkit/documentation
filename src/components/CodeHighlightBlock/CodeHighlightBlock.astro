@@ -348,13 +348,15 @@ const languageDisplay = getLanguageDisplayName(lang)
     blockId,
   }}
 >
-  document.addEventListener("astro:page-load", () => {
+  const initBlock = () => {
     // Only process THIS specific container to avoid contamination
     const container = document.getElementById(blockId)
-    if (!container) return
+    if (!container || container.dataset.highlightInitialized === "true") return
 
     const allLineElements = container.querySelectorAll(".line")
     if (allLineElements.length === 0) return
+
+    container.dataset.highlightInitialized = "true"
 
     // Simple syntax highlighting function
     function highlightInIsolation(code, language) {
@@ -624,5 +626,21 @@ const languageDisplay = getLanguageDisplayName(lang)
         }
       })
     }
-  })
+  }
+
+  document.addEventListener("astro:page-load", initBlock)
+
+  const cleanup = () => {
+    document.removeEventListener("astro:page-load", initBlock)
+    document.removeEventListener("DOMContentLoaded", initBlock)
+  }
+  document.addEventListener("astro:before-swap", cleanup, { once: true })
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initBlock, { once: true })
+  } else {
+    // Standalone documents such as the developer gallery never emit
+    // astro:page-load.
+    initBlock()
+  }
 </script>

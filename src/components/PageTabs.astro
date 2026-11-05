@@ -446,10 +446,11 @@ const displayPage = hasActivePage ? (Array.isArray(currentPageGroup) ? currentPa
 
 <script>
   function initDropdown() {
-    const trigger = document.querySelector(".dropdown-trigger")
-    const content = document.querySelector(".dropdown-content")
+    const trigger = document.querySelector<HTMLElement>(".dropdown-trigger")
+    const content = document.querySelector<HTMLElement>(".dropdown-content")
 
-    if (!trigger || !content) return
+    if (!trigger || !content || trigger.dataset.dropdownInitialized === "true") return
+    trigger.dataset.dropdownInitialized = "true"
 
     trigger.addEventListener("click", () => {
       const isExpanded = trigger.getAttribute("aria-expanded") === "true"
@@ -467,6 +468,13 @@ const displayPage = hasActivePage ? (Array.isArray(currentPageGroup) ? currentPa
   }
 
   document.addEventListener("astro:page-load", initDropdown)
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initDropdown, { once: true })
+  } else {
+    // Standalone documents such as the developer gallery never emit astro:page-load.
+    initDropdown()
+  }
 
   // Update padding based on header visibility
   const section = document.querySelector(".tabs-section") as HTMLElement

@@ -207,5 +207,32 @@ const canonicalURL = new URL(canonicalURLStr)
     <slot />
     <NewsletterCTA client:visible />
     <Footer />
+    <script>
+      // Pages opt into wallet controls via metadata.linkToWallet, rendered as a
+      // marker in the page DOM. The marker survives client-side navigation, so
+      // this works even though the layout's module script runs only once.
+      type WalletModule = { initializeLinkToWallet: () => Promise<void> }
+
+      let walletModule: Promise<WalletModule> | undefined
+      let lastMarker: Element | null = null
+
+      function initLinkToWallet() {
+        const marker = document.querySelector('[data-link-to-wallet="true"]')
+        // The initial call and astro:page-load both run on first load; the
+        // marker identity changes only when the router swaps in a new page.
+        if (!marker || marker === lastMarker) return
+        lastMarker = marker
+        walletModule ??= import("~/scripts/link-to-wallet.ts").catch((error: unknown) => {
+          walletModule = undefined
+          throw error
+        })
+        walletModule
+          .then(({ initializeLinkToWallet }) => initializeLinkToWallet())
+          .catch((error: unknown) => console.error("Failed to initialize wallet controls:", error))
+      }
+
+      document.addEventListener("astro:page-load", initLinkToWallet)
+      initLinkToWallet()
+    </script>
   </body>
 </html>
