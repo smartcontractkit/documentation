@@ -21,7 +21,7 @@ import { Aside } from "@components"
 ## Why workflows feel slow
 
 Workflows spend most of their time waiting on capability calls: reading a chain, calling an HTTP API, reaching
-consensus, or retrieving secrets. Each call is a round trip that includes the work itself plus consensus across the DON.
+consensus, or retrieving secrets. Each call is a round trip, and many also include a consensus step across the DON.
 
 When you call `.Await()` immediately after each capability call, each round trip waits for the previous one to finish.
 The execution time becomes the sum of every call's latency. If the calls are independent, that waiting adds no value.
@@ -113,7 +113,8 @@ if err != nil {
 }
 ```
 
-The HTTP + consensus case follows the same shape. Creating the promise starts the node-mode call and the consensus step;
+The HTTP + consensus case follows the same shape, with one difference: `http.SendRequest` runs your node-mode function
+to completion before it returns, so the secret fetch overlaps with the consensus step, not with the HTTP request.
 `.Await()` waits for the aggregated result:
 
 ```go
