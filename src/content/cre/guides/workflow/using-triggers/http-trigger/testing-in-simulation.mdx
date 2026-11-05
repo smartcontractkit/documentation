@@ -143,20 +143,23 @@ Create the payload file in your workflow directory:
 **Simulate:**
 
 ```bash
-cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload test-payload.json --target staging-settings
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload ./my-http-workflow/test-payload.json --target staging-settings
 ```
 
 **Option 2: File at project root**
 
-Create the payload file at your project root. Simulate (using `../` to reference the parent directory):
+Create the payload file at your project root. Simulate:
 
 ```bash
-cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload ../test-payload.json --target staging-settings
+cre workflow simulate my-http-workflow --non-interactive --trigger-index 0 --http-payload ./test-payload.json --target staging-settings
 ```
 
-<Aside type="note" title="File paths are relative to the workflow folder">
-  The CLI resolves file paths relative to the **workflow folder** you're simulating. Use just the filename for files in
-  the workflow folder, or `../filename.json` for files at the project root.
+<Aside type="note" title="File paths are relative to where you run the command">
+  The CLI resolves `--http-payload` file paths relative to the directory where you run the command, which is usually
+  your project root: use `./my-http-workflow/test-payload.json` for a file in the workflow folder and
+  `./test-payload.json` for a file at the project root. This differs from
+  [`--wasm`](/cre/reference/cli/workflow#cre-workflow-simulate), where a relative path resolves from the workflow
+  directory instead.
 </Aside>
 
 ## Example workflow simulation
