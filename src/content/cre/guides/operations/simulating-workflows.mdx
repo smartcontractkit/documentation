@@ -116,7 +116,7 @@ cre workflow simulate my-workflow --non-interactive --trigger-index 0 --target s
 
 The `--listen` flag keeps the simulator alive and re-runs it for each incoming trigger event, instead of compiling and executing once then exiting.
 
-- **HTTP triggers**: starts a local HTTP server on port `2000` (change it with `--http-trigger-port`). Each POST request to `/trigger` triggers a simulation run.
+- **HTTP triggers**: starts a local HTTP server on port `2000` (change it with `--http-trigger-port`). Each POST request to `/trigger` attempts a simulation run.
 - **EVM log triggers**: watches the configured chain and re-runs on each matching log event.
 
 ```bash
@@ -156,7 +156,7 @@ There are two ways to do this:
 
 ```bash
 # Build once. The binary is written to ./my-workflow/binary.wasm by default
-cre workflow build ./my-workflow --target staging-settings
+cre workflow build ./my-workflow
 
 # Simulate the pre-built binary as many times as you like
 cre workflow simulate ./my-workflow --wasm ./binary.wasm --target staging-settings
@@ -164,7 +164,7 @@ cre workflow simulate ./my-workflow --wasm ./binary.wasm --target staging-settin
 
 When you pass `--wasm`:
 
-- The simulator runs the binary as-is and does not read your workflow source. If you change your code, rebuild the binary.
+- The simulator runs the binary as-is and does not read your workflow source, but the configured `workflow-path` must still exist. If you change your code, rebuild the binary.
 - The simulator still reads your `workflow.yaml` for the config and secrets paths, and the target settings.
 - You can start several simulations at the same time against the same binary. They don't write build output, so they don't overwrite each other.
 - A relative path is resolved from the workflow directory, not from where you ran the command. In the example above, `./binary.wasm` points to `./my-workflow/binary.wasm`.
