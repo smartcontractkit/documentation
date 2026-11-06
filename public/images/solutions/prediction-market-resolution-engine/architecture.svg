@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 640" role="img" aria-labelledby="title desc">
+  <title id="title">Prediction Market Resolution Engine architecture</title>
+  <desc id="desc">The Chainlink control plane keeps the Market Registry, discovers events from provider schedules, and triggers resolution. The prediction market lists markets through the Market Registry API. The CRE trust plane on a decentralized oracle network fetches evidence from independent providers, requires agreement, and evaluates each market's rule. A hash of each outcome is recorded in an onchain contract, and the outcome is delivered to the prediction market as agreed, and the prediction market settles positions.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8" fill="#375bd2"/></marker>
+    <style>text{font-family:Arial,sans-serif;fill:#172b4d} .title{font-size:19px;font-weight:700} .label{font-size:16px} .small{font-size:14px;fill:#5e6c84} .box{fill:#f3f6ff;stroke:#375bd2;stroke-width:2} .trust{fill:#e8edff;stroke:#375bd2;stroke-width:3} .pm{fill:#fff;stroke:#172b4d;stroke-width:2;stroke-dasharray:6 4} .line{fill:none;stroke:#375bd2;stroke-width:2;marker-end:url(#arrow)} .edge{font-size:14px;fill:#375bd2}</style>
+  </defs>
+  <rect width="1100" height="640" rx="16" fill="#fff"/>
+  <text x="1070" y="30" text-anchor="end" class="small">Dashed boxes are operated by the prediction market.</text>
+
+  <rect x="30" y="60" width="230" height="130" rx="12" class="box"/>
+  <text x="145" y="98" text-anchor="middle" class="title">Data providers</text>
+  <text x="145" y="130" text-anchor="middle" class="label">Event schedules</text>
+  <text x="145" y="157" text-anchor="middle" class="label">Final results</text>
+
+  <rect x="355" y="45" width="360" height="160" rx="12" class="box"/>
+  <text x="535" y="80" text-anchor="middle" class="title">Control plane</text>
+  <text x="535" y="111" text-anchor="middle" class="label">Market Registry</text>
+  <text x="535" y="138" text-anchor="middle" class="label">Discovery and scheduling</text>
+  <text x="535" y="165" text-anchor="middle" class="label">Monitoring and escalation</text>
+  <text x="535" y="190" text-anchor="middle" class="small">Decides when to check. Never decides an outcome.</text>
+
+  <rect x="810" y="60" width="260" height="130" rx="12" class="pm"/>
+  <text x="940" y="98" text-anchor="middle" class="title">Prediction market</text>
+  <text x="940" y="130" text-anchor="middle" class="label">Lists markets</text>
+  <text x="940" y="157" text-anchor="middle" class="label">Trading and liquidity</text>
+
+  <rect x="300" y="300" width="410" height="200" rx="12" class="trust"/>
+  <text x="505" y="337" text-anchor="middle" class="title">Trust plane: CRE workflow on a DON</text>
+  <text x="505" y="372" text-anchor="middle" class="label">Fetch each provider under DON consensus</text>
+  <text x="505" y="401" text-anchor="middle" class="label">Normalize results and require agreement</text>
+  <text x="505" y="430" text-anchor="middle" class="label">Evaluate each market's rule</text>
+  <text x="505" y="459" text-anchor="middle" class="label">Produce the outcome</text>
+  <text x="505" y="487" text-anchor="middle" class="small">The only component that decides an outcome.</text>
+
+  <rect x="810" y="330" width="260" height="140" rx="12" class="pm"/>
+  <text x="940" y="368" text-anchor="middle" class="title">Settlement</text>
+  <text x="940" y="400" text-anchor="middle" class="label">Receive outcome</text>
+  <text x="940" y="427" text-anchor="middle" class="label">Settle positions</text>
+
+  <path d="M260 125H349" class="line"/>
+  <text x="305" y="115" text-anchor="middle" class="edge">Schedules</text>
+
+  <path d="M715 125H804" class="line"/>
+  <text x="760" y="115" text-anchor="middle" class="edge">Registry API</text>
+
+  <path d="M505 205V294" class="line"/>
+  <text x="515" y="255" class="edge">Trigger at window open</text>
+
+  <path d="M145 190V400H294" class="line"/>
+  <text x="155" y="390" class="edge">Evidence</text>
+
+  <path d="M710 400H804" class="line"/>
+  <text x="757" y="390" text-anchor="middle" class="edge">Outcome</text>
+
+  <rect x="300" y="560" width="410" height="60" rx="12" class="box"/>
+  <text x="505" y="587" text-anchor="middle" class="title">Onchain record</text>
+  <text x="505" y="610" text-anchor="middle" class="small">SHA-256 hash of each outcome</text>
+  <path d="M505 500V554" class="line"/>
+  <text x="515" y="532" class="edge">Outcome hash</text>
+</svg>

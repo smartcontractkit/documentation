@@ -1,0 +1,72 @@
+---
+title: "How it works"
+description: "The components of the Prediction Market Resolution Engine and the path one market takes from listing to settlement."
+---
+
+import { ClickToZoom } from "@components"
+
+The Resolution Engine is split by a strict trust boundary:
+
+- **The control plane decides _when_ to look.** Chainlink operates it. It keeps the catalog of events and markets, tracks schedules, and triggers a resolution check when an event's resolution window opens. It sends the trust plane identifiers and rules only. It never sends results, and it cannot choose an outcome.
+- **The trust plane decides _what happened_.** It is a [CRE workflow](/cre) that runs on a decentralized oracle network (DON). It fetches the evidence itself, requires agreement, and applies the market's rule. It is the only component that can produce an outcome.
+
+Because the trust plane fetches its own evidence, a faulty or compromised trigger can, at worst, point the workflow at the wrong event. It cannot supply a result. The trust plane keeps no state of its own: every run receives what it needs in the trigger, and the control plane holds the catalog and history.
+
+<ClickToZoom
+  src="/images/solutions/prediction-market-resolution-engine/architecture.svg"
+  alt="Data providers supply schedules to the control plane, which holds the Market Registry, schedules checks, and monitors resolution. The prediction market lists markets through the Registry API. At window open the control plane triggers the CRE trust plane on a DON, which fetches provider evidence, requires agreement, evaluates each market's rule, and produces the outcome. The DON records a hash of the outcome in an onchain contract, and the outcome is delivered to the prediction market, which settles positions."
+/>
+
+## Components
+
+| Component                      | Operated by   | Role                                                                                                                                                             |
+| ------------------------------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Market Registry                | Chainlink     | Catalog of events and their markets, with stable slugs, resolution criteria, and event status. Your platform reads it through an API.                            |
+| Discovery and scheduling       | Chainlink     | Finds new events from provider schedules, follows schedule changes, and triggers a check when each event's resolution window opens.                              |
+| Monitoring and escalation      | Chainlink     | Tracks resolution progress and escalates failures to Chainlink operators.                                                                                        |
+| Resolution workflow (CRE, DON) | Chainlink DON | Fetches provider evidence, requires agreement, and evaluates each market's rule.                                                                                 |
+| Onchain record                 | Chainlink DON | Records a SHA-256 hash of each outcome in an onchain contract.                                                                                                   |
+| Outcome delivery               | Chainlink     | Sends each outcome to your platform, as agreed with Chainlink. See [Outcome delivery](/solutions/prediction-market-resolution-engine/overview/outcome-delivery). |
+| Settlement                     | Your platform | Applies outcomes to positions.                                                                                                                                   |
+
+## Following a full market lifecycle
+
+This example uses the market "Will New York Yankees win?" on a Yankees–Orioles baseball game.
+
+### Listing
+
+Event status: `scheduled`
+
+1. **The market enters the registry.** Chainlink adds the game as an **event** and attaches its **markets**, one per team. Each market gets a permanent slug, such as `cl-sports-baseball-mlb-260820-nyan-winner-nyan`, and resolution criteria for traders: _Resolves YES if the New York Yankees win according to SportsDataio and OddsPapi._
+1. **Your platform lists it.** Your platform reads the market from the [Market Registry API](/solutions/prediction-market-resolution-engine/reference/market-registry-api) while the event's status is `scheduled`.
+
+### Resolution
+
+Event status: `live`, then `final`
+
+3. **The resolution window opens.** The event's schedule determines when checks begin. If the game is postponed, the checks move for every market on that event.
+1. **The DON gathers evidence.** Each node in the DON fetches every configured provider. The nodes must report identical data for each provider, so no single node can misreport what a provider said.
+1. **Providers must agree.** The workflow normalizes each provider's response into the same facts, such as runs per team. It accepts a fact only when enough independent providers report the same value and all of them mark it final. Until then, the market waits.
+1. **The rule decides.** With agreed final runs of 5–3 for the Yankees, the rule returns `YES` for the Yankees market and `NO` for the Orioles market. Every market on the event is evaluated against the same agreed facts. The event's status becomes `final`.
+
+If providers disagree or the rule cannot decide, the event becomes `unsafe` and nothing is delivered until the evidence supports an answer. See [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling).
+
+### Delivery and settlement
+
+Event status: `final`, then `completed`
+
+7. **The outcome is recorded and delivered.** The DON records a hash of the outcome onchain and sends the outcome to your platform as agreed. If your platform holds outcomes for a dispute window, the outcome is sent first as indicative.
+1. **The outcome is finalized.** After any dispute window, Chainlink delivers the final outcome. It reuses the outcome and evidence already decided; it does not fetch providers again. The event's status then becomes `completed`.
+1. **Your platform settles** positions under its own rules.
+
+[Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle) lists every event status.
+
+## One market, many platforms
+
+A market's slug identifies the underlying question, not one platform's listing. When several platforms list the same market, the engine fetches the evidence and decides the outcome once, then delivers it to each platform. Every platform receives the same answer from the same evidence.
+
+## Next steps
+
+- [Supported markets](/solutions/prediction-market-resolution-engine/overview/supported-markets): Which sports and market types the engine resolves.
+- [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling): What happens when evidence is missing, late, or contradictory.
+- For the consensus model behind the DON, see [Consensus computing in CRE](/cre/concepts/consensus-computing).
