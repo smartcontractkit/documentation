@@ -1800,7 +1800,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "data-streams/market-guides",
         },
         {
-          title: "US Equities",
+          title: "US Equities & Indices",
           url: "data-streams/rwa-streams/us-equities",
           children: [
             {
@@ -1814,7 +1814,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           ],
         },
         {
-          title: "APAC Equities",
+          title: "APAC Equities & Indices",
           url: "data-streams/rwa-streams/apac-equities",
         },
         {
