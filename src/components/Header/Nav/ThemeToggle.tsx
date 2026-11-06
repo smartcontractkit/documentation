@@ -3,12 +3,17 @@ import styles from "./themeToggle.module.css"
 
 // Keep in sync with the inline theme script in src/layouts/BaseLayout.astro.
 const STORAGE_KEY = "docs-theme"
+// Keeps the header and mobile menu toggles in sync.
+const THEME_CHANGE_EVENT = "docs-theme-change"
 
 export const ThemeToggle = () => {
   const [isDark, setIsDark] = useState<boolean | null>(null)
 
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"))
+    const sync = () => setIsDark(document.documentElement.classList.contains("dark"))
+    sync()
+    window.addEventListener(THEME_CHANGE_EVENT, sync)
+    return () => window.removeEventListener(THEME_CHANGE_EVENT, sync)
   }, [])
 
   const toggle = () => {
@@ -41,6 +46,7 @@ export const ThemeToggle = () => {
       // localStorage unavailable
     }
     setIsDark(next)
+    window.dispatchEvent(new Event(THEME_CHANGE_EVENT))
   }
 
   // Wait for the theme so the icon doesn't flip after hydration
