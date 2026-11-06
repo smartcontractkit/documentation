@@ -1,5 +1,5 @@
 /** @jsxImportSource react */
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import walletStyles from "./WalletConnection.module.css"
 
 import { useEffect, useMemo, useRef, useState } from "react"

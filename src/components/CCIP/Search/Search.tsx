@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react"
+import { SearchIcon } from "./SearchIcon.tsx"
 import "./Search.css"
 import { clsx } from "~/lib/clsx/clsx.ts"
 import { useClickOutside } from "~/hooks/useClickOutside.tsx"
@@ -155,7 +156,7 @@ function Search({ chains, tokens, small, environment, lanes, verifiers = [] }: S
         })}
         ref={searchRef}
       >
-        <img src="/assets/icons/search.svg" alt="Search icon" />
+        <SearchIcon />
         <input
           type="search"
           placeholder="Network/Token/Lane/Verifier"

@@ -1,0 +1,52 @@
+---
+interface Props {
+  title: string
+  description?: string
+  id?: string
+}
+
+const { title, description, id } = Astro.props
+---
+
+<section class="specimen" id={id}>
+  <header class="specimen__header">
+    <h2>{title}</h2>
+    {description && <p>{description}</p>}
+  </header>
+  <div class="specimen__body">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .specimen {
+    margin-block: 2.5rem;
+  }
+
+  .specimen__header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .specimen__header h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--foreground);
+  }
+
+  .specimen__header p {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--muted-foreground);
+  }
+
+  .specimen__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+</style>

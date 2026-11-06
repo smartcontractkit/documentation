@@ -1,7 +1,7 @@
 /** @jsxImportSource preact */
 import { useState } from "preact/hooks"
 import { v4 as uuidv4 } from "uuid"
-import buttonStyles from "@chainlink/design-system/button.module.css"
+import buttonStyles from "~/lib/designSystemButton.ts"
 import styles from "./Feedback.module.css"
 import ThumbUpIcon from "./Assets/ThumbUpIcon.tsx"
 import ThumbDownIcon from "./Assets/ThumbDownIcon.tsx"

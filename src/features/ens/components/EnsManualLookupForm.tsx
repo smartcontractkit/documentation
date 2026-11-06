@@ -2,7 +2,7 @@
 import { useState } from "preact/hooks"
 import styles from "./EnsLookupForm.module.css"
 import { getWeb3Provider } from "@features/utils/index.ts"
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 
 export const EnsManualLookupForm = () => {
   const [ensResult, setEnsResult] = useState<
