@@ -31,6 +31,7 @@ type Config struct {
 	ApiUrl   string      `json:"apiUrl"`
 	Evms     []EvmConfig `json:"evms"`
 }
+
 // highlight-end
 
 type MyResult struct {
@@ -58,14 +59,9 @@ func fetchMathResult(config *Config, logger *slog.Logger, sendRequester *http.Se
 
 func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
 	logger := runtime.Logger()
-	// Step 1: Fetch offchain data (from Part 2)
+	// Step 1: Start the offchain fetch (from Part 2), but don't wait for it yet.
 	client := &http.Client{}
 	mathPromise := http.SendRequest(config, runtime, client, fetchMathResult, cre.ConsensusMedianAggregation[*big.Int]())
-	offchainValue, err := mathPromise.Await()
-	if err != nil {
-		return nil, err
-	}
-	logger.Info("Successfully fetched offchain value", "result", offchainValue) // highlight-line
 
 	// highlight-start
 	// Get the first EVM configuration from the list.
@@ -89,7 +85,16 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 		return nil, fmt.Errorf("failed to create contract instance: %w", err)
 	}
 
-	onchainValue, err := storageContract.Get(runtime, big.NewInt(-3)).Await() // -3 means finalized block
+	onchainPromise := storageContract.Get(runtime, big.NewInt(-3)) // -3 means finalized block
+
+	// Collect the offchain result, then the onchain result, in a fixed order.
+	offchainValue, err := mathPromise.Await()
+	if err != nil {
+		return nil, err
+	}
+	logger.Info("Successfully fetched offchain value", "result", offchainValue) // highlight-line
+
+	onchainValue, err := onchainPromise.Await()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read onchain value: %w", err)
 	}
