@@ -16,6 +16,7 @@ import {
   stripHighlighterComments,
 } from "@lib/markdown/sourceScanners.js"
 import type { DroppedComponent, MarkdownArtifact } from "@lib/markdown/types.js"
+import { describeRequiredRole } from "../components/RequiredRole/roles.js"
 import { renderLlmsPageMarkdown } from "../lib/markdown/llms.js"
 import { getPageLanguage, extractFrontmatter, shouldIncludeInLanguageFile } from "../lib/markdown/utils.js"
 import { LLM_SECTIONS_CONFIG, SUPPORTED_LLM_SECTIONS } from "../config/llms.js"
@@ -973,6 +974,25 @@ export function analyzeSourceMarkdown(
         addDiagnostic("unverifiable", name, node, `Raw HTML element ${name} is not statically projected`)
         inspect({ type: "root", children: childrenOf(node) } as Parent)
         breakTextGroup(node)
+        return SKIP
+      }
+
+      if (name === "RequiredRole") {
+        const product = staticAttribute(node, "product")
+        const role = staticAttribute(node, "role")
+        const description = product.syntax || role.syntax ? null : describeRequiredRole(product.value, role.value)
+        if (!description) {
+          addDiagnostic(
+            "unverifiable",
+            "RequiredRole",
+            node,
+            `Unknown or dynamic role (${product.syntax ?? role.syntax ?? "unknown product or role"})`
+          )
+        } else {
+          addFact("text", `Required role: ${description.name}${description.orHigher ? " or higher" : ""}.`, node)
+          addFact("link", "What each role can do", node, description.url)
+        }
+        inspect({ type: "root", children: childrenOf(node) } as Parent)
         return SKIP
       }
 
