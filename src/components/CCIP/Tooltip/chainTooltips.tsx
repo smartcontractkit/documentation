@@ -56,6 +56,19 @@ export const CHAIN_TOOLTIPS: Record<string, ChainTooltipConfig> = {
     hoverable: true,
     hideDelay: 300,
   },
+  "hyperliquid-testnet": {
+    content: (
+      <>
+        HyperEVM Testnet is operated by a third party and may be upgraded or modified without prior notice. CCIP on
+        HyperEVM Testnet is provided “as is” and does not carry the same level of service guarantees or warranties as
+        CCIP on other supported networks. Availability, performance, data availability, and message delivery may be
+        interrupted or degraded at any time. Use HyperEVM Testnet for development and testing only. Read the{" "}
+        <a href="/ccip/evm/service-limits/hyperevm">HyperEVM Service Limits</a>.
+      </>
+    ),
+    hoverable: true,
+    hideDelay: 300,
+  },
   "memento-mainnet": {
     content: (
       <>

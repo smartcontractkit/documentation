@@ -16,7 +16,7 @@ import {
 } from "@lib/solana/wallet-adapter/index.ts"
 import type { MintingStep, Status, ErrorState } from "@lib/solana/wallet-adapter/index.ts"
 
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import styles from "./SVMTestTokens.module.css"
 import walletStyles from "../WalletConnection.module.css"
 import "../container.css"
