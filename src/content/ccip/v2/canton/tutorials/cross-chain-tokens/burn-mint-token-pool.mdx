@@ -6,7 +6,7 @@ metadata:
   description: "Deploy a CCIP BurnMint token pool on Canton, register on the Token Admin Registry, and enable a cross-chain lane using the starter kit or Ledger API."
   excerpt: "CCIP Canton BurnMint token pool, TAR registration, ApplyChainUpdates, starter kit, cct scripts"
   datePublished: "2026-06-27"
-  lastModified: "2026-07-06"
+  lastModified: "2026-10-13"
   difficulty: "advanced"
   estimatedTime: "45 minutes"
 whatsnext:
@@ -25,7 +25,7 @@ Deploy a **BurnMint** token pool on Canton, register it on the Token Admin Regis
 
 This guide assumes you already have a token instrument live on Canton — for example a Registry instrument from Digital Asset's [Registry utility](https://docs.digitalasset.com/registry/overview), or any instrument supporting CIP-56 with the `BurnMintFactory` interface.
 
-**Scope:** On-ledger pool connection — deploy, TAR registration, and lane enablement. Does not cover [EDS setup](/ccip/canton/concepts/explicit-disclosure) or end-to-end transfer tests.
+**Scope:** On-ledger pool connection — deploy, TAR registration (including the `BurnMintFactory` for custom tokens), and lane enablement. Does not cover end-to-end transfer tests.
 
 <Aside type="note" title="Testnet only">
 
@@ -37,7 +37,7 @@ Starter kit `cct:*` scripts target **Canton testnet** only.
 
 - **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }`. The admin party must be the same party that will own the token pool.
 - **Burn/mint authority** — `instrumentId.admin == poolOwner` (enforced by the BurnMint template and by the starter kit).
-- **BurnMint token pool DAR** on your participant — [`ccip-burn-mint-token-pool-2.1.0.dar`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/dars/released/ccip-burn-mint-token-pool-v2-2.1.0.dar) (bundles its CCIP dependencies — the only DAR you upload).
+- **DARs uploaded and vetted on your participant** — the pool DAR and the CommitteeVerifier DAR for execute. See [Prerequisites (all CCT guides)](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides).
 - **CCIP contract references** from Chainlink ops: CCIP owner party, Token Admin Registry, RMNRemote, FeeQuoter.
 - **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/canton/tutorials/source/prerequisites) and the [CCT overview](/ccip/canton/tutorials/cross-chain-tokens#starter-kit-cct-scripts).
 
@@ -218,14 +218,56 @@ Include disclosed contracts in subsequent ledger submissions. OpenAPI: [`eds-glo
 
 ### TAR choices
 
-1. **`ProposeAdministrator`** — CCIP owner or instrument admin. Pass `instrumentId`, `newAdmin`, `caller`. For new instruments, leave `tokenConfigCid` as `None`. Returns `TokenConfig` CID for next steps.
-2. **`AcceptAdminRole`** — Proposed admin exercises with `tokenConfigCid`, `instrumentId`, `caller`.
-3. **`SetPool`** — Admin links instrument to pool via `PoolRegistration` (`poolOwner`, `poolInstanceId` from Step 1).
+All three choices take a `context` argument (`Splice.Api.Token.MetadataV1.ChoiceContext`) — pass an empty context (`{"values": {}}`) unless your token's tooling supplies one.
+
+1. **`ProposeAdministrator`** — CCIP owner or instrument admin. Pass `instrumentId`, `newAdmin`, `context`, `caller`. For new instruments, leave `tokenConfigCid` as `None`. Returns `TokenConfig` CID for next steps.
+2. **`AcceptAdminRole`** — Proposed admin exercises with `tokenConfigCid`, `instrumentId`, `context`, `caller`.
+3. **`SetPool`** — Admin links instrument to pool via `PoolRegistration` (`poolOwner`, `poolInstanceId` from Step 1), plus `context` and `caller`.
 
 Admin role can be transferred with `TransferAdminRole` → `AcceptAdminRole`.
 
   </Fragment>
 </Tabs>
+
+### Pin the BurnMintFactory on the TAR
+
+BurnMint pools do not burn or mint instrument supply themselves — they call a **`BurnMintFactory`** (`Splice.Api.Token.BurnMintV1.BurnMintFactory`) recorded on the instrument's `TokenConfig`. The factory contract implements the actual burn (send) and mint (execute) operations against your token.
+
+- **Registry instruments** (created via Digital Asset's [Registry utility](https://docs.digitalasset.com/registry/overview)) already have a factory — the registry resolves it automatically. No action needed.
+- **Custom tokens** (any instrument not created via the Registry utility) must deploy their own `BurnMintFactory` contract and pin it on the TAR via the `SetBurnMintFactory` choice. The reference implementation is [`LinkRegistry`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/link/daml/Link/Token.daml) (`#link:Link.Token:LinkRegistry`) — a custom-token factory that implements both `TransferFactory` and `BurnMintFactory` for the LINK instrument on Canton.
+
+`SetBurnMintFactory` is exercised by the token admin on the TAR (same disclosure flow as the other TAR choices):
+
+| Argument          | Value                                                                  |
+| :---------------- | :--------------------------------------------------------------------- |
+| `tokenConfigCid`  | Current `TokenConfig` CID (re-read it — it rotates on every TAR write) |
+| `instrumentId`    | Your instrument's `InstrumentId`                                       |
+| `burnMintFactory` | `Some` + your factory's `ContractId`, or `None` to clear               |
+| `context`         | Empty `{"values": {}}` unless your tooling supplies one                |
+| `caller`          | The token admin party                                                  |
+
+<Aside type="note" title="Factory contract shape">
+
+Your factory template must expose a top-level `instanceId : Text` create argument (no `@`) — the EDS Active Contract Set indexer keys contracts by `instanceId@signatory`, so a template without it cannot be disclosed. `LinkRegistry` shows the expected shape: `registryAdmin`, `registryInstrumentId`, `instanceId`, `registryMeta`.
+
+</Aside>
+
+### Serve the factory from your EDS
+
+Senders and executors cannot see your factory contract — your pool operator's EDS must supply it in the token pool API response. The reference EDS supports two factory modes per pool (`[token_pool_api.token_pools.<address>.factory]`):
+
+| Mode      | Config                                                                                                                                                                  | When to use                                                                                                                                              |
+| :-------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `address` | `type = "address"`, `template_id` (`#package-name:Module:Entity`), `party`, `instance_address` (`0x…` hashed form)                                                      | Your factory is visible to the EDS's participant — EDS reads it directly from the Active Contract Set.                                                   |
+| `url`     | `type = "url"`, `token_standard_url` — on testnet, the DA token-standard backend: `https://api.utilities.digitalasset-staging.com` (**not** a validator scan-proxy URL) | EDS calls the DA registry backend's `getBurnMintFactory` endpoint at serve time — no ledger visibility into the factory needed on the EDS's participant. |
+
+<Aside type="caution" title="URL mode resolves registry instruments only">
+
+`url` mode calls the DA registry's `getBurnMintFactory` endpoint, which only resolves factories for **Registry utility instruments**. Custom (non-registry) tokens must use `address` mode with their own factory contract.
+
+</Aside>
+
+See the reference configs: [`eds-token-pools.toml`](https://github.com/smartcontractkit/chainlink-canton/blob/main/eds/testdata/eds-token-pools.toml) (URL mode) and the EDS [config tests](https://github.com/smartcontractkit/chainlink-canton/blob/main/eds/config/config_test.go) (address mode).
 
 ## Step 3 — Enable a lane
 
@@ -244,6 +286,48 @@ Created by `poolOwner` with matching `poolInstanceId`, `poolOwner`, and `remoteC
 ### 2. Apply the chain update
 
 Call [`ApplyChainUpdates`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/burn-mint-token-pool/daml/CCIP/BurnMintTokenPoolV2.daml) on the pool:
+
+The choice argument is **not** the pool's `remoteChainConfigs` map — it takes `remoteChainSelectorsToRemove` (a list) and `chainsToAdd` (a list of `ChainUpdate` records, each carrying its own `remoteChainSelector`):
+
+```json
+{
+  "commands": [
+    {
+      "ExerciseCommand": {
+        "templateId": "#ccip-burn-mint-token-pool-v2:CCIP.BurnMintTokenPoolV2:BurnMintTokenPool",
+        "contractId": "<POOL_CONTRACT_ID>",
+        "choice": "ApplyChainUpdates",
+        "choiceArgument": {
+          "remoteChainSelectorsToRemove": [],
+          "chainsToAdd": [
+            {
+              "remoteChainSelector": "9268731218649498074",
+              "remotePools": ["<REMOTE_POOL_ADDRESS_32_BYTES>"],
+              "remoteTokenAddress": "<REMOTE_TOKEN_ADDRESS_32_BYTES>",
+              "inboundCCVs": [
+                {
+                  "unpack": "committeeverifier-pttst@ccvOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+                }
+              ],
+              "outboundCCVs": [
+                {
+                  "unpack": "committeeverifier-pttst@ccvOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+                }
+              ],
+              "finalityConfig": { "tag": "WaitForFinality", "value": {} },
+              "inboundRateLimiter": { "unpack": "<INBOUND_LIMITER>@<POOL_OWNER>" },
+              "inboundCustomBlockConfirmationsRateLimiter": { "unpack": "<INBOUND_CUSTOM_LIMITER>@<POOL_OWNER>" },
+              "outboundRateLimiter": { "unpack": "<OUTBOUND_LIMITER>@<POOL_OWNER>" }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "commandId": "apply-chain-updates",
+  "actAs": ["<POOL_OWNER_PARTY>"]
+}
+```
 
 | ChainUpdate field                            | Guidance                                                                        |
 | :------------------------------------------- | :------------------------------------------------------------------------------ |

@@ -83,10 +83,10 @@ To execute, the user interacts with the [`CCIPReceiver` contract](https://github
    - On success, the OffRamp/TokenPool consumes tickets and, for token transfers, issues a `TokenReceiveTicket`.
    - `PerPartyRouter` marks the message executed to prevent double execution.
 
-If the message contained a token transfer, the receiver uses the `TokenReceiveTicket` to call the token pool:
+If the message contained a token transfer, the receiver uses the `TokenReceiveTicket` to call the token pool — the release runs inside the same execution transaction:
 
-1. The token pool verifies the ticket was issued by the CCIP owner and creates an outgoing `TransferInstruction` to the token receiver party.
-2. The receiver party accepts the `TransferInstruction` to gain access to the transferred tokens.
+1. **BurnMint pools** mint holdings directly to the token receiver party — no `TransferInstruction` is created.
+2. **LockRelease pools** transfer from the pool owner's holdings via the token's `TransferFactory` — the transfer completes immediately when the receiver's preapproval is included in the EDS-supplied context; otherwise a pending `TransferInstruction` is left for the receiver party to accept separately.
 
 ## Canton → Public chain
 
