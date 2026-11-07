@@ -314,7 +314,9 @@ export async function transformMarkdown(
 
         if (
           (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
-          ["Fragment", "GitHubCards", "OverviewWrapper"].includes((node as MdxJsxNode).name ?? "")
+          ["Fragment", "GitHubCards", "OverviewWrapper", "VaultAdapterComparison"].includes(
+            (node as MdxJsxNode).name ?? ""
+          )
         ) {
           return handleFragment(node as MdxJsxNode, parent, index)
         }
