@@ -256,6 +256,17 @@ const sidebarSections = getSidebarSections(section)
   })
 
   /**
+   * Back/forward cache restores fire no Astro event, but keep the store the selector mutated
+   * before navigating away, so re-derive it from the restored URL.
+   */
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) {
+      initializeChainType()
+      initializeCcipVersion()
+    }
+  })
+
+  /**
    * Handles section visibility based on URL parameters
    * - Shows/hides sections based on the 'parent' query parameter
    * - Runs on initial load and after navigation
