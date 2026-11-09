@@ -31,7 +31,5 @@ export const PoolProgramTooltip: React.FC = () => (
       marginBottom: "2px",
       marginLeft: "4px",
     }}
-    hoverable={true}
-    hideDelay={300}
   />
 )

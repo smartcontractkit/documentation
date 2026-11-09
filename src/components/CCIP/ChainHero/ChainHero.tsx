@@ -203,13 +203,7 @@ function ChainHero({
                   {token?.id === "USDC" ? "USD Coin" : token?.name}
                 </span>
 
-                {chainTooltipConfig && (
-                  <Tooltip
-                    tip={chainTooltipConfig.content}
-                    hoverable={chainTooltipConfig.hoverable}
-                    hideDelay={chainTooltipConfig.hideDelay}
-                  />
-                )}
+                {chainTooltipConfig && <Tooltip tip={chainTooltipConfig.content} />}
               </h1>
               {isDecommissioned && network && <span className="ccip-chain-hero__decom-subtitle">Inactive</span>}
             </div>
