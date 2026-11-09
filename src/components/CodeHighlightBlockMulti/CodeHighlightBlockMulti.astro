@@ -445,13 +445,19 @@ const languageDisplay = getLanguageDisplayName(currentLang)
     }
   }
 
-  // Check every 200ms for language changes (lightweight)
-  setInterval(syncCheck, 200)
+  // The inline script is re-executed by ClientRouter on each visit. Keep one
+  // timer per block and let the previous instance tear itself down first.
+  const cleanupRegistryKey = "__chbMultiLangCleanup"
+  const cleanupRegistry = (window[cleanupRegistryKey] = window[cleanupRegistryKey] || {})
+  if (typeof cleanupRegistry[blockId] === "function") cleanupRegistry[blockId]()
 
-  document.addEventListener("DOMContentLoaded", () => {
+  const intervalId = setInterval(syncCheck, 200)
+
+  const initBlock = () => {
     // Only process THIS specific container to avoid contamination
     const container = document.getElementById(blockId)
-    if (!container) return
+    if (!container || container.dataset.multiLangInitialized === "true") return
+    container.dataset.multiLangInitialized = "true"
 
     // Language switch handler
     function handleLanguageSwitch(newLanguage, container) {
@@ -1116,5 +1122,23 @@ const languageDisplay = getLanguageDisplayName(currentLang)
         }
       })
     }
-  })
+  }
+
+  const cleanup = () => {
+    clearInterval(intervalId)
+    document.removeEventListener("astro:page-load", initBlock)
+    document.removeEventListener("DOMContentLoaded", initBlock)
+    if (cleanupRegistry[blockId] === cleanup) delete cleanupRegistry[blockId]
+  }
+  cleanupRegistry[blockId] = cleanup
+
+  document.addEventListener("astro:page-load", initBlock)
+  document.addEventListener("astro:before-swap", cleanup, { once: true })
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initBlock, { once: true })
+  } else {
+    // Standalone documents such as the developer gallery never emit
+    // astro:page-load.
+    initBlock()
+  }
 </script>

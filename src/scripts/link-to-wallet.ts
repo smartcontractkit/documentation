@@ -3,7 +3,7 @@ import { BrowserProvider, ethers, toQuantity } from "ethers"
 import LinkToken from "@chainlink/contracts/abi/v0.8/shared/LinkToken.abi.json" with { type: "json" }
 import chains from "./reference/chains.json" with { type: "json" }
 import linkNameSymbol from "./reference/linkNameSymbol.json" with { type: "json" }
-import buttonStyles from "@chainlink/design-system/button.module.css"
+import buttonStyles from "~/lib/designSystemButton.ts"
 
 const chainlinkLogo = "https://docs.chain.link/images/logo.png"
 
@@ -43,6 +43,12 @@ const linkToken = {
 const addToWalletText = "Add to wallet"
 const switchToNetworkText = "Switch network and add to wallet"
 const initChainChangeEventName = "InitChainChange"
+
+// Provider/window listeners must survive across pages: attach them once per
+// document, not once per initialization.
+let providerListenersAttached = false
+let chainFromSwitch: string | undefined
+let currentChainId: string | null = null
 
 /**
  * Converts a number to HexString (a string which has a 0x prefix followed by any number of nibbles (i.e. case-insensitive hexadecimal characters, 0-9 and a-f).)
@@ -534,23 +540,31 @@ const handleWalletTokenManagement = async () => {
       throw new Error(`Invalid detected chain ID format: ${detectedChainId}`)
     }
 
-    let chainFromSwitch: string
-    window.addEventListener(initChainChangeEventName, (evt: ChainChangeEvent) => {
-      chainFromSwitch = toHex(parseInt(evt.detail.chainId.toString()))
-      if (!isChainIdFormatValid(chainFromSwitch)) {
-        handleWalletError(new Error(`Invalid chain ID format: ${chainFromSwitch}`), "Chain change event")
-      }
-    })
+    currentChainId = detectedChainId
+    if (!providerListenersAttached) {
+      providerListenersAttached = true
 
-    ethereum.on("chainChanged", (chainId: string) => {
-      if (chainId !== detectedChainId && chainFromSwitch !== chainId) {
-        window.location.reload()
-      }
-    })
+      window.addEventListener(initChainChangeEventName, (evt: ChainChangeEvent) => {
+        chainFromSwitch = toHex(parseInt(evt.detail.chainId.toString()))
+        if (!isChainIdFormatValid(chainFromSwitch)) {
+          handleWalletError(new Error(`Invalid chain ID format: ${chainFromSwitch}`), "Chain change event")
+        }
+      })
+
+      ethereum.on("chainChanged", (chainId: string) => {
+        if (chainId !== currentChainId && chainFromSwitch !== chainId) {
+          window.location.reload()
+        }
+      })
+    }
 
     const tokenAddressElements = Array.from(document.getElementsByClassName("erc-token-address")) as HTMLTokenElement[]
 
     for (const element of tokenAddressElements) {
+      // Idempotent: a row may be scanned again after client-side navigation or
+      // a repeated page-load event.
+      if (element.dataset.linkToWalletInitialized === "true") continue
+
       const id = element.id
       if (!pattern.test(id)) {
         console.error(`Invalid element id format: ${id || "empty"}. Expected format: chainId_address`)
@@ -668,6 +682,7 @@ const handleWalletTokenManagement = async () => {
         }
 
         element.insertAdjacentElement("afterend", button)
+        element.dataset.linkToWalletInitialized = "true"
       } catch (error) {
         handleWalletError(error, "Failed to process element")
       }
@@ -676,4 +691,28 @@ const handleWalletTokenManagement = async () => {
     handleWalletError(e, "Wallet management failed")
   }
 }
-handleWalletTokenManagement()
+
+let isInitializing = false
+let reinitializeQueued = false
+
+/**
+ * Add wallet controls to the current page. Safe to call on every
+ * `astro:page-load`: already-initialized rows are skipped and provider
+ * listeners are attached only once per document.
+ */
+export const initializeLinkToWallet = async (): Promise<void> => {
+  if (isInitializing) {
+    reinitializeQueued = true
+    return
+  }
+
+  isInitializing = true
+  try {
+    do {
+      reinitializeQueued = false
+      await handleWalletTokenManagement()
+    } while (reinitializeQueued)
+  } finally {
+    isInitializing = false
+  }
+}

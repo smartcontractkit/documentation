@@ -303,7 +303,8 @@ export type ChainInfo = {
   chainId: number | string
   title: string
   explorer: ExplorerInfo
-  nativeCurrency: {
+  /** Chains without a native token (e.g. Tempo) omit this. */
+  nativeCurrency?: {
     name: string
     symbol: string
     decimals: number

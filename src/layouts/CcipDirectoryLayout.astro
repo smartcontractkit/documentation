@@ -56,6 +56,7 @@ const layoutMetadata: Metadata | undefined = metadataOverride ?? frontmatter.met
   structuredData={structuredData}
   suppressDefaultStructuredData={suppressDefaultStructuredData}
 >
+  {includeLinkToWalletScript && <div data-link-to-wallet="true" hidden />}
   <Drawer client:only="react" />
   <StickyHeader client:media="(max-width: 50em)" {initialHeadings} />
   <DocsNavigation client:load pathname={currentPage} isCcipDirectory={true}>
@@ -86,8 +87,8 @@ const layoutMetadata: Metadata | undefined = metadataOverride ?? frontmatter.met
 
     /* Hero section - above the fold */
     .ccip-hero {
-      background-color: var(--gray-100);
-      border-bottom: 1px solid var(--gray-200);
+      background-color: var(--muted);
+      border-bottom: 1px solid var(--border);
     }
 
     .ccip-hero__content {
@@ -100,7 +101,7 @@ const layoutMetadata: Metadata | undefined = metadataOverride ?? frontmatter.met
     }
 
     .ccip-hero__heading {
-      color: var(--gray-900);
+      color: var(--foreground);
     }
 
     /* Basic layout structure */
@@ -115,20 +116,13 @@ const layoutMetadata: Metadata | undefined = metadataOverride ?? frontmatter.met
     .ccip-heading {
       display: flex;
       padding-bottom: var(--space-4x);
-      border-bottom: 1px solid var(--gray-200);
+      border-bottom: 1px solid var(--border);
       margin-bottom: var(--space-6x);
       justify-content: space-between;
     }
   </style>
 
-  <script define:vars={{ includeLinkToWalletScript }}>
-    window["includeLinkToWalletScript"] = includeLinkToWalletScript
-  </script>
-
   <script>
     import "~/scripts"
-    if (window["includeLinkToWalletScript"]) {
-      import("~/scripts/link-to-wallet.ts")
-    }
   </script>
 </BaseLayout>
