@@ -158,7 +158,7 @@ For more details on the methodology and risk considerations, see [DEX State Pric
 
 ## Exchange Rate
 
-[Chainlink Exchange Rate streams](/data-streams/exchange-rate-streams) use the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7) report schema to provide tamper-proof access to the redemption rates of staked assets. Exchange rates typically read directly from onchain smart contracts and generally have a single calculating agent: the issuing protocol. This schema reports one main value: the exchange rate (`exchangeRate`).
+[Chainlink Exchange Rate streams](/data-streams/exchange-rate-streams) use the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7) report schema to provide tamper-proof access to the redemption rates of staked assets. Exchange rates typically read directly from onchain smart contracts and generally have a single calculating agent: the issuing protocol. Review [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) before using these streams. This schema reports one main value: the exchange rate (`exchangeRate`).
 
 While the Data Streams architecture is designed to deliver updates at least once per second, the exchange rate itself is often updated only once per day by the data source, in line with standard market practices. Data Streams ensures that any Exchange Rate update, whenever it occurs, is captured and made available immediately and at low latency, allowing seamless integration into onchain applications alongside other real-time data streams.
 
@@ -195,6 +195,8 @@ Because futures contracts expire, streams using this schema expose three **gener
 [Chainlink SmartData streams](/data-streams/smartdata-streams) use the [SmartData (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to data such as Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios, as well as Proof of Reserve data. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
 
 NAV is a fundamental financial metric that represents the value of an investment vehicle such as a mutual fund or ETF and is calculated as the total assets minus the total liabilities.
+
+NAV and Proof of Reserve values typically come from a single issuer, fund administrator, custodian, or attestor. Review [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) before using SmartData streams.
 
 Data Streams ensures that any SmartData update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the values may not change frequently, Data Streams provides the most recent data as soon as it is published by the source.
 
