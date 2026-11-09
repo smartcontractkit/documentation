@@ -895,6 +895,8 @@ Chainlink Data Streams source pricing data from multiple independent aggregators
 | Precious Metals            | 3+ market data vendors                                                                                                                  |
 | US Equities                | 3+ market data vendors                                                                                                                  |
 
+[SmartData Streams](/data-streams/smartdata-streams) (NAV and Proof of Reserve) and [Exchange Rate Streams](/data-streams/exchange-rate-streams) typically rely on a single data source or provider. Review [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) for the associated risks and required safeguards.
+
 > **NOTE: Need more details?**
 >
 > For additional information about data sourcing, please [contact us](https://chain.link/contact?ref_id=datastreams).
@@ -987,7 +989,7 @@ Developers implementing Chainlink New Token Data Streams are responsible for ind
 
 #### Custom Data Streams
 
-Custom Data Streams are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataStreams) if you want more detail on any specific feeds in this category.
+Custom Data Streams are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a feed to make sure it aligns with their intended use case. Some custom streams, such as [SmartData](/data-streams/smartdata-streams) (NAV and Proof of Reserve) and [Exchange Rate](/data-streams/exchange-rate-streams) streams, rely on a single data source or provider. Review [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) and implement the safeguards described there. [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataStreams) if you want more detail on any specific feeds in this category.
 
 ### Application Code Risks
 
@@ -6687,7 +6689,7 @@ For more details on the methodology and risk considerations, see [DEX State Pric
 
 ## Exchange Rate
 
-[Chainlink Exchange Rate streams](/data-streams/exchange-rate-streams) use the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7) report schema to provide tamper-proof access to the redemption rates of staked assets. Exchange rates typically read directly from onchain smart contracts and generally have a single calculating agent: the issuing protocol. This schema reports one main value: the exchange rate (`exchangeRate`).
+[Chainlink Exchange Rate streams](/data-streams/exchange-rate-streams) use the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7) report schema to provide tamper-proof access to the redemption rates of staked assets. Exchange rates typically read directly from onchain smart contracts and generally have a single calculating agent: the issuing protocol. Review [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) before using these streams. This schema reports one main value: the exchange rate (`exchangeRate`).
 
 While the Data Streams architecture is designed to deliver updates at least once per second, the exchange rate itself is often updated only once per day by the data source, in line with standard market practices. Data Streams ensures that any Exchange Rate update, whenever it occurs, is captured and made available immediately and at low latency, allowing seamless integration into onchain applications alongside other real-time data streams.
 
@@ -6724,6 +6726,8 @@ Because futures contracts expire, streams using this schema expose three **gener
 [Chainlink SmartData streams](/data-streams/smartdata-streams) use the [SmartData (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to data such as Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios, as well as Proof of Reserve data. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
 
 NAV is a fundamental financial metric that represents the value of an investment vehicle such as a mutual fund or ETF and is calculated as the total assets minus the total liabilities.
+
+NAV and Proof of Reserve values typically come from a single issuer, fund administrator, custodian, or attestor. Review [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) before using SmartData streams.
 
 Data Streams ensures that any SmartData update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the values may not change frequently, Data Streams provides the most recent data as soon as it is published by the source.
 
@@ -7112,6 +7116,12 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v7
 
 Exchange Rate streams adhere to the report schema outlined below.
 
+> **CAUTION: Single source risk**
+>
+> Exchange rates are typically read from a single onchain contract or calculated by a single issuing protocol. Review
+> [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) and implement the
+> safeguards described there before using these streams.
+
 ## Schema Fields
 
 | Field                   | Type      | Description                                                                                                                   |
@@ -7207,6 +7217,12 @@ Source: https://docs.chain.link/data-streams/reference/report-schema-v9
 > [sign-up guide](/data-streams/sign-up).
 
 Chainlink SmartData streams adhere to the report schema outlined below.
+
+> **CAUTION: Single source risk**
+>
+> NAV and Proof of Reserve values typically come from a single issuer, fund administrator, custodian, or attestor.
+> Review [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) and implement
+> the safeguards described there before using these streams.
 
 ### Schema Fields
 
@@ -9068,6 +9084,18 @@ Source: https://docs.chain.link/data-streams/selecting-data-streams
 When you design your applications, consider the quality of the data that you use. Ultimately you are responsible for identifying and assessing the accuracy, availability, and quality of data that you choose to consume via the Chainlink Network. Note that all streams contain some inherent risk. Read the [Data Streams Best Practices](/data-streams/concepts/best-practices) and [Developer Responsibilities](/data-streams/developer-responsibilities) sections when making design decisions.
 
 For a summary of data sourcing models by asset type, see [Data Sources](/data-streams/data-sources).
+
+## Single Source Data Providers
+
+Some Chainlink Data Streams rely on a single underlying data source or a single data provider. This can be necessary when only one authoritative source exists onchain or offchain for a specific type of data, such as a protocol-published NAV, reserve value, redemption rate, exchange rate, or other custom metric.
+
+Single-source streams have a different risk profile than market price streams that aggregate observations across multiple data sources and node operators. If the underlying source or provider publishes incorrect data, omits data, changes its methodology, experiences an outage, is delayed, or is compromised, the stream may reflect that issue. Any such error, omission, delay, or provider failure could negatively affect your application and its users.
+
+Before using a single-source stream, determine whether it is suitable for your use case and whether your application can tolerate the provider/source risk. This is especially important when the stream is used to secure value, determine collateral value, trigger liquidations, support minting or redemption, calculate NAV, or automate other protocol actions.
+
+Users of single-source streams MUST implement additional safeguards such as value bounds, caps, circuit breakers, freshness checks, fallback behavior, monitoring against independent references where available, and manual pause or kill-switch controls. Single-source streams can be classified as High or Very High Market Pricing Risk depending on the asset, methodology, provider dependency, and intended use case.
+
+If you are using or considering a single-source stream in production, [contact the Chainlink Labs team](https://chain.link/contact?ref_id=DataStreams) to discuss the stream's methodology, provider dependency, and appropriate application-level mitigations.
 
 > **NOTE**
 >
