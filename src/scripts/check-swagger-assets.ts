@@ -12,6 +12,7 @@
 import fs from "fs"
 import path from "path"
 import { fileURLToPath } from "node:url"
+import { parse as parseHtml, type DefaultTreeAdapterTypes } from "parse5"
 
 export const OUTPUT_DIR = ".vercel/output/static"
 
@@ -42,35 +43,26 @@ const APP_ORIGIN = "https://app.invalid"
 
 type Resource = { tag: "script" | "link"; url: string }
 
-function parseAttributes(rawAttributes: string): Record<string, string> {
-  const attributes: Record<string, string> = {}
-  for (const match of rawAttributes.matchAll(/([^\s=/"'<>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+)))?/g)) {
-    attributes[match[1].toLowerCase()] = match[2] ?? match[3] ?? match[4] ?? ""
-  }
-  return attributes
-}
-
 /**
- * Script `src` and stylesheet-like `href` attributes, in document order.
- * Inline script bodies are intentionally skipped. This only reads the build output to find resource URLs;
- * it never rewrites or sanitizes HTML.
+ * Read browser-parsed attributes, including HTML character references, in document order.
+ * Comments and escaped examples are not elements. Template contents and noscript fallbacks are inert
+ * with scripting enabled, so they must not be treated as active resources.
  */
 export function extractResources(html: string): Resource[] {
   const resources: Resource[] = []
-  const tagPattern = /<(script|link)\b([^>]*)>/gi
-  // Matches end tags such as `</script>` and `</script >`.
-  const scriptEndPattern = /<\/script\b[^>]*>/gi
+  const pending: DefaultTreeAdapterTypes.Node[] = [parseHtml(html, { scriptingEnabled: true })]
 
-  let match: RegExpExecArray | null
-  while ((match = tagPattern.exec(html)) !== null) {
-    const attributes = parseAttributes(match[2])
+  while (pending.length > 0) {
+    const node = pending.pop() as DefaultTreeAdapterTypes.Node
+    if ("childNodes" in node) {
+      // Template children live in a separate `content` fragment, which is intentionally not traversed.
+      for (let index = node.childNodes.length - 1; index >= 0; index--) pending.push(node.childNodes[index])
+    }
+    if (!("tagName" in node) || !["script", "link"].includes(node.tagName)) continue
+    const attributes = Object.fromEntries(node.attrs.map(({ name, value }) => [name, value]))
 
-    if (match[1].toLowerCase() === "script") {
+    if (node.tagName === "script") {
       if (attributes.src !== undefined) resources.push({ tag: "script", url: attributes.src })
-      // Jump past the script body so markup-like text inside inline scripts is never read as tags.
-      scriptEndPattern.lastIndex = tagPattern.lastIndex
-      const end = scriptEndPattern.exec(html)
-      tagPattern.lastIndex = end ? scriptEndPattern.lastIndex : html.length
       continue
     }
 
@@ -205,14 +197,20 @@ export function checkSwaggerAssets(outputDir: string = OUTPUT_DIR, pages: readon
     }
   }
 
-  // Guard against a new Swagger page that is not registered in SWAGGER_PAGES (and so would not be validated).
+  // New pages loading Swagger assets must be registered. Documentation text and inline code are not resource loads.
   const registered = new Set(pages.map((route) => pagePathFor(resolvedOutputDir, route)))
   for (const htmlFile of collectHtmlFiles(resolvedOutputDir)) {
     if (registered.has(htmlFile)) continue
-    const html = fs.readFileSync(htmlFile, "utf8")
-    if (/SwaggerUIBundle|unpkg\.com\/swagger-ui|swagger-ui-bundle/.test(html)) {
+    const loadsSwagger = extractResources(fs.readFileSync(htmlFile, "utf8")).some(({ url }) => {
+      try {
+        return classify(new URL(url, APP_ORIGIN).pathname) !== undefined
+      } catch {
+        return false
+      }
+    })
+    if (loadsSwagger) {
       errors.push(
-        `${path.relative(resolvedOutputDir, htmlFile)}: renders Swagger UI but is not listed in SWAGGER_PAGES (src/scripts/check-swagger-assets.ts)`
+        `${path.relative(resolvedOutputDir, htmlFile)}: loads Swagger UI assets but is not listed in SWAGGER_PAGES (src/scripts/check-swagger-assets.ts)`
       )
     }
   }
