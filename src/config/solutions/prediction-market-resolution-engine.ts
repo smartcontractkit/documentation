@@ -4,7 +4,7 @@ export const predictionMarketResolutionEngine: Solution = {
   slug: "prediction-market-resolution-engine",
   title: "Prediction Market Resolution Engine",
   description:
-    "A Chainlink-managed service that resolves prediction markets from the agreement of independent data providers, decided on a decentralized oracle network.",
+    "A Chainlink-managed service that resolves prediction markets once independent data providers agree on the outcome, executed on a decentralized oracle network.",
   products: ["cre"],
   categories: ["prediction-markets"],
   nav: [
