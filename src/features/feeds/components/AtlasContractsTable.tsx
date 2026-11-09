@@ -9,11 +9,9 @@ const ATLAS_CHAINS: { label: string; key: string }[] = [
   { label: "Arc", key: "arc" },
   { label: "Base", key: "base" },
   { label: "BNB Chain", key: "bnb-chain" },
-  { label: "HyperEVM", key: "hyperevm" },
   { label: "Ink", key: "ink" },
   { label: "Monad", key: "monad" },
   { label: "Robinhood Chain", key: "robinhood" },
-  { label: "Unichain", key: "unichain" },
 ]
 
 export const AddressCell = ({ address, explorerUrl }: { address: string; explorerUrl: string }) => (

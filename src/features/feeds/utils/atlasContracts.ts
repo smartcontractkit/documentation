@@ -1,7 +1,7 @@
 /**
  * Atlas + DappControl addresses for SVR auctions, keyed by chain page.
  * Sourced from the reference-data-directory `dAppControl` entries, where
- * `destination` is the Atlas contract. Tempo is absent: it has SVR but no Atlas.
+ * `destination` is the Atlas contract.
  */
 export interface AtlasContracts {
   atlas: string
@@ -36,11 +36,6 @@ export const ATLAS_CONTRACTS: Record<string, AtlasContracts> = {
     dappControl: "0x5210729C598746F2bD7A22d5B66A7cDE72f462E7",
     explorerUrl: "https://explorer.arc.io/address/%s",
   },
-  hyperevm: {
-    atlas: "0x137B8Fdf027598f1Bf5F2d60cB081bD8539BD8c7",
-    dappControl: "0x2ac121f89b39BA231CBF8Abf7aC6D0140f6B8821",
-    explorerUrl: "https://hyperevmscan.io/address/%s",
-  },
   ink: {
     atlas: "0x3efbaBE0ee916A4677D281c417E895a3e7411Ac2",
     dappControl: "0xB0B992eaed9CbB37667E25D9C5214CDEB406Bd13",
@@ -50,11 +45,6 @@ export const ATLAS_CONTRACTS: Record<string, AtlasContracts> = {
     atlas: "0x3efbaBE0ee916A4677D281c417E895a3e7411Ac2",
     dappControl: "0xC9eACB1CF3bBe2874ccF5d25737c418Cfb944340",
     explorerUrl: "https://robinhoodchain.blockscout.com/address/%s",
-  },
-  unichain: {
-    atlas: "0xbAf4fBB4FD65199D5795Ee4990B9661387ce3B6e",
-    dappControl: "0x763D32a9EDf2F1684F1Dee50AB6CcCa5b68EF655",
-    explorerUrl: "https://uniscan.xyz/address/%s",
   },
 }
 
