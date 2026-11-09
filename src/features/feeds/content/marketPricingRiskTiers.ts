@@ -103,7 +103,7 @@ export function getMarketPricingRiskTiers(terms: MarketPricingRiskTerms): Market
       icon: "🔵",
       title: terms.customListLabel,
       leadParagraphs: [
-        `${terms.customListLabel} are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a ${terms.productSingular} to make sure it aligns with their intended use case. [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=${terms.contactRefId}) if you want more detail on any specific ${terms.productPlural} in this category.`,
+        `${terms.customListLabel} are built to serve a specific use case and might not be suitable for general use or your use case's risk parameters. Users must evaluate the properties of a ${terms.productSingular} to make sure it aligns with their intended use case and closely assess the risk of [single source ${terms.productPlural}](#single-source-data-providers). [Contact the Chainlink Labs team](https://chain.link/contact?ref_id=${terms.contactRefId}) if you want more detail on any specific ${terms.productPlural} in this category.`,
       ],
       closingParagraphs:
         terms.anchorSuffix === "feeds"

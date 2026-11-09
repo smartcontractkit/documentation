@@ -8,6 +8,7 @@ import { ProductNavigation } from "./ProductNavigation/ProductNavigation.tsx"
 import { useHideHeader } from "./useHideHeader.tsx"
 import ProductChainTable from "../../QuickLinks/sections/ProductChainTable.tsx"
 import AlgoliaSearch from "../aiSearch/Search.tsx"
+import { ThemeToggle } from "./ThemeToggle.tsx"
 
 export type SearchTrigger = React.ReactNode
 
@@ -81,6 +82,7 @@ export const NavBar = ({ path, algoliaVars, onHideChange, productsNav, subProduc
             </div>
             <div className={styles.rightSection} onMouseEnter={exitMegamenu}>
               <AlgoliaSearch algoliaVars={algoliaVars} />
+              <ThemeToggle />
             </div>
           </div>
         </div>

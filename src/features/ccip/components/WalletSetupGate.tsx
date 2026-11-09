@@ -1,6 +1,6 @@
 /** @jsxImportSource react */
 import React from "react"
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import styles from "./WalletSetupGate.module.css"
 import "./container.css"
 

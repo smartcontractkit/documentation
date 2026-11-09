@@ -78,6 +78,7 @@ const howToSteps = initialHeadings
   pageTitle={frontmatter.title}
   howToSteps={howToSteps}
 >
+  {includeLinkToWalletScript && <div data-link-to-wallet="true" hidden />}
   {!sunsetPage && <link slot="head" rel="alternate" type="text/markdown" href={alternatePath} />}
   <slot name="head-scripts" slot="head-scripts" />
   {
@@ -282,14 +283,7 @@ const howToSteps = initialHeadings
     }
   </style>
 
-  <script define:vars={{ includeLinkToWalletScript }}>
-    window["includeLinkToWalletScript"] = includeLinkToWalletScript
-  </script>
-
   <script>
     import "~/scripts"
-    if (window["includeLinkToWalletScript"]) {
-      import("~/scripts/link-to-wallet.ts")
-    }
   </script>
 </BaseLayout>
