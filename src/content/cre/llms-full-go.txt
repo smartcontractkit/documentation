@@ -11245,7 +11245,7 @@ func main() {
 
 # Common Queries
 Source: https://docs.chain.link/cre/reference/graphql-api/common-queries
-Last Updated: 2026-08-31
+Last Updated: 2026-11-06
 
 These recipes are organized around what you're trying to do, not around the GraphQL schema. Each one is a complete, runnable query. Replace placeholders such as `<WORKFLOW_UUID>` with real values, and see [Authentication](/cre/reference/graphql-api/authentication) for how to set the `Authorization` header.
 
@@ -11523,7 +11523,7 @@ Retrieve success and failure counts bucketed over a time range — useful for he
 #### Query
 
 ```graphql
-query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
+query WorkflowActivity($workflowUUID: String, $from: Time!, $to: Time!) {
   workflowActivity(input: { workflowUUID: $workflowUUID, from: $from, to: $to }) {
     data {
       from
@@ -11544,6 +11544,8 @@ query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
   "to": "2026-08-31T00:00:00Z"
 }
 ```
+
+Both `from` and `to` are required — omitting either one, or passing `null`, fails GraphQL validation with a `422` error. `to` must be after `from`; a range that is empty or reversed (`from` greater than or equal to `to`) returns `INVALID_ARGUMENT`.
 
 #### Response
 
@@ -12029,7 +12031,7 @@ query ExecutionEvents($workflowExecutionUUID: String!, $capabilityID: String, $s
 
 # Query Reference
 Source: https://docs.chain.link/cre/reference/graphql-api/queries
-Last Updated: 2026-08-31
+Last Updated: 2026-11-06
 
 This page documents every query on the CRE GraphQL API's root `Query` type that reads workflow, deployment, execution, account, or organization data.
 
@@ -12371,8 +12373,8 @@ Use this to build health charts or monitoring dashboards.
 | Field          | Type     | Required | Description                                                                |
 | -------------- | -------- | -------- | -------------------------------------------------------------------------- |
 | `workflowUUID` | `String` | No       | Restrict to a single workflow. Omit to aggregate across your organization. |
-| `from`         | `Time`   | No       | Start of the time range.                                                   |
-| `to`           | `Time`   | No       | End of the time range.                                                     |
+| `from`         | `Time!`  | Yes      | Start of the time range.                                                   |
+| `to`           | `Time!`  | Yes      | End of the time range. Must be after `from`.                               |
 
 ### Returns
 
@@ -12385,7 +12387,7 @@ Non-nullable. See [`WorkflowActivityOutput`](/cre/reference/graphql-api/objects#
 ### Example
 
 ```graphql
-query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
+query WorkflowActivity($workflowUUID: String, $from: Time!, $to: Time!) {
   workflowActivity(input: { workflowUUID: $workflowUUID, from: $from, to: $to }) {
     data {
       from
@@ -13307,7 +13309,7 @@ A secrets authentication flow supported by a [`Registry`](/cre/reference/graphql
 
 # Input Reference
 Source: https://docs.chain.link/cre/reference/graphql-api/inputs
-Last Updated: 2026-08-31
+Last Updated: 2026-11-06
 
 This page documents the input types used as arguments to the queries in the [Query Reference](/cre/reference/graphql-api/queries).
 
@@ -13355,8 +13357,8 @@ Used by [`workflowActivity`](/cre/reference/graphql-api/queries#workflowactivity
 | Field          | Type     | Required | Description                                                                |
 | -------------- | -------- | -------- | -------------------------------------------------------------------------- |
 | `workflowUUID` | `String` | No       | Restrict to a single workflow. Omit to aggregate across your organization. |
-| `from`         | `Time`   | No       | Start of the time range.                                                   |
-| `to`           | `Time`   | No       | End of the time range.                                                     |
+| `from`         | `Time!`  | Yes      | Start of the time range.                                                   |
+| `to`           | `Time!`  | Yes      | End of the time range. Must be after `from`.                               |
 
 ## `WorkflowDeploymentInput`
 

@@ -105,21 +105,8 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
       }
     }
 
-    // Validate native token
+    // Validate native token (optional — chains like Tempo have no native token)
     const nativeTokenSymbol = getNativeCurrency(supportedChain)
-    if (!nativeTokenSymbol) {
-      logger.warn({
-        message: "Missing native token symbol",
-        requestId: this.requestId,
-        networkId,
-        supportedChain,
-      })
-
-      return {
-        isValid: false,
-        missingFields: ["nativeTokenSymbol"],
-      }
-    }
 
     // Common required fields
     const requiredFields = {
@@ -148,9 +135,9 @@ abstract class BaseChainStrategy implements IChainProcessingStrategy {
       }
     }
 
-    // Prepare fee tokens array with native token
+    // Prepare fee tokens array with native token (if the chain has one)
     const feeTokens = [...chainConfig.feeTokens]
-    if (!feeTokens.includes(nativeTokenSymbol.symbol)) {
+    if (nativeTokenSymbol && !feeTokens.includes(nativeTokenSymbol.symbol)) {
       feeTokens.push(nativeTokenSymbol.symbol)
     }
 
