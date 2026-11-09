@@ -10,7 +10,7 @@ import {
 } from "@config/data/ccip/index.ts"
 import { getTitle } from "@features/utils/index.ts"
 import { SupportedChain } from "@config/index.ts"
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import { TokenCalculatorDropdown } from "./TokenCalculatorDropdown.tsx"
 import {
   FetchParams,

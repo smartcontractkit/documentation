@@ -1,0 +1,97 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIPLocalSimulatorFork JS v0.2.9 API Reference"
+metadata:
+  description: "API documentation for the CCIPLocalSimulatorFork JS JavaScript helpers, version v0.2.9."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage029" />
+
+## CCIPLocalSimulatorFork JS
+
+Hardhat 2 JavaScript helpers for fork routing.
+
+[CCIPLocalSimulatorFork JS](https://github.com/smartcontractkit/chainlink-local/blob/v0.2.9/scripts/CCIPLocalSimulatorFork.js)
+
+## Types
+
+### Evm2EvmMessage : `Object`
+
+**Properties**
+
+| Name                | Type                                       |
+| ------------------- | ------------------------------------------ |
+| sourceChainSelector | `bigint`                                   |
+| sender              | `string`                                   |
+| receiver            | `string`                                   |
+| sequenceNumber      | `bigint`                                   |
+| gasLimit            | `bigint`                                   |
+| strict              | `boolean`                                  |
+| nonce               | `bigint`                                   |
+| feeToken            | `string`                                   |
+| feeTokenAmount      | `bigint`                                   |
+| data                | `string`                                   |
+| tokenAmounts        | `Array.<\{token: string, amount: bigint}>` |
+| sourceTokenData     | `Array.<string>`                           |
+| messageId           | `string`                                   |
+
+## Functions
+
+### requestLinkFromTheFaucet(linkAddress, to, amount) ⇒ `Promise.<string>`
+
+Requests LINK tokens from the faucet and returns the transaction hash
+
+**Returns**: `Promise.<string>` - Promise resolving to the
+transaction hash of the fund transfer
+
+| Param       | Type     | Description                                             |
+| ----------- | -------- | ------------------------------------------------------- |
+| linkAddress | `string` | The address of the LINK contract on the current network |
+| to          | `string` | The address to send LINK to                             |
+| amount      | `bigint` | The amount of LINK to request                           |
+
+### getEvm2EvmMessage(receipt) ⇒ `Evm2EvmMessage` | `null`
+
+Parses a transaction receipt to extract the sent message Scans through
+transaction logs to find a `CCIPSendRequested` event and then decodes it to an
+object
+
+**Returns**: `Evm2EvmMessage` |
+`null` - Returns either the sent message or null if provided receipt
+does not contain `CCIPSendRequested` log
+
+| Param   | Type     | Description                                      |
+| ------- | -------- | ------------------------------------------------ |
+| receipt | `object` | The transaction receipt from the `ccipSend` call |
+
+### getEvm2AnyRampMessage(receipt) ⇒ `object` | `null`
+
+Parses a transaction receipt to extract the sent message from CCIPMessageSent
+
+**Returns**: `object` | `null` - Returns \{
+destChainSelector, sequenceNumber, EVM2AnyRampMessage message \} or null
+
+| Param   | Type     | Description                                |
+| ------- | -------- | ------------------------------------------ |
+| receipt | `object` | – The tx receipt from the on-ramp contract |
+
+### routeMessage(routerAddress, evm2EvmMessage) ⇒ `Promise.<void>`
+
+Routes the sent message from the source network on the destination (current)
+network
+
+**Returns**: `Promise.<void>` - Either resolves with no value
+if the message is successfully routed, or reverts  
+**Throws**:
+
+- `Error` Fails if no off-ramp matches the message's source chain
+  selector or if calling `router.getOffRamps()`
+
+| Param          | Type             | Description                       |
+| -------------- | ---------------- | --------------------------------- |
+| routerAddress  | `string`         | Address of the destination Router |
+| evm2EvmMessage | `Evm2EvmMessage` | Sent cross-chain message          |

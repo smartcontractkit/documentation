@@ -8,9 +8,9 @@ import { Chain, CHAINS, ALL_CHAINS, ChainNetwork } from "~/features/data/chains.
 import { useGetChainMetadata } from "./useGetChainMetadata.ts"
 import { ChainMetadata } from "~/features/data/api/index.ts"
 import useQueryString from "~/hooks/useQueryString.ts"
-import { RefObject } from "preact"
+import { ComponentChildren, RefObject } from "preact"
 import SectionWrapper from "~/components/SectionWrapper/SectionWrapper.tsx"
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import { updateTableOfContents } from "~/components/TableOfContents/tocStore.ts"
 import { ChainSelector } from "~/components/ChainSelector/ChainSelector.tsx"
 import {
@@ -31,15 +31,20 @@ import {
 import {
   getFeedAssetType,
   is24x5StreamFeed,
+  is247USEquitiesStream,
   isApacEquitiesStreamFeed,
+  isFuturesStreamFeed,
   mergeStreamEnvironmentAvailability,
 } from "../utils/feedMetadata.ts"
 import { getAddrPerPage, SMART_DATA_CATEGORY_OPTIONS } from "../constants.ts"
 import {
   type DataFeedType,
+  type MarketHoursFilterValue,
   type SchemaFilterValue,
   type StreamsRwaFeedTypeValue,
   type TradingHoursFilterValue,
+  type TwentyFourSevenFilterValue,
+  type TwentyFourSevenProduct,
   getFeedTypeFlags,
 } from "../types.ts"
 import { updateUrlClean } from "./urlStateHelpers.ts"
@@ -66,6 +71,7 @@ const schemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
   { label: "All", value: "all" },
   { label: "RWA Standard (v8)", value: "v8" },
   { label: "RWA Advanced (v11)", value: "v11" },
+  { label: "Futures (v14)", value: "v14" },
 ]
 
 const cryptoSchemaFilterOptions: FilterOption<SchemaFilterValue>[] = [
@@ -80,6 +86,19 @@ const feedTypeFilterOptions: FilterOption<StreamsRwaFeedTypeValue>[] = [
   { label: "Datalink Streams", value: "datalink" },
   { label: "Equity Streams", value: "equities" },
   { label: "Forex Streams", value: "forex" },
+  { label: "Futures Streams", value: "futures" },
+]
+
+const marketHoursFilterOptions: FilterOption<MarketHoursFilterValue>[] = [
+  { label: "All", value: "all" },
+  { label: "24/5", value: "24x5" },
+  { label: "24/7", value: "24x7" },
+]
+
+const twentyFourSevenFilterOptions: FilterOption<TwentyFourSevenFilterValue>[] = [
+  { label: "All 24/7 Streams", value: "all" },
+  { label: "24/7 TWAP", value: "twap" },
+  { label: "24/7 Perpetual Markets", value: "perps" },
 ]
 
 const tradingHoursFilterOptions: FilterOption<TradingHoursFilterValue>[] = [
@@ -90,11 +109,21 @@ const tradingHoursFilterOptions: FilterOption<TradingHoursFilterValue>[] = [
 ]
 
 const isSchemaFilterValue = (value: unknown): value is SchemaFilterValue =>
-  value === "all" || value === "v2" || value === "v3" || value === "v3-dex" || value === "v8" || value === "v11"
+  value === "all" ||
+  value === "v2" ||
+  value === "v3" ||
+  value === "v3-dex" ||
+  value === "v8" ||
+  value === "v11" ||
+  value === "v14"
 const isStreamsRwaFeedTypeValue = (value: unknown): value is StreamsRwaFeedTypeValue =>
-  value === "all" || value === "datalink" || value === "equities" || value === "forex"
+  value === "all" || value === "datalink" || value === "equities" || value === "forex" || value === "futures"
 const isTradingHoursFilterValue = (value: unknown): value is TradingHoursFilterValue =>
   value === "all" || value === "regular" || value === "extended" || value === "overnight"
+const isMarketHoursFilterValue = (value: unknown): value is MarketHoursFilterValue =>
+  value === "all" || value === "24x5" || value === "24x7"
+const isTwentyFourSevenFilterValue = (value: unknown): value is TwentyFourSevenFilterValue =>
+  value === "all" || value === "twap" || value === "perps"
 
 const FilterDropdown = <T extends string>({
   label,
@@ -148,6 +177,27 @@ const FilterDropdown = <T extends string>({
   )
 }
 
+/** Renders a section heading unless the page already provides one. */
+const FeedSection = ({
+  title,
+  id,
+  embedded,
+  children,
+}: {
+  title: string
+  id: string
+  embedded: boolean
+  children: ComponentChildren
+}) => {
+  if (embedded) return <>{children}</>
+
+  return (
+    <SectionWrapper title={title} depth={2} idOverride={id}>
+      {children}
+    </SectionWrapper>
+  )
+}
+
 export const FeedList = ({
   initialNetwork,
   dataFeedType = "default",
@@ -155,8 +205,13 @@ export const FeedList = ({
   initialCache,
   allowNetworkTableExpansion = false,
   defaultNetworkTableExpanded = false,
+  embedded = false,
   force24x5Only = false,
+  force24x7Only = false,
+  force247Product,
+  force247TokenizedEquity = false,
   forceApacEquitiesOnly = false,
+  forceFuturesOnly = false,
   forceStreamCategoryFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
@@ -168,8 +223,17 @@ export const FeedList = ({
   initialCache?: Record<string, ChainMetadata>
   allowNetworkTableExpansion?: boolean
   defaultNetworkTableExpanded?: boolean
+  /** Use when the page provides its own section headings around multiple tables. Hides the internal heading, TOC entry, and verifier address block. */
+  embedded?: boolean
   force24x5Only?: boolean
+  /** Locks the table to 24/7 US Equities streams (v11 fast/slow price). */
+  force24x7Only?: boolean
+  /** Narrows a forced 24/7 table to one product line. */
+  force247Product?: TwentyFourSevenProduct
+  /** Locks the table to 24/7 Tokenized Equity Data Feeds. */
+  force247TokenizedEquity?: boolean
   forceApacEquitiesOnly?: boolean
+  forceFuturesOnly?: boolean
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
@@ -359,14 +423,36 @@ export const FeedList = ({
   const [svrTypeFilters, setSvrTypeFilters] = useState<Set<string>>(new Set())
   const [showOnlyDatalinkFeeds, setShowOnlyDatalinkFeeds] = useState(false)
   const [showOnlyDatalinkFeedsTestnet, setShowOnlyDatalinkFeedsTestnet] = useState(false)
+  // `show24x5` is the legacy URL param kept for existing links; new selections use `marketHours`.
   const [show24x5FeedsParam, setShow24x5FeedsParam] = useQueryString("show24x5")
-  const show24x5Feeds = force24x5Only || show24x5FeedsParam === "true"
+  const [marketHoursFilterParam, setMarketHoursFilterParam] = useQueryString("marketHours")
+  const marketHoursFilter: MarketHoursFilterValue = force24x5Only
+    ? "24x5"
+    : force24x7Only
+      ? "24x7"
+      : isMarketHoursFilterValue(marketHoursFilterParam)
+        ? marketHoursFilterParam
+        : show24x5FeedsParam === "true"
+          ? "24x5"
+          : "all"
+  const show24x5Feeds = marketHoursFilter === "24x5"
+  const show247Streams = marketHoursFilter === "24x7"
+  // The generic 24/7 filter covers TWAP and Perpetual Markets streams. The US
+  // Equities family is a separate v11 product and is opted into only by the
+  // dedicated 24/7 page.
+  const show247USEquities = force24x7Only
   const showApacEquitiesFeeds = forceApacEquitiesOnly
-  const setShow24x5Feeds = (value: boolean) => {
-    if (!force24x5Only) {
-      setShow24x5FeedsParam(value ? "true" : [])
-    }
+  const showFuturesFeeds = forceFuturesOnly
+
+  const [twentyFourSevenFilterParam, setTwentyFourSevenFilterParam] = useQueryString("247Category")
+  const twentyFourSevenFilter: TwentyFourSevenFilterValue =
+    typeof twentyFourSevenFilterParam === "string" && isTwentyFourSevenFilterValue(twentyFourSevenFilterParam)
+      ? twentyFourSevenFilterParam
+      : "all"
+  const setTwentyFourSevenFilter = (next: TwentyFourSevenFilterValue) => {
+    setTwentyFourSevenFilterParam(next === "all" ? [] : next)
   }
+
   const [tradingHoursFilterParam, setTradingHoursFilterParam] = useQueryString("tradingHours")
   const tradingHoursFilter =
     typeof tradingHoursFilterParam === "string" && isTradingHoursFilterValue(tradingHoursFilterParam)
@@ -375,11 +461,27 @@ export const FeedList = ({
   const setTradingHoursFilter = (next: TradingHoursFilterValue) => {
     setTradingHoursFilterParam(next === "all" ? [] : next)
   }
+
   const [rwaSchemaFilterParam, setRwaSchemaFilterParam] = useQueryString("schema")
   const rwaSchemaFilter =
     typeof rwaSchemaFilterParam === "string" && isSchemaFilterValue(rwaSchemaFilterParam) ? rwaSchemaFilterParam : "all"
   const setRwaSchemaFilter = (next: SchemaFilterValue) => {
     setRwaSchemaFilterParam(next === "all" ? [] : next)
+  }
+
+  const setMarketHoursFilter = (next: MarketHoursFilterValue) => {
+    if (force24x5Only || force24x7Only) return
+    setMarketHoursFilterParam(next === "all" ? [] : next)
+    setShow24x5FeedsParam([])
+    if (next !== "24x5") setTradingHoursFilter("all")
+    if (next !== "24x7") setTwentyFourSevenFilter("all")
+    if (next !== "all") {
+      // The schema/category dropdowns are hidden while a market-hours filter is
+      // active, so reset them instead of leaving a filter that can empty the table
+      // with no visible control to undo it.
+      if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
+      setRwaSchemaFilter("all")
+    }
   }
   const [cryptoSchemaFilterParam, setCryptoSchemaFilterParam] = useQueryString("cryptoSchema")
   const cryptoSchemaFilter =
@@ -405,14 +507,34 @@ export const FeedList = ({
   const setTestnetCryptoSchemaFilter = (next: SchemaFilterValue) => {
     setTestnetCryptoSchemaFilterParam(next === "all" ? [] : next)
   }
+  // `testnetShow24x5` is the legacy URL param kept for existing links.
   const [show24x5FeedsTestnetParam, setShow24x5FeedsTestnetParam] = useQueryString("testnetShow24x5")
-  const show24x5FeedsTestnet = force24x5Only || show24x5FeedsTestnetParam === "true"
+  const [testnetMarketHoursFilterParam, setTestnetMarketHoursFilterParam] = useQueryString("testnetMarketHours")
+  const testnetMarketHoursFilter: MarketHoursFilterValue = force24x5Only
+    ? "24x5"
+    : force24x7Only
+      ? "24x7"
+      : isMarketHoursFilterValue(testnetMarketHoursFilterParam)
+        ? testnetMarketHoursFilterParam
+        : show24x5FeedsTestnetParam === "true"
+          ? "24x5"
+          : "all"
+  const show24x5FeedsTestnet = testnetMarketHoursFilter === "24x5"
+  const show247StreamsTestnet = testnetMarketHoursFilter === "24x7"
+  const show247USEquitiesTestnet = force24x7Only
   const showApacEquitiesFeedsTestnet = forceApacEquitiesOnly
-  const setShow24x5FeedsTestnet = (value: boolean) => {
-    if (!force24x5Only) {
-      setShow24x5FeedsTestnetParam(value ? "true" : [])
-    }
+  const showFuturesFeedsTestnet = forceFuturesOnly
+
+  const [testnetTwentyFourSevenFilterParam, setTestnetTwentyFourSevenFilterParam] = useQueryString("testnet247Category")
+  const testnetTwentyFourSevenFilter: TwentyFourSevenFilterValue =
+    typeof testnetTwentyFourSevenFilterParam === "string" &&
+    isTwentyFourSevenFilterValue(testnetTwentyFourSevenFilterParam)
+      ? testnetTwentyFourSevenFilterParam
+      : "all"
+  const setTestnetTwentyFourSevenFilter = (next: TwentyFourSevenFilterValue) => {
+    setTestnetTwentyFourSevenFilterParam(next === "all" ? [] : next)
   }
+
   const [testnetTradingHoursFilterParam, setTestnetTradingHoursFilterParam] = useQueryString("testnetTradingHours")
   const testnetTradingHoursFilter =
     typeof testnetTradingHoursFilterParam === "string" && isTradingHoursFilterValue(testnetTradingHoursFilterParam)
@@ -420,6 +542,21 @@ export const FeedList = ({
       : "all"
   const setTestnetTradingHoursFilter = (next: TradingHoursFilterValue) => {
     setTestnetTradingHoursFilterParam(next === "all" ? [] : next)
+  }
+
+  const setTestnetMarketHoursFilter = (next: MarketHoursFilterValue) => {
+    if (force24x5Only || force24x7Only) return
+    setTestnetMarketHoursFilterParam(next === "all" ? [] : next)
+    setShow24x5FeedsTestnetParam([])
+    if (next !== "24x5") setTestnetTradingHoursFilter("all")
+    if (next !== "24x7") setTestnetTwentyFourSevenFilter("all")
+    if (next !== "all") {
+      // The schema/category dropdowns are hidden while a market-hours filter is
+      // active, so reset them instead of leaving a filter that can empty the table
+      // with no visible control to undo it.
+      if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
+      setTestnetRwaSchemaFilter("all")
+    }
   }
   const [openDropdownId, setOpenDropdownId] = useState<string | null>(null)
   const handleDropdownToggle = (dropdownId: string, isOpen: boolean) => {
@@ -484,6 +621,7 @@ export const FeedList = ({
       chainHasVisibleFeeds((metadataCache as Record<string, any>)[chain.page], dataFeedType, ecosystem, {
         tokenizedEquityProvider,
         extendedHoursCategory: forceExtendedHoursCategory,
+        show247TokenizedEquity: force247TokenizedEquity,
       })
     )
   }, [
@@ -494,6 +632,7 @@ export const FeedList = ({
     ecosystem,
     tokenizedEquityProvider,
     forceExtendedHoursCategory,
+    force247TokenizedEquity,
   ])
 
   // When lockedNetwork is set, restrict the selectable chains to that single chain.
@@ -545,6 +684,7 @@ export const FeedList = ({
     ecosystem,
     tokenizedEquityProvider,
     forceExtendedHoursCategory,
+    force247TokenizedEquity,
   ])
 
   const svrTypesOnNetwork = useMemo(() => {
@@ -574,6 +714,7 @@ export const FeedList = ({
       tokenizedEquityProvider,
       streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
       extendedHoursCategory: forceExtendedHoursCategory,
+      show247TokenizedEquity: force247TokenizedEquity,
     }
 
     const types = new Set<string>()
@@ -844,6 +985,8 @@ export const FeedList = ({
           tokenizedEquityProvider,
           streamCategoryFilter: isStreams ? forceStreamCategoryFilter : undefined,
           extendedHoursCategory: forceExtendedHoursCategory,
+          show247USEquities: isStreams && force24x7Only,
+          show247TokenizedEquity: force247TokenizedEquity,
         }
 
         if (isStreams && force24x5Only) {
@@ -854,11 +997,27 @@ export const FeedList = ({
           )
         }
 
+        if (isStreams && force24x7Only) {
+          return (
+            network.metadata?.some(
+              (feed) => isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && is247USEquitiesStream(feed)
+            ) ?? false
+          )
+        }
+
         if (isStreams && forceApacEquitiesOnly) {
           return (
             network.metadata?.some(
               (feed) =>
                 isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && isApacEquitiesStreamFeed(feed)
+            ) ?? false
+          )
+        }
+
+        if (isStreams && forceFuturesOnly) {
+          return (
+            network.metadata?.some(
+              (feed) => isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && isFuturesStreamFeed(feed)
             ) ?? false
           )
         }
@@ -887,7 +1046,10 @@ export const FeedList = ({
     tokenizedEquityProvider,
     forceStreamCategoryFilter,
     force24x5Only,
+    force24x7Only,
+    force247TokenizedEquity,
     forceApacEquitiesOnly,
+    forceFuturesOnly,
     forceExtendedHoursCategory,
   ])
 
@@ -984,15 +1146,30 @@ export const FeedList = ({
     )
   }
 
+  const forced24x7Label =
+    force247Product === "twap"
+      ? "24/7 TWAP Streams"
+      : force247Product === "perps"
+        ? "24/7 Perpetual Markets Streams"
+        : force247Product === "lending"
+          ? "24/7 Lending Streams"
+          : "24/7 US Equities Streams"
+
   const forcedCategoryLabel = forceApacEquitiesOnly
     ? "APAC Equities Streams"
-    : forceStreamCategoryFilter === "datalink"
-      ? "DataLink Streams"
-      : forceStreamCategoryFilter === "equities"
-        ? "Equity Streams"
-        : forceStreamCategoryFilter === "forex"
-          ? "Forex Streams"
-          : null
+    : force24x7Only
+      ? forced24x7Label
+      : forceFuturesOnly
+        ? "Futures Streams"
+        : forceStreamCategoryFilter === "datalink"
+          ? "DataLink Streams"
+          : forceStreamCategoryFilter === "equities"
+            ? "Equity Streams"
+            : forceStreamCategoryFilter === "forex"
+              ? "Forex Streams"
+              : forceStreamCategoryFilter === "futures"
+                ? "Futures Streams"
+                : null
 
   const streamsMainnetSectionTitle = forcedCategoryLabel
     ? `Mainnet ${forcedCategoryLabel}`
@@ -1249,6 +1426,8 @@ export const FeedList = ({
         tokenizedEquityProvider,
         streamCategoryFilter: forceStreamCategoryFilter,
         extendedHoursCategory: forceExtendedHoursCategory,
+        show247USEquities: force24x7Only,
+        show247TokenizedEquity: force247TokenizedEquity,
       }
 
       if (force24x5Only) {
@@ -1259,10 +1438,26 @@ export const FeedList = ({
         )
       }
 
+      if (force24x7Only) {
+        return (
+          network.metadata?.some(
+            (feed) => isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && is247USEquitiesStream(feed)
+          ) ?? false
+        )
+      }
+
       if (forceApacEquitiesOnly) {
         return (
           network.metadata?.some(
             (feed) => isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && isApacEquitiesStreamFeed(feed)
+          ) ?? false
+        )
+      }
+
+      if (forceFuturesOnly) {
+        return (
+          network.metadata?.some(
+            (feed) => isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) && isFuturesStreamFeed(feed)
           ) ?? false
         )
       }
@@ -1284,7 +1479,7 @@ export const FeedList = ({
       <>
         {renderNetworkTypeSwitcher(availableNetworkTypes)}
 
-        {!isDeprecating && (
+        {!isDeprecating && !embedded && (
           <>
             {allowNetworkTableExpansion ? (
               <div style={{ marginBottom: "var(--space-2x)" }}>
@@ -1309,10 +1504,10 @@ export const FeedList = ({
         )}
 
         {selectedNetworkType === "mainnet" && (
-          <SectionWrapper
+          <FeedSection
             title={streamsMainnetSectionTitle}
-            depth={2}
-            idOverride={streamsMainnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+            id={streamsMainnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+            embedded={embedded}
           >
             <div className={feedList.tableFilters}>
               <div className={feedList.filterControls}>
@@ -1350,58 +1545,59 @@ export const FeedList = ({
                 )}
                 {dataFeedType === "streamsRwa" && (
                   <>
-                    {!forceStreamCategoryFilter && !show24x5Feeds && !forceApacEquitiesOnly && (
-                      <>
+                    {!force24x5Only &&
+                      !force24x7Only &&
+                      !forceApacEquitiesOnly &&
+                      !forceFuturesOnly &&
+                      !forceStreamCategoryFilter && (
                         <FilterDropdown
-                          isOpen={openDropdownId === "main-schema"}
-                          onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
+                          isOpen={openDropdownId === "main-market-hours"}
+                          onToggle={(isOpen) => handleDropdownToggle("main-market-hours", isOpen)}
                           onClose={closeAllDropdowns}
-                          label="Filter schema"
-                          options={schemaFilterOptions}
-                          value={rwaSchemaFilter}
-                          groupId="schema-main"
+                          label="Filter market hours"
+                          options={marketHoursFilterOptions}
+                          value={marketHoursFilter}
+                          groupId="market-hours-main"
                           onSelect={(next) => {
-                            setRwaSchemaFilter(next)
+                            setMarketHoursFilter(next)
                             setCurrentPage("1")
                           }}
                         />
-                        <FilterDropdown
-                          isOpen={openDropdownId === "main-feed-type"}
-                          onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
-                          onClose={closeAllDropdowns}
-                          label="Filter category"
-                          options={feedTypeFilterOptions}
-                          value={streamCategoryFilter}
-                          groupId="feed-type-main"
-                          onSelect={(next) => {
-                            setStreamCategoryFilter(next)
-                            setCurrentPage("1")
-                          }}
-                        />
-                      </>
-                    )}
-                    {!force24x5Only && !forceApacEquitiesOnly && !forceStreamCategoryFilter && (
-                      <div className={feedList.checkboxContainer}>
-                        <label className={feedList.detailsLabel}>
-                          <input
-                            type="checkbox"
-                            className={feedList.feedCheckbox}
-                            checked={show24x5Feeds}
-                            onChange={() => {
-                              closeAllDropdowns()
-                              const newValue = !show24x5Feeds
-                              setShow24x5Feeds(newValue)
-                              if (newValue) {
-                                // Reset trading hours filter when enabling 24/5
-                                setTradingHoursFilter("all")
-                              }
+                      )}
+                    {marketHoursFilter === "all" &&
+                      !forceStreamCategoryFilter &&
+                      !force24x7Only &&
+                      !forceApacEquitiesOnly &&
+                      !forceFuturesOnly && (
+                        <>
+                          <FilterDropdown
+                            isOpen={openDropdownId === "main-schema"}
+                            onToggle={(isOpen) => handleDropdownToggle("main-schema", isOpen)}
+                            onClose={closeAllDropdowns}
+                            label="Filter schema"
+                            options={schemaFilterOptions}
+                            value={rwaSchemaFilter}
+                            groupId="schema-main"
+                            onSelect={(next) => {
+                              setRwaSchemaFilter(next)
                               setCurrentPage("1")
                             }}
                           />
-                          Show only 24/5 Equity Streams
-                        </label>
-                      </div>
-                    )}
+                          <FilterDropdown
+                            isOpen={openDropdownId === "main-feed-type"}
+                            onToggle={(isOpen) => handleDropdownToggle("main-feed-type", isOpen)}
+                            onClose={closeAllDropdowns}
+                            label="Filter category"
+                            options={feedTypeFilterOptions}
+                            value={streamCategoryFilter}
+                            groupId="feed-type-main"
+                            onSelect={(next) => {
+                              setStreamCategoryFilter(next)
+                              setCurrentPage("1")
+                            }}
+                          />
+                        </>
+                      )}
                     {show24x5Feeds && (
                       <FilterDropdown
                         isOpen={openDropdownId === "main-trading-hours"}
@@ -1417,11 +1613,26 @@ export const FeedList = ({
                         }}
                       />
                     )}
+                    {show247Streams && !force24x7Only && (
+                      <FilterDropdown
+                        isOpen={openDropdownId === "main-247-category"}
+                        onToggle={(isOpen) => handleDropdownToggle("main-247-category", isOpen)}
+                        onClose={closeAllDropdowns}
+                        label="Filter 24/7 product"
+                        options={twentyFourSevenFilterOptions}
+                        value={twentyFourSevenFilter}
+                        groupId="247-category-main"
+                        onSelect={(next) => {
+                          setTwentyFourSevenFilter(next)
+                          setCurrentPage("1")
+                        }}
+                      />
+                    )}
                     {(searchValue ||
                       rwaSchemaFilter !== "all" ||
                       cryptoSchemaFilter !== "all" ||
                       (!forceStreamCategoryFilter && streamCategoryFilter !== "all") ||
-                      show24x5Feeds) && (
+                      marketHoursFilter !== "all") && (
                       <button
                         type="button"
                         className={clsx(button.secondary, feedList.clearFilterBtn)}
@@ -1431,8 +1642,9 @@ export const FeedList = ({
                           setRwaSchemaFilter("all")
                           setCryptoSchemaFilter("all")
                           if (!forceStreamCategoryFilter) setStreamCategoryFilter("all")
-                          setShow24x5Feeds(false)
+                          setMarketHoursFilter("all")
                           setTradingHoursFilter("all")
+                          setTwentyFourSevenFilter("all")
                           setCurrentPage("1")
                           const inputElement = document.getElementById("search") as HTMLInputElement
                           if (inputElement) {
@@ -1484,7 +1696,12 @@ export const FeedList = ({
                   cryptoSchemaFilter={cryptoSchemaFilter}
                   streamCategoryFilter={streamCategoryFilter}
                   show24x5Feeds={show24x5Feeds}
+                  show247Streams={show247Streams}
+                  show247USEquities={show247USEquities}
+                  twentyFourSevenFilter={twentyFourSevenFilter}
+                  twentyFourSevenProduct={force247Product}
                   showApacEquitiesFeeds={showApacEquitiesFeeds}
+                  showFuturesFeeds={showFuturesFeeds}
                   tradingHoursFilter={tradingHoursFilter}
                   dataFeedType={dataFeedType}
                   ecosystem={ecosystem}
@@ -1503,14 +1720,14 @@ export const FeedList = ({
             ) : (
               <p>No Mainnet feeds available.</p>
             )}
-          </SectionWrapper>
+          </FeedSection>
         )}
 
         {selectedNetworkType === "testnet" && (
-          <SectionWrapper
+          <FeedSection
             title={streamsTestnetSectionTitle}
-            depth={2}
-            idOverride={streamsTestnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+            id={streamsTestnetSectionTitle.toLowerCase().replace(/\s+/g, "-")}
+            embedded={embedded}
           >
             <div className={feedList.tableFilters}>
               <div className={feedList.filterControls}>
@@ -1548,58 +1765,59 @@ export const FeedList = ({
                 )}
                 {dataFeedType === "streamsRwa" && (
                   <>
-                    {!forceStreamCategoryFilter && !show24x5FeedsTestnet && !forceApacEquitiesOnly && (
-                      <>
+                    {!force24x5Only &&
+                      !force24x7Only &&
+                      !forceApacEquitiesOnly &&
+                      !forceFuturesOnly &&
+                      !forceStreamCategoryFilter && (
                         <FilterDropdown
-                          isOpen={openDropdownId === "test-schema"}
-                          onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
+                          isOpen={openDropdownId === "test-market-hours"}
+                          onToggle={(isOpen) => handleDropdownToggle("test-market-hours", isOpen)}
                           onClose={closeAllDropdowns}
-                          label="Filter schema"
-                          options={schemaFilterOptions}
-                          value={testnetRwaSchemaFilter}
-                          groupId="schema-testnet"
+                          label="Filter market hours"
+                          options={marketHoursFilterOptions}
+                          value={testnetMarketHoursFilter}
+                          groupId="market-hours-testnet"
                           onSelect={(next) => {
-                            setTestnetRwaSchemaFilter(next)
+                            setTestnetMarketHoursFilter(next)
                             setTestnetCurrentPage("1")
                           }}
                         />
-                        <FilterDropdown
-                          isOpen={openDropdownId === "test-feed-type"}
-                          onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
-                          onClose={closeAllDropdowns}
-                          label="Filter category"
-                          options={feedTypeFilterOptions}
-                          value={testnetStreamCategoryFilter}
-                          groupId="feed-type-testnet"
-                          onSelect={(next) => {
-                            setTestnetStreamCategoryFilter(next)
-                            setTestnetCurrentPage("1")
-                          }}
-                        />
-                      </>
-                    )}
-                    {!force24x5Only && !forceApacEquitiesOnly && !forceStreamCategoryFilter && (
-                      <div className={feedList.checkboxContainer}>
-                        <label className={feedList.detailsLabel}>
-                          <input
-                            type="checkbox"
-                            className={feedList.feedCheckbox}
-                            checked={show24x5FeedsTestnet}
-                            onChange={() => {
-                              closeAllDropdowns()
-                              const newValue = !show24x5FeedsTestnet
-                              setShow24x5FeedsTestnet(newValue)
-                              if (newValue) {
-                                // Reset trading hours filter when enabling 24/5
-                                setTestnetTradingHoursFilter("all")
-                              }
+                      )}
+                    {testnetMarketHoursFilter === "all" &&
+                      !forceStreamCategoryFilter &&
+                      !force24x7Only &&
+                      !forceApacEquitiesOnly &&
+                      !forceFuturesOnly && (
+                        <>
+                          <FilterDropdown
+                            isOpen={openDropdownId === "test-schema"}
+                            onToggle={(isOpen) => handleDropdownToggle("test-schema", isOpen)}
+                            onClose={closeAllDropdowns}
+                            label="Filter schema"
+                            options={schemaFilterOptions}
+                            value={testnetRwaSchemaFilter}
+                            groupId="schema-testnet"
+                            onSelect={(next) => {
+                              setTestnetRwaSchemaFilter(next)
                               setTestnetCurrentPage("1")
                             }}
                           />
-                          Show only 24/5 Equity Streams
-                        </label>
-                      </div>
-                    )}
+                          <FilterDropdown
+                            isOpen={openDropdownId === "test-feed-type"}
+                            onToggle={(isOpen) => handleDropdownToggle("test-feed-type", isOpen)}
+                            onClose={closeAllDropdowns}
+                            label="Filter category"
+                            options={feedTypeFilterOptions}
+                            value={testnetStreamCategoryFilter}
+                            groupId="feed-type-testnet"
+                            onSelect={(next) => {
+                              setTestnetStreamCategoryFilter(next)
+                              setTestnetCurrentPage("1")
+                            }}
+                          />
+                        </>
+                      )}
                     {show24x5FeedsTestnet && (
                       <FilterDropdown
                         isOpen={openDropdownId === "test-trading-hours"}
@@ -1615,11 +1833,26 @@ export const FeedList = ({
                         }}
                       />
                     )}
+                    {show247StreamsTestnet && !force24x7Only && (
+                      <FilterDropdown
+                        isOpen={openDropdownId === "test-247-category"}
+                        onToggle={(isOpen) => handleDropdownToggle("test-247-category", isOpen)}
+                        onClose={closeAllDropdowns}
+                        label="Filter 24/7 product"
+                        options={twentyFourSevenFilterOptions}
+                        value={testnetTwentyFourSevenFilter}
+                        groupId="247-category-testnet"
+                        onSelect={(next) => {
+                          setTestnetTwentyFourSevenFilter(next)
+                          setTestnetCurrentPage("1")
+                        }}
+                      />
+                    )}
                     {(testnetSearchValue ||
                       testnetRwaSchemaFilter !== "all" ||
                       testnetCryptoSchemaFilter !== "all" ||
                       (!forceStreamCategoryFilter && testnetStreamCategoryFilter !== "all") ||
-                      show24x5FeedsTestnet) && (
+                      testnetMarketHoursFilter !== "all") && (
                       <button
                         type="button"
                         className={clsx(button.secondary, feedList.clearFilterBtn)}
@@ -1629,8 +1862,9 @@ export const FeedList = ({
                           setTestnetRwaSchemaFilter("all")
                           setTestnetCryptoSchemaFilter("all")
                           if (!forceStreamCategoryFilter) setTestnetStreamCategoryFilter("all")
-                          setShow24x5FeedsTestnet(false)
+                          setTestnetMarketHoursFilter("all")
                           setTestnetTradingHoursFilter("all")
+                          setTestnetTwentyFourSevenFilter("all")
                           setTestnetCurrentPage("1")
                           const inputElement = document.getElementById("testnetSearch") as HTMLInputElement
                           if (inputElement) {
@@ -1684,7 +1918,12 @@ export const FeedList = ({
                   cryptoSchemaFilter={testnetCryptoSchemaFilter}
                   streamCategoryFilter={testnetStreamCategoryFilter}
                   show24x5Feeds={show24x5FeedsTestnet}
+                  show247Streams={show247StreamsTestnet}
+                  show247USEquities={show247USEquitiesTestnet}
+                  twentyFourSevenFilter={testnetTwentyFourSevenFilter}
+                  twentyFourSevenProduct={force247Product}
                   showApacEquitiesFeeds={showApacEquitiesFeedsTestnet}
+                  showFuturesFeeds={showFuturesFeedsTestnet}
                   tradingHoursFilter={testnetTradingHoursFilter}
                   firstAddr={testnetFirstAddr}
                   lastAddr={testnetLastAddr}
@@ -1699,7 +1938,7 @@ export const FeedList = ({
             ) : (
               <p>No Testnet feeds available.</p>
             )}
-          </SectionWrapper>
+          </FeedSection>
         )}
       </>
     )
@@ -1742,6 +1981,7 @@ export const FeedList = ({
           ?.filter((network: ChainNetwork) => {
             const hasVisibleFeeds = networkHasVisibleFeeds(network, dataFeedType, ecosystem, {
               tokenizedEquityProvider,
+              show247TokenizedEquity: force247TokenizedEquity,
             })
 
             if (isDeprecating && hasVisibleFeeds && network.networkType === selectedNetworkType) {
@@ -2063,6 +2303,7 @@ export const FeedList = ({
                         searchValue={typeof searchValue === "string" ? searchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
                         forceExtendedHoursCategory={forceExtendedHoursCategory}
+                        show247TokenizedEquity={force247TokenizedEquity}
                         isSvr={isSvr}
                         svrTypeFilters={svrTypeFilters}
                       />
@@ -2274,6 +2515,7 @@ export const FeedList = ({
                         searchValue={typeof testnetSearchValue === "string" ? testnetSearchValue : ""}
                         tokenizedEquityProvider={tokenizedEquityProvider}
                         forceExtendedHoursCategory={forceExtendedHoursCategory}
+                        show247TokenizedEquity={force247TokenizedEquity}
                       />
                     </>
                   )}

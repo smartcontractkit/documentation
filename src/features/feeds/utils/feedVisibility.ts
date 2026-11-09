@@ -1,5 +1,13 @@
 import type { DataFeedType } from "../types.ts"
-import { getSchemaVersion, isApacEquitiesStreamFeed, normalizeCategoryKey } from "./feedMetadata.ts"
+import {
+  getSchemaVersion,
+  is247TokenizedEquityFeed,
+  is247USEquitiesStream,
+  isApacEquitiesStreamFeed,
+  isFuturesStreamFeed,
+  normalizeCategoryKey,
+} from "./feedMetadata.ts"
+import { is247Stream } from "./twentyFourSeven.ts"
 
 /**
  * Proxy addresses (lowercase) for feeds that should display the contact email
@@ -17,6 +25,12 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
   "0xbb65fa58bdb7d33e4a3d1a40a7a9bd99e746367b",
   "0x9eb8a54d0590798880c665c7a6d51b95f4078ad7",
   "0xa261c56cabf7ed6081646b892e57175ab2dd8617",
+  // Ethereum Mainnet
+  "0xd467dc4668dd8fdd762c7d18a198e85f380d0ed7",
+  // Arc Mainnet
+  "0x137ede0803edc0470a2fede55493bc66232b6670",
+  // Base
+  "0xaf992a6ad37b4878cf9c31f082b178860e268ce3",
 ])
 
 /**
@@ -77,13 +91,25 @@ export function shouldHideAddress(feed: any, riskTier?: string | null): boolean 
 }
 
 /**
+ * Feature flag for the 24/7 stream family (24/7 TWAP and 24/7 Perpetual Markets).
+ * While true, their feed IDs render as a "Contact us" link instead of the ID.
+ * Flip to false when these streams are publicly launched and the IDs can ship.
+ */
+export const HIDE_247_STREAM_FEED_IDS = true
+
+/**
  * Returns true when a stream's feedId should be hidden and replaced with a
  * contact link. Add new feed-type checks here to extend the behaviour; remove
- * them when the stream goes live.
+ * them (or flip their flag) when the stream goes live.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideStreamFeedId(feed: any): boolean {
-  return isApacEquitiesStreamFeed(feed)
+  return (
+    isApacEquitiesStreamFeed(feed) ||
+    isFuturesStreamFeed(feed) ||
+    is247USEquitiesStream(feed) ||
+    (HIDE_247_STREAM_FEED_IDS && is247Stream(feed))
+  )
 }
 
 /**
@@ -110,6 +136,14 @@ export interface FeedVisibilityOptions {
   tokenizedEquityProvider?: string
   /** When set, only show extended-hours feeds in this category (e.g. "preciousMetals"). */
   extendedHoursCategory?: ExtendedHoursCategory
+  /**
+   * When set, include the 24/7 US Equities stream family. These rows are hidden
+   * in the RDD until launch; the hidden flag is still respected upstream, so the
+   * table populates once data ops clears it.
+   */
+  show247USEquities?: boolean
+  /** When set, include 24/7 Tokenized Equity Data Feeds on the dedicated page. */
+  show247TokenizedEquity?: boolean
 }
 
 /**
@@ -131,6 +165,7 @@ export function isFeedVisible(
   const isTokenizedEquity = dataFeedType === "tokenizedEquity"
   const isExtendedHours = dataFeedType === "extendedHours"
   const isSvr = dataFeedType === "svr" || dataFeedType === "svrAtlas"
+  const is247USEquities = options.show247USEquities === true && is247USEquitiesStream(feed)
   if (feed.docs?.hidden && !isTokenizedEquity && !isExtendedHours && !isSvr) return false
 
   const isDeprecating = ecosystem === "deprecating"
@@ -176,7 +211,9 @@ export function isFeedVisible(
           isVisible = false
         }
       } else if (dataFeedType === "streamsRwa") {
-        isVisible = ["Equities", "Forex"].includes(feed.docs?.feedType)
+        // 24/7 streams span multiple schemas but all belong on the RWA page.
+        isVisible =
+          ["Equities", "Forex", "Futures"].includes(feed.docs?.feedType) || is247Stream(feed) || is247USEquities
       } else if (dataFeedType === "streamsNav") {
         isVisible = getSchemaVersion(feed) === "v9"
       } else if (dataFeedType === "streamsExRate") {
@@ -210,10 +247,12 @@ export function isFeedVisible(
     // Generic equity price feeds (e.g. RefPrice) are excluded — they are not
     // tokenized equity instruments and should not appear here.
     const assetClass = feed.docs?.assetClass
+    const is247TokenizedEquity = options.show247TokenizedEquity === true && is247TokenizedEquityFeed(feed)
     isVisible =
-      (assetClass === "Equity" || assetClass === "Equities") &&
-      feed.contractType !== "verifier" &&
-      feed.docs?.productTypeCode === "primaryTokenizedPrice"
+      is247TokenizedEquity ||
+      ((assetClass === "Equity" || assetClass === "Equities") &&
+        feed.contractType !== "verifier" &&
+        feed.docs?.productTypeCode === "primaryTokenizedPrice")
   } else if (isExtendedHours) {
     const proxy = feed.proxyAddress?.toLowerCase()
     isVisible = ALL_EXTENDED_HOURS_PROXY_ADDRESSES.has(proxy)
@@ -252,10 +291,12 @@ export function isFeedVisible(
     if (options.streamCategoryFilter === "datalink" && feed.docs.feedType !== "Datalink") return false
     if (options.streamCategoryFilter === "equities" && feed.docs.feedType !== "Equities") return false
     if (options.streamCategoryFilter === "forex" && feed.docs.feedType !== "Forex") return false
+    if (options.streamCategoryFilter === "futures" && feed.docs.feedType !== "Futures") return false
 
     const schemaVersion = getSchemaVersion(feed)
     if (options.rwaSchemaFilter === "v8" && schemaVersion !== "v8") return false
     if (options.rwaSchemaFilter === "v11" && schemaVersion !== "v11") return false
+    if (options.rwaSchemaFilter === "v14" && schemaVersion !== "v14") return false
   }
 
   if (dataFeedType === "streamsCrypto" && options.cryptoSchemaFilter && options.cryptoSchemaFilter !== "all") {

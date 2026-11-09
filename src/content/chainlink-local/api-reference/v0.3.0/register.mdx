@@ -1,0 +1,121 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "Register v0.3.0 API Reference"
+metadata:
+  description: "API documentation for Register in Solidity, version v0.3.0."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage030" />
+
+## Register
+
+CCIP network configuration registry.
+
+[Register](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.0/src/ccip/Register.sol)
+
+## Structs
+
+### NetworkDetails
+
+```solidity
+struct NetworkDetails {
+    uint64 chainSelector;
+    address routerAddress;
+    address linkAddress;
+    address wrappedNativeAddress;
+    address ccipBnMAddress;
+    address ccipLnMAddress;
+    address rmnProxyAddress;
+    address registryModuleOwnerCustomAddress;
+    address tokenAdminRegistryAddress;
+}
+```
+
+## Variables
+
+### \_SHARD_COUNT
+
+Number of generated data shards in RegisterData.sol.
+
+```solidity
+uint256 internal constant _SHARD_COUNT = 4
+```
+
+### s_isOverridden
+
+Whether `setNetworkDetails` was called for a chain ID.
+
+```solidity
+mapping(uint256 chainId => bool isOverridden) internal s_isOverridden
+```
+
+### s_networkDetails
+
+Network details set with `setNetworkDetails`, overriding the built-in ones.
+
+```solidity
+mapping(uint256 chainId => NetworkDetails) internal s_networkDetails
+```
+
+## Functions
+
+### \_defaultNetworkDetails
+
+Built-in network details for `chainId`, or an all-zero struct for an unknown
+chain.
+
+Decodes the generated data shards; shard addresses without code are skipped, so
+a bare `new Register()` (no shards placed) only serves `setNetworkDetails`
+overrides.
+
+```solidity
+function _defaultNetworkDetails(uint256 chainId) internal view returns (NetworkDetails memory);
+```
+
+### getNetworkDetails
+
+Retrieves network details for a given chain ID.
+
+```solidity
+function getNetworkDetails(uint256 chainId) external view returns (NetworkDetails memory networkDetails);
+```
+
+**Parameters**
+
+| Name      | Type      | Description                                   |
+| --------- | --------- | --------------------------------------------- |
+| `chainId` | `uint256` | - The ID of the chain to get the details for. |
+
+**Returns**
+
+| Name             | Type             | Description                                       |
+| ---------------- | ---------------- | ------------------------------------------------- |
+| `networkDetails` | `NetworkDetails` | - The network details for the specified chain ID. |
+
+### setNetworkDetails
+
+Sets the network details for a given chain ID.
+
+```solidity
+function setNetworkDetails(uint256 chainId, NetworkDetails memory networkDetails) external;
+```
+
+**Parameters**
+
+| Name             | Type             | Description                                              |
+| ---------------- | ---------------- | -------------------------------------------------------- |
+| `chainId`        | `uint256`        | - The ID of the chain to set the details for.            |
+| `networkDetails` | `NetworkDetails` | - The network details to set for the specified chain ID. |
+
+### shardAddress
+
+Deterministic address of built-in data shard `index`; the simulator places each
+shard there.
+
+```solidity
+function shardAddress(uint256 index) public view returns (address);
+```

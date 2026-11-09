@@ -16,7 +16,7 @@ import {
 } from "@lib/solana/wallet-adapter/index.ts"
 import type { MintingStep, Status, ErrorState } from "@lib/solana/wallet-adapter/index.ts"
 
-import button from "@chainlink/design-system/button.module.css"
+import button from "~/lib/designSystemButton.ts"
 import styles from "./SVMTestTokens.module.css"
 import walletStyles from "../WalletConnection.module.css"
 import "../container.css"
@@ -27,6 +27,7 @@ import { getBnMParams } from "@config/data/ccip/data.ts"
 import { Version } from "@config/data/ccip/types.ts"
 import { supportedChainToChainInRdd, getExplorer, getExplorerTransactionUrl } from "@features/utils/index.ts"
 import { API_ENDPOINTS } from "@config/api.ts"
+import { useIsMounted } from "@hooks/useIsMounted.ts"
 
 const SUPPORTED_CHAIN = "SOLANA_DEVNET" as const
 
@@ -301,7 +302,13 @@ function SVMTestTokensContent(): React.JSX.Element {
   )
 }
 
+/**
+ * Rendered with `client:load` rather than `client:only`, so Astro scopes this island's CSS to the pages using it.
+ * The server and the hydration pass render an empty container; the wallet UI mounts in the browser.
+ */
 export function SVMTestTokensClient(): React.JSX.Element {
+  const isMounted = useIsMounted()
+  if (!isMounted) return <div />
   return (
     <EnhancedWalletProvider autoConnect={true}>
       <SVMTestTokensContent />

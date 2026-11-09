@@ -71,6 +71,7 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
           network: string
           shutdownDate?: string
           fallbackCategory?: string
+          allowAnyFallback?: boolean
         }> = []
 
         network.metadata?.forEach((metadata) => {
@@ -87,6 +88,8 @@ export function useBatchedFeedCategories(network: ChainNetwork | null): BatchedF
               network: networkKey,
               shutdownDate: metadata.docs?.shutdownDate,
               fallbackCategory: metadata.feedCategory,
+              // Aptos/Stellar are not in Supabase yet, so trust the RDD feedCategory.
+              allowAnyFallback: isFeedIdAddressedNetwork(network.name),
             })
           }
         })

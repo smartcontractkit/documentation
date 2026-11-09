@@ -1,0 +1,100 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockRewardManager v0.3.1 API Reference"
+metadata:
+  description: "API documentation for MockRewardManager in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## MockRewardManager
+
+A mock implementation of the Data Streams reward manager for local testing.
+
+[`MockRewardManager`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/data-streams/MockRewardManager.sol)
+
+<Aside>
+  This contract receives the LINK rewards collected by the
+  [`MockFeeManager`](/chainlink-local/api-reference/v0.3.1/mock-fee-manager). Only the fee manager may call `onFeePaid`.
+</Aside>
+
+## Errors
+
+### Unauthorized
+
+```solidity
+error Unauthorized()
+```
+
+<Aside>Reverts when `onFeePaid` is called by anyone other than the fee manager.</Aside>
+
+## Events
+
+### FeePaid
+
+```solidity
+event FeePaid(IRewardManager.FeePayment[] payments, address payer)
+```
+
+## Functions
+
+### constructor
+
+Initializes the contract with the LINK token address.
+
+```solidity
+constructor(address linkAddress)
+```
+
+#### Parameters
+
+| Parameter   | Type      | Description            |
+| ----------- | --------- | ---------------------- |
+| linkAddress | `address` | The LINK token address |
+
+### onFeePaid
+
+Records a fee payment and pulls the LINK from the payer.
+
+```solidity
+function onFeePaid(FeePayment[] calldata payments, address payer) external override onlyFeeManager
+```
+
+<Aside>Tallies the total payable fees and transfers the LINK from the payer to this contract.</Aside>
+
+#### Parameters
+
+| Parameter | Type           | Description                                |
+| --------- | -------------- | ------------------------------------------ |
+| payments  | `FeePayment[]` | The fee payments (pool ID and amount each) |
+| payer     | `address`      | The address that paid the fees             |
+
+### claimRewards
+
+Not implemented.
+
+```solidity
+function claimRewards(bytes32[] memory) external pure override
+```
+
+<Aside>Always reverts with "Not implemented".</Aside>
+
+### setFeeManager
+
+Sets the fee manager address.
+
+```solidity
+function setFeeManager(address newFeeManager) external override
+```
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure override returns (bool)
+```
+
+<Aside>Returns true only for the `onFeePaid` selector.</Aside>

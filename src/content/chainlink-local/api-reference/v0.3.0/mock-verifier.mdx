@@ -1,0 +1,158 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockVerifier v0.3.0 API Reference"
+metadata:
+  description: "API documentation for MockVerifier in Solidity, version v0.3.0."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage030" />
+
+## MockVerifier
+
+Mock Data Streams verifier.
+
+[MockVerifier](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.0/src/data-streams/MockVerifier.sol)
+
+## Variables
+
+### i_verifierProxy
+
+```solidity
+address internal immutable i_verifierProxy
+```
+
+### MOCK_DATA_STREAM_DON_ADDRESS
+
+```solidity
+address constant MOCK_DATA_STREAM_DON_ADDRESS = 0x143f40b47ab222503b787e98940023c59fc29984
+```
+
+### N_2
+
+```solidity
+uint256 constant N_2 = 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0
+```
+
+### s_inactiveDigests
+
+```solidity
+mapping(bytes32 => mapping(bytes32 => bool)) internal s_inactiveDigests
+```
+
+### s_inactiveFeeds
+
+```solidity
+mapping(bytes32 => bool) internal s_inactiveFeeds
+```
+
+### s_verifiedSignatures
+
+```solidity
+mapping(bytes => bool) internal s_verifiedSignatures
+```
+
+## Errors
+
+### AccessForbidden
+
+```solidity
+error AccessForbidden();
+```
+
+### AlreadyUsedSignature
+
+```solidity
+error AlreadyUsedSignature();
+```
+
+### BadVerification
+
+```solidity
+error BadVerification();
+```
+
+### DigestInactive
+
+```solidity
+error DigestInactive(bytes32 feedId, bytes32 configDigest);
+```
+
+### InactiveFeed
+
+```solidity
+error InactiveFeed(bytes32 feedId);
+```
+
+### InvalidS
+
+```solidity
+error InvalidS();
+```
+
+### InvalidSignatureLength
+
+```solidity
+error InvalidSignatureLength();
+```
+
+### InvalidV
+
+```solidity
+error InvalidV();
+```
+
+## Events
+
+### ReportVerified
+
+```solidity
+event ReportVerified(bytes32 indexed feedId, address indexed sender);
+```
+
+## Functions
+
+### activateConfig
+
+```solidity
+function activateConfig(bytes32 feedId, bytes32 configDigest) external;
+```
+
+### activateFeed
+
+```solidity
+function activateFeed(bytes32 feedId) external;
+```
+
+### constructor
+
+```solidity
+constructor(address verifierProxy) ;
+```
+
+### deactivateConfig
+
+```solidity
+function deactivateConfig(bytes32 feedId, bytes32 configDigest) external;
+```
+
+### deactivateFeed
+
+```solidity
+function deactivateFeed(bytes32 feedId) external;
+```
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure override returns (bool);
+```
+
+### verify
+
+```solidity
+function verify(bytes calldata signedReport, address sender) external returns (bytes memory verifierResponse);
+```

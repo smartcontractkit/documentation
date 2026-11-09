@@ -5,10 +5,11 @@ Some assets only trade during specific [market hours](/data-feeds/selecting-data
 
 These feeds are not a single, uniform product. Each asset class uses a different methodology to produce a continuous price, and each has its own risk profile. Review the section below for the asset class you are integrating, alongside the [Custom Feeds](/data-feeds/selecting-data-feeds#-custom-feeds) section and [risk mitigation](/data-feeds/selecting-data-feeds#risk-mitigation) guidance appropriate for your use case.
 
-| Asset class                         | Description                                                                                                                       |
-| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| [Precious Metals](#precious-metals) | 24/7 blended feeds that report the spot price during market hours and a tokenized-stream-derived price when the market is closed. |
-| [Forex](#forex)                     | 24/7 crypto-derived rates for select currency pairs that lack a continuously observable institutional rate.                       |
+| Asset class                                                     | Description                                                                                                                       |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [Precious Metals](#precious-metals)                             | 24/7 blended feeds that report the spot price during market hours and a tokenized-stream-derived price when the market is closed. |
+| [Forex](#forex)                                                 | 24/7 crypto-derived rates for select currency pairs that lack a continuously observable institutional rate.                       |
+| [US Equities and ETFs](/data-feeds/tokenized-equity-feeds/24-7) | 24/7 Smoothed tokenized equity feeds that price weekends and holidays from perpetual futures markets. Covered on their own page.  |
 
 ## Precious Metals
 
@@ -924,10 +925,11 @@ For more information about evaluating data quality, assessing liquidity and dist
 | Precious Metals             | 3+ market data vendors                                                                                                                                     |
 | US Equities                 | 3+ market data vendors                                                                                                                                     |
 
+SmartData Proof of Reserve and NAV feeds and Exchange Rate feeds typically rely on a single data source or provider. Review [Single Source Data Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) for the associated risks and required safeguards.
+
 > **NOTE: Need more details?**
 >
-> For additional information about data sourcing, please&#x20;
-> [contact us](https://chain.link/contact?ref_id=pricefeeds).
+> For additional information about data sourcing, please [contact us](https://chain.link/contact?ref_id=pricefeeds).
 
 ---
 
@@ -1250,7 +1252,7 @@ Deploy the `DataConsumerV3` smart contract on the Sepolia testnet.
 
    ![Remix Deployed Contracts Section](/images/getting-started/deployedContractDataConsumerV3.png)
 
-9. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **Show more details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed uses a different number of decimal places for answers.
+9. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **More Details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed can use a different number of decimal places, so always read the `decimals()` value from the feed contract instead of hardcoding it. See [Decimal precision](/data-feeds/price-feeds#decimal-precision) for details.
 
    ![A screenshot showing the deployed contract and the latest answer.](/images/getting-started/getLatestPrice.png)
 
@@ -2070,7 +2072,7 @@ async function checkDataStaleness() {
 
 **Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
 
-1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "More Details")
 2. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
 3. Consider your specific use case requirements (some applications may need very recent data)
 
@@ -2582,7 +2584,7 @@ require(block.timestamp - lastUpdateTime <= stalenessThreshold, "MVR feed data i
 
 **Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
 
-1. Find the feed's **heartbeat interval** on the [MVR Feeds Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Find the feed's **heartbeat interval** on the [MVR Feeds Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "More Details")
 2. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
 3. Consider your specific use case requirements (some applications may need very fresh data)
 
@@ -3025,7 +3027,7 @@ async function checkDataStaleness(
 
 **Important**: Don't use arbitrary values for staleness thresholds. The appropriate threshold should be determined by:
 
-1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "Show more details")
+1. Find the feed's **heartbeat interval** on the [SmartData Addresses](/data-feeds/smartdata/addresses?page=1#networks) page (click "More Details")
 2. Set a threshold that aligns with this interval, usually the heartbeat plus a small buffer
 3. Consider your specific use case requirements
 
@@ -3505,6 +3507,7 @@ Data Feeds aggregate many data sources and publish them onchain using a combinat
 Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
 
 - To learn more about the broader SmartData suite, see the [SmartData](/data-feeds/smartdata) documentation.
+- Many SmartData feeds rely on a single data provider. Review [Single Source Data Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) before using them.
 - See the [SmartData Contract Addresses](/data-feeds/smartdata/addresses) page for a list of available networks and addresses.
 
 #### Multiple-Variable Response (MVR) Feeds
@@ -3634,6 +3637,25 @@ Live values such as feed contract addresses are not inlined here. Wait for the o
 Source: https://docs.chain.link/data-feeds/price-feeds
 
 Chainlink Data Feeds provide data that is aggregated from many data sources by a decentralized set of independent node operators. The [Decentralized Data Model](/architecture-overview/architecture-decentralized-model?parent=dataFeeds) describes this in detail. However, there are some exceptions where data for a feed can come only from a single data source or where data values are calculated. Read the [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) to learn about the different data feed categories and how to identify them.
+
+## Decimal precision
+
+Feed answers are returned as integers without a decimal point. To convert an answer into a human-readable value, divide it by `10^decimals`. For example, an answer of `3030914000000` from a feed with `8` decimals represents `30309.14`.
+
+Chainlink generally uses the following decimal standards for new feeds:
+
+| Asset class          | Decimals      |
+| -------------------- | ------------- |
+| Crypto / USD         | 8             |
+| Crypto / ETH         | 18            |
+| Forex                | 8             |
+| Precious metals      | 8             |
+| Commodities / Energy | 8             |
+| All others           | Feed-specific |
+
+These standards are subject to change, individual feeds can differ, and some networks use a single precision for all feeds. For example, feeds on [Stellar](/data-feeds/stellar) and [Aptos](/data-feeds/aptos) use 18 decimals. This applies to every network, EVM and non-EVM: always read the precision of each feed you use from the feed contract instead of hardcoding a value based on the table above. On EVM chains, call the [`decimals()`](/data-feeds/api-reference#decimals) function on the feed's proxy contract. On other networks, use the equivalent function described in that network's guide. You can also verify the decimals for a feed on the [Price Feed Addresses](/data-feeds/price-feeds/addresses) page by selecting **More Details**.
+
+Decimal precision is not changed on live feeds. If an asset's price moves to a level where the feed's precision is no longer sufficient for your use case, contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) about launching a new feed.
 
 ---
 
@@ -3773,14 +3795,14 @@ Custom Feeds are built to serve a specific use case and can differ materially fr
 Custom Feeds have the following categories and compositions:
 
 - [🟠](#-high-market-pricing-risk-feeds) **Onchain Single Source Feeds:** These feeds take their data from an onchain source, however, the feed has only a single data provider currently supporting the feed.
-- [🟡](#-medium-market-pricing-risk-feeds) **Onchain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside onchain.
-- [🟡](#-medium-market-pricing-risk-feeds) **Exchange Rate Feeds:** These feeds read an exchange rate from an external contract onchain that is designed to allow conversion from one token to another. Chainlink does not own or control these contracts in any way. They are not equivalent to market price feeds.
+- [🟡](#-medium-market-pricing-risk-feeds) **Onchain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside onchain. See [Single Source Data Providers](#single-source-data-providers).
+- [🟡](#-medium-market-pricing-risk-feeds) **Exchange Rate Feeds:** These feeds read an exchange rate from an external contract onchain that is designed to allow conversion from one token to another. Chainlink does not own or control these contracts in any way. They are not equivalent to market price feeds. See [Single Source Data Providers](#single-source-data-providers).
 - [🟡](#-medium-market-pricing-risk-feeds) **Technical Feeds:** Feeds within this category measure a particular technical metric from a specified blockchain. For example, Fast Gas or Block Difficulty.
 - [🟡](#-medium-market-pricing-risk-feeds) **Total Value Locked Feeds:** These feeds measure the total value locked in a particular protocol.
 - [🟠](#-high-market-pricing-risk-feeds) **Custom Index Feeds:** An index calculates a function of the values for multiple underlying assets. The function is specific to that index and is typically calculated by node operators following an agreed formula.
 - [🟠](#-high-market-pricing-risk-feeds) **24/7 Extended-Hours Feeds:** Custom feeds that publish outside an asset's standard market hours, using a methodology specific to the asset class, such as blending a reference price with tokenized asset streams for precious metals, or sourcing a crypto-derived rate for select forex pairs. See [24/7 Extended-Hours Data Feeds](/data-feeds/24-7-extended-hours-data-feeds) for methodology and risk considerations.
 - [🟠](#-high-market-pricing-risk-feeds) **Offchain Single Source Feeds:** Some data providers use a single data source, which might be necessary if only one source exists offchain for a specific type of data.
-- [🟠](#-high-market-pricing-risk-feeds) **Offchain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside offchain.
+- [🟠](#-high-market-pricing-risk-feeds) **Offchain Proof of Reserve Feeds:** Chainlink Proof of Reserve uses a large decentralized collection of security-reviewed and Sybil-resistant node operators to acquire and verify reserve data. In this use case, reserves reside offchain. See [Single Source Data Providers](#single-source-data-providers).
 - [🟠](#-high-market-pricing-risk-feeds) **LP Token Feeds:** These feeds use a decentralized feed for the underlying asset as well as calculations to value the liquidity pool (LP) tokens.
 - [🔴](#-very-high-market-pricing-risk-feeds) **Wrapped Calculated Feeds:** These feeds are typically pegged 1:1 to the underlying token or asset. Under normal market conditions, these feeds track their underlying value accurately. However, given that the price is a derivative formed from a calculated method, the derivative asset may not always precisely track the value of the underlying token or asset.
 
@@ -4055,6 +4077,13 @@ Source: https://docs.chain.link/data-feeds/smartdata
 
 Chainlink SmartData is a suite of onchain data offerings designed to unlock the utility, accessibility, and reliability of tokenized real-world assets (RWAs). By providing secure minting assurances alongside essential real-world data such as reserves, Net Asset Value (NAV), and Assets Under Management (AUM) data, the SmartData suite embeds security and enriches data into tokenized RWA offerings.
 
+> **CAUTION: Single source risk**
+>
+> Many SmartData feeds, including Proof of Reserve, NAV, and AUM feeds, rely on a single data source or provider such as
+> an issuer, fund administrator, custodian, or auditor. Review [Single Source Data
+> Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) and implement the safeguards described there
+> before using these feeds.
+
 ## SmartData Feed Types
 
 SmartData offers two distinct types of data feeds:
@@ -4107,7 +4136,9 @@ Cross-chain reserves provide their data using the following methods:
 > Proof of Reserve feeds can vary in their configurations. Please be careful with the configuration of the feeds used
 > by your smart contracts. You are solely responsible for reviewing the quality of the data (e.g., a Proof of Reserve
 > feed) that you integrate into your smart contracts and assume full responsibility for any damage, injury, or any
-> other loss caused by your use of the feeds used by your smart contracts.
+> other loss caused by your use of the feeds used by your smart contracts. Many Proof of Reserve feeds rely on a
+> single data provider; review [Single Source Data Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) for the
+> associated risks and required safeguards.
 >
 > [Learn more about making responsible data quality decisions.](/data-feeds/selecting-data-feeds#risk-mitigation)
 
@@ -4117,6 +4148,8 @@ Chainlink NAVLink Feeds provide real-time, tamper-proof data on the Net Asset Va
 
 By making NAV data available onchain, developers can build decentralized applications that require accurate and up-to-date valuation metrics. These applications include asset management platforms, DeFi protocols, and investment strategies that rely on NAV for operations such as rebalancing, minting, or redemption.
 
+NAV data is typically sourced from a single fund administrator or asset manager. Review [Single Source Data Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) before using NAVLink Feeds, especially for minting, redemption, or collateral valuation.
+
 To find a list of available SmartNav Feeds, see the [SmartData Feed Addresses](/data-feeds/smartdata/addresses) page.
 
 ### SmartAUM Feeds
@@ -4124,6 +4157,8 @@ To find a list of available SmartNav Feeds, see the [SmartData Feed Addresses](/
 Chainlink SmartAUM Feeds provide current data on the total market value of assets managed by an entity on behalf of clients. Assets Under Management (AUM) is a crucial indicator used in financial analyses and decision-making processes.
 
 By bringing AUM data onchain, decentralized applications can access information for activities such as risk assessment, performance benchmarking, and investment strategy development.
+
+AUM data is typically sourced from a single fund administrator or asset manager. Review [Single Source Data Providers](/data-feeds/selecting-data-feeds#single-source-data-providers) before using SmartAUM Feeds.
 
 To find a list of available Assets Under Management Feeds, see the [SmartData Feed Addresses](/data-feeds/smartdata/addresses) page.
 
@@ -5485,7 +5520,7 @@ The consumer contract contains two functions that you interact with in this exam
    status: success
    ```
 
-   The answer on the ETH / USD feed uses 8 decimal places, so an answer of `354661371569` indicates an ETH / USD price of `3546.61371569`. Each feed uses a different number of decimal places for answers. You can find the correct number of decimal places on the [Price Feed addresses](/data-feeds/price-feeds/addresses?network=starknet) page by clicking the Show more details checkbox.
+   The answer on the ETH / USD feed uses 8 decimal places, so an answer of `354661371569` indicates an ETH / USD price of `3546.61371569`. Each feed uses a different number of decimal places for answers. You can find the correct number of decimal places on the [Price Feed addresses](/data-feeds/price-feeds/addresses?network=starknet) page by clicking the **More Details** checkbox.
 
 ---
 
@@ -6022,9 +6057,11 @@ Before you begin, you should have:
 
 To complete this guide, you'll need:
 
-- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation.
+- **Stellar CLI**: Install the [Stellar CLI](https://soroban.stellar.org/docs/reference/cli). Run stellar --version to verify your installation. This guide uses Stellar CLI v25 or later.
 
 - **Rust toolchain**: Install [Rust](https://www.rust-lang.org/tools/install) using [rustup](https://rustup.rs/). Run cargo --version to verify your installation.
+
+- **soroban-sdk**: The `stellar contract init` command scaffolds a project that depends on the latest `soroban-sdk` (v25 or later). The contract in this guide compiles against `soroban-sdk` v21 and later. If you pin an older version, use v21 or later.
 
 - **Testnet XLM**: You'll need testnet XLM to deploy your contract. Fund a Stellar Testnet account using the friendbot faucet. Testnet XLM has no real value.
 
@@ -6106,7 +6143,7 @@ To complete this guide, you'll need:
        /// Read the latest round for a feed and return its answer.
        pub fn read_latest_price(env: Env, proxy: Address, data_id: BytesN<32>) -> I256 {
            let client = DataFeedsProxyClient::new(&env, &proxy);
-           let round = client.latest_round(&data_id, &18).unwrap();
+           let round = client.latest_round(&data_id, &18);
            round.answer
        }
    }
@@ -6189,8 +6226,7 @@ Source: https://docs.chain.link/data-feeds/svr-feeds
 > **TIP: SVR Now Available Beyond Ethereum Mainnet**
 >
 > Chainlink SVR has expanded beyond Ethereum Mainnet and is now available on Base, Arbitrum, BNB Chain, Monad, Arc,
-> HyperEVM, Ink, Robinhood Chain, and Unichain via the Atlas auction system. See the&#x20;
-> [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas) for integration
+> HyperEVM, Ink, Robinhood Chain, and Unichain via the Atlas auction system. See the [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas) for integration
 > details.
 
 [Chainlink Smart Value Recapture](https://blog.chain.link/chainlink-smart-value-recapture-svr/) (SVR) Feeds introduce a novel and secure way to recapture Oracle Extractable Value (OEV)—a subset of non-toxic Maximal Extractable Value (MEV) associated with oracle updates that is most commonly observed during the liquidation process of lending protocols. The value recaptured by SVR provides DeFi protocols with an additional revenue stream while also supporting the economic sustainability of Chainlink oracle. SVR Feeds are read in the same manner as standard Chainlink Data Feeds (see [Using Data Feeds](/data-feeds/using-data-feeds)), and simply require that users specify an SVR-enabled feed address.
@@ -6384,16 +6420,41 @@ The terms **Searcher** and **Solver** are used interchangeably throughout this g
 
 ## Operational Recommendations
 
-Recommended native token amounts for bonding:
+Recommended native token amounts for bonding, by network:
 
-- **Base and Arbitrum**: 0.1 ETH
-- **BNB Chain**: 1 BNB
+| Network         | Recommended bond |
+| --------------- | ---------------- |
+| Arbitrum        | 0.1 ETH          |
+| Base            | 0.1 ETH          |
+| BNB Chain       | 1 BNB            |
+| Arc             | \~200 USDC       |
+| Ink             | 0.1 ETH          |
+| Monad           | \~10,000 MON     |
+| Robinhood Chain | 0.1 ETH          |
+
+> **NOTE**
+>
+> These recommendations apply to Atlas networks. Ethereum Mainnet SVR auctions use Flashbots MEV-Share instead and do
+> not require Atlas bonding; see the [Ethereum Mainnet searcher
+> guide](/data-feeds/svr-feeds/searcher-onboarding-ethereum). For HyperEVM and Unichain, contact [[devrel@smartcontract.com](mailto:devrel@smartcontract.com)](mailto:devrel@smartcontract.com) for current bonding recommendations.
 
 ## Supported Protocols
 
-- AAVE
-- Compound
-- Venus
+SVR currently supports the following lending protocols, by network:
+
+| Network         | Lending protocols                            |
+| --------------- | -------------------------------------------- |
+| Ethereum        | Aave V3, Aave V4, Compound V3, Morpho, Venus |
+| Arbitrum        | Aave V3, Compound V3, Venus, Morpho          |
+| Base            | Aave V3, Compound V3, Morpho, Fluid, Venus   |
+| BNB Chain       | Venus                                        |
+| Arc             | Aave V4, Morpho                              |
+| Ink             | Tydro                                        |
+| Monad           | Aave V3, Morpho                              |
+| Robinhood Chain | Morpho                                       |
+
+On Ethereum Mainnet, these protocols are supported through Flashbots MEV-Share rather than Atlas. See the [Ethereum
+Mainnet searcher guide](/data-feeds/svr-feeds/searcher-onboarding-ethereum).
 
 ## Contract References
 
@@ -6421,28 +6482,20 @@ Instead of relying on block builders to bundle together the oracle update and th
 
 > **CAUTION: Important**
 >
-> The final bundled transaction is **not submitted by the searcher**. It is submitted by the Chainlink oracle
-> network.
->
-> Searchers must have **bonded native tokens** with the Atlas smart contracts in order to reimburse the Chainlink
-> oracle for the gas costs of both the **searcher operation** and the **oracle update**.
->
-> Gas prices for these transactions are chosen by the Chainlink oracle. The selected gas price is provided to the
-> searcher at the start of the auction.
->
-> Searchers must sign for a `gasPrice` that is **exactly equal** to the gas price specified by the
-> Chainlink oracle.
->
-> Searchers must not attempt to use a gas limit for their operation that is greater than the allowed&#x20;
-> `SolverGasLimit`. Query this value by calling `getSolverGasLimit` on the&#x20;
-> `DappControl`
-> contract. Sending `SolverOps` with a higher gas limit will not work.
->
-> Since auction and `auctionSolution` payloads can exceed default read/write buffer sizes in popular
-> WebSocket libraries, explicitly configure read and write buffers to greater than **10 KB**.
->
-> Solvers should expect that their long-lived connections to the SVR endpoint will be disconnected, and should
-> implement **auto-reconnect** functionality.
+> - The final bundled transaction is **not submitted by the searcher**. It is submitted by the Chainlink oracle
+>   network.
+> - Searchers must have **bonded native tokens** with the Atlas smart contracts in order to reimburse the Chainlink
+>   oracle for the gas costs of both the **searcher operation** and the **oracle update**.
+> - Gas prices for these transactions are chosen by the Chainlink oracle. The selected gas price is provided to the
+>   searcher at the start of the auction.
+> - Searchers must sign for a `gasPrice` that is **exactly equal** to the gas price specified by the
+>   Chainlink oracle.
+> - Searchers must not attempt to use a gas limit for their operation that is greater than the allowed `SolverGasLimit`. Query this value by calling `getSolverGasLimit` on the `DappControl`
+>   contract. Sending `SolverOps` with a higher gas limit will not work.
+> - Since auction and `auctionSolution` payloads can exceed default read/write buffer sizes in popular
+>   WebSocket libraries, explicitly configure read and write buffers to greater than **10 KB**.
+> - Solvers should expect that their long-lived connections to the SVR endpoint will be disconnected, and should
+>   implement **auto-reconnect** functionality.
 
 ### Endpoints
 
@@ -6747,10 +6800,9 @@ If you only bid on one auction, you have roughly a 50% chance of winning even if
 
 > **CAUTION: Required: Bid on Both Parallel Auctions**
 >
-> Always submit bids to **both** auctions when two are created for the same liquidation opportunity.
->
-> Avoid logic that limits bidding to a single auction per price update.
-> Latency and timing differences between parallel auctions are expected and unavoidable.
+> - Always submit bids to **both** auctions when two are created for the same liquidation opportunity.
+> - Avoid logic that limits bidding to a single auction per price update.
+> - Latency and timing differences between parallel auctions are expected and unavoidable.
 
 Duplicate auctions were introduced to improve landing guarantees by increasing the probability that at least one auction succeeds onchain.
 
@@ -7178,7 +7230,8 @@ This guide explains how to identify and bid on **Chainlink SVR** liquidation opp
 through **Flashbots MEV-Share**. SVR Feeds support a private transmission channel for oracle price updates, enabling
 searchers to backrun new prices with liquidation transactions and compete for profit.
 
-For all other supported networks, see the [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas).
+On Ethereum Mainnet, SVR currently supports liquidations for Aave V3, Aave V4, Compound V3, Morpho, and Venus. For all
+other supported networks, see the [Atlas searcher onboarding guide](/data-feeds/svr-feeds/searcher-onboarding-atlas).
 
 ### Why Chainlink SVR?
 
@@ -7640,8 +7693,140 @@ Bidding for bundle events is very similar to single transaction events. As a sea
 
 ---
 
+# 24/7 Smoothed Tokenized Equity Feeds
+Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/24-7
+
+> **NOTE: Contact us before integrating**
+>
+> 24/7 Smoothed Tokenized Equity Feeds are built for lending protocols and have different behavior and risks from both
+> standard price feeds and 24/5 [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds). All developers must
+> contact [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) before integrating
+> these feeds.
+
+24/7 Smoothed Tokenized Equity Feeds keep publishing the value of a tokenized stock or ETF when the US equity market is closed. During the trading week they behave like the existing [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds). On weekends and US market holidays, instead of holding the last Friday price, they continue to update from an off-hours price derived from perpetual futures markets.
+
+## Why 24/7?
+
+Lending protocols that accept tokenized equities as collateral run around the clock. Interest accrues on weekends and borrowers can still act, while the US equity market is closed from Friday 8:00 PM ET to Sunday 8:00 PM ET. News over that period still changes what the collateral is worth, and with a 24/5 feed that change is reflected onchain at the Sunday open, all at once. Protocols cover this gap today with conservative collateral parameters sized for the longest possible market closure.
+
+A 24/7 feed lets the onchain price move gradually over the weekend, so risk builds up in view instead of all at once at the reopen.
+
+## How 24/7 feeds work
+
+Each feed publishes the **Oracle Price**, a slow price built for collateral valuation, multiplied by the asset issuer's multiplier. As with 24/5 tokenized equity feeds, the answer is the value of the token, not the raw equity price. Multiplier sourcing and issuer-specific methodology are unchanged. See the [Asset Issuer Catalog](/data-feeds/tokenized-equity-feeds/providers) for details.
+
+The Oracle Price comes from the same source as the `lastTradedPrice` field on the underlying [24/7 US Equities v11 streams](/data-streams/rwa-streams/24-7-us-equities). That page covers the methodology in detail. In short:
+
+| Period                                                | Source of the Oracle Price                                                               |
+| :---------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| Regular hours and pre/post-market (Mon–Fri)           | The active equity session price, unsmoothed                                              |
+| Overnight (8:00 PM–4:00 AM ET, Sun–Fri)               | An exponential moving average (EMA) of the overnight equity price                        |
+| Off-hours (8:00 PM Fri–8:00 PM Sun ET, plus holidays) | A smoothed price that follows a composite of perpetual futures venues                    |
+| Session transitions                                   | A short smoothed blend from one source to the next, except pre-market into regular hours |
+
+During off-hours, the Oracle Price is referenced to the Friday equity close and follows the perpetual futures price gradually. Short-lived dislocations in thin weekend markets have little effect on it, while sustained moves are followed in full over time.
+
+The off-hours price is built from perpetual futures, not from spot trading in the underlying shares or from secondary market prices of the tokens themselves.
+
+### Updates
+
+Like other Data Feeds, these feeds update onchain when the price moves beyond the feed's deviation threshold or when the heartbeat elapses, including on weekends. Deviation is measured on the smoothed Oracle Price, not the live market. Long stretches without an update while the underlying market is moving are expected for a smoothed feed and are not a fault.
+
+The feed does not expose a market status or session flag onchain, and the `updatedAt` value returned by `latestRoundData` is the time of the last onchain update, not the time the underlying inputs were last observed.
+
+### Consuming the feed
+
+Read the feed like any other Data Feed, using `AggregatorV3Interface.latestRoundData()` and `decimals()`. Compare `updatedAt` against the feed's heartbeat to detect a missed update. See [API Reference](/data-feeds/api-reference) and [Using Data Feeds](/data-feeds/using-data-feeds) for the interfaces and examples. Feed addresses are listed in the table below and in [Price Feed Addresses](/data-feeds/price-feeds/addresses).
+
+### Available assets
+
+24/7 coverage depends on liquid perpetual futures markets during off-hours, so not every tokenized equity has a 24/7 feed. Each asset is reviewed individually before launch, including its off-hours trading volume and how much it would cost to move its off-hours price, and the asset issuer must support it. This review lowers risk but does not remove it: covered assets can still be manipulated or dislocated during off-hours, and the [risks](#risks) below apply to every one of them. Other tokenized equities remain on 24/5 feeds. Coverage will expand as off-hours perpetual futures markets deepen.
+
+The table below shows the available 24/7 Smoothed Tokenized Equity Feeds.
+
+## Key differences from 24/5 tokenized equity feeds
+
+|                        | 24/5 Tokenized Equity Feeds         | 24/7 Smoothed Tokenized Equity Feeds                 |
+| :--------------------- | :---------------------------------- | :--------------------------------------------------- |
+| Weekends and holidays  | Holds the last value until the open | Continues to update from the off-hours price         |
+| Off-hours price source | None                                | Perpetual futures composite, smoothed                |
+| Sunday reopen          | Updates to the opening price        | Remaining gap is closed over a short window          |
+| Smoothing              | Session transitions and overnight   | Session transitions, overnight, and all of off-hours |
+| Asset coverage         | Broad                               | Assets reviewed for off-hours liquidity              |
+
+All risks on the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds#risks) page still apply during the trading week. The risks below are specific to 24/7 feeds or change in a meaningful way.
+
+## Risks
+
+### Slow price, delayed liquidations
+
+The Oracle Price is designed to move gradually. It cannot tell a genuine move from a short-lived one when the move first happens, so it follows large moves over a period of time rather than immediately, and a large weekend move can take hours to be fully reflected. This reduces the chance of borrowers being liquidated on a brief dislocation, but it also means liquidations after a sustained move can happen later than they would against a live market price, and arbitrage opportunities can appear in the meantime. The one exception is pre-market into regular hours, where the Oracle Price steps at 9:30 AM ET instead of blending. See [Pre-market to regular hours is a step change](/data-streams/rwa-streams/24-7-us-equities#pre-market-to-regular-hours-is-a-step-change) on the streams page.
+
+#### Mitigation
+
+- Set loan-to-value ratios, liquidation thresholds, close factors, liquidation bonuses, and supply caps for a lagging price. Do not size them as if the feed were real time
+- Test your parameters against historical weekend moves and earnings gaps
+- Consider tighter limits on new borrowing during off-hours
+
+### Off-hours prices come from derivatives
+
+Perpetual futures can trade at a basis to the underlying shares, driven by funding rates and venue contract design, and venues occasionally change their contract specifications. Weekend volumes are a fraction of weekday spot volumes. Off-hours prices can be manipulated. It costs less to move them than during the trading week, and less still if some venues drop out. Smoothing in the Oracle Price reduces the effect of a short-lived move but does not prevent a sustained one.
+
+#### Mitigation
+
+- Set supply caps per asset with the off-hours market in mind, not only weekday liquidity
+- Monitor the feed against independent references during off-hours
+
+### Feed stops updating
+
+Two situations can stop the feed from updating during off-hours:
+
+- **Input outage:** Perpetual futures data is currently delivered through a single data provider. If it stops, no new off-hours price can be computed. When inputs return after an interruption, the Oracle Price needs a recovery period before it updates again.
+- **Missing close:** If the Friday equity close cannot be determined, no Oracle Price is produced for that off-hours period. In the worst case, the feed does not update for an entire weekend.
+
+In both cases, the last onchain answer stands. Because the feed updates on deviation, a quiet feed during a healthy weekend and a feed that has stopped look similar onchain until the heartbeat is missed.
+
+#### Mitigation
+
+- Check `updatedAt` against the feed's heartbeat and treat a missed heartbeat as stale
+- Define protocol behavior for a full weekend without updates, such as pausing new borrowing and capping liquidations
+- Integrators who need finer staleness signals can subscribe to the matching [24/7 US Equities stream](/data-streams/rwa-streams/24-7-us-equities) and read `marketStatus` and `lastSeenTimestampNs`
+
+### Sunday reopen
+
+The reopen price is not known until the equity market opens. At the reopen, the feed closes any remaining weekend gap over a short window. This is much smaller than the single jump a 24/5 feed makes, but positions that degraded over the weekend can still become liquidatable around the reopen.
+
+#### Mitigation
+
+- Watch positions near their liquidation threshold ahead of the Sunday 8:00 PM ET open
+
+### Corporate actions and holidays
+
+The existing [pause workflow for corporate actions](/data-feeds/tokenized-equity-feeds#pause-confirmation-for-corporate-actions) is unchanged. Pauses and unpauses happen while the equity market is open, and the unpause check uses the regular-hours equity price, never the off-hours price. A corporate action that lands over a weekend without a pause, such as a split or a large special dividend, can move the true value sharply, and the Oracle Price will follow it slowly because it is referenced to the pre-event close.
+
+US market holidays are priced as off-hours. The feed does not flag them.
+
+#### Mitigation
+
+- Monitor corporate action announcements for every asset you list
+- Use an authoritative exchange holiday calendar
+
+For integration responsibilities, see [Developer Responsibilities](/data-feeds/developer-responsibilities).
+
+---
+
 # Base Tokenized Equities (Coinbase B20)
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/coinbase
+
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
 
 Chainlink provides tokenized equity feeds for Coinbase tokenized stocks on Base. Each tokenized stock is a B20 token, Base's native token standard for real-world assets, an extension of ERC-20, identified by its contract address rather than its ticker. The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read from Coinbase's on-chain oracle registry.
 
@@ -7765,6 +7950,16 @@ See [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds) for the shared 
 # Tokenized Equity Feeds
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds
 
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
+
 ## What are tokenized equities?
 
 Tokenized equities are blockchain tokens that represent ownership or economic exposure to traditional stocks and ETFs. These tokens are distinct financial instruments issued by token issuers, not the underlying equities themselves. Tokenized equity feeds deliver the **primary market price representing the intrinsic value of the equity token** – this is the calculated theoretical token value and may account for long-term total return adjustments such as dividends or corporate actions.
@@ -7777,6 +7972,8 @@ Tokenized equity feeds behave differently from standard crypto price feeds due t
 
 See the [Provider Catalog](/data-feeds/tokenized-equity-feeds/providers) to view available feeds and issuer-specific implementations.
 
+For a select set of assets, [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7) also keep publishing on weekends and US market holidays using an off-hours price derived from perpetual futures markets. The rest of this page describes 24/5 feeds.
+
 ![Image](/images/data-feed/tokenized-equity/tokenized-equity-diagram.png)
 
 ## Why use tokenized equity feeds?
@@ -7787,7 +7984,7 @@ Chainlink Tokenized Equity Feeds help bridge this gap between TradFi and DeFi ma
 
 - **Providing continuous 24/5 pricing**: A single feed that spans regular, pre-market, post-market, and overnight sessions
 - **Simplifying integration**: Consume one feed across trading sessions instead of managing multiple session-specific data sources
-- **Applying session-aware smoothing**: Intelligent pricing algorithms that aim to reduce certain price anomalies during session transitions
+- **Applying session-aware smoothing**: Intelligent pricing algorithms that aim to reduce certain price anomalies during session transitions and lower-liquidity sessions
 - **Maintaining benchmark accuracy**: Optimized algorithms that are designed to track consolidated tape benchmarks with high fidelity
 - **Performing tokenized price calculations**: Returning real-time calculated primary market valuations of tokenized equities based on the issuer's multiplier values.
 
@@ -7813,13 +8010,15 @@ US equity markets exhibit distinct liquidity regimes throughout the 24-hour cycl
 
 ### Session-aware smoothing
 
-To enable reliable, 24/5 continuous pricing, tokenized equity feeds apply intelligent smoothing during session transitions to target pricing integrity under different liquidity conditions. The smoothing methodology:
+To enable reliable, 24/5 continuous pricing, tokenized equity feeds apply intelligent smoothing during session transitions and throughout the overnight session to target pricing integrity under different liquidity conditions. The smoothing methodology:
 
 1. **Tracks benchmark prices accurately** during liquid regular sessions
-2. **Filters microstructure noise** during illiquid session transitions
+2. **Filters microstructure noise** during illiquid session transitions and overnight sessions
 3. **Reduces the risk of phantom liquidations** from transient price spikes in thin markets
 4. **Converges quickly** after legitimate large price movements
 5. **Minimizes tracking lag** to reduce mispricing during active trading
+
+During the overnight session, where liquidity is thinnest, the published price is an exponential moving average (EMA) of the underlying session price rather than the latest observation.
 
 Please note that while intelligent smoothing is designed to mitigate these issues, tokenized equities' structural connections with underlying traditional equity markets, liquidity, and pricing considerations require protocols to ensure performance of Chainlink Tokenized Equity Feeds matches expectations and is appropriate for the intended use case.
 
@@ -7828,10 +8027,10 @@ Please note that while intelligent smoothing is designed to mitigate these issue
 Tokenized equity feeds combine multiple input sources:
 
 - **Regular hours data**: Multi-sourced from consolidated tape data with deep liquidity
-- **Extended hours data**: Pre-market and post-market venue data
+- **Extended hours data**: Multi-sourced from pre-market and post-market venue data
 - **Overnight data**: Data from overnight trading venues
 
-*Extended and overnight session data may be sourced from fewer providers than regular hours data, reflecting the reduced number of venues operating during these periods. See the [Limited Provider Coverage](#limited-provider-coverage-during-extended-and-overnight-sessions) risk section for details.*
+*Overnight session data may be sourced from fewer providers than regular and extended hours data, reflecting the reduced number of venues operating during this period. See the [Limited Provider Coverage](#limited-provider-coverage-during-overnight-sessions) risk section for details.*
 
 ## Key differences from standard feeds
 
@@ -7839,15 +8038,15 @@ While tokenized equity feeds use the same Chainlink infrastructure as standard c
 
 ### Continuous vs. point-in-time pricing
 
-Standard crypto price feeds reflect a single aggregated market price at a point in time from 24/7 markets. Tokenized equity feeds combine data from multiple trading sessions that have different operating hours, update frequencies, liquidity profiles, and data sources. The feed value represents a calculated return using the best mid-price for continuous 24/5 coverage of underlying equity markets.
+Standard crypto price feeds reflect a single aggregated market price at a point in time from 24/7 markets. Tokenized equity feeds combine data from multiple trading sessions that have different operating hours, update frequencies, liquidity profiles, and data sources. The feed value represents a calculated return using the best mid-price for continuous 24/5 coverage of underlying equity markets, smoothed during the overnight session.
 
-### Smoothing during transitions
+### Smoothing
 
-Standard feeds report raw aggregated prices. Tokenized equity feeds apply smoothing algorithms during session transitions in an effort to filter out microstructure noise and mitigate artificial volatility. This means:
+Standard feeds report raw aggregated prices. Tokenized equity feeds apply smoothing algorithms during session transitions and across the overnight session in an effort to filter out microstructure noise and mitigate artificial volatility. This means:
 
 - Brief price spikes in illiquid sessions are dampened
 - Convergence to new price levels after gaps is gradual rather than instantaneous
-- The reported price may temporarily lag during rapid price movements
+- The reported price may temporarily lag during rapid price movements, and that lag is largest overnight
 
 For more information about this risk, see [Smoothing-induced Tracking Lag](#smoothing-induced-tracking-lag) below.
 
@@ -7858,7 +8057,7 @@ The reliability and accuracy of tokenized equity feeds varies by trading session
 | Session   | Data Quality | Provider Coverage      | Update Frequency |
 | :-------- | :----------- | :--------------------- | :--------------- |
 | Regular   | Highest      | Multiple providers     | Highest          |
-| Extended  | Moderate     | Limited providers      | Moderate         |
+| Extended  | Moderate     | Multiple providers     | Moderate         |
 | Overnight | Lower        | Very limited           | Lower            |
 | Weekend   | N/A          | No traditional trading | Stale            |
 
@@ -7872,13 +8071,13 @@ Tokenized equity feeds for assets from different issuers may differ in terms of 
 
 Tokenized equity feeds introduce specific risks related to the nature of traditional equity markets, multi-session data aggregation, smoothing algorithms, and data sourcing. Users must understand these factors and implement appropriate safeguards.
 
-### Limited provider coverage during extended and overnight sessions
+### Limited provider coverage during overnight sessions
 
-Extended and overnight session price data is sourced from a more limited number of data providers compared to regular hours, making these sessions less reliable than regular hours feeds, which are aggregated from a broader set of providers.
+Overnight session price data is sourced from a more limited number of data providers compared to regular and extended hours, making this session less reliable than regular and extended hours feeds, which are aggregated from a broader set of providers.
 
 If providers experience downtime, technical failures, or connectivity disruption, the feed may flatline or report stale values. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
 
-**Overnight and extended sessions** carry additional nuance: liquidity is thinner and fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
+**Overnight and extended sessions** carry additional nuance: liquidity is thinner than during regular hours, and overnight fewer venues contribute data. In those conditions the feed may continue to update while surfacing **atypical numeric values**—including, in edge cases, **a reported price of zero** or other answers that are not economically meaningful as a reference price for the token. That behavior is distinct from staleness (fresh timestamps can accompany unsafe numbers). **Treat unexpected zeros, abrupt discontinuities, or values outside plausible bands as invalid for automated risk decisions** unless you independently confirm them against issuer methodology, recent observations, or supplementary market data.
 
 #### Mitigation
 
@@ -7922,20 +8121,20 @@ These are expected market microstructure effects, not data quality issues. Typic
 - Implement transition-aware logic that expects and handles price gaps
 - Consider pausing or restricting operations during transition windows
 - Apply additional smoothing or price change limits during transitions
-- Use time-weighted averages (TWAP) or exponential moving averages (EMA) for risk-sensitive calculations
+- Use time-weighted averages (TWAP) or exponential moving averages (EMA) for risk-sensitive calculations. Note that the feed already smooths the overnight session, and layering additional smoothing increases tracking lag.
 
 ### Smoothing-induced tracking lag
 
 The session-aware smoothing that mitigates phantom liquidations also introduces tracking lag: a delay between market price movements and the reported feed price. During rapid legitimate price moves:
 
 - The smoothed price will temporarily trail the true market price
-- Convergence typically occurs within seconds to tens of seconds
+- Convergence typically occurs within seconds to tens of seconds during regular and extended sessions, and over a longer window during the overnight session
 - In extreme cases, this may result in delayed liquidations or arbitrage opportunities
 
 #### Mitigation
 
 - Understand the trade-off: smoothing protects against false liquidations but delays real ones
-- Configure your protocol's risk parameters to account for potential tracking lag
+- Configure your protocol's risk parameters to account for potential tracking lag, including the larger overnight tracking lag
 - Consider the tracking lag characteristics when setting liquidation thresholds
 - Monitor for persistent deviation between tokenized equity feeds and other market data sources
 
@@ -7949,6 +8148,8 @@ Traditional equity markets are closed on weekends and holidays. During these per
 - The staleness indicator will show increasingly old timestamps
 
 This reflects true underlying market inactivity rather than an outage or failure.
+
+[24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7) are available for a select set of assets and continue to update through weekends and holidays. They carry their own risks, described on that page.
 
 #### Mitigation
 
@@ -8056,6 +8257,16 @@ These values are sourced from the asset issuer. Learn more in the [Provider Cata
 
 # Ondo Finance Global Markets (GM)
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/ondo
+
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
 
 Chainlink provides tokenized equity feeds for Ondo Finance Global Markets (GM) tokenized equities. These feeds differ from standard market-rate feeds in that they report **Total Return Values** rather than raw equity prices.
 
@@ -8180,6 +8391,16 @@ For Oracle Extractable Value (OEV) and how SVR relates to standard feeds, use [S
 # Asset Issuer Catalog
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/providers
 
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
+
 Tokenized equity feeds have issuer-specific implementations that affect pricing methodology, data handling, and operational behavior. This page catalogs the available issuers and their key characteristics.
 
 ## Available providers
@@ -8198,6 +8419,16 @@ Each provider may implement tokenized equity feeds differently based on their to
 
 # Robinhood Tokenized Equities
 Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/robinhood
+
+> **NOTE**
+>
+> Tokenized equity feeds present unique operational considerations, requiring careful integration on behalf of your
+> protocol. Developers remain responsible for ensuring that protocol risk parameters are configured appropriately and
+> that the operation and performance of Chainlink Tokenized Equity Feeds matches expectations. Please review the
+> [Selecting Quality Data Feeds](/data-feeds/selecting-data-feeds) webpage and [Chainlink Terms of
+> Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
+> [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
+> integrating Tokenized Equity feeds in your solution.
 
 Chainlink provides tokenized equity feeds for Robinhood tokenized stocks. Each Robinhood tokenized stock is represented by its own ERC-20 token contract, deployed on Robinhood Chain (one contract per ticker). The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read directly from the Robinhood token contract, rather than the raw equity price.
 

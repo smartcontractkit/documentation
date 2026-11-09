@@ -1,0 +1,146 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockVerifierProxy v0.3.1 API Reference"
+metadata:
+  description: "API documentation for MockVerifierProxy in Solidity, version v0.3.1."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage031" />
+
+## MockVerifierProxy
+
+A mock implementation of the Data Streams verifier proxy for local testing.
+
+[`MockVerifierProxy`](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.1/src/data-streams/MockVerifierProxy.sol)
+
+<Aside>
+  This contract forwards reports to the [`MockVerifier`](/chainlink-local/api-reference/v0.3.1/mock-verifier) and
+  optionally bills the caller through a fee manager. It validates that the billing mechanism (on-chain or off-chain)
+  matches what the consumer contract is using, with error messages that point to the fix.
+</Aside>
+
+## Errors
+
+### ZeroAddress
+
+```solidity
+error ZeroAddress()
+```
+
+### VerifierInvalid
+
+```solidity
+error VerifierInvalid()
+```
+
+<Aside>Reverts when the verifier does not support the `IVerifier.verify` interface.</Aside>
+
+### VerifierNotFound
+
+```solidity
+error VerifierNotFound()
+```
+
+### FeeManagerRequired
+
+```solidity
+error FeeManagerRequired(string message)
+```
+
+<Aside>
+  On-chain billing is active but the consumer is using the off-chain mechanism: either call
+  `simulator.enableOffChainBilling()` or provide the fee token address in `parameterPayload`.
+</Aside>
+
+### FeeManagerNotExpected
+
+```solidity
+error FeeManagerNotExpected(string message)
+```
+
+<Aside>
+  Off-chain billing is active but the consumer is providing `parameterPayload` for on-chain billing: either call
+  `simulator.enableOnChainBilling()` or pass empty bytes as `parameterPayload`.
+</Aside>
+
+## Events
+
+### VerifierInitialized
+
+```solidity
+event VerifierInitialized(address indexed verifierAddress)
+```
+
+## Functions
+
+### verify
+
+Verifies a report payload, billing the caller first when a fee manager is set.
+
+```solidity
+function verify(bytes calldata payload, bytes calldata parameterPayload) external payable returns (bytes memory)
+```
+
+<Aside>
+  When a fee manager is set (on-chain billing), `parameterPayload` must carry the fee token address and `msg.value` the
+  fee. With off-chain billing, pass empty bytes and no value.
+</Aside>
+
+#### Parameters
+
+| Parameter        | Type    | Description                                                                              |
+| ---------------- | ------- | ---------------------------------------------------------------------------------------- |
+| payload          | `bytes` | The signed report payload                                                                |
+| parameterPayload | `bytes` | The fee payment parameters (fee token address for on-chain billing, empty for off-chain) |
+
+### verifyBulk
+
+Verifies multiple report payloads in one call.
+
+```solidity
+function verifyBulk(bytes[] calldata payloads, bytes calldata parameterPayload) external payable returns (bytes[] memory verifiedReports)
+```
+
+### initializeVerifier
+
+Initializes the verifier address.
+
+```solidity
+function initializeVerifier(address verifierAddress) external onlyOwner
+```
+
+<Aside>The verifier must support the `IVerifier.verify` interface.</Aside>
+
+#### Parameters
+
+| Parameter       | Type      | Description                          |
+| --------------- | --------- | ------------------------------------ |
+| verifierAddress | `address` | The address of the verifier contract |
+
+### getVerifier
+
+Returns the verifier address.
+
+```solidity
+function getVerifier(bytes32) external view returns (address)
+```
+
+### setFeeManager
+
+Sets the fee manager.
+
+```solidity
+function setFeeManager(IVerifierFeeManager feeManager) external
+```
+
+<Aside>Pass `MockFeeManager(address(0))` to switch to off-chain billing.</Aside>
+
+#### Parameters
+
+| Parameter  | Type                  | Description                     |
+| ---------- | --------------------- | ------------------------------- |
+| feeManager | `IVerifierFeeManager` | The fee manager contract to set |

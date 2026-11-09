@@ -1,5 +1,6 @@
 ---
 import { SvgTaillessArrowDownSmall, Typography } from "@chainlink/blocks"
+import DOMPurify from "isomorphic-dompurify"
 import styles from "./ChangelogCard.module.css"
 import type { ChangelogItem } from "./types"
 import { clsx } from "~/lib/clsx/clsx"
@@ -34,6 +35,17 @@ const formatDate = (dateString: string) => {
 }
 
 const formattedDate = formatDate(item["date-of-release"])
+
+const sanitizeOptions = {
+  USE_PROFILES: { html: true },
+  ADD_TAGS: ["img"],
+  ADD_ATTR: ["target", "rel", "data-token", "data-network", "class", "style", "fs-cmsfilter-field"],
+  ALLOW_DATA_ATTR: true,
+}
+
+const safeDescription = item["text-description"] ? DOMPurify.sanitize(item["text-description"], sanitizeOptions) : ""
+
+const safeNetworks = item.networks ? DOMPurify.sanitize(item.networks, sanitizeOptions) : ""
 ---
 
 <div
@@ -56,9 +68,9 @@ const formattedDate = formatDate(item["date-of-release"])
 
     <div class={styles.content} data-expandable="content">
       {
-        showNetworksAndTopic && (item.networks || item.topic) && (
+        showNetworksAndTopic && (safeNetworks || item.topic) && (
           <div class={styles.networksAndTopicSection}>
-            {item.networks && <div set:html={item.networks} />}
+            {safeNetworks && <div set:html={safeNetworks} />}
             {item.topic && <span class="prod-chip">{item.topic}</span>}
           </div>
         )
@@ -74,7 +86,7 @@ const formattedDate = formatDate(item["date-of-release"])
       </Typography>
 
       <div class={styles.descriptionContent}>
-        {item["text-description"] && <div class={styles.description} set:html={item["text-description"]} />}
+        {safeDescription && <div class={styles.description} set:html={safeDescription} />}
       </div>
     </div>
 
@@ -229,7 +241,7 @@ const formattedDate = formatDate(item["date-of-release"])
     })
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("astro:page-load", () => {
     swapDataAttributeImages()
     initExpandableCards()
   })
@@ -288,7 +300,7 @@ const formattedDate = formatDate(item["date-of-release"])
 
   /* Overlay Icon */
   .log-item__data-entry-img-top {
-    background-color: #fff;
+    background-color: var(--white);
     border: 1px solid #fff;
     border-radius: 4px;
     width: 12px;

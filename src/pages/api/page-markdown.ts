@@ -1,6 +1,7 @@
 /**
  * API endpoint to generate markdown for a single page
  * GET /api/page-markdown?path=/ccip/getting-started
+ * Optional `parent` preserves the product context of shared platform pages.
  */
 
 import type { APIRoute } from "astro"
@@ -23,6 +24,7 @@ export const GET: APIRoute = async ({ request }) => {
     const url = new URL(request.url)
     const requestedPath = url.searchParams.get("path")
     const targetLanguage = url.searchParams.get("lang") || undefined
+    const productContext = url.searchParams.get("parent") || undefined
 
     if (!requestedPath) {
       return new Response(JSON.stringify({ error: "Missing 'path' parameter" }), {
@@ -31,8 +33,8 @@ export const GET: APIRoute = async ({ request }) => {
       })
     }
 
-    // Check in-memory cache first (cache key includes language for multi-lang pages)
-    const cacheKey = targetLanguage ? `${requestedPath}:${targetLanguage}` : requestedPath
+    // Check in-memory cache first (cache key includes language and product context)
+    const cacheKey = `${requestedPath}:${targetLanguage ?? ""}:${productContext ?? ""}`
     const cached = markdownCache.get(cacheKey)
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
       const processingTime = Date.now() - startTime
@@ -62,7 +64,7 @@ export const GET: APIRoute = async ({ request }) => {
       lookupPath = `ccip/${toContentEntryId(cleanPath.replace(/^ccip\/?/, ""))}`
     }
 
-    const artifact = await buildMarkdownArtifact(lookupPath, { lang: targetLanguage })
+    const artifact = await buildMarkdownArtifact(lookupPath, { lang: targetLanguage, productContext })
     if (!artifact) {
       return new Response(JSON.stringify({ error: `Page not found: ${requestedPath}` }), {
         status: 404,

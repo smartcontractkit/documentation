@@ -1,11 +1,13 @@
 ---
 import "../styles/theme.css"
 import "../styles/index.css"
+import "../styles/product-context.css"
 import "../styles/code-blocks.css"
 import "../styles/migrated.css"
 import "../styles/prism-darcula.css"
 import "@chainlink/design-system/global-styles.css"
 import "@chainlink/blocks/src/theme/globals.css"
+import "../styles/dark.css"
 import CcipVersionGuard from "./CcipVersionToggle/CcipVersionGuard.astro"
 import { getCcipChainVersionRedirects } from "~/utils/ccipVersionRouting.js"
 
@@ -23,6 +25,18 @@ const ccipChainVersionRedirects = getCcipChainVersionRedirects(Astro.url.pathnam
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<script is:inline>
+  // Shared docs pages carry their product in ?parent=. Set it before paint so
+  // CSS can select the right product sections instead of flashing all of them.
+  ;(() => {
+    const sync = () => {
+      document.documentElement.dataset.parent = new URLSearchParams(window.location.search).get("parent") || ""
+    }
+    sync()
+    document.addEventListener("astro:after-swap", sync)
+  })()
+</script>
 
 <!-- Before any stylesheet: redirects CCIP pages whose stored chain family has no docs in this version -->
 {ccipChainVersionRedirects && <CcipVersionGuard redirects={ccipChainVersionRedirects} />}
@@ -73,7 +87,7 @@ const ccipChainVersionRedirects = getCcipChainVersionRedirects(Astro.url.pathnam
 <link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
 
 <!-- Set CRE SDK Language in dataLayer -->
-<script is:inline type="text/javascript">
+<script is:inline data-astro-rerun type="text/javascript">
   ;(function () {
     var path = window.location.pathname
     if (!(path === "/cre" || path.startsWith("/cre/"))) return
@@ -93,7 +107,7 @@ const ccipChainVersionRedirects = getCcipChainVersionRedirects(Astro.url.pathnam
 </script>
 
 <!-- Set CCIP Chain Family in dataLayer -->
-<script is:inline type="text/javascript">
+<script is:inline data-astro-rerun type="text/javascript">
   ;(function () {
     if (!window.location.pathname.startsWith("/ccip")) return
 

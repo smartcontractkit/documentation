@@ -1,0 +1,31 @@
+---
+section: dataStreams
+date: Last Modified
+title: "TWAP Streams"
+metadata:
+  title: "TWAP Streams | Chainlink Data Streams"
+  description: "Learn how Chainlink Data Streams TWAP streams calculate a time-weighted average price over a rolling window."
+---
+
+Time Weighted Average Price (TWAP) streams report the average price over a rolling window, rather than a single observed price. A TWAP report is an **aggregated calculation** derived from the underlying reports. See the [TWAP report schema](/data-streams/reference/report-schema-v2#time-weighted-average-price-twap) for the full field definitions.
+
+## How the window works
+
+A TWAP window is anchored to the latest observation and moves forward with each new report. Unlike standard streams, it doesn't align to the clock or snap to round numbers.
+
+For example, a 60-second TWAP requested "at `12:05:01`" covers `12:04:01` → `12:05:01`.
+
+## Formula
+
+```
+TWAP = (sum of price × duration for each report in the window) / window length in seconds
+```
+
+- 30-second TWAP → divide by 30
+- 60-second TWAP → divide by 60
+
+## Gaps
+
+The TWAP is constructed from the underlying reports that fall within its window. Each underlying report normally covers about 1 second, but if a report's window is wider because it absorbed a gap, its price is weighted across the full window it covers.
+
+For how report windows and timestamps work, see [How Report Timestamps Work](/data-streams/how-report-timestamps-work).

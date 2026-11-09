@@ -1,0 +1,34 @@
+---
+/**
+ * Wraps a product-specific block on a shared Chainlink Platform page.
+ *
+ * When the page is opened through a product sidebar (`?parent=<section>`), only
+ * that product's blocks stay visible. With no `parent` (the standalone platform
+ * page), everything renders. Use `shared` for blocks that apply to every
+ * product, such as the org-level Chainlink Platform permissions.
+ */
+interface Props {
+  product: string
+  shared?: boolean
+}
+
+const { product, shared = false } = Astro.props
+---
+
+<div data-product-section={product} data-product-shared={shared ? "true" : undefined}>
+  <slot />
+</div>
+
+<script>
+  function syncProductSections() {
+    const parent = new URLSearchParams(window.location.search).get("parent")
+
+    for (const section of document.querySelectorAll<HTMLElement>("[data-product-section]")) {
+      const isShared = section.dataset.productShared === "true"
+      section.hidden = Boolean(parent) && !isShared && section.dataset.productSection !== parent
+    }
+  }
+
+  syncProductSections()
+  document.addEventListener("astro:after-swap", syncProductSections)
+</script>

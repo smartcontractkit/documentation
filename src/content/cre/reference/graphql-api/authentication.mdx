@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Authenticate requests to the CRE GraphQL API using an API key and the Authorization header."
   datePublished: "2026-08-31"
-  lastModified: "2026-08-31"
+  lastModified: "2026-10-26"
 ---
 
 import { Aside } from "@components"
@@ -14,24 +14,41 @@ Every request to the CRE GraphQL API must include an `Authorization` header carr
 
 <Aside type="note" title="Deploy access required">
   Creating an API key requires your account to have deploy access approval. Run `cre account access` with the CRE CLI to
-  check your status or submit a request. See [Requesting Deploy Access](/cre/account/deploy-access).
+  check your status or submit a request. See [Requesting Deploy Access](/cre/guides/operations/deploy-access).
 </Aside>
 
 ## Creating an API key
 
-CRE API keys are created from the CRE platform UI, not from the GraphQL API itself.
+API keys for CRE are created from [app.chain.link](https://app.chain.link), not from the GraphQL API itself.
 
-1. Log in to the <a href="https://app.chain.link/cre/discover" target="_blank" rel="noopener noreferrer">CRE platform</a>
-1. Navigate to the **Organization** page
-1. Select the **APIs** tab
-1. Click **+ Organization API**
-1. Give your key a name and confirm
+{/* prettier-ignore */}
+<Aside type="note" title="Roles needed to create a CRE API key">
+  Creating an API key requires a Platform role that includes API key permissions: Platform User, Platform Admin, or Owner. You can only give a key permissions that your own roles include, so to grant the CRE permissions below you also need the CRE Admin role. CRE Developers can grant every permission below except owner address linking. See [RBAC](/chainlink-platform/rbac?parent=cre#cre) for what each role includes, and [Inviting Team Members](/chainlink-platform/inviting-team-members?parent=cre) to invite members and assign roles.
+</Aside>
+
+1. [Create an account](/chainlink-platform/creating-an-account?parent=cre) or sign in to <a href="https://app.chain.link" target="_blank" rel="noopener noreferrer">app.chain.link</a>.
+1. Click on your account's icon in the top-right corner of the navbar and go to **Org settings** to open the **Organization** page, then navigate to the **API Keys** tab.
+1. Click **Create API Key** and enter a name for the key.
+1. In the **API Scope** section, expand the **CRE** section and grant the key the permissions that the CLI uses. For `platform:organization:read`, expand the **Chainlink Platform** section.
+
+   | Name                               | Permission                                 | Description                                                                                              |
+   | ---------------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+   | Workflow: Read                     | `cre:workflow:read`                        | View workflows.                                                                                          |
+   | Workflow: Write (Private registry) | `cre:workflow:write/private_registry`      | Deploy, pause, activate, and delete workflows in the private registry.                                   |
+   | Workflow artifact: Read            | `cre:workflow:artifact:read`               | Download workflow artifacts.                                                                             |
+   | Workflow artifact: Write           | `cre:workflow:artifact:write`              | Upload workflow artifacts, which is required to deploy a workflow.                                       |
+   | Owner address linking: Write (CRE) | `platform:owner_address:linking:write/cre` | Link and unlink workflow owner addresses, which is required to deploy workflows to the onchain registry. |
+   | Organization: Read                 | `platform:organization:read`               | View organization information.                                                                           |
+
+   See [API Keys](/chainlink-platform/api-keys?parent=cre#cre) for the full list of permissions available for CRE.
+
+1. Click **Create API Key**, then copy the key and click **Done**. The API key is displayed only once.
 
 This is the same key used for `CRE_API_KEY` with the CRE CLI. For the full walkthrough, see [API key authentication](/cre/reference/cli/authentication#api-key-authentication) in the CLI reference.
 
 <Aside type="caution" title="Keep your API key secure">
-  Treat your API key like a password. Do not commit it to version control or share it in plain text. Store it in your
-  application's or CI/CD platform's secret management.
+  Treat your API key like a password. Do not commit it to version control, share it in plain text, or feed it to an
+  agent via prompt. Store it in your application's or CI/CD platform's secret management.
 </Aside>
 
 ## Sending the API key
@@ -115,5 +132,5 @@ If the `Authorization` header is missing, malformed, or carries an invalid or ex
 ## Related
 
 - [Quickstart](/cre/reference/graphql-api/quickstart)
-- [Requesting Deploy Access](/cre/account/deploy-access)
+- [Requesting Deploy Access](/cre/guides/operations/deploy-access)
 - [CLI: API key authentication](/cre/reference/cli/authentication#api-key-authentication)

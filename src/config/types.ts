@@ -233,6 +233,8 @@ export type SupportedChain =
   | "ROOTSTOCK_MAINNET"
   | "GRAVITY_MAINNET"
   | "GRAVITY_TESTNET"
+  | "GRAVITY_MAINNET_2"
+  | "GRAVITY_TESTNET_LONGEVITY"
   | "ETHERLINK_TESTNET"
   | "ETHERLINK_MAINNET"
   | "OPBNB_MAINNET"
@@ -301,7 +303,8 @@ export type ChainInfo = {
   chainId: number | string
   title: string
   explorer: ExplorerInfo
-  nativeCurrency: {
+  /** Chains without a native token (e.g. Tempo) omit this. */
+  nativeCurrency?: {
     name: string
     symbol: string
     decimals: number

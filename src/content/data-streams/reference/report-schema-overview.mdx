@@ -71,7 +71,7 @@ Each stream category uses one or more report schemas to deliver data. Several ca
       </td>
     </tr>
     <tr>
-      <td rowspan="2">
+      <td rowspan="3">
         <a href="/data-streams/rwa-streams">RWA</a>
       </td>
       <td>
@@ -90,6 +90,16 @@ Each stream category uses one or more report schemas to deliver data. Several ca
       <td>
         <code>mid</code>, <code>bid</code>, <code>ask</code>, <code>bidVolume</code>, <code>askVolume</code>,{" "}
         <code>lastTradedPrice</code>, <code>marketStatus</code>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <a href="/data-streams/reference/report-schema-v14">Futures (v14)</a>
+      </td>
+      <td>Futures price data with Goldman Roll price fields</td>
+      <td>
+        <code>midPrice</code>, <code>bidPrice</code>, <code>askPrice</code>, <code>expiryTime</code>,{" "}
+        <code>contractMonth</code>, <code>goldmanRollPrice</code>, <code>marketStatus</code>
       </td>
     </tr>
     <tr>
@@ -148,16 +158,17 @@ For more details on the methodology and risk considerations, see [DEX State Pric
 
 ## Exchange Rate
 
-[Chainlink Exchange Rate streams](/data-streams/exchange-rate-streams) use the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7) report schema to provide tamper-proof access to the redemption rates of staked assets. Exchange rates typically read directly from onchain smart contracts and generally have a single calculating agent: the issuing protocol. This schema reports one main value: the exchange rate (`exchangeRate`).
+[Chainlink Exchange Rate streams](/data-streams/exchange-rate-streams) use the [Redemption Rates (v7)](/data-streams/reference/report-schema-v7) report schema to provide tamper-proof access to the redemption rates of staked assets. Exchange rates typically read directly from onchain smart contracts and generally have a single calculating agent: the issuing protocol. Review [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) before using these streams. This schema reports one main value: the exchange rate (`exchangeRate`).
 
 While the Data Streams architecture is designed to deliver updates at least once per second, the exchange rate itself is often updated only once per day by the data source, in line with standard market practices. Data Streams ensures that any Exchange Rate update, whenever it occurs, is captured and made available immediately and at low latency, allowing seamless integration into onchain applications alongside other real-time data streams.
 
 ## Real-World Assets (RWA)
 
-[Chainlink RWA streams](/data-streams/rwa-streams) deliver real-world asset pricing through two report schemas:
+[Chainlink RWA streams](/data-streams/rwa-streams) deliver real-world asset pricing through three report schemas:
 
 - **[RWA Standard (v8)](/data-streams/reference/report-schema-v8)** — standard RWA format with consolidated mid price, market status, and freshness indicators. Used by the majority of RWA streams.
 - **[RWA Advanced (v11)](/data-streams/reference/report-schema-v11)** — adds bid/ask prices, volume depth, last traded price where supported, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
+- **[Futures (v14)](/data-streams/reference/report-schema-v14)** — futures price data with contract expiration, market status, and Goldman Roll price fields. Used by [Futures streams](/data-streams/rwa-streams/futures).
 
 ### RWA Standard (v8)
 
@@ -173,11 +184,19 @@ The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schem
 
 These advanced fields enable protocols to implement more sophisticated risk management and settlement logic. Where applicable, streams using this schema can provide coverage across extended trading sessions including pre-market, post-market, and overnight hours — though extended hours availability varies by stream. See individual [RWA stream details](/data-streams/rwa-streams?schema=v11) for specific coverage and the [RWA Advanced (v11) reference](/data-streams/reference/report-schema-v11) for complete field specifications.
 
+### Futures (v14)
+
+The [Futures (v14)](/data-streams/reference/report-schema-v14) report schema provides price data for exchange-traded futures contracts. Each report includes consensus mid, bid, and ask prices (`midPrice`, `bidPrice`, `askPrice`), contract expiration (`expiryTime`), the first day of notice (`firstDayOfNotice`), the tracked contract month (`contractMonth`), market status (`marketStatus`), and a staleness measure (`lastSeenTimestampNs`).
+
+Because futures contracts expire, streams using this schema expose three **generic** feeds per instrument that always track the current front, second, and third contract. The schema also includes Goldman Roll price fields — `goldmanRollPrice`, `interpolatedGoldmanRollPrice`, and `currentBusinessDay` — for integrators who want a smoothed price instead of a hard cutover at contract expiration. See the [Futures](/data-streams/rwa-streams/futures) reference for rotation methodology and the [Futures (v14) reference](/data-streams/reference/report-schema-v14) for complete field specifications.
+
 ## SmartData
 
 [Chainlink SmartData streams](/data-streams/smartdata-streams) use the [SmartData (v9)](/data-streams/reference/report-schema-v9) report schema to provide real-time, tamper-proof access to data such as Net Asset Value (`navPerShare`) of tokenized assets, funds, or portfolios, as well as Proof of Reserve data. Each report includes NAV per share (`navPerShare`), NAV date (`navDate`), assets under management (`aum`), and ripcord status (`ripcord`). The ripcord is set to true (`1`) by the asset issuer when the consumer should ignore the value being sent (for cases such as maintenance, upstream data source outages, etc). The feed data will remain stale until the ripcord returns false (`0`).
 
 NAV is a fundamental financial metric that represents the value of an investment vehicle such as a mutual fund or ETF and is calculated as the total assets minus the total liabilities.
+
+NAV and Proof of Reserve values typically come from a single issuer, fund administrator, custodian, or attestor. Review [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) before using SmartData streams.
 
 Data Streams ensures that any SmartData update, whenever it occurs, is captured and made available immediately and at low latency, allowing for seamless integration with onchain applications alongside other real-time data streams. Although the values may not change frequently, Data Streams provides the most recent data as soon as it is published by the source.
 

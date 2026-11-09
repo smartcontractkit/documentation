@@ -9,282 +9,186 @@ import Common from "@features/chainlink-local/Common.astro"
 
 <Common callout="importPackage" />
 
-You can use Chainlink Local to run CCIP in forked environments within your Foundry project. To get started quickly, you will use the
-[CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry). This project includes the `Example01ForkTest` file
-located in the `./test/fork` directory, demonstrating how to set up and run token transfer tests between two accounts using CCIP in forked environments.
+You can use Chainlink Local to run CCIP 2.0 in forked environments within your Foundry project. To get started quickly, you will use the
+[CCIP Foundry Starter Kit](https://github.com/smartcontractkit/ccip-starter-kit-foundry). The kit's `test/fork` directory contains fork tests for the CCT examples (`Example06`-`Example10`), which run the real example scripts against pinned forks of _Ethereum Sepolia_ and _Polygon Amoy_ (a live CCIP 2.0 lane) and route each message to the destination OffRamp with `CCIPLocalSimulatorFork`.
 
-Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains. In this example, you will fork _Arbitrum Sepolia_
-and _Ethereum Sepolia_.
+`CCIPLocalSimulatorFork` routes messages on forked networks for every CCIP era: pre-1.6 (`EVM2EVMOnRamp`), 1.6 and CCIP 2.0 (CCV-based lanes, which live testnet lanes run today). On CCIP 2.0 lanes the destination OffRamp selects the CCVs and executes the message (`V2VerificationMode.OFFRAMP_DERIVED`, the default); CCV attestations are simulated with a synthetic no-op verifier.
 
 ## Prerequisites
 
 This guide assumes that you are familiar with the guide [Using the Chainlink Local Simulator in your Foundry project](/chainlink-local/build/ccip/foundry/local-simulator).
 If not, please get familiar with it and run all the prerequisites.
 
-Set up an `.env` file with the following data:
+Fork tests have two requirements beyond the no-fork setup:
 
-- `ARBITRUM_SEPOLIA_RPC_URL`: The Remote Procedure Call (RPC) URL for the Arbitrum Sepolia network. You can obtain one by creating an account on
-  [Alchemy](https://www.alchemy.com/) or [Infura](https://www.infura.io/) and setting up an Arbitrum Sepolia project.
+1. **Foundry >= 1.5.1.**
+1. **`evm_version = "cancun"` or later for the fork tests.** Deployed CCIP 2.0 contracts use Cancun opcodes; compiling with `paris` fails with `EvmError: NotActivated`. Use a fork-only profile so your deployed bytecode is not affected. The kit's `foundry.toml` does exactly this:
+
+   ```toml
+   [profile.fork]
+   optimizer = true
+   optimizer_runs = 200
+   no_match_path = 'test/none/**'
+   match_path = 'test/fork/**'
+   ```
+
+   `evm_version = 'cancun'` is set at the top level of the kit's `foundry.toml`.
+
+Set up an `.env` file (or export the variables) with the fork RPC URLs. The kit needs archive-capable endpoints for both chains:
+
 - `ETHEREUM_SEPOLIA_RPC_URL`: The RPC URL for the Ethereum Sepolia testnet. You can sign up for a personal endpoint from [Alchemy](https://www.alchemy.com/),
   [Infura](https://www.infura.io/), or another node provider service.
+- `POLYGON_AMOY_RPC_URL`: The RPC URL for the Polygon Amoy testnet, from the same providers.
 
-## Test tokens transfers
+## Test a CCT transfer across a CCIP 2.0 lane
 
-You will run a test to transfer tokens between two accounts in a forked environment. The test file `Example01ForkTest.t.sol` is located in the `./test/fork` directory.
-This file contains two test cases:
+You will run the fork test for Example 06 (CCT 01: `CrossChainToken` + BurnMint pool). The test file `Example06.fork.t.sol` is located in the `./test/fork` directory. It deploys a custom token and pool on both forks, registers them in the live TokenAdminRegistry, links the pools, and sends token transfers across the Sepolia → Amoy CCIP 2.0 lane. The file contains seven test cases, including:
 
-1. **Transfer with LINK fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in LINK. At the end of the test,
-   it verifies that the sender account was debited and the receiver account was credited.
-
-1. **Transfer with native gas fees**: This test case transfers tokens from the sender account to the receiver account, paying fees in native gas. At the end of the test,
-   it verifies that the sender account was debited and the receiver account was credited.
-
-In these tests, we simulate transfers from a source blockchain (which is a fork of _Arbitrum Sepolia_) to a destination blockchain (which is a fork of _Ethereum Sepolia_). Forked environments allow you to simulate real-world blockchain networks by forking the state of existing chains, providing a realistic testing scenario.
-
-For a detailed explanation of the test file, refer to the [Examine the code](#examine-the-code) section.
+1. **Deploy**: Creates the token and pool on both chains and registers them.
+1. **Configure lane**: Sets the remote token and pool on each pool.
+1. **Send with default finality**: Burns on the source and mints on the destination.
+1. **Send with Faster Than Finality**: Reverts until both pools opt in, then delivers after the pools opt in.
 
 In your terminal, run the following command to execute the test:
 
     ```shell
-    forge test --match-contract Example01ForkTest
+    FOUNDRY_PROFILE=fork forge test --match-contract Example06ForkTest -j 1
     ```
 
 Example output:
 
     ```text
-    $ forge test --match-contract Example01ForkTest
-    [⠊] Compiling...
-    No files changed, compilation skipped
+    $ FOUNDRY_PROFILE=fork forge test --match-contract Example06ForkTest -j 1
+    Ran 7 tests for test/fork/Example06.fork.t.sol:Example06ForkTest
+    [PASS] test_checkFinalityGates_findsRegisteredPool() (gas: 3066525)
+    [PASS] test_configureLane_rerunReplacesExistingConfig() (gas: 942262)
+    [PASS] test_configureLane_setsRemoteTokenAndPool() (gas: 747587)
+    [PASS] test_deploy_createsTokenAndPoolAndRegistersThem() (gas: 240027)
+    [PASS] test_send_defaultFinalityBurnsOnSourceAndMintsOnDestination() (gas: 2510920)
+    [PASS] test_send_fasterThanFinalityDeliversAfterPoolsOptIn() (gas: 3481610)
+    [PASS] test_send_fasterThanFinalityRevertsUntilPoolOptsIn() (gas: 1444822)
+    Suite result: ok. 7 passed; 0 failed; 0 skipped; finished in 2.42s (15.51ms CPU time)
 
-    Ran 2 tests for test/fork/Example01Fork.t.sol:Example01ForkTest
-    [PASS] test_transferTokensFromEoaToEoaPayFeesInLink() (gas: 475199)
-    [PASS] test_transferTokensFromEoaToEoaPayFeesInNative() (gas: 451096)
-    Suite result: ok. 2 passed; 0 failed; 0 skipped; finished in 11.71s (17.29s CPU time)
-
-    Ran 1 test suite in 11.90s (11.71s CPU time): 2 tests passed, 0 failed, 0 skipped (2 total tests)
+    Ran 1 test suite in 2.42s (2.42s CPU time): 7 tests passed, 0 failed, 0 skipped (7 total tests)
     ```
 
 ## Examine the code
 
 ### Setup
 
-To transfer tokens using CCIP in a forked environment, we need the following:
+The shared base contract `test/fork/utils/CCTForkTest.sol` sets up both forks and the simulator. To route messages across forks, the test needs:
 
-- Destination chain selector
-- Source CCIP router
-- LINK token for paying CCIP fees
-- A test token contract (such as CCIP-BnM) on both source and destination chains
-- A sender account (Alice)
-- A receiver account (Bob)
+- A fork of the source chain (Ethereum Sepolia) and the destination chain (Polygon Amoy)
+- The network details (router, registry, RMN proxy addresses) for both chains
+- The fork simulator, made persistent so it can route across forks
+- A sender account (the broadcaster) and a receiver account
 
-The `setUp()` function is invoked before each test case to reinitialize all the variables, ensuring a clean state for each test:
+The `setUp()` function is invoked before each test case:
 
-1. Initialize the source and destination forks:
+1. Create the forks. Both are pinned to a committed block (`DEFAULT_SEPOLIA_FORK_BLOCK`, `DEFAULT_AMOY_FORK_BLOCK`) so a fresh clone runs the same chain state. Override the pins per run with the `ETHEREUM_SEPOLIA_FORK_BLOCK` / `POLYGON_AMOY_FORK_BLOCK` environment variables:
 
    ```solidity
-   string memory DESTINATION_RPC_URL = vm.envString("ETHEREUM_SEPOLIA_RPC_URL");
-   string memory SOURCE_RPC_URL = vm.envString("ARBITRUM_SEPOLIA_RPC_URL");
-   destinationFork = vm.createSelectFork(DESTINATION_RPC_URL);
-   sourceFork = vm.createFork(SOURCE_RPC_URL);
+   sepoliaFork =
+       vm.createSelectFork("ethereumSepolia", vm.envOr("ETHEREUM_SEPOLIA_FORK_BLOCK", DEFAULT_SEPOLIA_FORK_BLOCK));
+   amoyFork = vm.createFork("polygonAmoy", vm.envOr("POLYGON_AMOY_FORK_BLOCK", DEFAULT_AMOY_FORK_BLOCK));
    ```
 
-1. Initialize the sender and receiver accounts:
+1. Initialize the [fork Chainlink Local simulator](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork#cciplocalsimulatorfork) and make it persistent. The simulator must be created on a fork and be persistent so it can route across forks:
 
    ```solidity
-   bob = makeAddr("bob");
-   alice = makeAddr("alice");
+   simulator = new CCIPLocalSimulatorFork();
+   vm.makePersistent(address(simulator));
    ```
 
-1. Initialize the [fork Chainlink Local simulator](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#cciplocalsimulatorfork).
-
-   **Note**: `vm.makePersistent` is used to make the `ccipLocalSimulatorFork` address persistent across forks:
+1. Read the network details for both chains with [`getNetworkDetails`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork#getnetworkdetails). [`Register.NetworkDetails`](/chainlink-local/api-reference/v0.3.1/register#networkdetails) stores the chain selector, router address, LINK address, wrapped native address, CCIP test tokens, RMN proxy, registry module and token admin registry addresses:
 
    ```solidity
-   ccipLocalSimulatorFork = new CCIPLocalSimulatorFork();
-   vm.makePersistent(address(ccipLocalSimulatorFork));
+   sepolia = simulator.getNetworkDetails(block.chainid);
+   vm.selectFork(amoyFork);
+   amoy = simulator.getNetworkDetails(block.chainid);
    ```
 
-1. Retrieve and set up the network details for the destination chain.
-
-   **Note**: [`Register.NetworkDetails`](/chainlink-local/api-reference/v0.2.3/register#networkdetails)
-   is a struct that stores network details (such as chain selector, router address, link address, wrapped native address, or CCIP test tokens), and
-   [`getNetworkDetails`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#getnetworkdetails) pulls network details based on chain IDs:
+1. Fund the broadcaster on both forks and verify the lane is the CCIP 2.0 lane the test expects. The test fails with a clear message if the pinned block or the lane is not what it describes:
 
    ```solidity
-   Register.NetworkDetails memory destinationNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
-   destinationCCIPBnMToken = BurnMintERC677Helper(destinationNetworkDetails.ccipBnMAddress);
-   destinationChainSelector = destinationNetworkDetails.chainSelector;
+   vm.selectFork(sepoliaFork);
+   vm.deal(broadcaster, 100 ether);
+   vm.selectFork(amoyFork);
+   vm.deal(broadcaster, 100 ether);
+   vm.selectFork(sepoliaFork);
+
+   address onRamp = IRouterOnRampView(sepolia.routerAddress).getOnRamp(amoy.chainSelector);
+   assertTrue(onRamp != address(0), "Sepolia router has no OnRamp for Amoy at the pinned block");
+   assertEq(ITypeAndVersionView(onRamp).typeAndVersion(), "OnRamp 2.0.0", "Sepolia -> Amoy is not a CCIP 2.0 lane");
    ```
 
-1. Switch to the source fork and retrieve the network details for the source chain:
+1. Contracts or scripts created in a fork test are per-fork: make them persistent before using them on another fork:
 
    ```solidity
-   vm.selectFork(sourceFork);
-   Register.NetworkDetails memory sourceNetworkDetails = ccipLocalSimulatorFork.getNetworkDetails(block.chainid);
-   sourceCCIPBnMToken = BurnMintERC677Helper(sourceNetworkDetails.ccipBnMAddress);
-   sourceLinkToken = IERC20(sourceNetworkDetails.linkAddress);
-   sourceRouter = IRouterClient(sourceNetworkDetails.routerAddress);
+   sendDefaultFinality = SendCCTTokenWithExtraArgsV3DefaultFinality(
+       _persistent(address(new SendCCTTokenWithExtraArgsV3DefaultFinality()))
+   );
    ```
 
-1. All the variables are stored in the contract state for use in the test cases.
+### Send and route the message
 
-### Prepare scenario (helper function)
+The `_sendDefaultFinalityAndRoute` helper shows the two-step flow used by every fork test:
 
-The `prepareScenario()` function is invoked at the beginning of each test case. It performs the following actions:
-
-1. Select the source fork and request CCIP-BnM tokens for Alice:
+1. On the source fork, run the send script. It builds an `ExtraArgsV3` message with `blockConfirmations = 0` (default finality) and calls `ccipSend` through the Sepolia router:
 
    ```solidity
-   vm.selectFork(sourceFork);
-   vm.startPrank(alice);
-   sourceCCIPBnMToken.drip(alice);
+   vm.selectFork(sepoliaFork);
+   sendDefaultFinality.run(
+       sepolia.routerAddress, amoy.chainSelector, receiver, token, amount, EOA_RECEIVER_GAS_LIMIT, address(0)
+   );
    ```
 
-1. Approve the source router to spend tokens on behalf of Alice:
+1. Call [`switchChainAndRouteMessage`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork#switchchainandroutemessage) to switch to the destination fork and route the message. The simulator reads the recorded logs, finds the `CCIPMessageSent` event, and executes the message on the Amoy OffRamp. The active fork is Amoy when the call returns:
 
    ```solidity
-   uint256 amountToSend = 100;
-   sourceCCIPBnMToken.approve(address(sourceRouter), amountToSend);
+   simulator.switchChainAndRouteMessage(amoyFork);
    ```
 
-1. Create an array [Client.EVMTokenAmount](/ccip/v1/evm/api-reference/v1.6.1/client#evmtokenamount)[] to specify the token transfer details. This array and the amount to send
-   are returned by the `prepareScenario()` function for use in the calling test case:
+Routing is strict by default: `switchChainAndRouteMessage` reverts with `CCIPLocalSimulatorFork__MessageNotRouted(messageId, reason)` when a captured message cannot be routed to any of the given forks, and with `CCIPLocalSimulatorFork__MessageExecutionFailed(messageId, reason)` (the decoded revert data) when it does not execute successfully. Call [`setStrictRouting(false)`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork#setstrictrouting) to record failures instead and read them with [`getMessageStatus`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork#getmessagestatus).
+
+The Example 07 fork test (`test_send_failsToExecuteWhenDestinationLockBoxIsEmpty`) shows the strict-routing failure path: it sends a Lock & Release transfer without funding the destination lock box, so the OffRamp cannot release the tokens, and expects the routing call to revert:
+
+```solidity
+vm.expectPartialRevert(CCIPLocalSimulatorFork.CCIPLocalSimulatorFork__MessageExecutionFailed.selector);
+simulator.switchChainAndRouteMessage(amoyFork);
+```
+
+### Faster Than Finality across the lane
+
+The `test_send_fasterThanFinalityDeliversAfterPoolsOptIn` test case shows the CCIP 2.0 finality gates on a real lane:
+
+1. New pools allow full finality only, so any block-depth request is rejected by the pool. The test first asserts the pool's default and expects the send to revert:
 
    ```solidity
-   tokensToSendDetails = new Client.EVMTokenAmount[](1);
-   Client.EVMTokenAmount memory tokenToSendDetails =
-       Client.EVMTokenAmount({token: address(ccipBnMToken), amount: amountToSend});
-   tokensToSendDetails[0] = tokenToSendDetails;
+   assertEq(TokenPool(sepoliaPool).getAllowedFinalityConfig(), FinalityCodec.WAIT_FOR_FINALITY_FLAG);
+   vm.expectPartialRevert(FinalityCodec.InvalidRequestedFinality.selector);
    ```
 
-1. Stop impersonating Alice (sender):
+1. Opt both pools in with `setAllowedFinalityConfig` (through the kit's `Example06SetPoolAllowedFinalityConfig` script), then find the smallest depth the live lane accepts by quoting `getFee` for candidate depths:
 
    ```solidity
-   vm.stopPrank();
+   vm.selectFork(sepoliaFork);
+   _setPoolMinBlockDepth(sepoliaPool, 1);
+   uint16 depth = _findLaneFtfDepth(sepoliaToken);
+   _setPoolMinBlockDepth(sepoliaPool, depth);
+   vm.selectFork(amoyFork);
+   _setPoolMinBlockDepth(amoyPool, depth);
    ```
 
-### Test case 1: Transfer with LINK fees
+1. Send with the custom finality (`blockConfirmations = depth`) and route. The transfer burns on the source and mints on the destination, same as the default-finality case, but delivered before full finality.
 
-The `test_transferTokensFromEoaToEoaPayFeesInLink` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in LINK.
-Here are the steps involved in this test case:
+## What the fork simulator does not model
 
-1. Invoke the `prepareScenario()` function to set up the necessary variables:
+Not modelled by the simulator (and not asserted in the kit's fork tests): real CCV attestations, RMN and executor fees. CCVs on the lane are replaced by a synthetic verifier, and `executePendingV2Message` executes without charging the executor fee a real manual execution costs. Pinned state never sees testnet upgrades, so green tests only prove the examples against that snapshot; re-pin the fork blocks when the lane's behavior changes or on every `@chainlink/contracts-ccip` or `@chainlink/local` bump.
 
-   ```solidity
-   (Client.EVMTokenAmount[] memory tokensToSendDetails, uint256 amountToSend) = prepareScenario();
-   ```
+## Next steps
 
-1. Select the destination fork and record the initial token balance of Bob receiver:
-
-   ```solidity
-   vm.selectFork(destinationFork);
-   uint256 balanceOfBobBefore = destinationCCIPBnMToken.balanceOf(bob);
-   ```
-
-1. Select the source fork and record the initial token balance of Alice (sender):
-
-   ```solidity
-   vm.selectFork(sourceFork);
-   uint256 balanceOfAliceBefore = sourceCCIPBnMToken.balanceOf(alice);
-   ```
-
-1. Request 10 LINK tokens from the Chainlink Local simulator faucet for Alice (sender):
-
-   ```solidity
-   ccipLocalSimulatorFork.requestLinkFromFaucet(alice, 10 ether);
-   ```
-
-1. Construct the [Client.EVM2AnyMessage](/ccip/v1/evm/api-reference/v1.6.1/client#evm2anymessage) structure with the receiver, token amounts, and other necessary details.
-   - Set the `data` parameter to an empty string because you are not sending any arbitrary data, only tokens.
-   - In `extraArgs`, set the gas limit to `0`. This gas limit is for execution of receiver logic, which doesn't apply here because you're sending tokens to an EOA.
-
-   ```solidity
-   Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-       receiver: abi.encode(bob),
-       data: abi.encode(""),
-       tokenAmounts: tokensToSendDetails,
-       extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
-       feeToken: address(sourceLinkToken)
-   });
-   ```
-
-1. Calculate the required fees for the transfer and approve the router to spend LINK tokens for these fees:
-
-   ```solidity
-   uint256 fees = sourceRouter.getFee(destinationChainSelector, message);
-   sourceLinkToken.approve(address(sourceRouter), fees);
-   ```
-
-1. Send the CCIP transfer request to the router:
-
-   ```solidity
-   sourceRouter.ccipSend(destinationChainSelector, message);
-   ```
-
-1. Stop impersonating Alice (sender):
-
-   ```solidity
-   vm.stopPrank();
-   ```
-
-1. Record Alice's final token balance and verify that it has decreased by the amount sent:
-
-   ```solidity
-   uint256 balanceOfAliceAfter = sourceCCIPBnMToken.balanceOf(alice);
-   assertEq(balanceOfAliceAfter, balanceOfAliceBefore - amountToSend);
-   ```
-
-1. Call the [`switchChainAndRouteMessage`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#switchchainandroutemessage) function to switch
-   to the destination fork and route the message to complete the transfer:
-
-   ```solidity
-   ccipLocalSimulatorFork.switchChainAndRouteMessage(destinationFork);
-   ```
-
-1. Record Bob's final token balance and verify that it has increased by the amount sent:
-
-   ```solidity
-   uint256 balanceOfBobAfter = destinationCCIPBnMToken.balanceOf(bob);
-   assertEq(balanceOfBobAfter, balanceOfBobBefore + amountToSend);
-   ```
-
-### Test case 2: Transfer with native gas fees
-
-The `test_transferTokensFromEoaToEoaPayFeesInNative` function tests the transfer of tokens between two externally owned accounts (EOA) while paying fees in native gas.
-Here are the steps involved in this test case:
-
-1. Invoke the `prepareScenario()` function to set up the necessary variables. (This function is the same as in the previous test case.)
-1. Select the destination fork and record Bob's initial token balance. (This step is the same as in the previous test case.)
-1. Select the source fork and record Alice's initial token balance. (This step is the same as in the previous test case.)
-1. Begin impersonating Alice (sender) and provide her with native gas:
-
-   ```solidity
-   vm.startPrank(alice);
-   deal(alice, 5 ether);
-   ```
-
-1. Construct the [Client.EVM2AnyMessage](/ccip/v1/evm/api-reference/v1.6.1/client#evm2anymessage) structure. This step is the same as in the previous test case.
-   The main difference is that the `feeToken` is set with `address(0)` to indicate that the fees are paid in native gas:
-
-   ```solidity
-   Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
-       receiver: abi.encode(bob),
-       data: abi.encode(""),
-       tokenAmounts: tokensToSendDetails,
-       extraArgs: Client._argsToBytes(Client.EVMExtraArgsV1({gasLimit: 0})),
-       feeToken: address(0)
-   });
-   ```
-
-1. Calculate the required fees for the transfer and send the CCIP transfer request along with the necessary native gas:
-
-   ```solidity
-   uint256 fees = sourceRouter.getFee(destinationChainSelector, message);
-   sourceRouter.ccipSend{value: fees}(destinationChainSelector, message, fees);
-   ```
-
-1. Stop impersonating Alice (sender). (This step is the same as in the previous test case.)
-1. Verify Alice's (sender) balance. (This step is the same as in the previous test case.)
-1. Call the [`switchChainAndRouteMessage`](/chainlink-local/api-reference/v0.2.3/ccip-local-simulator-fork#switchchainandroutemessage) function
-   to switch to the destination fork and route the message to complete the transfer. (This step is the same as in the previous test case.)
-1. Verify Bob's (receiver) balance. (This step is the same as in the previous test case.)
+- The other fork tests cover Lock & Release pools with a lock box (`Example07.fork.t.sol`), `AdvancedPoolHooks` (`Example08`-`Example10`). For pool-required CCVs on `AdvancedPoolHooks`, read the [pool-based CCVs tutorial](/chainlink-local/build/ccip/foundry/pool-based-ccvs-fork).
+- To fork mainnets, read [Using the Chainlink Local Simulator to fork mainnets](/chainlink-local/build/ccip/foundry/forking-mainnets).
+- For the full CCT enabling procedure on the Sepolia → Amoy lane, read the [CCT burn and mint tutorial](/chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork) and the [CCT lock and release tutorial](/chainlink-local/build/ccip/foundry/cct-lock-and-release-fork).
+- For an index of every kit example and where its topic is documented, read the [CCIP starter kit examples map](/chainlink-local/learn/starter-kit-examples).

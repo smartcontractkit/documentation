@@ -6,21 +6,28 @@ isIndex: true
 ---
 
 import { YouTube } from "@astro-community/astro-embed-youtube"
+import { Aside } from "@components"
 
 **Chainlink Local** is an installable package that allows you to run Chainlink services locally. You can import Chainlink Local into your preferred local development environment,
 such as Foundry projects, Hardhat scripts, or the Remix IDE. Chainlink Local enables rapid exploration, prototyping, local development, and iteration with Chainlink services
 before transitioning to a testnet.
 
-For instance, you can use Chainlink Local to execute CCIP token transfers and arbitrary messages on a local Hardhat or Anvil (Foundry) development node. Chainlink Local also supports forked nodes,
+For instance, you can use Chainlink Local to execute CCIP 2.0 token transfers and arbitrary messages on a local Hardhat or Anvil (Foundry) development node. Chainlink Local also supports forked nodes,
 allowing you to work with multiple locally running blockchain networks using historical network states. User contracts tested with Chainlink Local can be deployed to test networks without modifications,
 ensuring a seamless transition from local development to live testnets.
 
 **Key Features of Chainlink Local:**
 
 - **Local Simulation:** Run Chainlink services on a local development blockchain node, enabling fast and efficient testing and prototyping.
-- **Forked Networks:** Work with deployed Chainlink contracts using one or multiple forked networks, providing a more realistic testing environment.
-- **Seamless Integration:** Integrate with Foundry, Hardhat, and Remix IDE for a streamlined development process.
+- **CCIP 2.0 rules in local mode:** The local router applies the CCIP 2.0 OnRamp and OffRamp message rules (finality, one token per message, receiver CCV config validation), so a test that passes locally does not fail on a fork or in production. See [CCIP 2.0 behavior in Chainlink Local](/chainlink-local/learn/ccip-v2-local).
+- **Forked Networks:** Work with deployed Chainlink contracts using one or multiple forked networks, providing a more realistic testing environment. Fork routing supports every CCIP era: pre-1.6, 1.6 and CCIP 2.0 (CCV-based) lanes.
+- **Seamless Integration:** Import the package into Foundry, Hardhat 3, or Remix IDE projects without modifying your contracts for local testing.
 
-To get started testing CCIP with Chainlink Local, follow the installation and setup steps in the CCIP guides for [Foundry](/chainlink-local/build/ccip/foundry), [Hardhat](/chainlink-local/build/ccip/hardhat), or [Remix IDE](/chainlink-local/build/ccip/remix).
+<Aside type="note" title="Hardhat 2 users">
+  Chainlink Local `0.3.x` (V3) does not compile under Hardhat 2. Hardhat 2 users stay on the `0.2.x` line (`npm install
+  @chainlink/local@0.2.9`), which supports pre-1.6 fork routing only.
+</Aside>
+
+To get started testing CCIP with Chainlink Local, follow the installation and setup steps in the CCIP guides for [Foundry](/chainlink-local/build/ccip/foundry), [Hardhat](/chainlink-local/build/ccip/hardhat), or [Remix IDE](/chainlink-local/build/ccip/remix). For an index of every CCIP starter kit example and where its topic is documented, read the [CCIP starter kit examples map](/chainlink-local/learn/starter-kit-examples).
 
 <YouTube id="https://www.youtube.com/watch?v=rEVjU9tOf74" />

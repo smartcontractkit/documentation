@@ -7,6 +7,7 @@ import { MenuIcon } from "./MenuIcon.tsx"
 import { BackArrowIcon } from "./BackArrowIcon.tsx"
 import { CaretRightIcon } from "./CaretRightIcon.tsx"
 import MegaMenu from "../Desktop/MegaMenu.tsx"
+import { ThemeToggle } from "../../ThemeToggle.tsx"
 import { SOLUTIONS_HUB_ENABLED } from "~/config/solutions/hub.ts"
 
 const Trigger = extendRadixComponent(Dialog.Trigger)
@@ -72,9 +73,12 @@ export function ProductNavigation() {
                       src="/chainlink-docs.svg"
                       height={32}
                     />
-                    <Close ref={closeButtonRef} className={styles.closeButton} aria-label="Close navigation">
-                      <img src="/assets/icons/close.svg" alt="" />
-                    </Close>
+                    <div className={styles.headerActions}>
+                      <ThemeToggle />
+                      <Close ref={closeButtonRef} className={styles.closeButton} aria-label="Close navigation">
+                        <img src="/assets/icons/close.svg" alt="" />
+                      </Close>
+                    </div>
                   </div>
                   <ul className={clsx(styles.productContent)}>
                     <button

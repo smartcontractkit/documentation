@@ -10,10 +10,12 @@ function DocsNavigationDesktop({
   pathname,
   children,
   isCcipDirectory = false,
+  parentSection = null,
 }: {
   pathname: string
   children?: React.ReactNode
   isCcipDirectory?: boolean
+  parentSection?: string | null
 }) {
   const { $navBarInfo } = useNavBar()
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -30,7 +32,7 @@ function DocsNavigationDesktop({
       >
         <div className={styles.container}>
           <div className={styles.left}>
-            <DocsPickerDesktop pathname={pathname} />
+            <DocsPickerDesktop pathname={pathname} parentSection={parentSection} />
             {children}
           </div>
           <div className={styles.links}>

@@ -3,7 +3,15 @@ import { useNavBar } from "../../Header/useNavBar/useNavBar.ts"
 import DocsPickerMobile from "./DocsPickerMobile.tsx"
 import styles from "./docsNavigationMobile.module.css"
 
-function DocsNavigationMobile({ pathname, children }: { pathname: string; children?: React.ReactNode }) {
+function DocsNavigationMobile({
+  pathname,
+  children,
+  parentSection = null,
+}: {
+  pathname: string
+  children?: React.ReactNode
+  parentSection?: string | null
+}) {
   const { $navBarInfo } = useNavBar()
   return (
     <>
@@ -13,7 +21,7 @@ function DocsNavigationMobile({ pathname, children }: { pathname: string; childr
         })}
       >
         <div className={styles.DocsPickerContainer}>
-          <DocsPickerMobile path={pathname} />
+          <DocsPickerMobile path={pathname} parentSection={parentSection} />
           {children}
         </div>
       </nav>

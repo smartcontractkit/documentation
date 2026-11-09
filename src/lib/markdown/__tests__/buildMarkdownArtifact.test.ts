@@ -1,11 +1,160 @@
+import fs from "node:fs/promises"
+import path from "node:path"
 import { describe, expect, it } from "@jest/globals"
 import {
   buildMarkdownArtifact,
   normalizeMarkdownPath,
   transformPageBodyToMarkdown,
 } from "@lib/markdown/buildMarkdownArtifact.js"
+import { extractFrontmatter } from "@lib/markdown/utils.js"
+
+const CONTENT_ROOT = path.resolve("src/content")
+
+async function sourceMarkdown(requestPath: string): Promise<{ transformMode: string; markdown: string }> {
+  const candidates = [
+    path.resolve(CONTENT_ROOT, `${requestPath}.mdx`),
+    path.resolve(CONTENT_ROOT, requestPath, "index.mdx"),
+  ]
+  let sourcePath: string | undefined
+  for (const candidate of candidates) {
+    try {
+      await fs.access(candidate)
+      sourcePath = candidate
+      break
+    } catch {
+      // Try the next content path.
+    }
+  }
+  if (!sourcePath) throw new Error(`missing content file for ${requestPath}`)
+
+  const raw = await fs.readFile(sourcePath, "utf8")
+  const { body } = extractFrontmatter(raw)
+  return transformPageBodyToMarkdown(body, sourcePath, { siteBase: "https://docs.chain.link" })
+}
+
+function expectedLegalNotice(version: string): string {
+  return `Continued use of VRF ${version} is at your own risk. Use of the Chainlink Network is subject to the [Chainlink Foundation Terms of Service](https://chain.link/terms), which provides important information and disclosures.`
+}
+
+const shutdownDates: Record<string, string> = {
+  v1: "November 18, 2026",
+  v2: "November 30, 2026",
+}
 
 describe("buildMarkdownArtifact", () => {
+  it.each([
+    ["v1", "vrf/v1/api-reference"],
+    ["v1", "vrf/v1/best-practices"],
+    ["v1", "vrf/v1/examples/get-a-random-number"],
+    ["v1", "vrf/v1/introduction"],
+    ["v1", "vrf/v1/security"],
+    ["v1", "vrf/v1/supported-networks"],
+    ["v2", "vrf/v2/best-practices"],
+    ["v2", "vrf/v2/direct-funding"],
+    ["v2", "vrf/v2/direct-funding/examples/get-a-random-number"],
+    ["v2", "vrf/v2/direct-funding/examples/test-locally"],
+    ["v2", "vrf/v2/direct-funding/supported-networks"],
+    ["v2", "vrf/v2/estimating-costs"],
+    ["v2", "vrf/v2/getting-started"],
+    ["v2", "vrf/v2/security"],
+    ["v2", "vrf/v2/subscription"],
+    ["v2", "vrf/v2/subscription/examples/get-a-random-number"],
+    ["v2", "vrf/v2/subscription/examples/programmatic-subscription"],
+    ["v2", "vrf/v2/subscription/examples/test-locally"],
+    ["v2", "vrf/v2/subscription/supported-networks"],
+    ["v2", "vrf/v2/subscription/ui"],
+  ])("preserves the %s deprecation warning and migration link on %s", async (version, requestPath) => {
+    await expect(buildMarkdownArtifact(requestPath)).resolves.toBeNull()
+
+    const transformed = await sourceMarkdown(requestPath)
+    const markdown = transformed.markdown
+    const normalized = markdown
+      .split("\n")
+      .map((line) => line.replace(/^>\s?/, ""))
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim()
+
+    expect(transformed.transformMode).toBe("normal")
+    expect(
+      markdown.split(`**DANGER: Chainlink VRF ${version} shuts down on ${shutdownDates[version]}**`).length - 1
+    ).toBe(1)
+    expect(
+      markdown.split(
+        `VRF ${version} was deprecated on November 29, 2024 and will be permanently shut down on ${shutdownDates[version]}.`
+      ).length - 1
+    ).toBe(1)
+    expect(markdown).toContain(`](/vrf/v2-5/migration-from-${version})`)
+    expect(markdown).not.toContain("replaces and enhances VRF v1")
+    expect(normalized.split(expectedLegalNotice(version)).length - 1).toBe(1)
+
+    if (version === "v2") {
+      expect(normalized).toContain("A 48-hour brownout is scheduled for October 28-30, 2026")
+      expect(normalized).toContain(
+        "The migration guide includes VRF v2.5 code examples for both subscription and direct funding and explains the differences between VRF v2.5 and VRF v2."
+      )
+    }
+  })
+
+  it.each(["v1", "v2"])("preserves the %s deprecation warning on the migration guide", async (version) => {
+    const artifact = await buildMarkdownArtifact(`vrf/v2-5/migration-from-${version}`)
+    const markdown = artifact?.markdown ?? ""
+    const normalized = markdown
+      .split("\n")
+      .map((line) => line.replace(/^>\s?/, ""))
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim()
+
+    expect(artifact?.transformMode).toBe("normal")
+    expect(markdown).toContain(`Chainlink VRF ${version} shuts down on ${shutdownDates[version]}`)
+    expect(
+      markdown.match(
+        new RegExp(
+          `VRF ${version} was deprecated on November 29, 2024 and will be permanently shut down on ${shutdownDates[version]}\\.`,
+          "g"
+        )
+      )
+    ).toHaveLength(1)
+    expect(normalized).toContain(
+      `Complete this guide to migrate your application to Chainlink VRF v2.5 before ${shutdownDates[version]} to avoid service disruption.`
+    )
+    expect(normalized.split(expectedLegalNotice(version)).length - 1).toBe(1)
+  })
+
+  it.each([
+    ["vrf/v2/getting-started", "](/vrf/v2-5/getting-started)"],
+    ["vrf/v2/best-practices", "](/vrf/v2-5/best-practices)"],
+    ["vrf/v2/estimating-costs", "](/vrf/v2-5/billing)"],
+    ["vrf/v2/subscription/examples/get-a-random-number", "](/vrf/v2-5/subscription/get-a-random-number)"],
+    ["vrf/v2/subscription/examples/test-locally", "](/vrf/v2-5/subscription/test-locally)"],
+    ["vrf/v2/subscription/supported-networks", "](/vrf/v2-5/supported-networks)"],
+    ["vrf/v2/direct-funding/supported-networks", "](/vrf/v2-5/supported-networks)"],
+  ])("preserves the V2.5 contextual link on %s", async (requestPath, expectedLink) => {
+    await expect(buildMarkdownArtifact(requestPath)).resolves.toBeNull()
+
+    const transformed = await sourceMarkdown(requestPath)
+
+    expect(transformed.transformMode).toBe("normal")
+    expect(transformed.markdown).toContain(expectedLink)
+  })
+
+  it.each(["vrf/v2/subscription", "vrf/v2/subscription/examples/get-a-random-number"])(
+    "preserves the Subscription Manager limits on %s",
+    async (requestPath) => {
+      await expect(buildMarkdownArtifact(requestPath)).resolves.toBeNull()
+
+      const transformed = await sourceMarkdown(requestPath)
+      const markdown = transformed.markdown
+
+      expect(transformed.transformMode).toBe("normal")
+      expect(markdown).toContain("You can no longer create new VRF v2 subscriptions in the Subscription Manager.")
+      expect(markdown).toContain("](/vrf/v2/subscription/examples/programmatic-subscription)")
+      expect(markdown).toContain("](/vrf/v2/subscription/ui/#pending)")
+      expect(markdown).toContain("](/vrf/v2/subscription/ui/#failed-requests)")
+    }
+  )
+
   it.each([
     ["cre/getting-started/cli-installation", "normal"],
     ["cre-templates", "special"],
@@ -25,6 +174,18 @@ describe("buildMarkdownArtifact", () => {
     await expect(buildMarkdownArtifact("chainlink-automation/overview/supported-networks")).resolves.toBeNull()
     await expect(buildMarkdownArtifact("quickstarts/time-based-upkeep")).resolves.toBeNull()
     await expect(buildMarkdownArtifact("quickstarts/functions-demo-app")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("any-api/introduction")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("chainlink-nodes/job-specs/multi-word-job")).resolves.toBeNull()
+    await expect(
+      buildMarkdownArtifact("chainlink-nodes/external-initiators/external-initiators-introduction")
+    ).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("vrf/v1/introduction")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("vrf/v2/subscription")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("vrf/v2/subscription/ui")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("quickstarts/chainlink-demo-app")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("quickstarts/vrf-enabled-lootbox-pack")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("quickstarts/vrf-mystery-box")).resolves.not.toBeNull()
+    await expect(buildMarkdownArtifact("vrf/v2-5/getting-started")).resolves.not.toBeNull()
   })
 
   it("rejects path escapes", async () => {
@@ -198,5 +359,46 @@ package main
 
     expect(result.transformMode).toBe("replacement")
     expect(result.markdown).toContain("## Deprecated Feeds")
+  })
+})
+
+describe("product-scoped platform docs", () => {
+  it("includes every product table when there is no product context", async () => {
+    const artifact = await buildMarkdownArtifact("chainlink-platform/rbac")
+
+    expect(artifact?.markdown).toContain("Chainlink Platform roles control access")
+    expect(artifact?.markdown).toContain("CRE roles control access")
+    expect(artifact?.markdown).toContain("Data Streams has a single role")
+    expect(artifact?.markdown).toContain("Create API keys with scoped permissions")
+  })
+
+  it("filters the CRE view to shared and CRE content", async () => {
+    const artifact = await buildMarkdownArtifact("chainlink-platform/rbac", { productContext: "cre" })
+
+    expect(artifact?.markdown).toContain("Chainlink Platform roles control access")
+    expect(artifact?.markdown).toContain("CRE roles control access")
+    expect(artifact?.markdown).not.toContain("Data Streams has a single role")
+    expect(artifact?.markdown).toContain("Create API keys with scoped permissions")
+  })
+
+  it("filters the Data Streams view and drops CRE-only API key links", async () => {
+    const artifact = await buildMarkdownArtifact("chainlink-platform/rbac", { productContext: "dataStreams" })
+
+    expect(artifact?.markdown).toContain("Chainlink Platform roles control access")
+    expect(artifact?.markdown).toContain("Data Streams has a single role")
+    expect(artifact?.markdown).not.toContain("CRE roles control access")
+    expect(artifact?.markdown).not.toContain("Create API keys with scoped permissions")
+  })
+
+  it("only includes the strict CRE CLI next step in the CRE view", async () => {
+    const unfiltered = await buildMarkdownArtifact("chainlink-platform/creating-an-account")
+    const cre = await buildMarkdownArtifact("chainlink-platform/creating-an-account", { productContext: "cre" })
+    const dataStreams = await buildMarkdownArtifact("chainlink-platform/creating-an-account", {
+      productContext: "dataStreams",
+    })
+
+    expect(unfiltered?.markdown).not.toContain("Log in to the CLI")
+    expect(cre?.markdown).toContain("Log in to the CLI")
+    expect(dataStreams?.markdown).not.toContain("Log in to the CLI")
   })
 })

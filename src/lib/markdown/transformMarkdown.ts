@@ -7,9 +7,9 @@ import remarkParse from "remark-parse"
 import remarkMdx from "remark-mdx"
 import remarkGfm from "remark-gfm"
 import remarkStringify from "remark-stringify"
-import { visit } from "unist-util-visit"
+import { SKIP, visit } from "unist-util-visit"
 import type { Node, Parent, Literal } from "unist"
-import type { TransformConfig, MdxJsxNode, ComponentContext } from "./types.js"
+import type { TransformConfig, MdxJsxNode, ComponentContext, DroppedComponent } from "./types.js"
 import {
   handleCcipCommon,
   handleCodeHighlightBlock,
@@ -17,6 +17,7 @@ import {
   handleCopyText,
   handleDiv,
   handleAside,
+  handleInlineAsideParagraph,
   handleClickToZoom,
   handleCodeSample,
   handleBilling,
@@ -25,16 +26,26 @@ import {
   handlePageTabs,
   handleTabs,
   handlePackageManagerTabs,
+  handleMethodTabs,
   handleFragment,
   handleAccordion,
+  handleGitHubCard,
+  handleHtmlList,
   handleAddress,
   handleCallout,
   handleAnyApiCallout,
   handleFeedsCommonCallout,
   handleResourcesCallout,
   handleDataStreams,
+  handleVrfDeprecation,
+  handleSelectorComponent,
+  isSelectorComponent,
   handleSchemaFieldsTable,
+  handleCcipSendErrors,
+  handleCcipEvents,
   handleFeedPage,
+  handleProductOnly,
+  handleProductSection,
   loadCcipCommonMapping,
   replaceNode,
   staticEstreeValue,
@@ -49,6 +60,43 @@ function staticMdxString(value: unknown): string | undefined {
   )?.data?.estree?.body?.[0]?.expression
   const staticValue = staticEstreeValue(expression)
   return typeof staticValue === "string" ? staticValue : undefined
+}
+
+/** Whether a node still renders visible text after component projection. */
+function hasRenderableContent(node: Parent): boolean {
+  return (node.children ?? []).some((child) => {
+    if (child.type === "text") return String((child as Literal).value).trim().length > 0
+    if (child.type === "paragraph") return hasRenderableContent(child as Parent)
+    return true
+  })
+}
+
+/** Keep an explicit JSX space inline with adjacent source text, including soft source line breaks. */
+function replaceInlineJsxSpace(parent: Parent, index: number): number {
+  const previous = parent.children[index - 1]
+  const next = parent.children[index + 1]
+  const previousText = previous?.type === "text" ? (previous as Literal) : undefined
+  const nextText = next?.type === "text" ? (next as Literal) : undefined
+
+  // Generated text (for example, {"\n"}) keeps its intentional whitespace.
+  // Hard breaks and block boundaries are separate nodes and are never crossed.
+  if (previousText?.position) {
+    previousText.value = String(previousText.value).replace(/[ \t]*\r?\n[ \t]*$/, "")
+  }
+  if (nextText?.position) {
+    nextText.value = String(nextText.value).replace(/^[ \t]*\r?\n[ \t]*/, "")
+  }
+  if (previousText) {
+    previousText.value = String(previousText.value) + " " + (nextText ? String(nextText.value) : "")
+    parent.children.splice(index, nextText ? 2 : 1)
+    return index
+  }
+  if (nextText) {
+    nextText.value = " " + String(nextText.value)
+    parent.children.splice(index, 1)
+    return index
+  }
+  return replaceNode({ type: "mdxTextExpression" }, parent, index, [{ type: "text", value: " " } as Literal])
 }
 
 /**
@@ -105,7 +153,8 @@ export async function transformMarkdown(
   mdxAbsPath: string,
   config: Partial<TransformConfig> = {}
 ): Promise<string> {
-  const { targetLanguage } = config
+  const { targetLanguage, productContext } = config
+  const drops: DroppedComponent[] = []
 
   // Inline CcipCommon content before AST parsing so embedded components reach the normal AST handlers.
   const preprocessedMarkdown = preprocessCcipCommon(markdown)
@@ -121,10 +170,11 @@ export async function transformMarkdown(
         mdxAbsPath,
         markdown,
         targetLanguage,
+        productContext,
         processor,
       }
 
-      visit(tree, (node: Node, index: number | undefined, parent: Parent | undefined) => {
+      const projectNode = (node: Node, index: number | undefined, parent: Parent | undefined) => {
         if (!parent || typeof index !== "number") return
 
         // Handle CodeHighlightBlockMulti
@@ -142,9 +192,25 @@ export async function transformMarkdown(
           return handleCcipCommon(node as MdxJsxNode, parent, index, context)
         }
 
+        // Handle product-scoped blocks and inline content
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "ProductSection") {
+          return handleProductSection(node as MdxJsxNode, parent, index, context)
+        }
+        if (
+          (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+          (node as MdxJsxNode).name === "ProductOnly"
+        ) {
+          return handleProductOnly(node as MdxJsxNode, parent, index, context)
+        }
+
         // Handle Aside
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Aside") {
           return handleAside(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "paragraph") {
+          const projected = handleInlineAsideParagraph(node as Parent, parent, index, context)
+          if (typeof projected === "number") return projected
         }
 
         // Handle ClickToZoom
@@ -180,8 +246,19 @@ export async function transformMarkdown(
           return handlePackageManagerTabs(node as MdxJsxNode, parent, index)
         }
 
-        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Accordion") {
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "MethodTabs") {
+          return handleMethodTabs(node as MdxJsxNode, parent, index)
+        }
+
+        if (
+          node.type === "mdxJsxFlowElement" &&
+          ((node as MdxJsxNode).name === "Accordion" || (node as MdxJsxNode).name === "AnchoredAccordion")
+        ) {
           return handleAccordion(node as MdxJsxNode, parent, index)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "GitHubCard") {
+          return handleGitHubCard(node as MdxJsxNode, parent, index)
         }
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "Callout") {
@@ -204,8 +281,24 @@ export async function transformMarkdown(
           return handleDataStreams(node as MdxJsxNode, parent, index, context)
         }
 
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "VrfDeprecation") {
+          return handleVrfDeprecation(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && isSelectorComponent((node as MdxJsxNode).name)) {
+          return handleSelectorComponent(node as MdxJsxNode, parent, index, context)
+        }
+
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "SchemaFieldsTable") {
           return handleSchemaFieldsTable(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "CCIPSendError") {
+          return handleCcipSendErrors(node as MdxJsxNode, parent, index, context)
+        }
+
+        if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "CCIPEvent") {
+          return handleCcipEvents(node as MdxJsxNode, parent, index, context)
         }
 
         if (node.type === "mdxJsxFlowElement" && (node as MdxJsxNode).name === "FeedPage") {
@@ -221,7 +314,7 @@ export async function transformMarkdown(
 
         if (
           (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
-          (node as MdxJsxNode).name === "Fragment"
+          ["Fragment", "GitHubCards", "OverviewWrapper"].includes((node as MdxJsxNode).name ?? "")
         ) {
           return handleFragment(node as MdxJsxNode, parent, index)
         }
@@ -255,6 +348,10 @@ export async function transformMarkdown(
           const mdxNode = node as MdxJsxNode
           const nodeName = mdxNode.name
           const children = (mdxNode as Parent).children || []
+
+          if (nodeName === "ol" || (nodeName === "ul" && mdxNode.type === "mdxJsxFlowElement")) {
+            return handleHtmlList(mdxNode, parent, index)
+          }
 
           if (nodeName === "a") {
             const hrefAttribute = mdxNode.attributes?.find((attribute) => attribute.name === "href")
@@ -329,6 +426,7 @@ export async function transformMarkdown(
           const value = staticMdxString(node)
           if (value === undefined) return replaceNode(node, parent, index, [])
           if (node.type === "mdxFlowExpression" && !value.trim()) return replaceNode(node, parent, index, [])
+          if (node.type === "mdxTextExpression" && value === " ") return replaceInlineJsxSpace(parent, index)
           return replaceNode(node, parent, index, [{ type: "text", value } as Literal])
         }
 
@@ -361,11 +459,43 @@ export async function transformMarkdown(
           node.type === "export" ||
           node.type === "html"
         ) {
+          if (config.onDropComponent && (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement")) {
+            drops.push({ name: (node as MdxJsxNode).name ?? "anonymous" })
+          }
           parent.children.splice(index, 1)
           return index
         }
 
         // Note: We preserve link nodes as-is so they're rendered as markdown links [text](url)
+      }
+      visit(tree, (node, index, parent) => {
+        const nextIndex = projectNode(node, index, parent)
+        // A replaced node is detached. Traverse its replacement instead of mutating its old children.
+        return typeof nextIndex === "number" ? ([SKIP, nextIndex] as [typeof SKIP, number]) : undefined
+      })
+      // Product-scoped content can leave an empty list item behind. Drop those so
+      // the Markdown export does not contain stray bullets.
+      visit(tree, "list", (node) => {
+        const list = node as Parent
+        list.children = list.children.filter(
+          (child) => child.type !== "listItem" || hasRenderableContent(child as Parent)
+        )
+      })
+      // Materialize generated anchors after projection, which continues to drop source HTML.
+      visit(tree, "heading", (node) => {
+        const heading = node as Parent
+        const anchorId = (heading.data as { markdownAnchorId?: unknown } | undefined)?.markdownAnchorId
+        if (typeof anchorId !== "string") return
+        const escapedId = anchorId
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\\/g, "&#92;")
+        heading.children.push(
+          { type: "text", value: " " } as Literal,
+          { type: "html", value: `<a id="${escapedId}"></a>` } as Literal
+        )
       })
     })
     .use(remarkStringify, {
@@ -381,6 +511,15 @@ export async function transformMarkdown(
     .split("\n")
     .filter((line) => !line.trim().match(/^{\/\*.*?\*\/}$/))
     .join("\n")
+
+  // A failed normal/sanitized attempt must not emit events for output that was abandoned.
+  for (const drop of drops) {
+    try {
+      config.onDropComponent?.(drop)
+    } catch {
+      // Observers cannot change Markdown output or trigger a fallback/retry.
+    }
+  }
 
   return result
 }

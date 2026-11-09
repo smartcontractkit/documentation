@@ -58,11 +58,11 @@ If a legacy format omits fields introduced in newer versions, those fields resol
 
 This ensures existing integrations do not require modification when migrating to newer CCIP infrastructure.
 
-## EVMExtraArgsV3
+## ExtraArgsV3
 
-For EVM integrations, **EVMExtraArgsV3** is the latest format used to specify optional message configuration.
+For EVM integrations, **ExtraArgsV3** is the latest format used to specify optional message configuration.
 
-It provides a structured way for senders to override selected execution parameters while maintaining backwards compatibility.
+It provides a structured way for senders to override selected execution parameters while maintaining backwards compatibility. The format also defines fields for selecting verification components (CCVs), an executor, and token-handling options.
 
 At launch scope, the primary configuration exposed to developers is **confirmation depth selection**.
 
@@ -76,7 +76,7 @@ The following diagram shows how ExtraArgs influence message processing without c
   caption="ExtraArgs modify how a message is processed, such as when verification begins or how much gas is available during execution."
 />
 
-## Confirmation Depth (`blockConfirmations`)
+## Confirmation Depth (block depth)
 
 A sender may request a specific confirmation depth for the source-chain transaction that emits a CCIP message.
 
@@ -84,15 +84,28 @@ This parameter determines the minimum number of blocks that must be included aft
 
 It does not override chain finality or minimum confirmation requirements enforced by token pools.
 
+The following example requests a confirmation depth of 10 blocks with a gas limit of 200,000, using the `ExtraArgsCodec` encoding helper:
+
 ```solidity
-Client.EVMExtraArgsV3 memory extraArgs =
-  Client.EVMExtraArgsV3({
-    gasLimit: 200000,
-    blockConfirmations: 10
-  });
+import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+
+bytes memory extraArgs = ExtraArgsCodec._getBasicEncodedExtraArgsV3BlockDepth(
+  200_000, // gasLimit: gas available for the receiver callback on the destination chain
+  10 // blockDepth: wait 10 blocks after the message transaction before verification begins
+);
 ```
 
+The helper encodes the confirmation depth into the 4-byte finality field of `ExtraArgsV3`: `0` requests full source-chain finality (the default), and values from 1 to 65,535 request that many blocks. The resulting bytes are passed as the message's `extraArgs`.
+
 If a token pool enforces a higher minimum confirmation requirement, requests below that threshold will revert.
+
+<Aside type="caution" title="The destination receiver enforces its own finality policy">
+  When a message calls a receiver on the destination chain, the receiver's finality policy is checked at execution, not
+  at send time. Receivers built on the default `CCIPReceiver` base contract, and all receivers that predate CCIP 2.0,
+  admit full-finality messages only. If the receiver does not admit the requested confirmation depth, the send succeeds
+  but the message fails at execution with state `FAILURE`. It becomes executable only after the receiver updates its
+  policy; waiting for full source-chain finality does not resolve this.
+</Aside>
 
 Confirmation depth directly affects **execution latency** and **reorganization risk**.
 
@@ -104,7 +117,7 @@ For a deeper explanation of this tradeoff, see [Execution Latency](/ccip/concept
 
 ## Default Confirmation Behavior
 
-If `blockConfirmations` is not specified:
+If no confirmation depth is requested:
 
 **CCIP waits for full source-chain finality before verification begins.**
 
@@ -114,15 +127,13 @@ This default behavior provides the strongest protection against chain reorganiza
 
 Token pools may enforce a **minimum confirmation requirement** for messages that transfer tokens.
 
-If a sender requests a confirmation depth below the configured minimum, the transaction **reverts during message submission**.
+If a sender requests a confirmation depth below the configured minimum, the transaction **reverts during message submission** with `InvalidRequestedFinality`.
 
 This prevents unsafe token transfers that could be affected by source-chain reorganizations.
 
-The effective confirmation requirement becomes the **maximum** of:
+A pool using the default configuration accepts only full-finality requests: any requested confirmation depth reverts.
 
-1. The sender-requested confirmation depth
-2. The token pool’s minimum confirmation requirement
-3. The lane’s operational finality configuration
+The requested confirmation depth is carried unchanged in the message: it is not raised or lowered automatically. On the source chain, the request must satisfy the minimum confirmation requirement of every participant that enforces one: the token pool, the verifiers, and the executor. If any of them rejects the request, the submission reverts.
 
 ## Confirmation Depth and Finality
 
@@ -132,9 +143,9 @@ Some chains provide **deterministic finality**, while others rely on **probabili
 
 When deterministic finality is available, CCIP may wait for that signal regardless of the requested confirmation depth.
 
-If the requested `blockConfirmations` value is **greater than or equal to the chain’s effective finality threshold**, CCIP waits for finality.
+If the requested confirmation depth is **greater than or equal to the chain’s effective finality threshold**, CCIP waits for finality.
 
-In this case, specifying `blockConfirmations` does not change execution behavior.
+In this case, specifying a confirmation depth does not change execution behavior.
 
 ## Interaction with the CCIP Message Lifecycle
 
@@ -181,6 +192,6 @@ ExtraArgs provide optional configuration for CCIP messages.
 
 If ExtraArgs are omitted, messages follow the safest default path with full finality and standard execution infrastructure.
 
-EVMExtraArgsV3 introduces a structured format for specifying configuration overrides while maintaining backwards compatibility with earlier integrations.
+ExtraArgsV3 introduces a structured format for specifying configuration overrides while maintaining backwards compatibility with earlier integrations.
 
-At launch scope, the primary parameter exposed to developers is **confirmation depth (`blockConfirmations`)**, which allows applications to tune the tradeoff between execution latency and reorganization risk.
+At launch scope, the primary parameter exposed to developers is **confirmation depth**, which allows applications to tune the tradeoff between execution latency and reorganization risk.

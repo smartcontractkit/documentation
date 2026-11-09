@@ -1,0 +1,54 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "CCIP starter kit examples map"
+isIndex: false
+---
+
+The [CCIP starter kits](https://github.com/smartcontractkit/ccip-starter-kit-foundry) ([Foundry](https://github.com/smartcontractkit/ccip-starter-kit-foundry) and [Hardhat 3](https://github.com/smartcontractkit/ccip-starter-kit-hardhat)) teach CCIP 2.0 through examples `Example01`-`Example10` plus two legacy examples, each with a chapter in the kit's own book and a test that runs against Chainlink Local. This page maps every example to what it teaches, its kit book chapter, and the docs.chain.link page that covers the same topic, so you can find where each feature is documented.
+
+The kits pin Chainlink Local `v0.3.1`, `@chainlink/contracts-ccip` 2.0.0 and `solc 0.8.26` with `evm_version = cancun`. Examples 01-10 use Ethereum Sepolia → Polygon Amoy as their primary CCIP 2.0 lane.
+
+## Local mode examples (Example01-Example05)
+
+These tests run against the no-fork [`CCIPLocalSimulator`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator): no RPC URLs needed, messages delivered synchronously inside `ccipSend`, with the CCIP 2.0 OnRamp and OffRamp message rules applied. Read [CCIP 2.0 behavior in local mode](/chainlink-local/learn/ccip-v2-local) for what is enforced.
+
+| Example                                            | What it teaches                                                                                      | Chainlink Local guide                                                                                                                                               | Related CCIP docs                                                                                           |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 01 - Token Transfer + Fast Transfers               | Token-only transfer to an EOA with `ExtraArgsV3` and non-zero block confirmations                    | [Foundry](/chainlink-local/build/ccip/foundry/local-simulator) · [Hardhat](/chainlink-local/build/ccip/hardhat/local-simulator)                                     | [Transfer tokens from a contract](/ccip/evm/tutorials/application-developers/transfer-tokens-from-contract) |
+| 02 - Hello World to `BasicMessageReceiverWithCCVs` | Data-only message to a receiver with CCV config; the receiver's `minBlockDepth` gates Fast Transfers | [Foundry](/chainlink-local/build/ccip/foundry/data-messages-receiver-ccv-config) · [Hardhat](/chainlink-local/build/ccip/hardhat/data-messages-receiver-ccv-config) | [Send arbitrary data](/ccip/evm/tutorials/application-developers/send-arbitrary-data)                       |
+| 03 - Programmable Token Transfer (Fast Transfers)  | Data + tokens in one message to a contract receiver, with the receiver finality gate                 | Kit book chapter                                                                                                                                                    | [Programmable token transfers](/ccip/evm/tutorials/application-developers/programmable-token-transfers)     |
+| 04 - Programmable Token Transfer (sender contract) | Same transfer through a `BasicMessageSender` contract with default finality                          | Kit book chapter                                                                                                                                                    | [Programmable token transfers](/ccip/evm/tutorials/application-developers/programmable-token-transfers)     |
+| 05 - ExtraArgsV3 no-execution tag                  | The `NO_EXECUTION_ADDRESS` executor for the manual execution path                                    | Kit book chapter                                                                                                                                                    | [Manual execution](/ccip/evm/tutorials/application-developers/manual-execution)                             |
+
+Local mode does not model executors or manual execution: `NO_EXECUTION_ADDRESS` messages are executed immediately, so Example 05's test only verifies what the script sends. Whether the message stays pending until manually executed can only be observed on a real lane or a fork.
+
+## Fork mode examples (Example06-Example10)
+
+These tests run against pinned forks of Ethereum Sepolia and Polygon Amoy through [`CCIPLocalSimulatorFork`](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork) (Foundry) or the [Hardhat 3 JavaScript fork helper](/chainlink-local/api-reference/v0.3.1/ccip-local-simulator-fork-js). They need archive-capable RPC URLs and, in Foundry, `FOUNDRY_PROFILE=fork`. Read [CCIP 2.0 behavior in fork mode](/chainlink-local/learn/ccip-v2-local) for what is simulated.
+
+| Example                                         | What it teaches                                                                                                   | Chainlink Local guide                                                                                                                                             | Related CCIP docs                                                                                                             |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 06 - CCT Burn and Mint                          | `CrossChainToken` + BurnMint pool deployment, TokenAdminRegistry registration, lane linking, pool finality config | [CCT burn and mint tutorial](/chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork) · [fork guide](/chainlink-local/build/ccip/foundry/local-simulator-fork) | [Register a Burn and Mint token from an EOA](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-burn-mint-foundry)      |
+| 07 - CCT Lock and Release                       | `CrossChainToken` + `ERC20LockBox` + LockRelease pool, destination lock box liquidity                             | [CCT lock and release tutorial](/chainlink-local/build/ccip/foundry/cct-lock-and-release-fork)                                                                    | [Register a Lock and Mint token from an EOA](/ccip/evm/tutorials/cross-chain-tokens/register-from-eoa-lock-mint-foundry)      |
+| 08 - CCT Burn and Mint with `AdvancedPoolHooks` | Attaching a pool hook with a sender allowlist and CCV threshold                                                   | Kit book chapter                                                                                                                                                  | [Configure a sender allowlist](/ccip/evm/tutorials/cross-chain-tokens/configure-sender-allowlist-advanced-pool-hooks-foundry) |
+| 09 - Pool-based CCVs on `AdvancedPoolHooks`     | Pool-required CCVs consulted outbound by the OnRamp and verified inbound by the OffRamp; threshold CCVs           | [Pool-based CCVs tutorial](/chainlink-local/build/ccip/foundry/pool-based-ccvs-fork)                                                                              | [CCV starter kit](https://docs.chain.link/ccip/ccv-starter-kit)                                                               |
+| 10 - Policy engine on `AdvancedPoolHooks`       | An ACE policy engine attached to the hook, capping transfer amounts                                               | Kit book chapter                                                                                                                                                  | [Enforce ACE policies](/ccip/evm/tutorials/cross-chain-tokens/enforce-ace-policies-foundry)                                   |
+
+Pool-required CCVs (Example 09) are the one CCIP 2.0 feature local mode cannot exercise: local mode has no token pools, so pool-required CCVs are not enforced there. Only the fork tests run them against the real OnRamp and OffRamp.
+
+## Legacy examples
+
+| Example                                | What it teaches                                                                       | Related CCIP docs                                                      |
+| -------------------------------------- | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Legacy 01 - ExtraArgsV1 token transfer | The v1.x `EVMExtraArgsV1` format on an older lane                                     | [Using `extraArgs`](/ccip/evm/concepts/best-practices#using-extraargs) |
+| Legacy 02 - ExtraArgsV2 token transfer | The `GenericExtraArgsV2` format; `allowOutOfOrderExecution` is deprecated in CCIP 2.0 | [Using `extraArgs`](/ccip/evm/concepts/best-practices#using-extraargs) |
+
+## Kit books and tools
+
+Each kit ships an mdBook with one chapter per example, including the exact script and task commands for live-testnet runs:
+
+- [Foundry kit book](https://smartcontractkit.github.io/ccip-starter-kit-foundry/)
+- [Hardhat kit book](https://smartcontractkit.github.io/ccip-starter-kit-hardhat/)
+
+The books also cover the CCIP API, the CCIP SDK (`ccip-send`, `ccip-track`) and the CCIP CLI, which are not Chainlink Local features.

@@ -9,10 +9,19 @@ import { isSunsetSidebarSection } from "./sunset.ts"
 import { CCIP_SIDEBAR_CONTENT } from "./sidebar/ccip-dynamic.ts"
 import { CCIP_V16_SIDEBAR_CONTENT } from "./sidebar/ccip-v1.ts"
 import { AI_AGENT_RESOURCES_SECTION } from "./sidebar/ai-agent-resources.ts"
+import { CHAINLINK_PLATFORM_SECTION, getAccountOrganizationSection } from "./sidebar/chainlink-platform.ts"
 import type { ChainType, CcipVersion } from "./types.js"
 import chainlinkLocalV021Contents from "./sidebar/chainlink-local/api-reference/v0_2_1.json" with { type: "json" }
 import chainlinkLocalV022Contents from "./sidebar/chainlink-local/api-reference/v0_2_2.json" with { type: "json" }
 import chainlinkLocalV023Contents from "./sidebar/chainlink-local/api-reference/v0_2_3.json" with { type: "json" }
+import chainlinkLocalV024Contents from "./sidebar/chainlink-local/api-reference/v0_2_4.json" with { type: "json" }
+import chainlinkLocalV025Contents from "./sidebar/chainlink-local/api-reference/v0_2_5.json" with { type: "json" }
+import chainlinkLocalV026Contents from "./sidebar/chainlink-local/api-reference/v0_2_6.json" with { type: "json" }
+import chainlinkLocalV027Contents from "./sidebar/chainlink-local/api-reference/v0_2_7.json" with { type: "json" }
+import chainlinkLocalV028Contents from "./sidebar/chainlink-local/api-reference/v0_2_8.json" with { type: "json" }
+import chainlinkLocalV029Contents from "./sidebar/chainlink-local/api-reference/v0_2_9.json" with { type: "json" }
+import chainlinkLocalV030Contents from "./sidebar/chainlink-local/api-reference/v0_3_0.json" with { type: "json" }
+import chainlinkLocalV031Contents from "./sidebar/chainlink-local/api-reference/v0_3_1.json" with { type: "json" }
 
 /**
  * Represents a single item in the sidebar navigation.
@@ -131,6 +140,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         { title: "Identity Manager Quick Start", url: "ace/getting-started/identity-manager" },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.ACE),
     {
       section: "Guides",
       contents: [
@@ -476,6 +486,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               ],
             },
             {
+              title: "Solana Log Trigger",
+              url: "cre/guides/workflow/using-triggers/solana-log-trigger",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-triggers/solana-log-trigger-ts",
+                "cre/guides/workflow/using-triggers/solana-log-trigger-go",
+              ],
+            },
+            {
               title: "HTTP Trigger",
               url: "cre/guides/workflow/using-triggers/http-trigger/overview",
               highlightAsCurrent: [
@@ -589,6 +607,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               highlightAsCurrent: [
                 "cre/guides/workflow/using-solana-client/generating-bindings-ts",
                 "cre/guides/workflow/using-solana-client/generating-bindings-go",
+              ],
+            },
+            {
+              title: "Onchain Read",
+              url: "cre/guides/workflow/using-solana-client/onchain-read",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-solana-client/onchain-read-ts",
+                "cre/guides/workflow/using-solana-client/onchain-read-go",
               ],
             },
             {
@@ -708,6 +734,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           highlightAsCurrent: ["cre/guides/workflow/using-randomness-ts", "cre/guides/workflow/using-randomness-go"],
         },
         {
+          title: "Optimizing Workflows",
+          url: "cre/guides/workflow/optimizing-workflows",
+          highlightAsCurrent: [
+            "cre/guides/workflow/optimizing-workflows-ts",
+            "cre/guides/workflow/optimizing-workflows-go",
+          ],
+        },
+        {
           title: "Building a Reusable Library",
           url: "cre/guides/workflow/building-a-library",
           highlightAsCurrent: [
@@ -733,6 +767,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "cre/guides/operations/deploying-workflows",
           children: [
             {
+              title: "Requesting Deploy Access",
+              url: "cre/guides/operations/deploy-access",
+            },
+            {
+              title: "Linking Wallet Keys",
+              url: "cre/guides/operations/linking-wallet-keys",
+            },
+            {
               title: "Deploying to the Private Registry",
               url: "cre/guides/operations/deploying-to-private-registry",
               highlightAsCurrent: [
@@ -749,6 +791,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               ],
             },
           ],
+        },
+        {
+          title: "Requesting Confidential Workflows Access",
+          url: "cre/guides/operations/confidential-workflows-access",
         },
         {
           title: "Activating & Pausing Workflows",
@@ -788,52 +834,17 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.CRE),
     {
-      section: "Account & Organization",
+      section: "CLI Setup",
       contents: [
         {
-          title: "Account",
-          url: "cre/account",
-          children: [
-            {
-              title: "Creating Your Account",
-              url: "cre/account/creating-account",
-            },
-            {
-              title: "Logging in with the CLI",
-              url: "cre/account/cli-login",
-            },
-            {
-              title: "Managing Authentication",
-              url: "cre/account/managing-auth",
-            },
-            {
-              title: "Requesting Deploy Access",
-              url: "cre/account/deploy-access",
-            },
-            {
-              title: "Requesting Confidential Workflows Access",
-              url: "cre/account/confidential-workflows-access",
-            },
-          ],
+          title: "Logging in with the CLI",
+          url: "cre/guides/cli/cli-login",
         },
         {
-          title: "Organization",
-          url: "cre/organization",
-          children: [
-            {
-              title: "Understanding Organizations",
-              url: "cre/organization/understanding-organizations",
-            },
-            {
-              title: "Linking Wallet Keys",
-              url: "cre/organization/linking-keys",
-            },
-            {
-              title: "Inviting Team Members",
-              url: "cre/organization/inviting-members",
-            },
-          ],
+          title: "Managing Authentication",
+          url: "cre/guides/cli/managing-auth",
         },
       ],
     },
@@ -843,7 +854,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         { title: "Overview", url: "cre/capabilities" },
         { title: "EVM Read & Write", url: "cre/capabilities/evm-read-write" },
         { title: "HTTP", url: "cre/capabilities/http" },
-        { title: "Solana Write", url: "cre/capabilities/solana-write" },
+        { title: "Solana Read & Write", url: "cre/capabilities/solana-read-write" },
         { title: "Triggers", url: "cre/capabilities/triggers" },
       ],
     },
@@ -974,6 +985,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
                     "cre/reference/sdk/triggers/evm-log-trigger-go",
                   ],
                 },
+                {
+                  title: "Solana Log Trigger",
+                  url: "cre/reference/sdk/triggers/solana-log-trigger",
+                  highlightAsCurrent: [
+                    "cre/reference/sdk/triggers/solana-log-trigger-ts",
+                    "cre/reference/sdk/triggers/solana-log-trigger-go",
+                  ],
+                },
               ],
             },
             {
@@ -1076,6 +1095,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         { title: "Quickstart: Send Your First Operation", url: "crec/getting-started/quickstart-send-operation" },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.CREC),
     {
       section: "Concepts",
       contents: [
@@ -1315,6 +1335,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               title: "Tokenized Equity Feeds",
               url: "data-feeds/tokenized-equity-feeds",
               children: [
+                { title: "24/7 Smoothed", url: "data-feeds/tokenized-equity-feeds/24-7" },
                 {
                   title: "Provider Catalog",
                   url: "data-feeds/tokenized-equity-feeds/providers",
@@ -1643,11 +1664,72 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
       ],
     },
+    getAccountOrganizationSection(SIDEBAR_SECTIONS.DATA_STREAMS),
     {
-      section: "Streams & Report Schemas",
+      section: "Concepts",
       contents: [
         {
-          title: "Overview",
+          title: "Architecture",
+          url: "data-streams/architecture",
+        },
+        {
+          title: "Market Hours",
+          url: "data-streams/market-hours",
+        },
+        {
+          title: "Handling Market Events (RWA)",
+          url: "data-streams/rwa-streams/handling-market-events",
+          highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
+        },
+        {
+          title: "How Report Timestamps Work",
+          url: "data-streams/how-report-timestamps-work",
+        },
+        {
+          title: "Selecting Quality Data Streams",
+          url: "data-streams/selecting-data-streams",
+        },
+        {
+          title: "Pricing Methods",
+          url: "data-streams/concepts/pricing-methods",
+          children: [
+            {
+              title: "TWAP Streams",
+              url: "data-streams/concepts/twap-streams",
+            },
+            {
+              title: "Calculated Streams",
+              url: "data-streams/concepts/calculated-streams",
+            },
+            {
+              title: "Liquidity-Weighted Bid and Ask prices",
+              url: "data-streams/concepts/liquidity-weighted-prices",
+            },
+            {
+              title: "DEX State Price Streams",
+              url: "data-streams/concepts/dex-state-price-streams",
+            },
+            {
+              title: "Crypto Top-of-Book Streams",
+              url: "data-streams/concepts/crypto-top-of-book-and-mark-price",
+            },
+          ],
+        },
+        {
+          title: "Best Practices",
+          url: "data-streams/concepts/best-practices",
+        },
+        {
+          title: "Deprecating Streams",
+          url: "data-streams/deprecating-streams",
+        },
+      ],
+    },
+    {
+      section: "Streams & Schemas",
+      contents: [
+        {
+          title: "Report Schema Overview",
           url: "data-streams/reference/report-schema-overview",
         },
         {
@@ -1691,17 +1773,8 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "data-streams/reference/report-schema-v11",
             },
             {
-              title: "Handling Market Events",
-              url: "data-streams/rwa-streams/handling-market-events",
-              highlightAsCurrent: ["data-streams/rwa-streams/handling-market-events-v11"],
-            },
-            {
-              title: "24/5 US Equities User Guide",
-              url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
-            },
-            {
-              title: "APAC Equities",
-              url: "data-streams/rwa-streams/apac-equities",
+              title: "Report Schema v14 (Futures)",
+              url: "data-streams/reference/report-schema-v14",
             },
           ],
         },
@@ -1723,28 +1796,43 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               title: "Report Schema v10 (Tokenized Asset)",
               url: "data-streams/reference/report-schema-v10",
             },
-            {
-              title: "Handling Stock Splits",
-              url: "data-streams/tokenized-asset-streams/handling-stock-splits",
-            },
           ],
-        },
-        {
-          title: "Market Hours",
-          url: "data-streams/market-hours",
-        },
-        {
-          title: "Selecting Quality Data Streams",
-          url: "data-streams/selecting-data-streams",
-        },
-        {
-          title: "Deprecating Streams",
-          url: "data-streams/deprecating-streams",
         },
       ],
     },
     {
-      section: "Tutorials",
+      section: "Market Guides",
+      contents: [
+        {
+          title: "Overview",
+          url: "data-streams/market-guides",
+        },
+        {
+          title: "US Equities & Indices",
+          url: "data-streams/rwa-streams/us-equities",
+          children: [
+            {
+              title: "24/5 sessions",
+              url: "data-streams/rwa-streams/24-5-us-equities-user-guide",
+            },
+            {
+              title: "24/7 continuous",
+              url: "data-streams/rwa-streams/24-7-us-equities",
+            },
+          ],
+        },
+        {
+          title: "APAC Equities & Indices",
+          url: "data-streams/rwa-streams/apac-equities",
+        },
+        {
+          title: "Futures",
+          url: "data-streams/rwa-streams/futures",
+        },
+      ],
+    },
+    {
+      section: "Integration Tutorials",
       contents: [
         {
           title: "Overview",
@@ -1761,17 +1849,22 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           highlightAsCurrent: ["data-streams/tutorials/rust-sdk-stream", "data-streams/tutorials/ts-sdk-stream"],
         },
         {
-          title: "Verify report data (EVM)",
-          url: "data-streams/tutorials/evm-onchain-report-verification",
-        },
-        {
-          title: "Verify report data (Solana)",
-          url: "data-streams/tutorials/solana-onchain-report-verification",
-          highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
-        },
-        {
-          title: "Verify report data (Stellar)",
-          url: "data-streams/tutorials/stellar-onchain-report-verification",
+          title: "Verify report data",
+          children: [
+            {
+              title: "EVM",
+              url: "data-streams/tutorials/evm-onchain-report-verification",
+            },
+            {
+              title: "Solana",
+              url: "data-streams/tutorials/solana-onchain-report-verification",
+              highlightAsCurrent: ["data-streams/tutorials/solana-offchain-report-verification"],
+            },
+            {
+              title: "Stellar",
+              url: "data-streams/tutorials/stellar-onchain-report-verification",
+            },
+          ],
         },
         {
           title: "Canton Integration",
@@ -1780,47 +1873,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
       ],
     },
     {
-      section: "Concepts",
-      contents: [
-        {
-          title: "Architecture",
-          url: "data-streams/architecture",
-        },
-        {
-          title: "How Report Timestamps Work",
-          url: "data-streams/how-report-timestamps-work",
-        },
-        {
-          title: "Best Practices",
-          url: "data-streams/concepts/best-practices",
-        },
-        {
-          title: "Calculated Streams",
-          url: "data-streams/concepts/calculated-streams",
-        },
-        {
-          title: "Liquidity-Weighted Bid and Ask prices",
-          url: "data-streams/concepts/liquidity-weighted-prices",
-        },
-        {
-          title: "DEX State Price Streams",
-          url: "data-streams/concepts/dex-state-price-streams",
-        },
-        {
-          title: "Crypto Top-of-Book Streams",
-          url: "data-streams/concepts/crypto-top-of-book-and-mark-price",
-        },
-      ],
-    },
-    {
-      section: "Reference",
+      section: "API & SDK Reference",
       contents: [
         {
           title: "Overview",
           url: "data-streams/reference/overview",
         },
         {
-          title: "Data Streams Reference",
+          title: "Data Streams API",
           url: "data-streams/reference/data-streams-api",
           children: [
             {
@@ -1872,8 +1932,8 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "data-streams/reference/data-streams-api/onchain-verification",
             },
             {
-              title: "Onchain report verification (Stellar)",
-              url: "data-streams/tutorials/stellar-onchain-report-verification",
+              title: "Settlement Verifier",
+              url: "data-streams/reference/data-streams-api/settlement-verifier",
             },
           ],
         },
@@ -2418,19 +2478,6 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
       ],
     },
     {
-      section: "VRF V2 [DEPRECATED]",
-      contents: [
-        {
-          title: "VRF V2 Subscription Method",
-          url: "vrf/v2/subscription",
-        },
-        {
-          title: "VRF V2 Direct Funding Method",
-          url: "vrf/v2/direct-funding",
-        },
-      ],
-    },
-    {
       section: "Resources",
       contents: [
         {
@@ -2511,6 +2558,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "chainlink-local/learn/architecture",
         },
         {
+          title: "CCIP 2.0 behavior in Chainlink Local",
+          url: "chainlink-local/learn/ccip-v2-local",
+        },
+        {
+          title: "CCIP starter kit examples map",
+          url: "chainlink-local/learn/starter-kit-examples",
+        },
+        {
           title: "Contributing",
           url: "chainlink-local/learn/contributing",
         },
@@ -2528,6 +2583,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "chainlink-local/build/ccip/foundry/local-simulator",
             },
             {
+              title: "Sending data to a receiver with CCV config",
+              url: "chainlink-local/build/ccip/foundry/data-messages-receiver-ccv-config",
+            },
+            {
               title: "Using the Chainlink Local Simulator in forked environments",
               url: "chainlink-local/build/ccip/foundry/local-simulator-fork",
             },
@@ -2540,8 +2599,12 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
               url: "chainlink-local/build/ccip/foundry/cct-burn-and-mint-fork",
             },
             {
-              title: "CCT - owner() token with Lock and Release Pool in forked environments",
+              title: "CCT - getCCIPAdmin() token with Lock and Release Pool in forked environments",
               url: "chainlink-local/build/ccip/foundry/cct-lock-and-release-fork",
+            },
+            {
+              title: "Pool-based CCV requirements on AdvancedPoolHooks in forked environments",
+              url: "chainlink-local/build/ccip/foundry/pool-based-ccvs-fork",
             },
           ],
         },
@@ -2552,6 +2615,10 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
             {
               title: "Using the Chainlink Local Simulator",
               url: "chainlink-local/build/ccip/hardhat/local-simulator",
+            },
+            {
+              title: "Sending data to a receiver with CCV config",
+              url: "chainlink-local/build/ccip/hardhat/data-messages-receiver-ccv-config",
             },
             {
               title: "Using the Chainlink Local Simulator in forked environments",
@@ -2579,7 +2646,55 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           url: "chainlink-local/api-reference",
         },
         {
-          title: "v0.2.3 (Latest)",
+          title: "v0.3.1 (Latest)",
+          url: "chainlink-local/api-reference/v0.3.1",
+          isCollapsible: true,
+          children: chainlinkLocalV031Contents,
+        },
+        {
+          title: "v0.3.0",
+          url: "chainlink-local/api-reference/v0.3.0",
+          isCollapsible: true,
+          children: chainlinkLocalV030Contents,
+        },
+        {
+          title: "v0.2.9",
+          url: "chainlink-local/api-reference/v0.2.9",
+          isCollapsible: true,
+          children: chainlinkLocalV029Contents,
+        },
+        {
+          title: "v0.2.8",
+          url: "chainlink-local/api-reference/v0.2.8",
+          isCollapsible: true,
+          children: chainlinkLocalV028Contents,
+        },
+        {
+          title: "v0.2.7",
+          url: "chainlink-local/api-reference/v0.2.7",
+          isCollapsible: true,
+          children: chainlinkLocalV027Contents,
+        },
+        {
+          title: "v0.2.6",
+          url: "chainlink-local/api-reference/v0.2.6",
+          isCollapsible: true,
+          children: chainlinkLocalV026Contents,
+        },
+        {
+          title: "v0.2.5",
+          url: "chainlink-local/api-reference/v0.2.5",
+          isCollapsible: true,
+          children: chainlinkLocalV025Contents,
+        },
+        {
+          title: "v0.2.4",
+          url: "chainlink-local/api-reference/v0.2.4",
+          isCollapsible: true,
+          children: chainlinkLocalV024Contents,
+        },
+        {
+          title: "v0.2.3",
           url: "chainlink-local/api-reference/v0.2.3",
           isCollapsible: true,
           children: chainlinkLocalV023Contents,
@@ -2735,74 +2850,6 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
         },
       ],
     },
-    {
-      section: "External Initiators",
-      contents: [
-        {
-          title: "Introduction",
-          url: "chainlink-nodes/external-initiators/external-initiators-introduction",
-        },
-        {
-          title: "Building External Initiators",
-          url: "chainlink-nodes/external-initiators/building-external-initiators",
-        },
-        {
-          title: "Adding External Initiators to Nodes",
-          url: "chainlink-nodes/external-initiators/external-initiators-in-nodes",
-        },
-      ],
-    },
-    {
-      section: "Connect to Any API",
-      contents: [
-        {
-          title: "Overview",
-          url: "any-api/introduction",
-        },
-        {
-          title: "Getting Started",
-          url: "any-api/getting-started",
-        },
-        {
-          title: "Make a GET Request",
-          url: "any-api/get-request/introduction",
-          children: [
-            {
-              title: "Single Word Response",
-              url: "any-api/get-request/examples/single-word-response",
-            },
-            {
-              title: "Multi-Variable Responses",
-              url: "any-api/get-request/examples/multi-variable-responses",
-            },
-            {
-              title: "Array Response",
-              url: "any-api/get-request/examples/array-response",
-            },
-            {
-              title: "Large Responses",
-              url: "any-api/get-request/examples/large-responses",
-            },
-            {
-              title: "Existing Job Request",
-              url: "any-api/get-request/examples/existing-job-request",
-            },
-          ],
-        },
-        {
-          title: "Find Existing Jobs",
-          url: "any-api/find-oracle",
-        },
-        {
-          title: "Testnet Oracles",
-          url: "any-api/testnet-oracles",
-        },
-        {
-          title: "API Reference",
-          url: "any-api/api-reference",
-        },
-      ],
-    },
   ],
   [SIDEBAR_SECTIONS.GLOBAL]: [
     AI_AGENT_RESOURCES_SECTION,
@@ -2872,6 +2919,7 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
       ],
     },
   ],
+  [SIDEBAR_SECTIONS.CHAINLINK_PLATFORM]: [CHAINLINK_PLATFORM_SECTION],
   [SIDEBAR_SECTIONS.LEGACY]: [
     {
       section: "VRF V2 Subscription Method [DEPRECATED]",

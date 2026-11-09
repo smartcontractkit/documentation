@@ -80,6 +80,7 @@ export const GET: APIRoute = async ({ params, request }) => {
   const fallback = wantsHtmlFallback(request, url)
   url.searchParams.delete(MARKDOWN_FALLBACK_PARAM)
   const lang = url.searchParams.get("lang") || undefined
+  const productContext = url.searchParams.get("parent") || undefined
 
   const notFound = () => (fallback ? htmlFallback(request, htmlPathForMarkdown(params.path)) : plainNotFound())
 
@@ -96,7 +97,7 @@ export const GET: APIRoute = async ({ params, request }) => {
     ? `ccip/${toContentEntryId(requestPath.replace(/^ccip\/?/, ""))}`
     : requestPath
 
-  const artifact = await buildMarkdownArtifact(lookupPath, { lang })
+  const artifact = await buildMarkdownArtifact(lookupPath, { lang, productContext })
   if (!artifact) {
     // A moved CCIP page 301s like its HTML page does, one hop at a time.
     const redirectTarget = CCIP_MARKDOWN_REDIRECTS.get(requestPath)

@@ -9,6 +9,7 @@ import dtaLogo from "../../assets/product-logos/dta-logo.svg"
 import dataLinkLogo from "../../assets/product-logos/datalink-logo.svg"
 import chainlinkLocal from "../../assets/product-logos/chainlink-local.svg"
 import generalLogo from "../../assets/product-logos/general-logo.svg"
+import platformLogo from "../../assets/product-logos/automation-logo.svg"
 import nodesLogo from "../../assets/product-logos/node-logo.svg"
 import quickstartLogo from "../../assets/product-logos/quickstart-logo.svg"
 import { SIDEBAR as sidebar } from "../../config/sidebar.ts"
@@ -169,7 +170,51 @@ const desktopSubProductsNav = [
     col: 2,
     hideFromDropdown: true,
   },
+  {
+    label: "Chainlink Platform",
+    href: "/chainlink-platform",
+    icon: platformLogo.src,
+    col: 2,
+  },
 ]
+
+/*
+  Shared pages rendered inside a product's sidebar carry `?parent=<section>` (see
+  src/config/sidebar/parent-query.ts). The docs picker uses that param to keep showing the product
+  the reader is browsing instead of the section that owns the shared page. Sections without an entry
+  here (e.g. automation, chainlinkFunctions) fall back to path-based matching.
+*/
+const parentSectionToHref: Partial<Record<Sections, string>> = {
+  ace: "/ace",
+  cre: "/cre",
+  crec: "/crec",
+  dataFeeds: "/data-feeds",
+  dataStreams: "/data-streams",
+  dataLink: "/datalink",
+  ccip: "/ccip",
+  vrf: "/vrf",
+  chainlinkLocal: "/chainlink-local",
+  nodeOperator: "/chainlink-nodes",
+  "dta-technical-standard": "/dta-technical-standard",
+  chainlinkPlatform: "/chainlink-platform",
+}
+
+export const getSubProductByParentParam = (parent: string | null | undefined) => {
+  const href = parent ? parentSectionToHref[parent as Sections] : undefined
+  return href ? desktopSubProductsNav.find((item) => item.href === href) : undefined
+}
+
+/** Build-time map of `?parent=` values to the picker label and icon. */
+export const getParentProductMap = () => {
+  const map: Record<string, { label: string; icon: string }> = {}
+  for (const [section, href] of Object.entries(parentSectionToHref)) {
+    const product = desktopSubProductsNav.find((item) => item.href === href)
+    if (product) {
+      map[section] = { label: product.label, icon: product.icon }
+    }
+  }
+  return map
+}
 
 const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
   {
@@ -241,6 +286,12 @@ const getDocsSections = (pageSdkLangMap: Map<string, string>) => [
         href: "/resources",
         icon: generalLogo.src,
         subProducts: getSubProducts(sidebar.global, new Map(), "global"),
+      },
+      {
+        label: "Chainlink Platform",
+        href: "/chainlink-platform",
+        icon: platformLogo.src,
+        subProducts: getSubProducts(sidebar.chainlinkPlatform, new Map()),
       },
     ],
   },

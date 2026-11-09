@@ -1,0 +1,175 @@
+---
+section: chainlinkLocal
+date: Last Modified
+title: "MockFeeManager v0.3.0 API Reference"
+metadata:
+  description: "API documentation for MockFeeManager in Solidity, version v0.3.0."
+---
+
+import { Aside } from "@components"
+import Common from "@features/chainlink-local/Common.astro"
+
+<Common callout="importPackage030" />
+
+## MockFeeManager
+
+Mock verifier fee manager.
+
+[MockFeeManager](https://github.com/smartcontractkit/chainlink-local/blob/v0.3.0/src/data-streams/MockFeeManager.sol)
+
+## Variables
+
+### i_linkAddress
+
+```solidity
+address public immutable i_linkAddress
+```
+
+### i_nativeAddress
+
+```solidity
+address public immutable i_nativeAddress
+```
+
+### i_proxyAddress
+
+```solidity
+address public immutable i_proxyAddress
+```
+
+### i_rewardManager
+
+```solidity
+IRewardManager public immutable i_rewardManager
+```
+
+### PERCENTAGE_SCALAR
+
+the total discount that can be applied to a fee, 1e18 = 100% discount
+
+```solidity
+uint64 private constant PERCENTAGE_SCALAR = 1e18
+```
+
+### s_mockDiscounts
+
+```solidity
+mapping(address => uint256) public s_mockDiscounts
+```
+
+### s_nativeSurcharge
+
+```solidity
+uint256 public s_nativeSurcharge
+```
+
+## Errors
+
+### ExpiredReport
+
+```solidity
+error ExpiredReport();
+```
+
+### InvalidAddress
+
+```solidity
+error InvalidAddress();
+```
+
+### InvalidDeposit
+
+```solidity
+error InvalidDeposit();
+```
+
+### InvalidDiscount
+
+```solidity
+error InvalidDiscount();
+```
+
+### InvalidQuote
+
+```solidity
+error InvalidQuote();
+```
+
+### InvalidSurcharge
+
+```solidity
+error InvalidSurcharge();
+```
+
+### Unauthorized
+
+```solidity
+error Unauthorized();
+```
+
+## Functions
+
+### \_processFee
+
+```solidity
+function _processFee(bytes calldata payload, bytes calldata parameterPayload, address subscriber) internal;
+```
+
+### constructor
+
+```solidity
+constructor(address linkAddress, address nativeAddress, address proxyAddress, address rewardManager) ;
+```
+
+### getFeeAndReward
+
+```solidity
+function getFeeAndReward(address subscriber, bytes memory report, address quoteAddress)
+    public
+    view
+    returns (Common.Asset memory, Common.Asset memory, uint256);
+```
+
+### getMockDiscount
+
+```solidity
+function getMockDiscount(address subscriber) external view returns (uint256);
+```
+
+### processFee
+
+```solidity
+function processFee(bytes calldata payload, bytes calldata parameterPayload, address subscriber)
+    external
+    payable
+    override
+    onlyProxy;
+```
+
+### processFeeBulk
+
+```solidity
+function processFeeBulk(bytes[] calldata payloads, bytes calldata parameterPayload, address subscriber)
+    external
+    payable
+    override
+    onlyProxy;
+```
+
+### setMockDiscount
+
+```solidity
+function setMockDiscount(address subscriber, uint256 discount) external;
+```
+
+### setNativeSurcharge
+
+```solidity
+function setNativeSurcharge(uint64 surcharge) external;
+```
+
+### supportsInterface
+
+```solidity
+function supportsInterface(bytes4 interfaceId) external pure override returns (bool);
+```
