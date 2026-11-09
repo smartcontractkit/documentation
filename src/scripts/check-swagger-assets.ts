@@ -50,16 +50,31 @@ function parseAttributes(rawAttributes: string): Record<string, string> {
   return attributes
 }
 
-/** Script `src` and stylesheet-like `href` attributes. Inline script bodies are intentionally ignored. */
+/**
+ * Script `src` and stylesheet-like `href` attributes, in document order.
+ * Inline script bodies are intentionally skipped. This only reads the build output to find resource URLs;
+ * it never rewrites or sanitizes HTML.
+ */
 export function extractResources(html: string): Resource[] {
   const resources: Resource[] = []
-  const withoutScriptBodies = html.replace(/<script\b([^>]*)>[\s\S]*?<\/script>/gi, (whole, rawAttributes: string) => {
-    const { src } = parseAttributes(rawAttributes)
-    if (src !== undefined) resources.push({ tag: "script", url: src })
-    return ""
-  })
-  for (const match of withoutScriptBodies.matchAll(/<link\b([^>]*)>/gi)) {
-    const { rel = "", href, as = "" } = parseAttributes(match[1])
+  const tagPattern = /<(script|link)\b([^>]*)>/gi
+  // Matches end tags such as `</script>` and `</script >`.
+  const scriptEndPattern = /<\/script\b[^>]*>/gi
+
+  let match: RegExpExecArray | null
+  while ((match = tagPattern.exec(html)) !== null) {
+    const attributes = parseAttributes(match[2])
+
+    if (match[1].toLowerCase() === "script") {
+      if (attributes.src !== undefined) resources.push({ tag: "script", url: attributes.src })
+      // Jump past the script body so markup-like text inside inline scripts is never read as tags.
+      scriptEndPattern.lastIndex = tagPattern.lastIndex
+      const end = scriptEndPattern.exec(html)
+      tagPattern.lastIndex = end ? scriptEndPattern.lastIndex : html.length
+      continue
+    }
+
+    const { rel = "", href, as = "" } = attributes
     const rels = rel.toLowerCase().split(/\s+/)
     const loadsCode =
       rels.includes("stylesheet") ||
