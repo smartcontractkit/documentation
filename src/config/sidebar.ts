@@ -734,6 +734,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           highlightAsCurrent: ["cre/guides/workflow/using-randomness-ts", "cre/guides/workflow/using-randomness-go"],
         },
         {
+          title: "Optimizing Workflows",
+          url: "cre/guides/workflow/optimizing-workflows",
+          highlightAsCurrent: [
+            "cre/guides/workflow/optimizing-workflows-ts",
+            "cre/guides/workflow/optimizing-workflows-go",
+          ],
+        },
+        {
           title: "Building a Reusable Library",
           url: "cre/guides/workflow/building-a-library",
           highlightAsCurrent: [
