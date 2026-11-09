@@ -10,7 +10,7 @@ jest.unstable_mockModule("../../../db/supabase.ts", () => ({
 const { is247Stream, get247Category, matches247StreamFilter } = await import("./twentyFourSeven.ts")
 const { is247USEquitiesStream, matches247USEquitiesStreamFilter, is247TokenizedEquityFeed } =
   await import("./feedMetadata.ts")
-const { isFeedVisible, shouldHideStreamFeedId } = await import("./feedVisibility.ts")
+const { isFeedVisible, shouldHideAddress, shouldHideStreamFeedId } = await import("./feedVisibility.ts")
 
 const verifierStream = (docs: Record<string, unknown>, overrides: Record<string, unknown> = {}) => ({
   contractType: "verifier",
@@ -125,6 +125,20 @@ describe("isFeedVisible for streamsRwa", () => {
 
     expect(isFeedVisible(twentyFourSeven, "streamsRwa", "", { streamCategoryFilter: "equities" })).toBe(false)
     expect(isFeedVisible(twentyFourSeven, "streamsRwa", "", { streamCategoryFilter: "all" })).toBe(true)
+  })
+})
+
+describe("shouldHideAddress", () => {
+  it.each([
+    "0xd467dc4668dd8fdd762c7d18a198e85f380d0ed7",
+    "0x137ede0803edc0470a2fede55493bc66232b6670",
+    "0xaf992a6ad37b4878cf9c31f082b178860e268ce3",
+  ])("hides explicitly listed proxy address %s", (proxyAddress) => {
+    expect(shouldHideAddress({ proxyAddress, docs: {} })).toBe(true)
+  })
+
+  it("leaves unlisted proxy addresses alone", () => {
+    expect(shouldHideAddress({ proxyAddress: "0x1234", docs: {} })).toBe(false)
   })
 })
 
