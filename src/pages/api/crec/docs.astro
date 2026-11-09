@@ -1,5 +1,6 @@
 ---
 import "~/styles/tailwind.css"
+import { swaggerUiBundleUrl, swaggerUiCssUrl, swaggerUiStandalonePresetUrl } from "~/lib/swagger-ui/assets"
 import openapiSpec from "../../../../public/api/crec/openapi.json"
 Astro.response.headers.set("Content-Type", "text/html; charset=utf-8")
 Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalidate")
@@ -39,12 +40,8 @@ const apiVersion = `v${(openapiSpec as { info: { version: string } }).info.versi
     <meta name="twitter:title" content="CRE Connect API Reference" />
     <meta name="twitter:description" content="REST API reference for Chainlink CRE Connect." />
 
-    <!-- Resource hints -->
-    <link rel="preconnect" href="https://unpkg.com" />
-    <link rel="dns-prefetch" href="https://unpkg.com" />
-
     <!-- Swagger UI CSS -->
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href={swaggerUiCssUrl} />
 
     <!-- Structured data -->
     <script type="application/ld+json">
@@ -241,9 +238,8 @@ const apiVersion = `v${(openapiSpec as { info: { version: string } }).info.versi
     <div id="swagger-ui"></div>
 
     <!-- Swagger UI scripts -->
-    <script src="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui-standalone-preset.js" crossorigin="anonymous" defer
-    ></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui-bundle.js" crossorigin="anonymous" defer></script>
+    <script is:inline src={swaggerUiBundleUrl} defer></script>
+    <script is:inline src={swaggerUiStandalonePresetUrl} defer></script>
 
     <script is:inline>
       window.addEventListener("load", function () {
@@ -261,6 +257,7 @@ const apiVersion = `v${(openapiSpec as { info: { version: string } }).info.versi
           filter: true,
           showExtensions: true,
           validatorUrl: null,
+          queryConfigEnabled: false,
           tryItOutEnabled: false,
           supportedSubmitMethods: [],
           syntaxHighlight: {
