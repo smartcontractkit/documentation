@@ -8051,7 +8051,7 @@ For inquiries related to a data outage, contact Chainlink Labs at [data_support@
 
 ---
 
-# APAC Equities
+# APAC Equities & Indices
 Source: https://docs.chain.link/data-streams/rwa-streams/apac-equities
 
 Asia-Pacific (APAC) Equities streams provide high-frequency, transparent price data for major Asia-Pacific indices and single-name stocks. These streams enable onchain protocols to build liquid, capital-efficient markets around globally relevant APAC assets, including sectors such as AI, semiconductors, and consumer goods.
@@ -8105,6 +8105,14 @@ APAC Equities streams cover major indices and single-name stocks across Asia-Pac
 | Shenzhen Stock Exchange | SZSE | CNY            | Available |
 | Taiwan Stock Exchange   | TWSE | TWD            | Available |
 | Hong Kong Exchange      | HKEX | HKD            | Available |
+
+### Indices&#x20;
+
+Index streams track the level of major APAC equity indices. They follow the same schema, trading hours, and `marketStatus` behavior as single-name streams on the same exchange, including the TSE lunch break.
+
+Index streams publish `mid`, `bid`, and `ask`. Indices are not traded directly, so `lastTradedPrice` is not populated for index streams.
+
+Stream names describe the benchmark each stream tracks. They are not official index names, and these streams are not affiliated with, sponsored, or endorsed by any index provider. Like all APAC Equities streams, index streams are [single-source](#single-source-data); see [Index streams](#index-streams) for index-specific risks.
 
 ## Trading hours
 
@@ -8178,9 +8186,17 @@ Protocols are responsible for detecting halt conditions and implementing safegua
 
 Equities are subject to corporate actions (for example, stock splits, reverse splits, and dividends) that can materially impact price and position value between trading sessions. Protocols should monitor corporate action events and adjust pricing logic, collateral parameters, and open positions accordingly. This may include pausing markets during corporate action windows to prevent unfair liquidations.
 
+### Index streams
+
+[Index streams](#indices) carry additional considerations beyond those of single-name stocks:
+
+- **Not the official index level.** The stream value is an independent representation of the index and can differ from the level published by the index provider, including official opening and closing levels. Do not assume the stream will match an official settlement or closing value.
+- **Constituent halts.** Individual constituents can be halted while others continue trading. This is not reflected in `marketStatus`, and the index value may be computed from stale constituent prices during the halt.
+- **Index methodology events.** Rebalances, constituent changes, and divisor adjustments are made by the index provider and can move the index level independently of market activity. Monitor index provider announcements and adjust risk parameters around these events.
+
 ### Single-source data
 
-Each APAC market is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on the underlying provider's data quality and availability. There is no redundant cross-validation between providers for a given feed.
+Each APAC market, including index streams, is sourced from a single institutional-grade data provider per feed. While this enables high-frequency, low-latency delivery, it introduces dependency on the underlying provider's data quality and availability. There is no redundant cross-validation between providers for a given feed. See [Single Source Data Providers](/data-streams/selecting-data-streams#single-source-data-providers) for the associated risks and required safeguards.
 
 If the underlying provider fails to deliver data during an active session, there is no fallback source. A gap in price data during exchange open hours may not be accompanied by a `marketStatus` change — the feed may continue reporting `marketStatus = 2` (Open) while `lastSeenTimestampNs` stops advancing. Staleness monitoring is therefore critical during open sessions, not only when the market is closed.
 
@@ -9035,10 +9051,12 @@ Live values such as feed contract addresses are not inlined here. Wait for the o
 
 ---
 
-# US Equities
+# US Equities & Indices
 Source: https://docs.chain.link/data-streams/rwa-streams/us-equities
 
 Chainlink Data Streams offers two families for US single-name equities and ETFs: [24/5 streams](/data-streams/rwa-streams/24-5-us-equities-user-guide) and [24/7 streams](/data-streams/rwa-streams/24-7-us-equities). Both cover US equities, but they differ in how sessions are handled, which fields you consume, and what happens when the market is closed.
+
+Data Streams also offers [index streams](#indices) that track major US equity indices during regular trading hours.
 
 ## 24/5 vs 24/7&#x20;
 
@@ -9058,8 +9076,33 @@ For field-level behavior by product, see the [24/7 US Equities User Guide](/data
 - **[24/5](/data-streams/rwa-streams/24-5-us-equities-user-guide#available-streams)** if you want session-level control and full control over how regular, extended, and overnight prices are combined.
 - **[24/7 for Perpetual Markets](/data-streams/rwa-streams/24-7-us-equities#24-7-for-perpetual-markets)** if you need a continuous fast price (`mid`, `bid`, `ask`) through weekends and holidays.
 - **[24/7 TWAP](/data-streams/rwa-streams/24-7-us-equities#24-7-twap)** if you need a single continuous TWAP price per asset.
+- **[Indices](#indices)** if you need the level of a major US equity index during regular trading hours.
 
 For lending, use [24/7 Smoothed Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds/24-7), which publish the slow price onchain.
+
+## Indices&#x20;
+
+Index streams track the level of major US equity indices. They publish during regular US trading hours only and use the [RWA Advanced (v11) schema](/data-streams/reference/report-schema-v11), with `marketStatus` handled the same way as the Regular Hours stream in the [24/5 family](/data-streams/rwa-streams/24-5-us-equities-user-guide). There are no Extended Hours, Overnight Hours, or 24/7 index streams.
+
+Index streams publish `mid`, `bid`, and `ask`. Indices are not traded directly, so `lastTradedPrice` is not populated for index streams.
+
+Stream names describe the benchmark each stream tracks. They are not official index names, and these streams are not affiliated with, sponsored, or endorsed by any index provider. Find stream IDs in the [RWA stream directory](/data-streams/rwa-streams).
+
+> **CAUTION: Index streams are single-source**
+>
+> US single-name equity streams aggregate data from multiple market data vendors. Index streams do not: each index
+> stream relies on a single data provider, with no cross-validation and no fallback source. Review [Single Source Data
+> Providers](/data-streams/selecting-data-streams#single-source-data-providers) before integrating.
+
+### Index risks&#x20;
+
+Integrating protocols are responsible for monitoring and risk controls. In addition to the risks in the [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide), index streams carry the following:
+
+- **Single data provider.** If the provider publishes incorrect data, is delayed, or stops delivering during an open session, the stream reflects that issue. A gap may not be accompanied by a `marketStatus` change: the stream can keep reporting `marketStatus = 2` (Open) while `lastSeenTimestampNs` stops advancing. Monitor freshness during open sessions, apply deviation checks against recent valid observations, and pause or restrict activity when data quality signals trigger.
+- **Not the official index level.** The stream value is an independent representation of the index and can differ from the level published by the index provider, including official opening and closing levels. Do not assume the stream will match an official settlement or closing value.
+- **Regular hours only.** Outside regular trading hours `marketStatus = 5` (Closed) and the price holds at its last value. The first prints after the open can gap materially from the prior close. Don't combine index streams with Extended or Overnight single-name streams and expect a continuous index price.
+- **Market-wide and constituent halts.** Market-wide circuit breakers halt trading across US equities, and individual constituents can be halted while others trade. **Neither is reflected in `marketStatus`.** During a halt, the index value may be frozen or computed from stale constituent prices.
+- **Index methodology events.** Rebalances, constituent changes, and divisor adjustments are made by the index provider and can move the index level independently of market activity. Monitor index provider announcements and adjust risk parameters around these events.
 
 ## Guides
 
