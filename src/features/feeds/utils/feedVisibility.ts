@@ -25,6 +25,12 @@ export const CONTACT_EMAIL_PROXY_ADDRESSES = new Set<string>([
   "0xbb65fa58bdb7d33e4a3d1a40a7a9bd99e746367b",
   "0x9eb8a54d0590798880c665c7a6d51b95f4078ad7",
   "0xa261c56cabf7ed6081646b892e57175ab2dd8617",
+  // Ethereum Mainnet
+  "0xd467dc4668dd8fdd762c7d18a198e85f380d0ed7",
+  // Arc Mainnet
+  "0x137ede0803edc0470a2fede55493bc66232b6670",
+  // Base
+  "0xaf992a6ad37b4878cf9c31f082b178860e268ce3",
 ])
 
 /**
