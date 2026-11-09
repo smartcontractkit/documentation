@@ -554,7 +554,6 @@ const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Enviro
   const { chainType } = getChainTypeAndFamily(supportedChain)
 
   const nativeToken = getNativeCurrency(supportedChain)
-  if (!nativeToken) throw Error(`Native token not found for ${supportedChain}`)
 
   const decommissionedChainKeys = getDecommissionedChainKeys({ filter })
   const committeeVerifier = getCommitteeVerifier({ chain, filter })
@@ -576,11 +575,13 @@ const buildNetworkForChain = ({ chain, filter }: { chain: string; filter: Enviro
     registryModule: chainConfig.registryModule?.address,
     router,
     chainSelector: chainConfig.chainSelector,
-    nativeToken: {
-      name: nativeToken.name,
-      symbol: nativeToken.symbol,
-      logo: getTokenIconUrl(nativeToken.symbol),
-    },
+    nativeToken: nativeToken
+      ? {
+          name: nativeToken.name,
+          symbol: nativeToken.symbol,
+          logo: getTokenIconUrl(nativeToken.symbol),
+        }
+      : undefined,
     feeTokens: chainConfig.feeTokens?.map((tokenName: string) => ({
       name: tokenName,
       logo: getTokenIconUrl(tokenName),
