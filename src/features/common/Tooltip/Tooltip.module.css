@@ -1,5 +1,11 @@
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+}
+
 .container {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -11,11 +17,24 @@
 }
 
 .trigger {
-  display: flex;
-  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Breathing room when the label lives outside the component (e.g. CCIP chain hero). */
+  margin: 0 0 0 6px;
+  padding: 4px;
   border: 0;
+  border-radius: 50%;
   background: transparent;
+  /* Match the surrounding label; hover brightens as the interactive cue. */
+  color: inherit;
   cursor: pointer;
+  line-height: 0;
+  transition: color 150ms ease;
+}
+
+.trigger:hover {
+  color: var(--foreground, currentColor);
 }
 
 /* Specific selector so it wins over rules like `.ccip-chain-hero__heading img` */
@@ -28,4 +47,33 @@
   max-height: 16px;
   object-fit: contain;
   display: block;
+}
+
+/* Content spacing and theme-aware link colors. Popover colors come from blocks tokens. */
+.tipContent {
+  line-height: 1.5;
+}
+
+.tipContent p {
+  margin: 0;
+}
+
+.tipContent p + p,
+.tipContent ul,
+.tipContent ol {
+  margin-top: 6px;
+}
+
+.tipContent ul,
+.tipContent ol {
+  padding-left: 18px;
+}
+
+.tipContent a {
+  color: var(--link, currentColor);
+  text-decoration: none;
+}
+
+.tipContent a:hover {
+  text-decoration: underline;
 }
