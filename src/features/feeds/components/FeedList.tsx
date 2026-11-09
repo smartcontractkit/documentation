@@ -32,7 +32,9 @@ import {
   is247USEquitiesStream,
   isApacEquitiesStreamFeed,
   isFuturesStreamFeed,
+  matchesIndexStreamFilter,
   mergeStreamEnvironmentAvailability,
+  type IndexStreamRegion,
 } from "../utils/feedMetadata.ts"
 import { getAddrPerPage, SMART_DATA_CATEGORY_OPTIONS } from "../constants.ts"
 import {
@@ -210,6 +212,8 @@ export const FeedList = ({
   force247TokenizedEquity = false,
   forceApacEquitiesOnly = false,
   forceFuturesOnly = false,
+  forceIndicesOnly = false,
+  forceIndexRegion,
   forceStreamCategoryFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
@@ -232,6 +236,10 @@ export const FeedList = ({
   force247TokenizedEquity?: boolean
   forceApacEquitiesOnly?: boolean
   forceFuturesOnly?: boolean
+  /** Locks the table to index streams (RDD `docs.assetSubClass` "Index"). */
+  forceIndicesOnly?: boolean
+  /** Narrows a forced index table to one region. */
+  forceIndexRegion?: IndexStreamRegion
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
@@ -441,6 +449,7 @@ export const FeedList = ({
   const show247USEquities = force24x7Only
   const showApacEquitiesFeeds = forceApacEquitiesOnly
   const showFuturesFeeds = forceFuturesOnly
+  const showIndexStreams = forceIndicesOnly
 
   const [twentyFourSevenFilterParam, setTwentyFourSevenFilterParam] = useQueryString("247Category")
   const twentyFourSevenFilter: TwentyFourSevenFilterValue =
@@ -522,6 +531,7 @@ export const FeedList = ({
   const show247USEquitiesTestnet = force24x7Only
   const showApacEquitiesFeedsTestnet = forceApacEquitiesOnly
   const showFuturesFeedsTestnet = forceFuturesOnly
+  const showIndexStreamsTestnet = forceIndicesOnly
 
   const [testnetTwentyFourSevenFilterParam, setTestnetTwentyFourSevenFilterParam] = useQueryString("testnet247Category")
   const testnetTwentyFourSevenFilter: TwentyFourSevenFilterValue =
@@ -1006,6 +1016,16 @@ export const FeedList = ({
           )
         }
 
+        if (isStreams && forceIndicesOnly) {
+          return (
+            network.metadata?.some(
+              (feed) =>
+                isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) &&
+                matchesIndexStreamFilter(feed, true, forceIndexRegion)
+            ) ?? false
+          )
+        }
+
         return networkHasVisibleFeeds(network, dataFeedType, ecosystem, visibilityOptions)
       })
 
@@ -1034,6 +1054,8 @@ export const FeedList = ({
     force247TokenizedEquity,
     forceApacEquitiesOnly,
     forceFuturesOnly,
+    forceIndicesOnly,
+    forceIndexRegion,
     forceExtendedHoursCategory,
   ])
 
@@ -1139,21 +1161,23 @@ export const FeedList = ({
           ? "24/7 Lending Streams"
           : "24/7 US Equities Streams"
 
-  const forcedCategoryLabel = forceApacEquitiesOnly
-    ? "APAC Equities Streams"
-    : force24x7Only
-      ? forced24x7Label
-      : forceFuturesOnly
-        ? "Futures Streams"
-        : forceStreamCategoryFilter === "datalink"
-          ? "DataLink Streams"
-          : forceStreamCategoryFilter === "equities"
-            ? "Equity Streams"
-            : forceStreamCategoryFilter === "forex"
-              ? "Forex Streams"
-              : forceStreamCategoryFilter === "futures"
-                ? "Futures Streams"
-                : null
+  const forcedCategoryLabel = forceIndicesOnly
+    ? "Index Streams"
+    : forceApacEquitiesOnly
+      ? "APAC Equities Streams"
+      : force24x7Only
+        ? forced24x7Label
+        : forceFuturesOnly
+          ? "Futures Streams"
+          : forceStreamCategoryFilter === "datalink"
+            ? "DataLink Streams"
+            : forceStreamCategoryFilter === "equities"
+              ? "Equity Streams"
+              : forceStreamCategoryFilter === "forex"
+                ? "Forex Streams"
+                : forceStreamCategoryFilter === "futures"
+                  ? "Futures Streams"
+                  : null
 
   const streamsMainnetSectionTitle = forcedCategoryLabel
     ? `Mainnet ${forcedCategoryLabel}`
@@ -1446,6 +1470,16 @@ export const FeedList = ({
         )
       }
 
+      if (forceIndicesOnly) {
+        return (
+          network.metadata?.some(
+            (feed) =>
+              isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) &&
+              matchesIndexStreamFilter(feed, true, forceIndexRegion)
+          ) ?? false
+        )
+      }
+
       return networkHasVisibleFeeds(network, dataFeedType, ecosystem, visibilityOptions)
     }
 
@@ -1533,6 +1567,7 @@ export const FeedList = ({
                       !force24x7Only &&
                       !forceApacEquitiesOnly &&
                       !forceFuturesOnly &&
+                      !forceIndicesOnly &&
                       !forceStreamCategoryFilter && (
                         <FilterDropdown
                           isOpen={openDropdownId === "main-market-hours"}
@@ -1552,7 +1587,8 @@ export const FeedList = ({
                       !forceStreamCategoryFilter &&
                       !force24x7Only &&
                       !forceApacEquitiesOnly &&
-                      !forceFuturesOnly && (
+                      !forceFuturesOnly &&
+                      !forceIndicesOnly && (
                         <>
                           <FilterDropdown
                             isOpen={openDropdownId === "main-schema"}
@@ -1686,6 +1722,8 @@ export const FeedList = ({
                   twentyFourSevenProduct={force247Product}
                   showApacEquitiesFeeds={showApacEquitiesFeeds}
                   showFuturesFeeds={showFuturesFeeds}
+                  showIndexStreams={showIndexStreams}
+                  indexRegion={forceIndexRegion}
                   tradingHoursFilter={tradingHoursFilter}
                   dataFeedType={dataFeedType}
                   ecosystem={ecosystem}
@@ -1753,6 +1791,7 @@ export const FeedList = ({
                       !force24x7Only &&
                       !forceApacEquitiesOnly &&
                       !forceFuturesOnly &&
+                      !forceIndicesOnly &&
                       !forceStreamCategoryFilter && (
                         <FilterDropdown
                           isOpen={openDropdownId === "test-market-hours"}
@@ -1772,7 +1811,8 @@ export const FeedList = ({
                       !forceStreamCategoryFilter &&
                       !force24x7Only &&
                       !forceApacEquitiesOnly &&
-                      !forceFuturesOnly && (
+                      !forceFuturesOnly &&
+                      !forceIndicesOnly && (
                         <>
                           <FilterDropdown
                             isOpen={openDropdownId === "test-schema"}
@@ -1908,6 +1948,8 @@ export const FeedList = ({
                   twentyFourSevenProduct={force247Product}
                   showApacEquitiesFeeds={showApacEquitiesFeedsTestnet}
                   showFuturesFeeds={showFuturesFeedsTestnet}
+                  showIndexStreams={showIndexStreamsTestnet}
+                  indexRegion={forceIndexRegion}
                   tradingHoursFilter={testnetTradingHoursFilter}
                   firstAddr={testnetFirstAddr}
                   lastAddr={testnetLastAddr}
