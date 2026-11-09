@@ -355,7 +355,7 @@ export const CHAINS: Chain[] = [
     title: "HyperEVM Data Feeds",
     img: "/assets/chains/hyperevm.svg",
     networkStatusUrl: "https://hyperevmscan.statuspage.io/",
-    tags: ["default", "smartData", "svrAtlas"],
+    tags: ["default", "smartData"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -364,7 +364,7 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-hyperliquid-mainnet.json",
         queryString: "hyperliquid-mainnet",
-        tags: ["smartData", "svrAtlas"],
+        tags: ["smartData"],
       },
     ],
   },
@@ -866,7 +866,7 @@ export const CHAINS: Chain[] = [
     title: "Unichain Data Feeds",
     img: "/assets/chains/unichain.svg",
     networkStatusUrl: "https://status.unichain.org/",
-    tags: ["default", "svrAtlas"],
+    tags: ["default"],
     supportedFeatures: ["feeds"],
     networks: [
       {
@@ -875,7 +875,6 @@ export const CHAINS: Chain[] = [
         networkType: "mainnet",
         rddUrl: "https://reference-data-directory.vercel.app/feeds-ethereum-mainnet-unichain-1.json",
         queryString: "unichain-mainnet",
-        tags: ["svrAtlas"],
       },
       {
         name: "Unichain Sepolia",
