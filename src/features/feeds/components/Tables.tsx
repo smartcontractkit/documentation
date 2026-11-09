@@ -35,6 +35,7 @@ import {
   is247USEquitiesStream,
   is24x5StreamFeed,
   isApacEquitiesStreamFeed,
+  isFuturesStreamFeed,
   getTwapWindowSeconds,
 } from "~/features/feeds/utils/feedMetadata.ts"
 import { get247Category, is247Stream } from "~/features/feeds/utils/twentyFourSeven.ts"
@@ -1623,7 +1624,7 @@ export const StreamsTr = ({ metadata, isMainnet, showRiskColumn = isMainnet }) =
               }
               return null
             })()}
-            {metadata.docs.marketHours ? (
+            {metadata.docs.marketHours && !isFuturesStreamFeed(metadata) ? (
               <div className={tableStyles.definitionGroup}>
                 <dt>
                   <span className="label">Market hours:</span>
