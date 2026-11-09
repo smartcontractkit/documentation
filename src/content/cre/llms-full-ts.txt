@@ -2035,6 +2035,7 @@ The guides below all run your workflow's logic on Workflow DON nodes, the defaul
 | [Secrets](/cre/guides/workflow/secrets)                                | Manage API keys and credentials safely, in simulation and in deployed workflows.    |
 | [Using Time in Workflows](/cre/guides/workflow/time-in-workflows)      | Get a deterministic, consensus-safe timestamp with `runtime.now()`.                 |
 | [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) | Generate random numbers that stay consistent across nodes so consensus still holds. |
+| [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows)      | Reduce execution time by running independent capability calls in parallel.          |
 
 ---
 
@@ -11189,7 +11190,7 @@ func main() {
 
 # Common Queries
 Source: https://docs.chain.link/cre/reference/graphql-api/common-queries
-Last Updated: 2026-08-31
+Last Updated: 2026-11-06
 
 These recipes are organized around what you're trying to do, not around the GraphQL schema. Each one is a complete, runnable query. Replace placeholders such as `<WORKFLOW_UUID>` with real values, and see [Authentication](/cre/reference/graphql-api/authentication) for how to set the `Authorization` header.
 
@@ -11467,7 +11468,7 @@ Retrieve success and failure counts bucketed over a time range — useful for he
 #### Query
 
 ```graphql
-query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
+query WorkflowActivity($workflowUUID: String, $from: Time!, $to: Time!) {
   workflowActivity(input: { workflowUUID: $workflowUUID, from: $from, to: $to }) {
     data {
       from
@@ -11488,6 +11489,8 @@ query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
   "to": "2026-08-31T00:00:00Z"
 }
 ```
+
+Both `from` and `to` are required — omitting either one, or passing `null`, fails GraphQL validation with a `422` error. `to` must be after `from`; a range that is empty or reversed (`from` greater than or equal to `to`) returns `INVALID_ARGUMENT`.
 
 #### Response
 
@@ -11973,7 +11976,7 @@ query ExecutionEvents($workflowExecutionUUID: String!, $capabilityID: String, $s
 
 # Query Reference
 Source: https://docs.chain.link/cre/reference/graphql-api/queries
-Last Updated: 2026-08-31
+Last Updated: 2026-11-06
 
 This page documents every query on the CRE GraphQL API's root `Query` type that reads workflow, deployment, execution, account, or organization data.
 
@@ -12315,8 +12318,8 @@ Use this to build health charts or monitoring dashboards.
 | Field          | Type     | Required | Description                                                                |
 | -------------- | -------- | -------- | -------------------------------------------------------------------------- |
 | `workflowUUID` | `String` | No       | Restrict to a single workflow. Omit to aggregate across your organization. |
-| `from`         | `Time`   | No       | Start of the time range.                                                   |
-| `to`           | `Time`   | No       | End of the time range.                                                     |
+| `from`         | `Time!`  | Yes      | Start of the time range.                                                   |
+| `to`           | `Time!`  | Yes      | End of the time range. Must be after `from`.                               |
 
 ### Returns
 
@@ -12329,7 +12332,7 @@ Non-nullable. See [`WorkflowActivityOutput`](/cre/reference/graphql-api/objects#
 ### Example
 
 ```graphql
-query WorkflowActivity($workflowUUID: String, $from: Time, $to: Time) {
+query WorkflowActivity($workflowUUID: String, $from: Time!, $to: Time!) {
   workflowActivity(input: { workflowUUID: $workflowUUID, from: $from, to: $to }) {
     data {
       from
@@ -13251,7 +13254,7 @@ A secrets authentication flow supported by a [`Registry`](/cre/reference/graphql
 
 # Input Reference
 Source: https://docs.chain.link/cre/reference/graphql-api/inputs
-Last Updated: 2026-08-31
+Last Updated: 2026-11-06
 
 This page documents the input types used as arguments to the queries in the [Query Reference](/cre/reference/graphql-api/queries).
 
@@ -13299,8 +13302,8 @@ Used by [`workflowActivity`](/cre/reference/graphql-api/queries#workflowactivity
 | Field          | Type     | Required | Description                                                                |
 | -------------- | -------- | -------- | -------------------------------------------------------------------------- |
 | `workflowUUID` | `String` | No       | Restrict to a single workflow. Omit to aggregate across your organization. |
-| `from`         | `Time`   | No       | Start of the time range.                                                   |
-| `to`           | `Time`   | No       | End of the time range.                                                     |
+| `from`         | `Time!`  | Yes      | Start of the time range.                                                   |
+| `to`           | `Time!`  | Yes      | End of the time range. Must be after `from`.                               |
 
 ## `WorkflowDeploymentInput`
 
@@ -16781,6 +16784,183 @@ Before you publish, run through this checklist to confirm your library follows e
 - [SDK Reference: HTTP Client](/cre/reference/sdk/http-client-ts): Full `HTTPClient` API
 - [SDK Reference: Core](/cre/reference/sdk/core-ts): `Runtime`, `NodeRuntime`, and the `.result()` pattern
 - [Secrets](/cre/guides/workflow/secrets): Storing and retrieving secrets for a deployed workflow
+
+---
+
+# Optimizing Workflows
+Source: https://docs.chain.link/cre/guides/workflow/optimizing-workflows-ts
+Last Updated: 2026-11-04
+
+> **NOTE: TL;DR**
+>
+> Most workflow execution time is spent waiting on capability calls. If two capability calls do not depend on each
+> other, start both before you wait for either one. Running independent calls in parallel is the single biggest lever
+> for reducing workflow execution time.
+
+## Why workflows feel slow
+
+Workflows spend most of their time waiting on capability calls: reading a chain, calling an HTTP API, reaching
+consensus, or retrieving secrets. Each call is a round trip, and many also include a consensus step across the DON.
+
+When you call `.result()` immediately after each capability call, each round trip waits for the previous one to finish.
+The execution time becomes the sum of every call's latency. If the calls are independent, that waiting adds no value.
+
+## Anti-pattern: serializing independent calls
+
+The most common cause of long executions is a sequence of capability calls that have no data dependency on each other
+but are still resolved one at a time.
+
+### Chain read, then secret
+
+```typescript
+import { EVMClient, LAST_FINALIZED_BLOCK_NUMBER, encodeCallMsg, type Runtime } from "@chainlink/cre-sdk"
+import { zeroAddress } from "viem"
+
+const onCronTrigger = (runtime: Runtime<Config>): string => {
+  const evmClient = new EVMClient(config.chainSelector)
+
+  // Chain read (starts and blocks)
+  const readResult = evmClient
+    .callContract(runtime, {
+      call: encodeCallMsg({
+        from: zeroAddress,
+        to: config.contractAddress,
+        data: encodedCallData,
+      }),
+      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+    })
+    .result()
+
+  // Secret retrieval (starts only after the read above finishes)
+  const signingKey = runtime.getSecret({ id: "SIGNING_KEY" }).result().value
+
+  // ...
+  return "done"
+}
+```
+
+Retrieving `SIGNING_KEY` does not use `readResult`. The secret call could have started at the same time as the chain
+read, but here it waits for the read to complete first.
+
+### HTTP + consensus, then secret
+
+The same problem appears with a node-mode HTTP call and its consensus step:
+
+```typescript
+const price = runtime.runInNodeMode(fetchPrice, consensusMedianAggregation<bigint>())().result()
+
+// Starts only after the HTTP call and consensus finish
+const signingKey = runtime.getSecret({ id: "SIGNING_KEY" }).result().value
+```
+
+If the secret is not used to authenticate or build that HTTP request, the two calls are independent.
+
+> **NOTE: Secrets that are request inputs are not independent**
+>
+> If an HTTP request needs a secret for authentication, the secret must be fetched first and passed into the request.
+> That is a real dependency, so keep those calls sequential. The pattern on this page applies to secrets that are used
+> later in the workflow, not to secrets that are inputs to the earlier call.
+
+## Recommended pattern: start first, collect later
+
+In the TypeScript SDK, invoking a capability starts the operation immediately. `.result()` only waits for the result.
+That means you can initiate several independent operations first, then collect their results.
+
+```typescript
+// Start both operations before waiting for either one
+const readCall = evmClient.callContract(runtime, {
+  call: encodeCallMsg({
+    from: zeroAddress,
+    to: config.contractAddress,
+    data: encodedCallData,
+  }),
+  blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+})
+
+const secretCall = runtime.getSecret({ id: "SIGNING_KEY" })
+
+// Collect results in a fixed order
+const readResult = readCall.result()
+const signingKey = secretCall.result().value
+```
+
+The HTTP + consensus case follows the same shape, with one difference: the node-mode function runs to completion before
+`runInNodeMode(...)()` returns, so the secret fetch overlaps with the consensus step, not with the HTTP request.
+`.result()` waits for the aggregated result:
+
+```typescript
+const priceCall = runtime.runInNodeMode(fetchPrice, consensusMedianAggregation<bigint>())()
+const secretCall = runtime.getSecret({ id: "SIGNING_KEY" })
+
+const price = priceCall.result()
+const signingKey = secretCall.result().value
+```
+
+This is the same "prepare multiple operations" behavior described in the
+[Core SDK reference](/cre/reference/sdk/core-ts#preparing-multiple-operations). The reference covers the API mechanics;
+this guide covers when and why to use it.
+
+> **NOTE: Keep the order fixed across nodes**
+>
+> Initiate calls in a fixed order, and resolve them in a fixed order. Do not use `Promise.race()` or `Promise.any()`
+> around capability results, and do not let timing decide which result you use. The DON must produce the same result on
+> every node. See [Avoiding Non-Determinism](/cre/concepts/non-determinism-ts).
+
+## Batch multiple secrets
+
+If you need more than one secret, use `runtime.getSecrets()` to retrieve them in a single call instead of calling
+`getSecret()` repeatedly:
+
+```typescript
+const secrets = runtime.getSecrets([{ id: "SIGNING_KEY" }, { id: "WEBHOOK_TOKEN" }]).result()
+
+const signingKey = secrets["SIGNING_KEY"].value
+const webhookToken = secrets["WEBHOOK_TOKEN"].value
+```
+
+You can combine batching with the parallel pattern: start the batch secret call, start any independent chain or HTTP
+calls, then resolve everything. Secrets retrieved in a batch count toward the secrets concurrency limit, so check
+[Service Quotas](/cre/service-quotas) before fetching many secrets at once.
+
+## How to spot the problem
+
+Look for these signs in a workflow:
+
+- **Code:** a long sequence of capability calls where `.result()` is called immediately after each call, and the next
+  call does not use the previous result.
+- **Events tab:** open an execution in the CRE UI and review the **Events** tab. Capability and consensus events have
+  timestamps. Back-to-back events with clearly sequential start times are a candidate for parallelization. See
+  [Monitoring Workflows](/cre/guides/operations/monitoring-workflows#events-tab).
+- **Size:** a run of roughly 20 sequential capability calls is a good candidate to review, even if you are not sure
+  which calls are independent.
+
+Start with the calls that take the longest, such as HTTP requests and chain reads. A good first check is to list every
+capability call in the handler and mark which results are used as inputs to later calls. Calls with no dependency edge
+can usually be started together.
+
+## When not to parallelize
+
+Keep calls sequential when:
+
+- **One call uses another call's result.** For example, the next HTTP request URL comes from a chain read, or a secret
+  is needed to sign or authenticate the next request.
+- **The operation depends on a previous write.** A read-after-write must see the write first, and writes that must happen
+  in a specific order cannot be reordered.
+- **The result depends on timing.** If the workflow chooses a branch based on which call finishes first, parallelizing
+  introduces non-determinism. Use a fixed order instead.
+- **The provider rate-limits you.** Parallel calls can exceed an API's rate limit. Keep those requests sequential, batch
+  them if the API supports it, or use caching where appropriate.
+
+Parallelism is also bounded by workflow quotas. A workflow can have at most 30 concurrent capability calls, and secrets
+have their own concurrency and call limits. See [Service Quotas](/cre/service-quotas) for the current values.
+
+## Related guides
+
+- [API Interactions](/cre/guides/workflow/using-http-client): make HTTP requests and reach consensus on the results.
+- [EVM Chain Interactions](/cre/guides/workflow/using-evm-client/overview): read chain state and write reports.
+- [Managing Secrets](/cre/guides/workflow/secrets): retrieve one or many secrets safely.
+- [Core SDK reference: Preparing multiple operations](/cre/reference/sdk/core-ts#preparing-multiple-operations): the
+  underlying SDK behavior.
 
 ---
 
