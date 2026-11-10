@@ -81140,7 +81140,7 @@ Coordinate with **Chainlink CCIP operations** for:
 
 # BurnMint Token Pool Deployment (Canton)
 Source: https://docs.chain.link/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool
-Last Updated: 2026-10-13
+Last Updated: 2026-11-10
 
 > **CAUTION**
 >
@@ -81174,7 +81174,7 @@ This guide assumes you already have a token instrument live on Canton — for ex
 | :--- | :------------------------- | :--------------------- | :---------------------------------- |
 | 1    | Deploy `BurnMintTokenPool` | `cct:deploy-burn-mint` | Ledger API `CreateCommand`          |
 | 2    | Register on TAR            | `cct:set-token`        | TAR choices via Ledger API          |
-| 3    | Enable lane                | —                      | Rate limiters + `ApplyChainUpdates` |
+| 3    | Enable lane                | `cct:enable-lane`      | Rate limiters + `ApplyChainUpdates` |
 | 4    | Go live                    | —                      | EDS + verification                  |
 
 ## Step 1 — Deploy the BurnMint Token Pool
@@ -81304,7 +81304,9 @@ Step 3/3 — SetPool on Token Admin Registry
 ✅ Token pool registered for yourParty::1220…::token-id
    tokenConfigCid: 00ghi…
 
-Next step: enable a cross-chain lane (rate limiters + ApplyChainUpdates on the pool).
+Next step: enable a cross-chain lane (remote pool + token are required):
+   npm run cct:enable-lane -- --kind <burnMint|lockRelease> --poolInstanceId "acme-eur-bm-pool" \
+      --poolOwner "yourParty::1220…" --remotePool <0xREMOTE_POOL> --remoteToken <0xREMOTE_TOKEN>
 ```
 
 ### Manual
@@ -81374,7 +81376,73 @@ See the reference configs: [`eds-token-pools.toml`](https://github.com/smartcont
 
 ## Step 3 — Enable a lane
 
-Lane enablement is **not** automated by the starter kit. Deploy rate limiters and call `ApplyChainUpdates` on your pool via the Ledger API.
+Lane enablement wires your pool to a remote chain: three `RateLimiter` contracts plus an `ApplyChainUpdates` exercise on the pool. Use the starter kit or submit the Ledger API commands directly.
+
+### Starter kit
+
+```bash filename="Terminal"
+npm run cct:enable-lane -- \
+  --kind burnMint \
+  --poolInstanceId acme-eur-bm-pool \
+  --remotePool 0x… \
+  --remoteToken 0x…
+```
+
+`--remotePool` and `--remoteToken` are the token pool and token addresses deployed on the remote chain. EVM addresses are automatically left-padded to the 32-byte form the pool expects.
+
+**Flags:**
+
+| Flag                        | Required | Description                                                                                              |
+| :-------------------------- | :------- | :------------------------------------------------------------------------------------------------------- |
+| `--kind`                    | Yes      | Token pool family deployed in Step 1: `burnMint` or `lockRelease`                                        |
+| `--poolInstanceId`          | Yes      | Token pool instance ID from Step 1                                                                       |
+| `--remotePool`              | Yes      | Remote token pool address (`0x`-hex) — the pool this lane trusts on the remote chain                     |
+| `--remoteToken`             | Yes      | Remote token address (`0x`-hex) — the token this lane bridges on the remote chain                        |
+| `--poolOwner`               | No       | Party that owns the pool contract (defaults to `party` in `canton-config.json`)                          |
+| `--remoteChainSelector`     | No       | Destination chain selector (defaults to the configured remote chain — Sepolia in the starter kit)        |
+| `--ccv`                     | No       | CommitteeVerifier raw instance address(es) for both directions (defaults to the CCIP-hosted testnet CCV) |
+| `--finality`                | No       | Allowed finality policy for the lane: `finalized` (default) or `blockDepth`                              |
+| `--blockDepth`              | No       | Block depth (1–65535), required with `--finality blockDepth`                                             |
+| `--limiterInstanceIdPrefix` | No       | Prefix for the three rate limiter instance IDs (defaults to `<poolInstanceId>-<remoteChainSelector>`)    |
+| `--enableLimiters`          | No       | Deploy the rate limiters enabled (defaults to disabled with zero capacity/rate for testing)              |
+| `--capacity`                | No       | Rate limiter capacity in the pool's decimal representation (with `--enableLimiters`)                     |
+| `--rate`                    | No       | Rate limiter refill per second in the pool's decimal representation (with `--enableLimiters`)            |
+
+The script deploys the three rate limiters and exercises `ApplyChainUpdates` on the pool in one run.
+
+**Expected output:**
+
+```text
+Canton bearer token obtained via OIDC client credentials.
+Enabling a cross-chain lane on the token pool
+   pool kind:          burnMint
+   poolInstanceId:     acme-eur-bm-pool
+   poolOwner:          yourParty::1220…
+   remoteChainSelector: 16015286601757825753
+   remotePools:        0000…1234
+   remoteTokenAddress: 0000…5678
+   CCVs:               committeeverifier-pttst@ccvOwner::1220e382…
+   finalityConfig:     finalized
+   limiters:           disabled (zero capacity/rate)
+Step 1/2 — Deploy three RateLimiter contracts
+   inbound: acme-eur-bm-pool-16015286601757825753-in (isEnabled=false, capacity=0, rate=0)
+   inbound contract ID: 00def…
+   inbound-custom: acme-eur-bm-pool-16015286601757825753-in-custom (isEnabled=false, capacity=0, rate=0)
+   inbound-custom contract ID: 00ghi…
+   outbound: acme-eur-bm-pool-16015286601757825753-out (isEnabled=false, capacity=0, rate=0)
+   outbound contract ID: 00jkl…
+Step 2/2 — ApplyChainUpdates on the token pool
+✅ Lane enabled for remote chain 16015286601757825753
+   poolContractId: 00abc…
+   inbound limiter: acme-eur-bm-pool-16015286601757825753-in@yourParty::1220…
+   inbound-custom limiter: acme-eur-bm-pool-16015286601757825753-in-custom@yourParty::1220…
+   outbound limiter: acme-eur-bm-pool-16015286601757825753-out@yourParty::1220…
+   Update: https://lighthouse.testnet.cantonloop.com/transactions/…
+
+Next step: stand up EDS for your pool and run end-to-end transfer tests.
+```
+
+### Manual
 
 ### 1. Deploy three rate limiters
 
@@ -81404,7 +81472,7 @@ The choice argument is **not** the pool's `remoteChainConfigs` map — it takes 
           "remoteChainSelectorsToRemove": [],
           "chainsToAdd": [
             {
-              "remoteChainSelector": "9268731218649498074",
+              "remoteChainSelector": "16015286601757825753",
               "remotePools": ["<REMOTE_POOL_ADDRESS_32_BYTES>"],
               "remoteTokenAddress": "<REMOTE_TOKEN_ADDRESS_32_BYTES>",
               "inboundCCVs": [
@@ -81466,7 +81534,7 @@ See [CCIP on Canton — Overview](/ccip/canton/concepts/overview) for user flows
 
 # Cross-Chain Token (CCT) — Canton
 Source: https://docs.chain.link/ccip/canton/tutorials/cross-chain-tokens
-Last Updated: 2026-10-13
+Last Updated: 2026-11-10
 
 > **CAUTION**
 >
@@ -81487,7 +81555,7 @@ Connect a Canton instrument to CCIP by deploying a token pool, registering on th
 
 ## Starter kit (`cct:*` scripts)
 
-The [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) automates pool deployment and TAR registration on Canton testnet. Each BurnMint and LockRelease guide includes **Starter kit** and **Manual** paths for those steps.
+The [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) automates pool deployment, TAR registration, and lane enablement on Canton testnet. Each BurnMint and LockRelease guide includes **Starter kit** and **Manual** paths for those steps.
 
 ### Setup
 
@@ -81510,6 +81578,7 @@ The [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter
 | Deploy BurnMint pool    | `npm run cct:deploy-burn-mint`    | Creates a [`BurnMintTokenPool`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/burn-mint-token-pool/daml/CCIP/BurnMintTokenPoolV2.daml) on-ledger          |
 | Deploy LockRelease pool | `npm run cct:deploy-lock-release` | Creates a [`LockReleaseTokenPool`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/lock-release-token-pool/daml/CCIP/LockReleaseTokenPoolV2.daml) on-ledger |
 | Register on TAR         | `npm run cct:set-token`           | Runs `ProposeAdministrator` → `AcceptAdminRole` → `SetPool` on the Token Admin Registry                                                                                                         |
+| Enable lane             | `npm run cct:enable-lane`         | Deploys the three `RateLimiter` contracts and exercises `ApplyChainUpdates` on the pool                                                                                                         |
 
 ### Typical flow (BurnMint)
 
@@ -81524,12 +81593,17 @@ npm run cct:set-token -- \
   --instrument 'yourParty::1220…::token-id' \
   --poolInstanceId acme-eur-bm-pool
 
-# 3. Enable lane — manual Ledger API (see guide Step 3)
+# 3. Enable lane (remote pool + token from the Sepolia-side deployment)
+npm run cct:enable-lane -- \
+  --kind burnMint \
+  --poolInstanceId acme-eur-bm-pool \
+  --remotePool 0x… \
+  --remoteToken 0x…
 ```
 
 > **NOTE: Script scope**
 >
-> Starter kit scripts cover **pool creation** and **TAR registration** only. You still configure **rate limiters**, **`ApplyChainUpdates`**, **LockRelease liquidity and preapproval**, **EDS**, and **lane validation** manually — each guide documents those steps.
+> Starter kit scripts cover **pool creation**, **TAR registration**, and **lane enablement**. You still configure **LockRelease liquidity and preapproval**, **EDS**, and **lane validation** manually — each guide documents those steps.
 
 ## On-ledger checklist (all guides)
 
@@ -81556,7 +81630,7 @@ Cross-chain send and receive are validated by Chainlink operations once your tok
 
 # LockRelease Token Pool Deployment (Canton)
 Source: https://docs.chain.link/ccip/canton/tutorials/cross-chain-tokens/lock-release-token-pool
-Last Updated: 2026-10-13
+Last Updated: 2026-11-10
 
 > **CAUTION**
 >
@@ -81593,7 +81667,7 @@ This guide assumes you have a token instrument live on Canton with supply minted
 | 1    | Deploy `LockReleaseTokenPool`   | `cct:deploy-lock-release` | Ledger API `CreateCommand`          |
 | 2    | Fund holdings + set preapproval | —                         | Ledger API choices                  |
 | 3    | Register on TAR                 | `cct:set-token`           | TAR choices via Ledger API          |
-| 4    | Enable lane                     | —                         | Rate limiters + `ApplyChainUpdates` |
+| 4    | Enable lane                     | `cct:enable-lane`         | Rate limiters + `ApplyChainUpdates` |
 | 5    | Go live                         | —                         | EDS + verification                  |
 
 ## Step 1 — Deploy the LockRelease Token Pool
@@ -81780,7 +81854,21 @@ Admin role can be transferred with `TransferAdminRole` → `AcceptAdminRole`.
 
 ## Step 4 — Enable a lane
 
-Lane enablement is **not** automated by the starter kit.
+Lane enablement wires your pool to a remote chain: three `RateLimiter` contracts plus an `ApplyChainUpdates` exercise on the pool. Use the starter kit or submit the Ledger API commands directly.
+
+### Starter kit
+
+```bash filename="Terminal"
+npm run cct:enable-lane -- \
+  --kind lockRelease \
+  --poolInstanceId acme-eur-lr-pool \
+  --remotePool 0x… \
+  --remoteToken 0x…
+```
+
+Use the same flags as [BurnMint Step 3](/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool#step-3--enable-a-lane), with `--kind lockRelease`. The script deploys the three rate limiters and exercises `ApplyChainUpdates` on the pool in one run.
+
+### Manual
 
 ### 1. Deploy three rate limiters
 
@@ -81810,7 +81898,7 @@ The choice argument is **not** the pool's `remoteChainConfigs` map — it takes 
           "remoteChainSelectorsToRemove": [],
           "chainsToAdd": [
             {
-              "remoteChainSelector": "9268731218649498074",
+              "remoteChainSelector": "16015286601757825753",
               "remotePools": ["<REMOTE_POOL_ADDRESS_32_BYTES>"],
               "remoteTokenAddress": "<REMOTE_TOKEN_ADDRESS_32_BYTES>",
               "inboundCCVs": [
