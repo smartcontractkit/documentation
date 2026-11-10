@@ -10,7 +10,7 @@ metadata:
 ---
 
 import DataStreams from "@features/data-streams/common/DataStreams.astro"
-import { CopyText } from "@components"
+import { Aside, CopyText } from "@components"
 
 <DataStreams section="dsNotes" />
 
@@ -64,6 +64,25 @@ GET /api/v1/ws?feedIDs=<feedID1>,<feedID2>,...
   }
 }
 ```
+
+## Connection closures and reconnecting
+
+WebSocket connections to Data Streams are not guaranteed to stay open indefinitely. The server closes connections during routine operations such as deployments, server rotation, and failover. This is expected behavior, and your client should be built to handle it.
+
+Data Streams sends close code **`1000`** for all server-initiated closures, usually without a reason string. This includes restarts and failover, where [RFC 6455](https://www.rfc-editor.org/rfc/rfc6455#section-7.4.1) would typically use `1001` ("going away"). Do not interpret a `1000` close from the server as the end of your stream or as a problem with your credentials, request, or client. **Always reconnect.**
+
+### Recommended client behavior
+
+- **Reconnect automatically** whenever the connection closes, including on a `1000` close. Following [RFC 6455 section 7.2.3](https://www.rfc-editor.org/rfc/rfc6455#section-7.2.3), delay the first reconnect attempt by a small random amount (for example, 0–5 seconds) and use exponential backoff for subsequent attempts, so that many clients don't reconnect at the same moment.
+- **Regenerate authentication headers on every reconnect.** The `X-Authorization-Timestamp` header must be within 5 seconds of server time, so headers from the original connection can't be reused.
+- **Expect a brief gap.** Reports typically resume within a few seconds of reconnecting. If your application can't tolerate a gap, use the [REST API](/data-streams/reference/data-streams-api/interface-api) to fetch the latest report for each stream after reconnecting.
+- **Keep redundant connections for critical workloads.** The [Data Streams SDKs](/data-streams/reference/data-streams-api/go-sdk) handle reconnection for you and support a high availability mode that maintains connections to multiple origins and deduplicates reports, so a single closed connection doesn't interrupt your stream.
+
+<Aside type="note" title="Close code 1000 is not an error">
+  Treat a server-initiated `1000` close as a normal lifecycle event, not a failure. Log it and reconnect. Only escalate
+  if reconnect attempts themselves fail, for example with a `401` or `429` response during the handshake (see [Error
+  response codes](#error-response-codes)).
+</Aside>
 
 ## Error response codes
 
