@@ -123,6 +123,13 @@ For U.S. equities, there is no single consolidated order book. Instead, multiple
 
 As a result, these volume fields should not be treated as a proxy for total market liquidity at the top of book. They are informational and not especially representative in fragmented markets like U.S. equities.
 
+`bidVolume` and `askVolume` may also be reported as `0` in certain cases where a confident value cannot be provided. A value of `0` does not mean there is no resting liquidity at the bid or ask. Do not use these fields as inputs to pricing, liquidation, or other risk logic, and make sure your application handles a `0` value without breaking.
+
+<Aside type="caution" title="Volume fields may be 0">
+  <code>bidVolume</code> and <code>askVolume</code> are informational only and may be zeroed out in certain cases where
+  a confident value cannot be provided. Do not rely on these fields for pricing or risk decisions.
+</Aside>
+
 #### Additional Notes
 
 - Future streams using this format may adopt different report schemas as needed.

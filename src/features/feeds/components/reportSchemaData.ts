@@ -201,9 +201,19 @@ export const REPORT_SCHEMA_DEFINITIONS: Record<string, SchemaDefinition> = {
         description: "Timestamp of the last update for the mid price only (nanoseconds)",
       },
       { field: "bid", type: "int192", description: "Median bid price" },
-      { field: "bidVolume", type: "int192", description: "Volume at bid price" },
+      {
+        field: "bidVolume",
+        type: "int192",
+        description: "Volume at bid price. Informational only; may be 0 when a confident value cannot be provided.",
+        link: { label: "Details", href: "/data-streams/reference/report-schema-v11#bidask-volume" },
+      },
       { field: "ask", type: "int192", description: "Median ask price" },
-      { field: "askVolume", type: "int192", description: "Volume at ask price" },
+      {
+        field: "askVolume",
+        type: "int192",
+        description: "Volume at ask price. Informational only; may be 0 when a confident value cannot be provided.",
+        link: { label: "Details", href: "/data-streams/reference/report-schema-v11#bidask-volume" },
+      },
       {
         field: "lastTradedPrice",
         type: "int192",
