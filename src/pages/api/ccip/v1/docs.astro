@@ -1,5 +1,6 @@
 ---
 import "~/styles/tailwind.css"
+import { swaggerUiBundleUrl, swaggerUiCssUrl, swaggerUiStandalonePresetUrl } from "~/lib/swagger-ui/assets"
 // JavaScript code example
 const jsExample = `// Example 1: Fetch CCIP Chains
 const fetchCcipChains = async () => {
@@ -102,12 +103,8 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
     />
     <meta name="twitter:image" content="https://docs.chain.link/_astro/ccip-logo.Dbxa2KeA.svg" />
 
-    <!-- Resource hints -->
-    <link rel="preconnect" href="https://unpkg.com" />
-    <link rel="dns-prefetch" href="https://unpkg.com" />
-
     <!-- Swagger UI CSS -->
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href={swaggerUiCssUrl} />
 
     <!-- Structured data -->
     <script type="application/ld+json">
@@ -543,9 +540,8 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
     </footer>
 
     <!-- Swagger UI scripts with defer for better loading performance -->
-    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js" crossorigin="anonymous" defer
-    ></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js" crossorigin="anonymous" defer></script>
+    <script is:inline src={swaggerUiBundleUrl} defer></script>
+    <script is:inline src={swaggerUiStandalonePresetUrl} defer></script>
 
     <!-- Swagger UI initialization script -->
     <script is:inline>
@@ -564,6 +560,8 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
           docExpansion: "list",
           filter: true,
           showExtensions: true,
+          validatorUrl: null,
+          queryConfigEnabled: false,
           tryItOutEnabled: true,
           syntaxHighlight: {
             activated: true,
