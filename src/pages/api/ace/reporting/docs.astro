@@ -1,5 +1,6 @@
 ---
 import "~/styles/tailwind.css"
+import { swaggerUiBundleUrl, swaggerUiCssUrl, swaggerUiStandalonePresetUrl } from "~/lib/swagger-ui/assets"
 Astro.response.headers.set("Content-Type", "text/html; charset=utf-8")
 Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalidate")
 ---
@@ -36,12 +37,8 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
     <meta name="twitter:title" content="ACE Reporting API Documentation" />
     <meta name="twitter:description" content="API reference for the Chainlink ACE Reporting API." />
 
-    <!-- Resource hints -->
-    <link rel="preconnect" href="https://unpkg.com" />
-    <link rel="dns-prefetch" href="https://unpkg.com" />
-
     <!-- Swagger UI CSS -->
-    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui.css" />
+    <link rel="stylesheet" type="text/css" href={swaggerUiCssUrl} />
 
     <!-- Structured data -->
     <script type="application/ld+json">
@@ -239,9 +236,8 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
     <div id="swagger-ui"></div>
 
     <!-- Swagger UI scripts -->
-    <script src="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui-standalone-preset.js" crossorigin="anonymous" defer
-    ></script>
-    <script src="https://unpkg.com/swagger-ui-dist@5.32.0/swagger-ui-bundle.js" crossorigin="anonymous" defer></script>
+    <script is:inline src={swaggerUiBundleUrl} defer></script>
+    <script is:inline src={swaggerUiStandalonePresetUrl} defer></script>
 
     <script is:inline>
       window.addEventListener("load", function () {
@@ -259,6 +255,7 @@ Astro.response.headers.set("Cache-Control", "s-max-age=300, stale-while-revalida
           filter: true,
           showExtensions: true,
           validatorUrl: null,
+          queryConfigEnabled: false,
           tryItOutEnabled: false,
           supportedSubmitMethods: [],
           syntaxHighlight: {
