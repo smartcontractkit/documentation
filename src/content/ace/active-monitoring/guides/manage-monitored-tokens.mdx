@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Register a token and its associated contract with Chainlink ACE Active Monitoring, and view monitored tokens, using the Platform UI or the Coordinator API."
   datePublished: "2026-10-05"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -23,6 +23,13 @@ A **monitored token** is a token contract you register with Active Monitoring, o
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
 
 ## Register a monitored token
+
+<RequiredRole product="ace" role="operator">
+  Registering tokens and their associated contracts requires `ace:active_monitoring:contract_group:write`. Include it in
+  your key for API calls. ACE Viewers can view registered tokens with `ace:active_monitoring:contract_group:read`. The
+  CRE Connect Wallet also needs the onchain permissions described in [Prepare Your
+  Token](/ace/active-monitoring/guides/prepare-your-token).
+</RequiredRole>
 
 A monitored token has a **primary** contract, which is your token, and optionally one or more **associated** contracts. You select the **enforcement functions** of each contract: the functions that Active Monitoring may call when a rule enforces an action. In most cases the token itself has the functions you need, such as `freezePartialTokens`, so you register the primary contract alone. Add an associated contract only when an action must run on a different contract, for example a separate blocklist that your token does not call.
 

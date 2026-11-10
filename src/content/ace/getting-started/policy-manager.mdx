@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Get started as a Policy Manager with Chainlink ACE: create your account, get your PolicyEngine address, integrate your smart contract, configure compliance policies, and test your first policy-protected transaction."
   datePublished: "2026-04-15"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -27,6 +27,14 @@ This guide walks you through the **Policy Manager** — the ACE component for at
 Complete the [Account Setup](/ace/getting-started/account-setup) steps — organization creation, API key generation, and CRE Connect Wallet deployment — before proceeding.
 
 ### 3. Create a PolicyEngine
+
+<RequiredRole product="ace" role="operator">
+  Creating an engine, registering a target, and configuring policies in this guide require ACE write permissions. For
+  the API, your key needs `ace:policy_manager:policy_engine:write`, `ace:policy_manager:target:write`, and
+  `ace:policy_manager:policy:write`, plus the read permissions used to check the results. Creating the wallets in
+  [Account Setup](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) requires ACE Admin or the
+  organization Owner.
+</RequiredRole>
 
 A **PolicyEngine** is the onchain contract that evaluates compliance rules on your smart contract. When you create a PolicyEngine, you also attach **extractors** — modules that decode transaction calldata so the PolicyEngine can evaluate policies against function arguments (sender, recipient, amount, etc.).
 

@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Read the Chainlink ACE Active Monitoring Decisions log, open a decision, resolve or enforce a flagged decision, and track its operation, using the Platform UI or the Coordinator API."
   datePublished: "2026-10-05"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -20,10 +20,15 @@ Most decisions need nothing from you: a **silently logged** decision is a record
 ## Prerequisites
 
 - Screening is running, and at least one risk event matched a rule. See [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
-- To resolve or enforce a flagged decision, a signed-in user. These two actions are available in the Platform UI only.
+- To resolve or enforce a flagged decision, a signed-in ACE Operator, ACE Admin, or organization Owner. These two actions are available in the Platform UI only.
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
 
 ## List decisions
+
+<RequiredRole product="ace" role="viewer">
+  Listing and opening decisions requires `ace:active_monitoring:decision_log:read`. Include this permission in your ACE
+  API key when reading decisions through the API.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">
@@ -95,6 +100,11 @@ Most decisions need nothing from you: a **silently logged** decision is a record
 
 ## Resolve a flagged decision
 
+<RequiredRole product="ace" role="operator">
+  Resolving a decision requires `ace:active_monitoring:decision_log:write` and a signed-in user. Use the Platform UI; an
+  API key cannot perform this action.
+</RequiredRole>
+
 Resolve a flagged decision when you review it and decide that no onchain action is needed. The decision closes, and your reason is recorded with your name.
 
 <MethodTabs>
@@ -116,6 +126,12 @@ Resolve a flagged decision when you review it and decide that no onchain action 
 </MethodTabs>
 
 ## Enforce an action on a flagged decision
+
+<RequiredRole product="ace" role="operator">
+  Enforcing a decision requires `ace:active_monitoring:decision_log:write` and a signed-in user in the Platform UI. The
+  CRE Connect Wallet must separately be authorized to call the enforcement function onchain. Your ACE role does not
+  grant that onchain authority.
+</RequiredRole>
 
 Enforce an action when you decide that the address needs an onchain action. You choose the function and the values, and Active Monitoring creates the operation on the network of the decision.
 

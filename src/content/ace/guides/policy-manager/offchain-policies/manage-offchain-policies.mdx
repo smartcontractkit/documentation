@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Configure a managed Chainlink ACE offchain policy that screens wallet addresses with TRM Wallet Screening before protected transactions execute."
   datePublished: "2026-07-17"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 ACE managed offchain risk policies screen wallet addresses with [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) before allowing a protected onchain action. You configure the risk rules and the target functions to protect. Chainlink manages the CRE workflow, deploys the onchain permit validator, calls TRM, and delivers approved permits onchain.
 
@@ -48,6 +48,11 @@ Before creating a managed offchain risk policy, you need:
 1. A TRM Labs account with Wallet Screening API access and a valid API key. ACE does not provide a TRM account or API credentials. See [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) to learn about the product and request access.
 
 ## Store the TRM credential in Vault DON
+
+<RequiredRole product="cre" role="developer">
+  Uploading this secret with the CRE CLI requires `cre:secret:write`, included in CRE Developer and CRE Admin.
+  Authenticate with your CRE login for the browser-auth command below. Your ACE role does not grant CRE permissions.
+</RequiredRole>
 
 The managed workflow retrieves your TRM credential from Vault DON at runtime. The credential remains encrypted and is not included in the offchain policy configuration.
 
@@ -148,6 +153,11 @@ Category names are matched case-insensitively against the categories returned by
 
 ## Create the offchain policy
 
+<RequiredRole product="ace" role="operator">
+  Creating the policy and updating its configuration requires `ace:policy_manager:policy:write`. Your ACE API key must
+  include this permission, and `ace:policy_manager:policy:read` to poll deployment status.
+</RequiredRole>
+
 Create the policy with `POST /v1/policies`. Use the same policy engine and chains as the target you plan to protect:
 
 ```bash
@@ -193,6 +203,11 @@ ACE creates a managed CRE workflow and deploys one CADV contract per selected ch
 </Aside>
 
 ## Attach the policy to a target function
+
+<RequiredRole product="ace" role="operator">
+  Attaching a protection requires `ace:policy_manager:target:write`. Include this permission in your ACE API key; policy
+  write access alone does not allow changes to target protections.
+</RequiredRole>
 
 A protection connects the managed policy to a function on your target. The `extractor_output_ids` must identify, in order, the values that the permit will bind to onchain.
 
@@ -254,6 +269,11 @@ curl -X PUT https://ace.api.chain.link/v1/policies/<POLICY_ID>/config \
 The policy enters `config_updating` and returns to `active` after the workflow is redeployed. Do not request new evaluations while the configuration is updating.
 
 ## Remove a protection or policy
+
+<RequiredRole product="ace" role="operator">
+  Removing protections requires `ace:policy_manager:target:archive:write`; archiving the policy requires
+  `ace:policy_manager:policy:archive:write`. Your API key must include both permissions to complete these steps.
+</RequiredRole>
 
 Remove a protection before archiving its policy:
 
