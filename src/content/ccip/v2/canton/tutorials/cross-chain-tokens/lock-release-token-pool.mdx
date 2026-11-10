@@ -6,7 +6,7 @@ metadata:
   description: "Deploy a CCIP LockRelease token pool on Canton for fixed-supply CIP-56 instruments, register on TAR, and enable a cross-chain lane."
   excerpt: "CCIP Canton LockRelease token pool, preapproval, TAR registration, starter kit, cct scripts"
   datePublished: "2026-06-27"
-  lastModified: "2026-10-13"
+  lastModified: "2026-11-10"
   difficulty: "advanced"
   estimatedTime: "45 minutes"
 whatsnext:
@@ -56,7 +56,7 @@ CCIP fully trusts the pool owner. Strongly recommend pool owner equals instrumen
 | 1    | Deploy `LockReleaseTokenPool`   | `cct:deploy-lock-release` | Ledger API `CreateCommand`          |
 | 2    | Fund holdings + set preapproval | —                         | Ledger API choices                  |
 | 3    | Register on TAR                 | `cct:set-token`           | TAR choices via Ledger API          |
-| 4    | Enable lane                     | —                         | Rate limiters + `ApplyChainUpdates` |
+| 4    | Enable lane                     | `cct:enable-lane`         | Rate limiters + `ApplyChainUpdates` |
 | 5    | Go live                         | —                         | EDS + verification                  |
 
 ## Step 1 — Deploy the LockRelease Token Pool
@@ -261,7 +261,25 @@ Admin role can be transferred with `TransferAdminRole` → `AcceptAdminRole`.
 
 ## Step 4 — Enable a lane
 
-Lane enablement is **not** automated by the starter kit.
+Lane enablement wires your pool to a remote chain: three `RateLimiter` contracts plus an `ApplyChainUpdates` exercise on the pool. Use the starter kit or submit the Ledger API commands directly.
+
+<Tabs client:visible>
+  <Fragment slot="tab.1">Starter kit</Fragment>
+  <Fragment slot="tab.2">Manual</Fragment>
+  <Fragment slot="panel.1">
+
+```bash filename="Terminal"
+npm run cct:enable-lane -- \
+  --kind lockRelease \
+  --poolInstanceId acme-eur-lr-pool \
+  --remotePool 0x… \
+  --remoteToken 0x…
+```
+
+Use the same flags as [BurnMint Step 3](/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool#step-3--enable-a-lane), with `--kind lockRelease`. The script deploys the three rate limiters and exercises `ApplyChainUpdates` on the pool in one run.
+
+  </Fragment>
+  <Fragment slot="panel.2">
 
 ### 1. Deploy three rate limiters
 
@@ -291,7 +309,7 @@ The choice argument is **not** the pool's `remoteChainConfigs` map — it takes 
           "remoteChainSelectorsToRemove": [],
           "chainsToAdd": [
             {
-              "remoteChainSelector": "9268731218649498074",
+              "remoteChainSelector": "16015286601757825753",
               "remotePools": ["<REMOTE_POOL_ADDRESS_32_BYTES>"],
               "remoteTokenAddress": "<REMOTE_TOKEN_ADDRESS_32_BYTES>",
               "inboundCCVs": [
@@ -331,6 +349,9 @@ The choice argument is **not** the pool's `remoteChainConfigs` map — it takes 
 | `outboundRateLimiter`                        | Outbound limiter address                                                        |
 
 Once applied, the on-ledger lane is complete.
+
+  </Fragment>
+</Tabs>
 
 ## Step 5 — Go live
 

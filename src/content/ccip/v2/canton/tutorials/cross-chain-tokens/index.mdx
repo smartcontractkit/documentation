@@ -6,7 +6,7 @@ metadata:
   description: "Deploy and register CCIP token pools on Canton for cross-chain token transfers using the starter kit or Ledger API."
   excerpt: "CCIP Canton CCT, token pools, Registry issuer, BurnMint, LockRelease, Token Admin Registry, starter kit"
   datePublished: "2026-06-27"
-  lastModified: "2026-10-13"
+  lastModified: "2026-11-10"
 isIndex: true
 whatsnext:
   "Token pool concepts": "/ccip/canton/concepts/token-pools"
@@ -34,7 +34,7 @@ Starter kit `cct:*` scripts target **Canton testnet** only.
 
 ## Starter kit (`cct:*` scripts)
 
-The [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) automates pool deployment and TAR registration on Canton testnet. Each BurnMint and LockRelease guide includes **Starter kit** and **Manual** paths for those steps.
+The [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter-kit-canton) automates pool deployment, TAR registration, and lane enablement on Canton testnet. Each BurnMint and LockRelease guide includes **Starter kit** and **Manual** paths for those steps.
 
 ### Setup
 
@@ -57,6 +57,7 @@ The [`ccip-starter-kit-canton`](https://github.com/smartcontractkit/ccip-starter
 | Deploy BurnMint pool    | `npm run cct:deploy-burn-mint`    | Creates a [`BurnMintTokenPool`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/burn-mint-token-pool/daml/CCIP/BurnMintTokenPoolV2.daml) on-ledger          |
 | Deploy LockRelease pool | `npm run cct:deploy-lock-release` | Creates a [`LockReleaseTokenPool`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/ccip/pools/lock-release-token-pool/daml/CCIP/LockReleaseTokenPoolV2.daml) on-ledger |
 | Register on TAR         | `npm run cct:set-token`           | Runs `ProposeAdministrator` → `AcceptAdminRole` → `SetPool` on the Token Admin Registry                                                                                                         |
+| Enable lane             | `npm run cct:enable-lane`         | Deploys the three `RateLimiter` contracts and exercises `ApplyChainUpdates` on the pool                                                                                                         |
 
 ### Typical flow (BurnMint)
 
@@ -71,12 +72,17 @@ npm run cct:set-token -- \
   --instrument 'yourParty::1220…::token-id' \
   --poolInstanceId acme-eur-bm-pool
 
-# 3. Enable lane — manual Ledger API (see guide Step 3)
+# 3. Enable lane (remote pool + token from the Sepolia-side deployment)
+npm run cct:enable-lane -- \
+  --kind burnMint \
+  --poolInstanceId acme-eur-bm-pool \
+  --remotePool 0x… \
+  --remoteToken 0x…
 ```
 
 <Aside type="note" title="Script scope">
 
-Starter kit scripts cover **pool creation** and **TAR registration** only. You still configure **rate limiters**, **`ApplyChainUpdates`**, **LockRelease liquidity and preapproval**, **EDS**, and **lane validation** manually — each guide documents those steps.
+Starter kit scripts cover **pool creation**, **TAR registration**, and **lane enablement**. You still configure **LockRelease liquidity and preapproval**, **EDS**, and **lane validation** manually — each guide documents those steps.
 
 </Aside>
 
