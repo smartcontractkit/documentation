@@ -33,7 +33,7 @@ export const GET: APIRoute = async ({ params }) => {
 }
 
 export function getStaticPaths() {
-  return SINGLE_FILE_SECTIONS.map((section) => ({
+  return SINGLE_FILE_SECTIONS.filter((section) => !section.includes("/")).map((section) => ({
     params: { section },
   }))
 }

@@ -16,6 +16,19 @@ function pageContext(pathname: string, headers?: HeadersInit) {
 }
 
 describe("markdown html fallback", () => {
+  it.each(["any-api/introduction", "chainlink-functions/getting-started", "vrf/v2/subscription"])(
+    "serves a deprecation notice for %s without falling back to HTML",
+    async (docsPath) => {
+      const fetchMock = jest.fn()
+      globalThis.fetch = fetchMock as typeof fetch
+      const response = await GET(pageContext(`/${docsPath}.md?markdown_fallback=1`) as never)
+      expect(response.status).toBe(200)
+      expect(response.headers.get("content-type")).toContain("text/markdown")
+      expect(await response.text()).toContain("is deprecated.")
+      expect(fetchMock).not.toHaveBeenCalled()
+    }
+  )
+
   it("returns the html page when the markdown file is missing", async () => {
     const fetchMock = jest.fn(async () => {
       return new Response("<html>changelog</html>", {

@@ -1,3 +1,5 @@
+import { SUNSET_DOC_ROOTS } from "./sunset.js"
+
 export type LlmsSectionConfig = {
   root: string
   includeGlobs: string[]
@@ -9,6 +11,7 @@ export type LlmsSectionConfig = {
 
 // Central list of sections that expose llms-full.txt or llms-full-[lang].txt
 export const SUPPORTED_LLM_SECTIONS = [
+  ...SUNSET_DOC_ROOTS,
   "ace",
   "cre",
   "crec",
@@ -29,6 +32,11 @@ export type SupportedSection = (typeof SUPPORTED_LLM_SECTIONS)[number]
 
 // Configuration for each section
 export const LLM_SECTIONS_CONFIG: Record<SupportedSection, LlmsSectionConfig> = {
+  "any-api": { root: "src/content/any-api", includeGlobs: ["**/*.mdx"] },
+  "chainlink-automation": { root: "src/content/chainlink-automation", includeGlobs: ["**/*.mdx"] },
+  "chainlink-functions": { root: "src/content/chainlink-functions", includeGlobs: ["**/*.mdx"] },
+  "vrf/v1": { root: "src/content/vrf/v1", includeGlobs: ["**/*.mdx"] },
+  "vrf/v2": { root: "src/content/vrf/v2", includeGlobs: ["**/*.mdx"] },
   ace: {
     root: "src/content/ace",
     includeGlobs: ["**/*.mdx"],
