@@ -6,10 +6,10 @@ date: Last Modified
 metadata:
   description: "The crec-sdk-ext-dta v2 extension wraps Chainlink CRE Connect for the Digital Transfer Agent product line: typed Subscription / Redemption / Distributor operations and decoded events."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 <Aside type="note" title="New to DTA?">
 This guide assumes you already understand the **Digital Transfer Agent (DTA) technical standard**: the
@@ -91,6 +91,12 @@ The 23 `PrepareXxxOperation` methods split into four groups:
 
 ## Sample flow
 
+<RequiredRole product="crec" role="operator">
+  Submitting the prepared DTA operations with `ExecuteOperation` requires `crec:operation:write` and
+  `crec:operation:read` in your API key. The event polling in this sample requires `crec:event:read`. DTA actor roles
+  and contract permissions are separate from CRE Connect member roles.
+</RequiredRole>
+
 End-to-end: register a distributor, subscribe to a fund token, watch for the resulting events.
 
 ```go
@@ -121,6 +127,11 @@ for _, ev := range events {
 ```
 
 ## Watcher provisioning
+
+<RequiredRole product="crec" role="operator">
+  Provisioning a `dta.v2` watcher requires `crec:watcher:write` in your API key. Include `crec:watcher:read` if you
+  check its lifecycle, and `crec:event:read` to consume the events it produces.
+</RequiredRole>
 
 Pass `Service: "dta.v2"` to `Watchers.CreateWithService` along with the events you want to subscribe to. The DTA service publishes 11 events you can subscribe to (the full list is exposed via `bundle.Get().Events`); list whichever subset your integration needs.
 

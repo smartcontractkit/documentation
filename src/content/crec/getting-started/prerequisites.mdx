@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Everything you need before installing the Chainlink CRE Connect SDK: create your organization on app.chain.link, share your Organization ID with Chainlink for CRE Connect provisioning, generate an API key, install Go, pick a supported network, and choose a signer."
   datePublished: "2026-05-01"
-  lastModified: "2026-10-26"
+  lastModified: "2026-11-10"
 ---
 
 import { Aside, ClickToZoom } from "@components"
@@ -48,25 +48,35 @@ Once your account has been provisioned, create an API key.
 
 {/* prettier-ignore */}
 <Aside type="note" title="Roles needed to create a CRE Connect API key">
-  Creating an API key requires a Platform role that includes API key permissions: Platform User, Platform Admin, or Owner. You can only give a key permissions that your own roles include, so to grant every permission below you also need the CRE Connect Admin role. CRE Connect Operators can grant every permission below except the three `archive:write` permissions. See [RBAC](/chainlink-platform/rbac?parent=crec#cre-connect) for what each role includes, and [Inviting Team Members](/chainlink-platform/inviting-team-members?parent=crec) to invite members and assign roles.
+  Creating a key requires Platform User, Platform Admin, or the organization Owner. You can grant only permissions
+  included in your own product roles. CRE Connect Operator covers the routine creation and update steps; CRE Connect
+  Admin is needed to grant the three archival permissions used by the optional cleanup calls. The Owner has every
+  permission. Select only the scopes your integration needs. If you need a different CRE Connect role, ask your Owner,
+  Platform Admin, or CRE Connect Admin to [assign it](/chainlink-platform/assigning-and-modifying-roles?parent=crec).
+  See [RBAC](/chainlink-platform/rbac?parent=crec#cre-connect) for the complete role reference.
 </Aside>
 
 1. Log in to the [Chainlink Platform](https://app.chain.link), click your account icon in the top-right corner of the navbar, then click **Org settings** to open the **Organization** page, then open the **API Keys** tab.
 1. Click **Create API Key** and enter a name for the key.
-1. In the **API Scope** section, expand the **CRE Connect** section and grant the key the permissions that this Getting Started guide uses.
+1. In the **API Scope** section, expand **CRE Connect** and select the permissions your examples use. The table includes read permissions for polling and inspection, and archival permissions for optional cleanup. You can omit permissions for tasks you will not perform.
 
    | Name                       | Permission                       | Description                                  |
    | -------------------------- | -------------------------------- | -------------------------------------------- |
    | Network: Read              | `crec:network:read`              | Read available blockchain networks.          |
+   | Channel: Read              | `crec:channel:read`              | List channels and read their details.        |
    | Channel: Write             | `crec:channel:write`             | Create or update channel.                    |
-   | Channel archive: Write     | `crec:channel:archive:write`     | Archive channel.                             |
+   | Channel archive: Write     | `crec:channel:archive:write`     | Archive channel (optional cleanup).          |
+   | Watcher: Read              | `crec:watcher:read`              | Read watchers and poll lifecycle status.     |
    | Watcher: Write             | `crec:watcher:write`             | Create or update watcher.                    |
-   | Watcher archive: Write     | `crec:watcher:archive:write`     | Archive watcher.                             |
+   | Watcher archive: Write     | `crec:watcher:archive:write`     | Archive watcher (optional cleanup).          |
    | Event: Read                | `crec:event:read`                | Read events, run history, and search events. |
+   | Wallet: Read               | `crec:wallet:read`               | Read wallets and poll provisioning status.   |
    | Wallet: Write              | `crec:wallet:write`              | Create or update wallet.                     |
-   | Wallet archive: Write      | `crec:wallet:archive:write`      | Archive wallet.                              |
+   | Wallet archive: Write      | `crec:wallet:archive:write`      | Archive wallet (optional cleanup).           |
+   | Operation: Read            | `crec:operation:read`            | Read and track operations.                   |
    | Operation: Write           | `crec:operation:write`           | Create operation (draft or pre-signed).      |
-   | Operation signature: Write | `crec:operation:signature:write` | Sign (finalize) or cancel operation.         |
+   | Operation signature: Write | `crec:operation:signature:write` | Finalize or cancel a pending draft.          |
+   | Query: Read                | `crec:query:read`                | Read queries and poll for results.           |
    | Query: Write               | `crec:query:write`               | Create query.                                |
 
    See [API Keys](/chainlink-platform/api-keys?parent=crec#cre-connect) for the full list of permissions available for CRE Connect.

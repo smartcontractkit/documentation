@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Use Chainlink CRE Connect's Poll and SearchEvents to consume verifiable events from a channel: real-time tail-following with Poll, historical filtering with SearchEvents."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 
 The events client exposes three read paths:
 
@@ -19,6 +19,12 @@ The events client exposes three read paths:
 | `apiClient.GetChannelsChannelIdEventsSearchEventIdWithResponse` | Fetch one event by UUID (via the underlying generated client) | —              | —                                                                      |
 
 ## Poll for new events
+
+<RequiredRole product="crec" role="viewer">
+  Polling a channel, searching its history, and fetching a single event require `crec:event:read` in your API key.
+  Creating the channel or its watchers separately requires their write permissions. Verification and decoding after
+  fetching an event run locally.
+</RequiredRole>
 
 `Poll` is the simplest path: it returns a batch ordered by **descending offset** (newest first) and a `hasMore` flag. Most consumers run it in a loop with a small back-off when the channel is idle.
 

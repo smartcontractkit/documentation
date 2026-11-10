@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Use Chainlink CRE Connect's CreateWithService to attach a watcher backed by a published service (for example dta.v2) without supplying the contract ABI."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { MethodTabs } from "@components"
+import { MethodTabs, RequiredRole } from "@components"
 
 When the contract you want to monitor is supported by a published CRE Connect service (for example `dta.v2`), use **`watchers.Client.CreateWithService`** instead of `CreateWithABI`. The service ships everything CRE Connect needs to monitor that contract: the ABIs, the event schemas, and the underlying processing pipeline. You only supply the chain selector, address, the event names you want to subscribe to, and (optionally) a `service_config` map.
 
@@ -21,6 +21,12 @@ When the contract you want to monitor is supported by a published CRE Connect se
 | You want service-managed defaults (confidence level, polling cadence).        | You need an ad-hoc watcher with no protocol-specific behavior.         |
 
 ## Procedure
+
+<RequiredRole product="crec" role="operator">
+  Creating a service-backed watcher requires `crec:watcher:write`. Your API key also needs `crec:watcher:read` for
+  `WaitForActive` and other lifecycle checks. The channel must already exist; creating one separately requires
+  `crec:channel:write`.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">
