@@ -13,7 +13,7 @@
  * ```typescript
  * const tooltipConfig = getChainTooltip(network.chain);
  * if (tooltipConfig) {
- *   return <Tooltip tip={tooltipConfig.content} hoverable={tooltipConfig.hoverable} />
+ *   return <Tooltip tip={tooltipConfig.content} />
  * }
  * ```
  */
@@ -24,12 +24,8 @@ import { type ReactNode } from "react"
  * Configuration for a chain-specific tooltip
  */
 export interface ChainTooltipConfig {
-  /** The tooltip content (supports JSX for interactive elements) */
+  /** The tooltip content (supports JSX, including links) */
   content: ReactNode
-  /** Whether the tooltip should be hoverable (for interactive content) */
-  hoverable: boolean
-  /** Optional custom hide delay for hoverable tooltips */
-  hideDelay?: number
 }
 
 /**
@@ -37,8 +33,7 @@ export interface ChainTooltipConfig {
  *
  * **Adding a new chain tooltip:**
  * 1. Add the chain ID as a key (use network.chain, not network.name)
- * 2. Provide content and interaction settings
- * 3. Use hoverable=true for content with links
+ * 2. Provide the content (JSX links are fine; the tooltip stays open while hovered)
  *
  * **Content Guidelines:**
  * - Keep tooltips concise and actionable
@@ -53,8 +48,6 @@ export const CHAIN_TOOLTIPS: Record<string, ChainTooltipConfig> = {
         <a href="/ccip/service-limits/network-specific-limits">Network-Specific Service Limits</a>.
       </>
     ),
-    hoverable: true,
-    hideDelay: 300,
   },
   "hyperliquid-testnet": {
     content: (
@@ -66,8 +59,6 @@ export const CHAIN_TOOLTIPS: Record<string, ChainTooltipConfig> = {
         <a href="/ccip/evm/service-limits/hyperevm">HyperEVM Service Limits</a>.
       </>
     ),
-    hoverable: true,
-    hideDelay: 300,
   },
   "memento-mainnet": {
     content: (
@@ -76,8 +67,6 @@ export const CHAIN_TOOLTIPS: Record<string, ChainTooltipConfig> = {
         <a href="/ccip/service-limits/evm#private--permissioned-network-limitations">Learn More</a>.
       </>
     ),
-    hoverable: true,
-    hideDelay: 300,
   },
   "nexon-mainnet-henesys": {
     content: (
@@ -86,8 +75,6 @@ export const CHAIN_TOOLTIPS: Record<string, ChainTooltipConfig> = {
         <a href="/ccip/service-limits/evm#private--permissioned-network-limitations">Learn More</a>.
       </>
     ),
-    hoverable: true,
-    hideDelay: 300,
   },
 
   // Example: Add more chains as needed
@@ -98,12 +85,10 @@ export const CHAIN_TOOLTIPS: Record<string, ChainTooltipConfig> = {
   //       <a href="/ccip/abstract-setup">setup guide</a> for details.
   //     </>
   //   ),
-  //   hoverable: true,
   // },
 
   // "polygon-mainnet": {
   //   content: "Polygon CCIP integration is fully supported with standard configuration.",
-  //   hoverable: false,
   // },
 } as const
 
@@ -117,7 +102,7 @@ export const CHAIN_TOOLTIPS: Record<string, ChainTooltipConfig> = {
  * ```typescript
  * const tooltipConfig = getChainTooltip(network.chain);
  * if (tooltipConfig) {
- *   return <Tooltip tip={tooltipConfig.content} hoverable={tooltipConfig.hoverable} />
+ *   return <Tooltip tip={tooltipConfig.content} />
  * }
  * ```
  */
