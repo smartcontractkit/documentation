@@ -286,14 +286,14 @@ The slow price is intentionally lagged against live order books. Do not use it t
 
 ### Field behavior by session
 
-| Field                     | Regular and extended hours          | Overnight                      | Closed (off-hours)                                        | Session transitions            |
-| :------------------------ | :---------------------------------- | :----------------------------- | :-------------------------------------------------------- | :----------------------------- |
-| `mid`                     | Active session `mid`, unsmoothed    | Overnight `mid`, unsmoothed    | Off-hours composite `mid`                                 | Smoothed blend between sources |
-| `bid` / `ask`             | Active session values               | Overnight session values       | Off-hours composite `bid` / `ask`                         | Smoothed blend between sources |
-| `lastTradedPrice`         | Same as `mid`                       | EMA of overnight `mid`         | Smoothed off-hours price                                  | Smoothed blend between sources |
-| `lastSeenTimestampNs`     | Last `mid` update in active session | Last `mid` update in overnight | Last time an off-hours composite price was received       | Active session value           |
-| `bidVolume` / `askVolume` | Active session values               | Overnight session values       | May be zero. Do not rely on these fields during off-hours | Active session values          |
-| `marketStatus`            | `1`, `2`, or `3`                    | `4`                            | `5`                                                       | Current session                |
+| Field                     | Regular and extended hours          | Overnight                      | Closed (off-hours)                                     | Session transitions            |
+| :------------------------ | :---------------------------------- | :----------------------------- | :----------------------------------------------------- | :----------------------------- |
+| `mid`                     | Active session `mid`, unsmoothed    | Overnight `mid`, unsmoothed    | Off-hours composite `mid`                              | Smoothed blend between sources |
+| `bid` / `ask`             | Active session values               | Overnight session values       | Off-hours composite `bid` / `ask`                      | Smoothed blend between sources |
+| `lastTradedPrice`         | Same as `mid`                       | EMA of overnight `mid`         | Smoothed off-hours price                               | Smoothed blend between sources |
+| `lastSeenTimestampNs`     | Last `mid` update in active session | Last `mid` update in overnight | Last time an off-hours composite price was received    | Active session value           |
+| `bidVolume` / `askVolume` | Active session values               | Overnight session values       | May be `0` in any session. Do not rely on these fields | Active session values          |
+| `marketStatus`            | `1`, `2`, or `3`                    | `4`                            | `5`                                                    | Current session                |
 
 As with the 24/5 streams, `lastSeenTimestampNs` applies to `mid` only. It is not a freshness signal for `bid`, `ask`, the volume fields, or `lastTradedPrice`.
 
