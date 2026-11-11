@@ -1690,6 +1690,8 @@ export const MainnetTable = ({
   twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
+  showIndexStreams,
+  indexRegion,
   tradingHoursFilter,
   dataFeedType,
   ecosystem,
@@ -1722,6 +1724,8 @@ export const MainnetTable = ({
   twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
+  showIndexStreams?: boolean
+  indexRegion?: "us" | "apac"
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   dataFeedType: string
   ecosystem: string
@@ -1762,6 +1766,8 @@ export const MainnetTable = ({
     twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
+    showIndexStreams,
+    indexRegion,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,
@@ -1891,6 +1897,8 @@ export const TestnetTable = ({
   twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
+  showIndexStreams,
+  indexRegion,
   tradingHoursFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
@@ -1920,6 +1928,8 @@ export const TestnetTable = ({
   twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
+  showIndexStreams?: boolean
+  indexRegion?: "us" | "apac"
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
@@ -1953,6 +1963,8 @@ export const TestnetTable = ({
     twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
+    showIndexStreams,
+    indexRegion,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,

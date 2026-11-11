@@ -8,8 +8,15 @@ jest.unstable_mockModule("../../../db/supabase.ts", () => ({
 }))
 
 const { is247Stream, get247Category, matches247StreamFilter } = await import("./twentyFourSeven.ts")
-const { is247USEquitiesStream, matches247USEquitiesStreamFilter, is247TokenizedEquityFeed } =
-  await import("./feedMetadata.ts")
+const {
+  is247USEquitiesStream,
+  matches247USEquitiesStreamFilter,
+  is247TokenizedEquityFeed,
+  isIndexStreamFeed,
+  getIndexStreamRegion,
+  matchesIndexStreamFilter,
+  is24x5StreamFeed,
+} = await import("./feedMetadata.ts")
 const { isFeedVisible, shouldHideAddress, shouldHideStreamFeedId } = await import("./feedVisibility.ts")
 
 const verifierStream = (docs: Record<string, unknown>, overrides: Record<string, unknown> = {}) => ({
@@ -258,6 +265,59 @@ describe("is247USEquitiesStream", () => {
     expect(matches247USEquitiesStreamFilter(perps, true, "twap")).toBe(false)
     expect(matches247USEquitiesStreamFilter(lending, true, "lending")).toBe(true)
     expect(matches247USEquitiesStreamFilter(lending, true, "perps")).toBe(false)
+  })
+})
+
+describe("index streams", () => {
+  const usIndex = verifierStream({
+    assetClass: "Equities",
+    assetSubClass: "Index",
+    feedType: "Equities",
+    marketHours: "US Equities Regular",
+    schema: "v11",
+  })
+  const apacIndex = verifierStream({
+    assetClass: "Equities",
+    assetSubClass: "Index",
+    feedType: "Equities",
+    marketHours: "Tokyo",
+    schema: "v11",
+  })
+  const singleName = verifierStream({
+    assetClass: "Equities",
+    feedType: "Equities",
+    marketHours: "Tokyo",
+    schema: "v11",
+  })
+
+  it("detects index streams by assetSubClass", () => {
+    expect(isIndexStreamFeed(usIndex)).toBe(true)
+    expect(isIndexStreamFeed(apacIndex)).toBe(true)
+    expect(isIndexStreamFeed(singleName)).toBe(false)
+  })
+
+  it("groups index streams by exchange market hours", () => {
+    expect(getIndexStreamRegion(usIndex)).toBe("us")
+    expect(getIndexStreamRegion(apacIndex)).toBe("apac")
+    expect(getIndexStreamRegion(singleName)).toBeUndefined()
+  })
+
+  it("filters rows to the requested index region", () => {
+    expect(matchesIndexStreamFilter(singleName, true, "us")).toBe(false)
+    expect(matchesIndexStreamFilter(apacIndex, true, "us")).toBe(false)
+    expect(matchesIndexStreamFilter(usIndex, true, "us")).toBe(true)
+    expect(matchesIndexStreamFilter(apacIndex, true, "apac")).toBe(true)
+    expect(matchesIndexStreamFilter(usIndex, true)).toBe(true)
+  })
+
+  it("passes every stream through when the index filter is off", () => {
+    expect(matchesIndexStreamFilter(singleName, false)).toBe(true)
+    expect(matchesIndexStreamFilter(usIndex, undefined)).toBe(true)
+  })
+
+  it("keeps index streams out of the 24/5 family tables", () => {
+    expect(is24x5StreamFeed(usIndex)).toBe(false)
+    expect(is24x5StreamFeed(verifierStream({ assetSubClass: "Regular Hours", schema: "v11" }))).toBe(true)
   })
 })
 
