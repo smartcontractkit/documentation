@@ -261,7 +261,7 @@ export function renderRouteRows(uid: string, scenario: Scenario): string {
 
   <div class="${P}-columns" aria-hidden="true">
     <span class="${P}-col ${P}-col-source">Source chain <em>you are here</em></span>
-    <span class="${P}-col ${P}-col-ccip">Chainlink CCIP</span>
+    <span class="${P}-col ${P}-col-ccip"><span class="${P}-col-full">Chainlink CCIP</span><span class="${P}-col-short">CCIP</span></span>
     <span class="${P}-col ${P}-col-hub">Hub chain <em>the vault is here</em></span>
   </div>
 

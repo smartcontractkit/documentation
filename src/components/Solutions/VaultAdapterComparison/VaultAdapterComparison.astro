@@ -32,6 +32,21 @@ const interactive = renderRouteRows(uid, scenario)
 
 <style is:global>
   .vac {
+    /*
+     * Diagram colours. These are the light-mode values; `html.dark .vac` below swaps them.
+     * Everything else uses site tokens (--background, --foreground, --border, --muted, --brand)
+     * that already switch with the theme.
+     */
+    --vac-accent-surface: var(--surface-accent, #eff6ff);
+    --vac-accent-halo: var(--surface-accent-strong, #dcebff);
+    --vac-accent-text: var(--brand, #0847f7);
+    --vac-title: var(--gray-700, #3c414c);
+    --vac-token-bg: var(--green-200, #b9f1cc);
+    --vac-token-edge: var(--foreground, #141921);
+    --vac-token-text: var(--foreground, #141921);
+    --vac-payload-bg: var(--blue-100, #dcebff);
+    --vac-payload-text: var(--foreground, #141921);
+
     display: block;
     container: vac / inline-size;
     isolation: isolate;
@@ -42,6 +57,19 @@ const interactive = renderRouteRows(uid, scenario)
     color: var(--foreground, #141921);
     font-family: var(--font-family-text, "Inter", Arial, sans-serif);
     text-align: left;
+  }
+  /* Dark mode (html.dark, set by ThemeToggle). Tints follow src/styles/dark.css. */
+  html.dark .vac {
+    color-scheme: dark;
+    --vac-accent-halo: var(--dark-tint-blue-stronger);
+    --vac-accent-text: var(--text-accent);
+    --vac-title: var(--color-text-primary);
+    /* Opaque tints: the token tag sits across a node border, so it must hide what is under it. */
+    --vac-token-bg: color-mix(in srgb, var(--green-500) 16%, var(--background));
+    --vac-token-edge: var(--dark-edge-green);
+    --vac-token-text: var(--dark-text-green);
+    --vac-payload-bg: color-mix(in srgb, var(--blue-500) 16%, var(--background));
+    --vac-payload-text: var(--blue-200);
   }
   .vac *,
   .vac *::before,
@@ -103,7 +131,7 @@ const interactive = renderRouteRows(uid, scenario)
   }
   .vac .vac-title {
     flex: 1 1 auto;
-    color: var(--gray-700, #3c414c);
+    color: var(--vac-title);
     font-size: 12px;
     font-weight: 600;
     line-height: 16px;
@@ -169,9 +197,9 @@ const interactive = renderRouteRows(uid, scenario)
     line-height: 18px;
   }
   .vac .vac-option input:checked + .vac-option-text {
-    background: var(--blue-50, #eff6ff);
+    background: var(--vac-accent-surface);
     box-shadow: inset 0 0 0 1px var(--brand, #0847f7);
-    color: var(--brand, #0847f7);
+    color: var(--vac-accent-text);
   }
   .vac .vac-option input:focus-visible + .vac-option-text {
     outline: 2px solid var(--brand, #0847f7);
@@ -218,6 +246,14 @@ const interactive = renderRouteRows(uid, scenario)
     font-size: 11px;
     letter-spacing: 0;
     text-align: center;
+  }
+  /* "Chainlink CCIP" does not fit the narrow 62px column, so it reads "CCIP" until the wide layout. */
+  .vac .vac-col-ccip span {
+    font: inherit;
+    letter-spacing: inherit;
+  }
+  .vac .vac-col-full {
+    display: none;
   }
 
   /* Rows */
@@ -371,10 +407,10 @@ const interactive = renderRouteRows(uid, scenario)
   }
   .vac .vac-node[data-active="true"],
   .vac .vac-leg[data-active="true"] .vac-leg-line {
-    box-shadow: 0 0 0 3px var(--blue-100, #dcebff);
+    box-shadow: 0 0 0 3px var(--vac-accent-halo);
   }
   .vac .vac-node[data-active="true"] {
-    background: var(--blue-50, #eff6ff);
+    background: var(--vac-accent-surface);
   }
   .vac .vac-node[data-active="true"]::after {
     content: attr(data-token);
@@ -383,9 +419,9 @@ const interactive = renderRouteRows(uid, scenario)
     left: 6px;
     padding: 0 7px;
     border-radius: 9px;
-    background: var(--green-200, #b9f1cc);
-    box-shadow: inset 0 0 0 1px var(--foreground, #141921);
-    color: var(--foreground, #141921);
+    background: var(--vac-token-bg);
+    box-shadow: inset 0 0 0 1px var(--vac-token-edge);
+    color: var(--vac-token-text);
     font-size: 11px;
     font-weight: 600;
     line-height: 16px;
@@ -422,7 +458,7 @@ const interactive = renderRouteRows(uid, scenario)
   .vac button.vac-badge:hover:not(:disabled):not([data-active="true"]) {
     box-shadow:
       inset 0 0 0 2px var(--brand, #0847f7),
-      0 0 0 3px var(--blue-100, #dcebff);
+      0 0 0 3px var(--vac-accent-halo);
     transform: translateY(-1px);
   }
   .vac button.vac-badge:disabled {
@@ -437,10 +473,11 @@ const interactive = renderRouteRows(uid, scenario)
     box-shadow: inset 0 0 0 2px var(--brand, #0847f7);
     color: var(--brand, #0847f7);
   }
+  /* Selected stop: page ink with the page colour as text, so it inverts with the theme. */
   .vac .vac-badge[data-active="true"] {
     background: var(--foreground, #141921);
     box-shadow: none;
-    color: var(--primary-foreground, #ffffff);
+    color: var(--background, #ffffff);
   }
   .vac button.vac-badge:focus-visible {
     outline: 2px solid var(--brand, #0847f7);
@@ -477,14 +514,14 @@ const interactive = renderRouteRows(uid, scenario)
     text-overflow: ellipsis;
   }
   .vac .vac-chip-token {
-    background: var(--green-200, #b9f1cc);
-    box-shadow: inset 0 0 0 1px var(--foreground, #141921);
-    color: var(--foreground, #141921);
+    background: var(--vac-token-bg);
+    box-shadow: inset 0 0 0 1px var(--vac-token-edge);
+    color: var(--vac-token-text);
   }
   .vac .vac-chip-payload {
-    background: var(--blue-100, #dcebff);
+    background: var(--vac-payload-bg);
     box-shadow: inset 0 0 0 1px var(--brand, #0847f7);
-    color: var(--foreground, #141921);
+    color: var(--vac-payload-text);
   }
   .vac .vac-chip-full {
     display: none;
@@ -576,8 +613,8 @@ const interactive = renderRouteRows(uid, scenario)
   }
   .vac .vac-step-btn:hover:not(:disabled) {
     border-color: var(--brand, #0847f7);
-    background: var(--blue-50, #eff6ff);
-    color: var(--brand, #0847f7);
+    background: var(--vac-accent-surface);
+    color: var(--vac-accent-text);
   }
   .vac .vac-step-btn:disabled {
     color: var(--muted-foreground, #6c7585);
@@ -670,6 +707,12 @@ const interactive = renderRouteRows(uid, scenario)
       padding-inline: 10px;
       font-size: 12px;
       letter-spacing: 0.04em;
+    }
+    .vac .vac-col-full {
+      display: inline;
+    }
+    .vac .vac-col-short {
+      display: none;
     }
     .vac-row-head {
       flex-wrap: nowrap;

@@ -270,7 +270,8 @@ export function getRoute(scenario: Scenario): Step[] {
     chain: "source",
     node: "source-wallet",
     token: output,
-    title: `Done: ${outputWord} on the source chain`,
+    // The inspector already prefixes "Done." from the step kind, so the title must not repeat it.
+    title: `${outputWord.charAt(0).toUpperCase()}${outputWord.slice(1)} on the source chain`,
     caption:
       mode === "adapter"
         ? `You hold the ${outputWord} in your wallet on the source chain. Your wallet never left it.`
