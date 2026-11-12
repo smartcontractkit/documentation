@@ -18,7 +18,7 @@ import {
 import type { MarketPricingRiskProduct } from "../content/marketPricingRiskTerms.ts"
 import { REPORT_SCHEMA_DEFINITIONS, type SchemaDefinition } from "./reportSchemaData.ts"
 import schemaFieldsTableStyles from "../../data-streams/common/schemaFieldsTable.module.css"
-import { getSvrType, type SvrFeedType } from "~/features/feeds/utils/svrDetection.ts"
+import { getSvrType, getSvrTypeDocLink } from "~/features/feeds/utils/svrDetection.ts"
 import { ExpandableTableWrapper } from "./ExpandableTableWrapper.tsx"
 import {
   shouldHideAddress,
@@ -561,9 +561,9 @@ const DefaultTr = ({
                 href="/data-feeds/svr-feeds"
                 target="_blank"
                 className={tableStyles.feedVariantBadge}
-                title={`${getSvrType(metadata, network)} Feed`}
+                title={`${getSvrType(metadata)} Feed`}
               >
-                {getSvrType(metadata, network)}
+                {getSvrType(metadata)}
               </a>
             </div>
           )}
@@ -706,7 +706,7 @@ const DefaultTr = ({
                 <div className={tableStyles.separator} />
                 <div className={tableStyles.assetAddress}>
                   <dt>
-                    <span className="label">{getSvrType(metadata, network)} Proxy:</span>
+                    <span className="label">{getSvrType(metadata)} Proxy:</span>
                   </dt>
                   <dd>
                     {hideAddress ? (
@@ -739,30 +739,21 @@ const DefaultTr = ({
                     )}
                   </dd>
                 </div>
-                {getSvrType(metadata, network) === "Aave-SVR" && !hideAddress && (
+                {getSvrType(metadata) === "Aave SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.aaveCallout)}>
                     <strong>⚠️ Aave Dedicated Feed:</strong> This SVR proxy feed is dedicated exclusively for use by the
                     Aave protocol. Learn more about{" "}
-                    <a href="/data-feeds/svr-feeds#aave-svr-feeds" target="_blank">
+                    <a href={getSvrTypeDocLink("Aave SVR")} target="_blank">
                       Aave SVR Feeds
                     </a>
                     .
                   </div>
                 )}
-                {getSvrType(metadata, network) === "SVR" && !hideAddress && (
+                {getSvrType(metadata) !== "Aave SVR" && !hideAddress && (
                   <div className={clsx(tableStyles.sharedCallout)}>
-                    <strong>🔗 SVR Feed:</strong> This SVR proxy feed is usable by any protocol. Learn more about{" "}
-                    <a href="/data-feeds/svr-feeds" target="_blank">
-                      SVR Feeds
-                    </a>
-                    .
-                  </div>
-                )}
-                {getSvrType(metadata, network) === "SVR-Backup" && !hideAddress && (
-                  <div className={clsx(tableStyles.sharedCallout)}>
-                    <strong>🔗 SVR-Backup Feed:</strong> This is a legacy SVR proxy feed. New integrations should use
-                    the <strong>SVR</strong> feeds. Learn more about{" "}
-                    <a href="/data-feeds/svr-feeds" target="_blank">
+                    <strong>🔗 {getSvrType(metadata)} Feed:</strong> This SVR proxy feed is usable by any protocol.
+                    Learn more about{" "}
+                    <a href={getSvrTypeDocLink(getSvrType(metadata) ?? "")} target="_blank">
                       SVR Feeds
                     </a>
                     .
@@ -1699,6 +1690,8 @@ export const MainnetTable = ({
   twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
+  showIndexStreams,
+  indexRegion,
   tradingHoursFilter,
   dataFeedType,
   ecosystem,
@@ -1731,6 +1724,8 @@ export const MainnetTable = ({
   twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
+  showIndexStreams?: boolean
+  indexRegion?: "us" | "apac"
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   dataFeedType: string
   ecosystem: string
@@ -1744,7 +1739,7 @@ export const MainnetTable = ({
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
   isSvr?: boolean
-  svrTypeFilters?: Set<SvrFeedType>
+  svrTypeFilters?: Set<string>
 }) => {
   if (!network.metadata) return null
 
@@ -1771,6 +1766,8 @@ export const MainnetTable = ({
     twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
+    showIndexStreams,
+    indexRegion,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,
@@ -1790,10 +1787,10 @@ export const MainnetTable = ({
   const typeFilteredMetadata = useMemo(() => {
     if (!isSvr || !svrTypeFilters || svrTypeFilters.size === 0) return filteredMetadata
     return filteredMetadata.filter((m) => {
-      const svrType = getSvrType(m, network)
+      const svrType = getSvrType(m)
       return svrType && !svrTypeFilters.has(svrType)
     })
-  }, [filteredMetadata, isSvr, svrTypeFilters, network])
+  }, [filteredMetadata, isSvr, svrTypeFilters])
 
   const slicedFilteredMetadata = typeFilteredMetadata.slice(firstAddr, lastAddr)
 
@@ -1900,6 +1897,8 @@ export const TestnetTable = ({
   twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
+  showIndexStreams,
+  indexRegion,
   tradingHoursFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
@@ -1929,6 +1928,8 @@ export const TestnetTable = ({
   twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
+  showIndexStreams?: boolean
+  indexRegion?: "us" | "apac"
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
@@ -1962,6 +1963,8 @@ export const TestnetTable = ({
     twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
+    showIndexStreams,
+    indexRegion,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,

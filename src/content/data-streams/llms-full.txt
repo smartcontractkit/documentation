@@ -6706,7 +6706,7 @@ While the Data Streams architecture is designed to deliver updates at least once
 [Chainlink RWA streams](/data-streams/rwa-streams) deliver real-world asset pricing through three report schemas:
 
 - **[RWA Standard (v8)](/data-streams/reference/report-schema-v8)** — standard RWA format with consolidated mid price, market status, and freshness indicators. Used by the majority of RWA streams.
-- **[RWA Advanced (v11)](/data-streams/reference/report-schema-v11)** — adds bid/ask prices, volume depth, last traded price where supported, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
+- **[RWA Advanced (v11)](/data-streams/reference/report-schema-v11)** — adds bid/ask prices, informational volume depth, last traded price where supported, nanosecond-precision timestamps, and expanded market status values. Supports extended trading sessions where applicable.
 - **[Futures (v14)](/data-streams/reference/report-schema-v14)** — futures price data with contract expiration, market status, and Goldman Roll price fields. Used by [Futures streams](/data-streams/rwa-streams/futures).
 
 ### RWA Standard (v8)
@@ -6719,7 +6719,7 @@ For US Equities specifically, [RWA Advanced (v11)](/data-streams/reference/repor
 
 ### RWA Advanced (v11)
 
-The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schema offers enhanced market data capabilities with additional fields: liquidity-weighted mid (`mid`), consensus bid and ask prices (`bid`, `ask`), resting book depth (`bidVolume`, `askVolume`), `lastTradedPrice` where supported, nanosecond precision freshness (`lastSeenTimestampNs`), and expanded market status (`marketStatus`) that distinguishes between pre-market, regular hours, post-market, overnight, and weekend periods. Field availability and production support vary by stream.
+The [RWA Advanced (v11)](/data-streams/reference/report-schema-v11) report schema offers enhanced market data capabilities with additional fields: liquidity-weighted mid (`mid`), consensus bid and ask prices (`bid`, `ask`), resting book depth (`bidVolume`, `askVolume`; informational only and may be `0`), `lastTradedPrice` where supported, nanosecond precision freshness (`lastSeenTimestampNs`), and expanded market status (`marketStatus`) that distinguishes between pre-market, regular hours, post-market, overnight, and weekend periods. Field availability and production support vary by stream.
 
 These advanced fields enable protocols to implement more sophisticated risk management and settlement logic. Where applicable, streams using this schema can provide coverage across extended trading sessions including pre-market, post-market, and overnight hours — though extended hours availability varies by stream. See individual [RWA stream details](/data-streams/rwa-streams?schema=v11) for specific coverage and the [RWA Advanced (v11) reference](/data-streams/reference/report-schema-v11) for complete field specifications.
 
@@ -6807,22 +6807,22 @@ Chainlink Data Streams that use the RWA Advanced (v11) schema adhere to the stru
 
 ## Schema Fields
 
-| Field                   | Type      | Description                                                                                                                               |
-| ----------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                               |
-| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds) — [How report timestamps work](/data-streams/how-report-timestamps-work)             |
-| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds) — [How report timestamps work](/data-streams/how-report-timestamps-work)               |
-| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                                                                                     |
-| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing                                                                  |
-| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                   |
-| `mid`                   | `int192`  | DON consensus mid-price                                                                                                                   |
-| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last update for the mid price only (nanoseconds)                                                                         |
-| `bid`                   | `int192`  | Median bid price                                                                                                                          |
-| `bidVolume`             | `int192`  | Volume at bid price                                                                                                                       |
-| `ask`                   | `int192`  | Median ask price                                                                                                                          |
-| `askVolume`             | `int192`  | Volume at ask price                                                                                                                       |
-| `lastTradedPrice`       | `int192`  | Last traded price. Availability and production support vary by stream.                                                                    |
-| `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs. — [Status values](/data-streams/reference/report-schema-v11#market-status-values) |
+| Field                   | Type      | Description                                                                                                                                                       |
+| ----------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedId`                | `bytes32` | Unique identifier for the Data Streams feed                                                                                                                       |
+| `validFromTimestamp`    | `uint32`  | Earliest timestamp when the price is valid (seconds) — [How report timestamps work](/data-streams/how-report-timestamps-work)                                     |
+| `observationsTimestamp` | `uint32`  | Latest timestamp when the price is valid (seconds) — [How report timestamps work](/data-streams/how-report-timestamps-work)                                       |
+| `nativeFee`             | `uint192` | Legacy onchain verification fee field                                                                                                                             |
+| `linkFee`               | `uint192` | Legacy onchain verification fee field; not used for subscription billing                                                                                          |
+| `expiresAt`             | `uint32`  | Expiration date of the report (seconds)                                                                                                                           |
+| `mid`                   | `int192`  | DON consensus mid-price                                                                                                                                           |
+| `lastSeenTimestampNs`   | `uint64`  | Timestamp of the last update for the mid price only (nanoseconds)                                                                                                 |
+| `bid`                   | `int192`  | Median bid price                                                                                                                                                  |
+| `bidVolume`             | `int192`  | Volume at bid price. Informational only; may be 0 when a confident value cannot be provided. — [Details](/data-streams/reference/report-schema-v11#bidask-volume) |
+| `ask`                   | `int192`  | Median ask price                                                                                                                                                  |
+| `askVolume`             | `int192`  | Volume at ask price. Informational only; may be 0 when a confident value cannot be provided. — [Details](/data-streams/reference/report-schema-v11#bidask-volume) |
+| `lastTradedPrice`       | `int192`  | Last traded price. Availability and production support vary by stream.                                                                                            |
+| `marketStatus`          | `uint32`  | Market status. Mapping varies by feed; see schema docs. — [Status values](/data-streams/reference/report-schema-v11#market-status-values)                         |
 
 ### Market Status Values
 
@@ -6908,6 +6908,13 @@ Under normal circumstances, expect this value to advance with each report. A sin
 For U.S. equities, there is no single consolidated order book. Instead, multiple venues each maintain their own order books. Because data providers source from different markets, the `bidVolume` and `askVolume` reported at each update come from one specific order book at a time, not an aggregate across all venues.
 
 As a result, these volume fields should not be treated as a proxy for total market liquidity at the top of book. They are informational and not especially representative in fragmented markets like U.S. equities.
+
+`bidVolume` and `askVolume` may also be reported as `0` in certain cases where a confident value cannot be provided. A value of `0` does not mean there is no resting liquidity at the bid or ask. Do not use these fields as inputs to pricing, liquidation, or other risk logic, and make sure your application handles a `0` value without breaking.
+
+> **CAUTION: Volume fields may be 0**
+>
+> `bidVolume` and `askVolume` are informational only and may be zeroed out in certain cases where
+> a confident value cannot be provided. Do not rely on these fields for pricing or risk decisions.
 
 #### Additional Notes
 
@@ -7300,7 +7307,8 @@ The RWA Advanced (v11) schema supports 24/5 streams with a DON consensus `mid` p
 >
 > For U.S. equities, there is no single consolidated order book—multiple venues each maintain their own. The `bidVolume`
 > and `askVolume` reported come from one specific order book at a time, not an aggregate across all venues. These values
-> should not be treated as a proxy for total market liquidity and are primarily informational.
+> should not be treated as a proxy for total market liquidity and are informational only. They may also be reported as
+> `0` in certain cases where a confident value cannot be provided, so do not rely on them for pricing or risk decisions.
 
 ## Available Streams
 
@@ -7902,16 +7910,18 @@ The slow price is intentionally lagged against live order books. Do not use it t
 
 ### Field behavior by session
 
-| Field                     | Regular and extended hours          | Overnight                      | Closed (off-hours)                                        | Session transitions            |
-| :------------------------ | :---------------------------------- | :----------------------------- | :-------------------------------------------------------- | :----------------------------- |
-| `mid`                     | Active session `mid`, unsmoothed    | Overnight `mid`, unsmoothed    | Off-hours composite `mid`                                 | Smoothed blend between sources |
-| `bid` / `ask`             | Active session values               | Overnight session values       | Off-hours composite `bid` / `ask`                         | Smoothed blend between sources |
-| `lastTradedPrice`         | Same as `mid`                       | EMA of overnight `mid`         | Smoothed off-hours price                                  | Smoothed blend between sources |
-| `lastSeenTimestampNs`     | Last `mid` update in active session | Last `mid` update in overnight | Last time an off-hours composite price was received       | Active session value           |
-| `bidVolume` / `askVolume` | Active session values               | Overnight session values       | May be zero. Do not rely on these fields during off-hours | Active session values          |
-| `marketStatus`            | `1`, `2`, or `3`                    | `4`                            | `5`                                                       | Current session                |
+| Field                     | Regular and extended hours          | Overnight                      | Closed (off-hours)                                     | Session transitions            |
+| :------------------------ | :---------------------------------- | :----------------------------- | :----------------------------------------------------- | :----------------------------- |
+| `mid`                     | Active session `mid`, unsmoothed    | Overnight `mid`, unsmoothed    | Off-hours composite `mid`                              | Smoothed blend between sources |
+| `bid` / `ask`             | Active session values               | Overnight session values       | Off-hours composite `bid` / `ask`                      | Smoothed blend between sources |
+| `lastTradedPrice`         | Same as `mid`                       | EMA of overnight `mid`         | Smoothed off-hours price                               | Smoothed blend between sources |
+| `lastSeenTimestampNs`     | Last `mid` update in active session | Last `mid` update in overnight | Last time an off-hours composite price was received    | Active session value           |
+| `bidVolume` / `askVolume` | Active session values               | Overnight session values       | May be `0` in any session. Do not rely on these fields | Active session values          |
+| `marketStatus`            | `1`, `2`, or `3`                    | `4`                            | `5`                                                    | Current session                |
 
 As with the 24/5 streams, `lastSeenTimestampNs` applies to `mid` only. It is not a freshness signal for `bid`, `ask`, the volume fields, or `lastTradedPrice`.
+
+`bidVolume` and `askVolume` are informational only. In any session, not just off-hours, they may be reported as `0` in certain cases where a confident value cannot be provided. See [Bid/Ask Volume](/data-streams/reference/report-schema-v11#bidask-volume) in the v11 schema reference.
 
 ### Which price to use
 
