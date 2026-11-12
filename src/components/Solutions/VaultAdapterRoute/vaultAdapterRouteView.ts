@@ -1,7 +1,7 @@
 /**
- * Markup for VaultAdapterComparison.astro: both routes drawn in full, one above the other,
- * against the same three columns. Pure HTML strings, so the Astro component (server-rendered
- * first paint) and the custom element (re-render after a control change) produce identical markup.
+ * Markup for VaultAdapterRoute.astro: one route, without or with the adapter, drawn in full
+ * against three columns. Pure HTML strings, so the Astro component (server-rendered first paint)
+ * and the custom element (re-render after a control change) produce identical markup.
  */
 import {
   approvalsLabel,
@@ -12,8 +12,8 @@ import {
   getStops,
   summarize,
   tokenLabel,
-} from "./vaultAdapterComparisonModel.ts"
-import type { Mode, RouteNode, Scenario, Step, StopBadge } from "./vaultAdapterComparisonModel.ts"
+} from "./vaultAdapterRouteModel.ts"
+import type { Mode, RouteNode, Scenario, Step, StopBadge } from "./vaultAdapterRouteModel.ts"
 
 export function escapeHtml(value: string): string {
   return value
@@ -108,48 +108,48 @@ export function stopsFor(scenario: Scenario, node: RouteNode): StopBadge[] | und
 
 const P = "vac"
 
-export interface ComparisonParts {
+export interface RouteParts {
   text: Record<string, string>
   html: Record<string, string>
 }
 
-export const ROW_MODES: Mode[] = ["manual", "adapter"]
-
-export const HINT = "Click a numbered stop, or use the arrows, to read each step."
-
-export function rowTitle(mode: Mode): string {
+export function routeTitle(mode: Mode): string {
   return mode === "manual" ? "Without the adapter" : "With the adapter"
 }
 
-/** One line of facts under the row title, derived from the model. */
-export function rowMeta(scenario: Scenario): string {
+/** One line of facts under the route title, derived from the model. */
+export function routeMeta(scenario: Scenario): string {
   const summary = summarize(scenario)
   const lines = cardLines(summary)
   return `${approvalsLabel(summary)} · ${lines[1]} · ${lines[2]} · ${feesLabel(summary)}`
 }
 
-export function computeParts(scenario: Scenario): ComparisonParts {
-  const text: Record<string, string> = {}
-  const html: Record<string, string> = {}
-  for (const mode of ROW_MODES) {
-    const row: Scenario = { ...scenario, mode }
-    const labels = routeLabels(row)
-    const summary = labels.summary
-    text[`count-${mode}`] = String(summary.signatures)
-    text[`unit-${mode}`] = summary.signatures === 1 ? "signature" : "signatures"
-    text[`meta-${mode}`] = rowMeta(row)
-    text[`source-sub-${mode}`] = labels.sourceWalletSub
-    text[`chip-out-${mode}`] = labels.outChip
-    text[`chip-back-${mode}`] = labels.backChip
-    text[`back-caption-${mode}`] = labels.backCaption
-    text[`vault-out-${mode}`] = `${labels.input} ▸`
-    text[`vault-back-${mode}`] = `◂ ${labels.output}`
-    const first = getRoute(row)[0]
-    html[`stops-source-${mode}`] = renderStops(P, stopsFor(row, "source-wallet"), first.id)
-    if (mode === "manual") html["stops-hub-manual"] = renderStops(P, stopsFor(row, "hub-wallet"))
-    html[`inspector-${mode}`] = renderInspector(P, first, 1, getRoute(row).length)
-    if (mode === "adapter") html.micro = renderMicroList(P, row)
+/**
+ * Everything in one route that changes with Deposit | Redeem, keyed by `data-part` name. Only the
+ * route without the adapter has `stops-hub`, and only the route with it has `micro`.
+ */
+export function computeParts(scenario: Scenario): RouteParts {
+  const labels = routeLabels(scenario)
+  const summary = labels.summary
+  const steps = getRoute(scenario)
+  const first = steps[0]
+  const text: Record<string, string> = {
+    count: String(summary.signatures),
+    unit: summary.signatures === 1 ? "signature" : "signatures",
+    meta: routeMeta(scenario),
+    "source-sub": labels.sourceWalletSub,
+    "chip-out": labels.outChip,
+    "chip-back": labels.backChip,
+    "back-caption": labels.backCaption,
+    "vault-out": `${labels.input} ▸`,
+    "vault-back": `◂ ${labels.output}`,
   }
+  const html: Record<string, string> = {
+    "stops-source": renderStops(P, stopsFor(scenario, "source-wallet"), first.id),
+    inspector: renderInspector(P, first, 1, steps.length),
+  }
+  if (scenario.mode === "manual") html["stops-hub"] = renderStops(P, stopsFor(scenario, "hub-wallet"))
+  else html.micro = renderMicroList(P, scenario)
   return { text, html }
 }
 
@@ -159,11 +159,11 @@ function radio(name: string, part: string, value: string, label: string, checked
   } disabled><span class="${P}-option-text">${escapeHtml(label)}</span></label>`
 }
 
-function leg(mode: Mode, parts: ComparisonParts): string {
+function leg(mode: Mode, parts: RouteParts): string {
   const t = parts.text
   return `<div class="${P}-cell ${P}-cell-ccip">
   <div class="${P}-leg ${P}-leg-out" data-node="ccip-out">
-    <span class="${P}-leg-chips"><span class="${P}-chip ${P}-chip-token" data-part="chip-out-${mode}">${escapeHtml(t[`chip-out-${mode}`])}</span>${
+    <span class="${P}-leg-chips"><span class="${P}-chip ${P}-chip-token" data-part="chip-out">${escapeHtml(t["chip-out"])}</span>${
       mode === "adapter"
         ? `<span class="${P}-chip ${P}-chip-payload"><span class="${P}-chip-full">+ 128-byte payload</span><span class="${P}-chip-short">+ payload</span></span>`
         : ""
@@ -173,16 +173,16 @@ function leg(mode: Mode, parts: ComparisonParts): string {
   </div>
   <div class="${P}-leg ${P}-leg-back" data-node="ccip-back">
     <span class="${P}-leg-line ${P}-leg-dashed"><span class="${P}-leg-arrow">${ICONS.arrowLeft}</span></span>
-    <span class="${P}-leg-chips"><span class="${P}-chip ${P}-chip-token" data-part="chip-back-${mode}">${escapeHtml(t[`chip-back-${mode}`])}</span></span>
-    <span class="${P}-leg-caption" data-part="back-caption-${mode}">${escapeHtml(t[`back-caption-${mode}`])}</span>
+    <span class="${P}-leg-chips"><span class="${P}-chip ${P}-chip-token" data-part="chip-back">${escapeHtml(t["chip-back"])}</span></span>
+    <span class="${P}-leg-caption" data-part="back-caption">${escapeHtml(t["back-caption"])}</span>
   </div>
 </div>`
 }
 
-function hubCell(mode: Mode, parts: ComparisonParts): string {
+function hubCell(mode: Mode, parts: RouteParts): string {
   const t = parts.text
   const h = parts.html
-  const link = `<div class="${P}-link ${P}-link-vault" aria-hidden="true"><span data-part="vault-out-${mode}">${escapeHtml(t[`vault-out-${mode}`])}</span><span data-part="vault-back-${mode}">${escapeHtml(t[`vault-back-${mode}`])}</span></div>`
+  const link = `<div class="${P}-link ${P}-link-vault" aria-hidden="true"><span data-part="vault-out">${escapeHtml(t["vault-out"])}</span><span data-part="vault-back">${escapeHtml(t["vault-back"])}</span></div>`
   const vault = `<div class="${P}-node ${P}-node-vault" data-node="vault">
     <span class="${P}-node-icon">${ICONS.vault}</span>
     <span class="${P}-node-name">ERC-4626 vault</span>
@@ -191,7 +191,7 @@ function hubCell(mode: Mode, parts: ComparisonParts): string {
   if (mode === "manual") {
     return `<div class="${P}-cell ${P}-cell-hub">
   <div class="${P}-node ${P}-node-wallet" data-node="hub-wallet">
-    <span class="${P}-stops" data-part="stops-hub-manual">${h["stops-hub-manual"]}</span>
+    <span class="${P}-stops" data-part="stops-hub">${h["stops-hub"]}</span>
     <span class="${P}-node-icon">${ICONS.wallet}</span>
     <span class="${P}-node-name">Your wallet on the hub chain</span>
     <span class="${P}-node-note">${ICONS.switch}<span>switch network · hold hub gas</span></span>
@@ -212,25 +212,27 @@ function hubCell(mode: Mode, parts: ComparisonParts): string {
 </div>`
 }
 
-function row(uid: string, mode: Mode, parts: ComparisonParts, scenario: Scenario): string {
+/** The route name sits beside its signature count, and also names the whole diagram (`${uid}-title`). */
+function row(uid: string, parts: RouteParts, scenario: Scenario): string {
+  const { mode } = scenario
   const t = parts.text
   const h = parts.html
-  const first = getRoute({ ...scenario, mode })[0]
-  return `<section class="${P}-row" data-row="${mode}" aria-labelledby="${uid}-row-${mode}">
+  const first = getRoute(scenario)[0]
+  return `<div class="${P}-row" data-row="${mode}">
   <div class="${P}-row-head">
     <div class="${P}-row-titles">
-      <p class="${P}-row-name" id="${uid}-row-${mode}">${rowTitle(mode)}</p>
-      <p class="${P}-row-count"><span class="${P}-row-number" data-part="count-${mode}">${t[`count-${mode}`]}</span> <span class="${P}-row-unit" data-part="unit-${mode}">${t[`unit-${mode}`]}</span></p>
-      <p class="${P}-row-meta" data-part="meta-${mode}">${escapeHtml(t[`meta-${mode}`])}</p>
+      <p class="${P}-row-name" id="${uid}-title">${routeTitle(mode)}</p>
+      <p class="${P}-row-count"><span class="${P}-row-number" data-part="count">${t.count}</span> <span class="${P}-row-unit" data-part="unit">${t.unit}</span></p>
+      <p class="${P}-row-meta" data-part="meta">${escapeHtml(t.meta)}</p>
     </div>
   </div>
-  <div class="${P}-track" data-part="track-${mode}">
+  <div class="${P}-track" data-part="track">
     <div class="${P}-cell ${P}-cell-source">
       <div class="${P}-node ${P}-node-wallet" data-node="source-wallet" data-active="true" data-token="${first.token}">
-        <span class="${P}-stops" data-part="stops-source-${mode}">${h[`stops-source-${mode}`]}</span>
+        <span class="${P}-stops" data-part="stops-source">${h["stops-source"]}</span>
         <span class="${P}-node-icon">${ICONS.wallet}</span>
         <span class="${P}-node-name">Your wallet</span>
-        <span class="${P}-node-sub" data-part="source-sub-${mode}">${escapeHtml(t[`source-sub-${mode}`])}</span>
+        <span class="${P}-node-sub" data-part="source-sub">${escapeHtml(t["source-sub"])}</span>
       </div>
     </div>
     ${leg(mode, parts)}
@@ -238,20 +240,26 @@ function row(uid: string, mode: Mode, parts: ComparisonParts, scenario: Scenario
   </div>
   <div class="${P}-inspector-row">
     <div class="${P}-steppers">
-      <button type="button" class="${P}-step-btn" data-part="prev-${mode}" aria-label="Previous step" disabled>${ICONS.arrowLeft}</button>
-      <button type="button" class="${P}-step-btn" data-part="next-${mode}" aria-label="Next step" disabled>${ICONS.arrowRight}</button>
+      <button type="button" class="${P}-step-btn" data-part="prev" aria-label="Previous step" disabled>${ICONS.arrowLeft}</button>
+      <button type="button" class="${P}-step-btn" data-part="next" aria-label="Next step" disabled>${ICONS.arrowRight}</button>
     </div>
-    <p class="${P}-inspector" role="status" aria-live="polite" aria-atomic="true" data-part="inspector-${mode}">${h[`inspector-${mode}`]}</p>
+    <p class="${P}-inspector" role="status" aria-live="polite" aria-atomic="true" data-part="inspector">${h.inspector}</p>
   </div>
-</section>`
+</div>`
+}
+
+/** Icon key for the marks this route draws. The network-switch entry appears only on a route that switches. */
+function legend(scenario: Scenario): string {
+  const switches = getRoute(scenario).some((step) => step.kind === "switch")
+  const switchEntry = switches ? ` <span class="${P}-legend-switch">${ICONS.switch}</span> wallet network switch` : ""
+  return `<p class="${P}-legend"><span class="${P}-badge" data-kind="send" aria-hidden="true">1</span> transaction you sign <span class="${P}-badge" data-kind="approval" aria-hidden="true">1</span> token approval${switchEntry} <span class="${P}-legend-dash"></span> second CCIP message</p>`
 }
 
 /** The interactive region. The host element and the hidden text fallback (the slot) live in the Astro file. */
-export function renderRouteRows(uid: string, scenario: Scenario): string {
+export function renderRoute(uid: string, scenario: Scenario): string {
   const parts = computeParts(scenario)
   return `<div class="${P}-interactive" data-copy-exclude>
   <div class="${P}-header">
-    <p class="${P}-title" id="${uid}-title">Route comparison</p>
     <div class="${P}-seg" role="radiogroup" aria-label="Action">
       ${radio(`${uid}-flow`, "flow", "deposit", "Deposit", scenario.flow === "deposit")}
       ${radio(`${uid}-flow`, "flow", "redeem", "Redeem", scenario.flow === "redeem")}
@@ -265,10 +273,8 @@ export function renderRouteRows(uid: string, scenario: Scenario): string {
     <span class="${P}-col ${P}-col-hub">Hub chain <em>the vault is here</em></span>
   </div>
 
-  ${row(uid, "manual", parts, scenario)}
-  ${row(uid, "adapter", parts, scenario)}
+  ${row(uid, parts, scenario)}
 
-  <p class="${P}-legend"><span class="${P}-legend-hint">${HINT}</span> <span class="${P}-badge" data-kind="send" aria-hidden="true">1</span> transaction you sign <span class="${P}-badge" data-kind="approval" aria-hidden="true">1</span> token approval <span class="${P}-legend-switch">${ICONS.switch}</span> wallet network switch <span class="${P}-legend-dash"></span> second CCIP message</p>
-  <p class="${P}-footnote">Counts assume a successful request from an EVM wallet, CCIP fees paid in the native gas token, and one transaction per action. Approvals are skipped when the allowance already exists. Nothing here measures time or fee amounts.</p>
+  ${legend(scenario)}
 </div>`
 }

@@ -1,34 +1,53 @@
 ---
 /**
- * Deposit and redemption routes with and without the adapter, both drawn in full, one above
- * the other, on the same three columns (Source chain, Chainlink CCIP, Hub chain).
+ * One deposit or redemption route, drawn in full on three columns (Source chain, Chainlink CCIP,
+ * Hub chain). `mode="manual"` draws the route without the adapter; `mode="adapter"` draws it with
+ * the adapter.
  *
  * Usage in MDX:
- *   import VaultAdapterComparison from "@components/Solutions/VaultAdapterComparison/VaultAdapterComparison.astro"
- *   <VaultAdapterComparison>…literal Markdown fallback…</VaultAdapterComparison>
+ *   import VaultAdapterRoute from "@components/Solutions/VaultAdapterRoute/VaultAdapterRoute.astro"
+ *   <VaultAdapterRoute mode="manual">…literal Markdown fallback…</VaultAdapterRoute>
+ *   <VaultAdapterRoute mode="adapter">…literal Markdown fallback…</VaultAdapterRoute>
  *
- * A native radio group (Deposit | Redeem) reshapes both rows at once. Numbered stops are buttons
- * that write an inspector line, and the arrows beside the explanation walk the route in order.
- * Step 1 of each row is selected on the server-rendered first paint, so the explanation panel
- * and the selected stop are visible at once.
+ * A native radio group (Deposit | Redeem) reshapes the route, and every other route on the page
+ * switches with it. Numbered stops are buttons that write an inspector line, and the arrows beside
+ * the explanation walk the route in order. Step 1 is selected on the server-rendered first paint,
+ * so the explanation panel and the selected stop are visible at once.
  *
  * Styles are global on purpose: the element re-renders badges at runtime. Every class is `vac-`.
  * Several rules carry three class names so they outrank the article's global list and
  * max-width rules (PageContent.astro), which would otherwise leak into the drawing.
  */
-import { DEFAULT_SCENARIO } from "./vaultAdapterComparisonModel.ts"
-import { renderRouteRows } from "./vaultAdapterComparisonView.ts"
+import { DEFAULT_SCENARIO, isMode } from "./vaultAdapterRouteModel.ts"
+import type { Mode, Scenario } from "./vaultAdapterRouteModel.ts"
+import { renderRoute } from "./vaultAdapterRouteView.ts"
+
+interface Props {
+  /** "manual" draws the route without the adapter; "adapter" draws it with the adapter. */
+  mode: Mode
+}
+
+const { mode } = Astro.props
+if (!isMode(mode)) {
+  throw new Error(`VaultAdapterRoute: mode must be "manual" or "adapter", got ${JSON.stringify(mode)}`)
+}
 
 const uid = "vac-" + Math.random().toString(36).slice(2, 9)
-const scenario = DEFAULT_SCENARIO
-const interactive = renderRouteRows(uid, scenario)
+const scenario: Scenario = { flow: DEFAULT_SCENARIO.flow, mode }
+const interactive = renderRoute(uid, scenario)
 ---
 
-<vault-adapter-comparison class="vac" data-flow={scenario.flow} role="group" aria-labelledby={uid + "-title"}>
+<vault-adapter-route
+  class="vac"
+  data-flow={scenario.flow}
+  data-mode={scenario.mode}
+  role="group"
+  aria-labelledby={uid + "-title"}
+>
   <Fragment set:html={interactive} />
   {/* The literal Markdown children: not shown on screen, but kept for print, Copy page and the TXT export. */}
   <div class="vac-text" hidden><slot /></div>
-</vault-adapter-comparison>
+</vault-adapter-route>
 
 <style is:global>
   .vac {
@@ -40,7 +59,6 @@ const interactive = renderRouteRows(uid, scenario)
     --vac-accent-surface: var(--surface-accent, #eff6ff);
     --vac-accent-halo: var(--surface-accent-strong, #dcebff);
     --vac-accent-text: var(--brand, #0847f7);
-    --vac-title: var(--gray-700, #3c414c);
     --vac-token-bg: var(--green-200, #b9f1cc);
     --vac-token-edge: var(--foreground, #141921);
     --vac-token-text: var(--foreground, #141921);
@@ -63,7 +81,6 @@ const interactive = renderRouteRows(uid, scenario)
     color-scheme: dark;
     --vac-accent-halo: var(--dark-tint-blue-stronger);
     --vac-accent-text: var(--text-accent);
-    --vac-title: var(--color-text-primary);
     /* Opaque tints: the token tag sits across a node border, so it must hide what is under it. */
     --vac-token-bg: color-mix(in srgb, var(--green-500) 16%, var(--background));
     --vac-token-edge: var(--dark-edge-green);
@@ -117,10 +134,11 @@ const interactive = renderRouteRows(uid, scenario)
     max-width: none;
   }
 
-  /* Header band */
+  /* Header band: the Deposit | Redeem toggle and Reset, on the right. The route name is in the row. */
   .vac-header {
     display: flex;
     flex-wrap: wrap;
+    justify-content: flex-end;
     align-items: center;
     gap: 8px 12px;
     min-height: 40px;
@@ -129,20 +147,10 @@ const interactive = renderRouteRows(uid, scenario)
     border-radius: 3px 3px 0 0;
     background: var(--muted, #f5f7fa);
   }
-  .vac .vac-title {
-    flex: 1 1 auto;
-    color: var(--vac-title);
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 16px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
   .vac .vac-interactive .vac-reset {
     display: inline-flex;
     align-items: center;
     min-height: 28px;
-    margin-left: auto;
     padding: 4px 8px;
     border: 0;
     border-radius: 4px;
@@ -256,15 +264,15 @@ const interactive = renderRouteRows(uid, scenario)
     display: none;
   }
 
-  /* Rows */
+  /* The route row closes the box the column strip opens. */
   .vac-row {
     margin: 0 16px;
     border: 1px solid var(--border, #e4e8ed);
-    border-bottom: 0;
-  }
-  .vac-row[data-row="adapter"] {
-    border-bottom: 1px solid var(--border, #e4e8ed);
     border-radius: 0 0 4px 4px;
+  }
+  /* Head, track and explanation sit apart at the article's section rhythm (PageContent.astro). */
+  .vac .vac-row > * {
+    margin-top: var(--space-5x, 20px);
   }
   .vac-row-head {
     display: flex;
@@ -645,20 +653,13 @@ const interactive = renderRouteRows(uid, scenario)
     line-height: 16px;
     white-space: nowrap;
   }
-  .vac .vac-legend-hint {
-    flex: 1 1 100%;
-    color: var(--foreground, #141921);
-    font-size: 12px;
-    font-weight: 600;
-    line-height: 16px;
-  }
   .vac .vac-legend {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 6px 8px;
     margin-top: 12px;
-    padding: 12px 16px 0;
+    padding: 12px 16px;
     border-top: 1px solid var(--border, #e4e8ed);
     color: var(--color-text-primary, #4e5560);
     font-size: 12px;
@@ -683,12 +684,6 @@ const interactive = renderRouteRows(uid, scenario)
     width: 18px;
     height: 0;
     border-top: 2px dashed var(--brand, #0847f7);
-  }
-  .vac .vac-footnote {
-    padding: 8px 16px 12px;
-    color: var(--muted-foreground, #6c7585);
-    font-size: 12px;
-    line-height: 16px;
   }
   .vac-text[hidden] {
     display: none;
@@ -816,6 +811,6 @@ const interactive = renderRouteRows(uid, scenario)
 </style>
 
 <script>
-  import { defineVaultAdapterComparison } from "./vaultAdapterComparisonElement.ts"
-  defineVaultAdapterComparison()
+  import { defineVaultAdapterRoute } from "./vaultAdapterRouteElement.ts"
+  defineVaultAdapterRoute()
 </script>
