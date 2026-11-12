@@ -585,13 +585,26 @@ To help us assist you faster, please include:
 
 # Release Notes
 Source: https://docs.chain.link/cre/release-notes
-Last Updated: 2026-10-22
+Last Updated: 2026-11-12
 
 This page provides detailed release notes for CRE. It includes information on new features, significant changes, and known limitations.
 
 > **CAUTION: Ethereum Glamsterdam upgrade**
 >
 > Ethereum is upgrading to Glamsterdam during Q4 2026, which changes the gas model of the chain. **No action is required unless your workflow sets a gas limit.** Ethereum Hoodi and Mainnet activation dates are still to be confirmed. Onchain writes may fail for roughly 30 minutes before and after each upgrade. See [Network Upgrades](/cre/network-upgrades) for timelines and preparation steps.
+
+## CLI v1.40.0 - November 12, 2026
+
+**[CRE CLI version 1.40.0](https://github.com/smartcontractkit/cre-cli/releases/tag/v1.40.0) is now available.**
+
+- **More reliable credential validation**: Fixed "unable to retrieve organization info" errors during login and credential checks. Transient API failures are now retried automatically, and failures report the HTTP status instead of a misleading empty-organization error.
+
+**How to update:**
+
+- **Automatic update**: When you run any CRE command, the CLI will automatically detect if a newer version is available and prompt you to update. Simply run `cre update` to install the latest version.
+- **Fresh installation**: If you're installing the CLI for the first time, follow the [CLI Installation guide](/cre/getting-started/cli-installation).
+
+[See all changes on GitHub](https://github.com/smartcontractkit/cre-cli/compare/v1.39.0...v1.40.0)
 
 ## CLI v1.39.0 - October 21, 2026
 
@@ -4264,7 +4277,6 @@ const reportResponse = runtime
   .report({
     encodedPayload: hexToBase64(reportData),
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -4274,7 +4286,6 @@ const reportResponse = runtime
 
 - `encodedPayload`: Your ABI-encoded data converted to base64
 - `encoderName`: Always `"evm"` for EVM chains
-- `signingAlgo`: Always `"ecdsa"` for EVM chains
 - `hashingAlgo`: Always `"keccak256"` for EVM chains
 
 ### Step 4: Submit to the blockchain
@@ -4351,7 +4362,6 @@ const reportResponse = runtime
   .report({
     encodedPayload: hexToBase64(reportData),
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -4467,7 +4477,6 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
     .report({
       encodedPayload: hexToBase64(reportData),
       encoderName: "evm",
-      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -4569,7 +4578,6 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
     .report({
       encodedPayload: hexToBase64(reportData),
       encoderName: "evm",
-      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -13851,7 +13859,7 @@ For most read operations, use the standard confidence levels by passing [`LATEST
 > gap exceeds the normal environment. When this happens, calls to `finalized` and/or `safe` blocks will return an error.
 >
 > The following chains have exhibited this behavior and safe and finalized reads may periodically return errors.
-> **Mainnet:** Polygon, Mantle, Scroll, Linea. **Testnet:** Polygon Amoy, Linea Sepolia, Arbitrum Sepolia, ZKSync Era Sepolia.
+> **Mainnet:** Polygon, Mantle, Scroll, Linea, Base, Arbitrum One, Ink, World Chain, Celo. **Testnet:** Polygon Amoy, Linea Sepolia, Arbitrum Sepolia, ZKSync Era Sepolia, Avalanche Fuji.
 
 ### Custom block depths
 
@@ -15613,7 +15621,6 @@ function updateCalculatorResult(
     .report({
       encodedPayload: hexToBase64(reportData),
       encoderName: "evm",
-      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -15666,7 +15673,7 @@ export async function main() {
 > Once you're comfortable with these core concepts, the SDK provides convenience helpers for more concise code:
 >
 > - **HTTP helpers**: The [`HTTPSendRequester`](/cre/reference/sdk/http-client-ts#using-sendrequester) type includes [`ok()`](/cre/reference/sdk/http-client-ts#ok), [`text()`](/cre/reference/sdk/http-client-ts#text), and [`json()`](/cre/reference/sdk/http-client-ts#json) functions for cleaner response handling
-> - **Report helper**: [`prepareReportRequest()`](/cre/reference/sdk/evm-client-ts#preparereportrequest) automatically sets default encoding parameters (`ecdsa`, `keccak256`, `evm`) for report generation
+> - **Report helper**: [`prepareReportRequest()`](/cre/reference/sdk/evm-client-ts#preparereportrequest) automatically sets default encoding parameters (`evm`, `keccak256`) for report generation
 >
 > These helpers are great for production code, but we use the explicit approach here for educational clarity.
 
@@ -17742,7 +17749,6 @@ donRuntime
   .report({
     encodedPayload: Buffer.from(text(response)).toString("base64"),
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -17813,7 +17819,6 @@ const onCronTrigger = (runtime: TeeRuntime<Config>) => {
     .report({
       encodedPayload: Buffer.from(text(response)).toString("base64"),
       encoderName: "evm",
-      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -20513,7 +20518,6 @@ const report = runtime
   .report({
     encodedPayload: hexToBase64(encodedValue),
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -20676,7 +20680,6 @@ const onCronTrigger = (runtime: Runtime<Config>, _payload: CronPayload): MyResul
     .report({
       encodedPayload: hexToBase64(encodedValue),
       encoderName: "evm",
-      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -24782,7 +24785,6 @@ const report = runtime
   .report({
     encodedPayload: hexToBase64(callData),
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -25513,7 +25515,6 @@ donRuntime
     // Buffer.from(payloadBytes).toString("base64")
     encodedPayload: encodedValue,
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -25971,6 +25972,12 @@ Both `Runtime` and `NodeRuntime` provide:
 - **`runInNodeMode(...)`**: Execute code on individual nodes with consensus aggregation
 - **`getSecret(...)`**: Access to workflow secrets
 - **`report(...)`**: Generate cryptographically signed reports. To verify received reports, use [`Report.parse()`](#report-verification).
+
+> **CAUTION: signingAlgo is deprecated**
+>
+> The `signingAlgo` field in `runtime.report()` is deprecated and ignored. CRE derives the signing algorithm from
+> `encoderName`—EVM and Solana reports both use ECDSA—so the field has no effect. The field will be removed in the next
+> major SDK release.
 
 ### Logging
 
@@ -26936,7 +26943,6 @@ const reportResponse = runtime
   .report({
     encodedPayload: hexToBase64(callData),
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -27244,7 +27250,7 @@ See [Type Conversions](/cre/reference/sdk/type-conversions-ts#protobigint) for m
 
 ### `prepareReportRequest()`
 
-Prepares a report request with default EVM encoding parameters for use with `runtime.report()`. This helper simplifies report generation by automatically setting the standard encoding configuration (`evm`, `ecdsa`, `keccak256`) required for EVM-based workflows.
+Prepares a report request with default EVM encoding parameters for use with `runtime.report()`. This helper simplifies report generation by automatically setting the standard encoding configuration (`evm`, `keccak256`) required for EVM-based workflows. The signing algorithm is derived from the encoder.
 
 **Signature:**
 
@@ -27258,7 +27264,7 @@ function prepareReportRequest(
 **Parameters:**
 
 - `hexEncodedPayload`: The hex-encoded payload (typically from `encodeFunctionData()`) to be signed by the DON
-- `reportEncoder`: Optional. Custom report encoder configuration. Defaults to `EVM_DEFAULT_REPORT_ENCODER` (`{ encoderName: 'evm', signingAlgo: 'ecdsa', hashingAlgo: 'keccak256' }`)
+- `reportEncoder`: Optional. Custom report encoder configuration. Defaults to `EVM_DEFAULT_REPORT_ENCODER` (`{ encoderName: 'evm', hashingAlgo: 'keccak256' }`). Its `signingAlgo` key is deprecated and ignored.
 
 **Returns:**
 
@@ -27284,9 +27290,13 @@ const report = runtime.report(prepareReportRequest(callData)).result()
 // The helper automatically sets:
 // - encodedPayload: hexToBase64(callData)
 // - encoderName: "evm"
-// - signingAlgo: "ecdsa"
 // - hashingAlgo: "keccak256"
 ```
+
+> **CAUTION: signingAlgo is deprecated**
+>
+> `signingAlgo` is deprecated and ignored. CRE derives the signing algorithm from `encoderName`—EVM and Solana reports
+> both use ECDSA—so the field has no effect. The field will be removed in the next major SDK release.
 
 **Equivalent manual approach:**
 
@@ -27298,7 +27308,6 @@ const report = runtime
   .report({
     encodedPayload: hexToBase64(callData),
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -28628,6 +28637,11 @@ const SOLANA_DEFAULT_REPORT_ENCODER = {
 }
 ```
 
+> **CAUTION: signingAlgo is deprecated**
+>
+> `signingAlgo` is deprecated and ignored. CRE derives the signing algorithm from `encoderName`—Solana reports use
+> ECDSA—so the field has no effect. It will be removed from this default in the next major SDK release.
+
 Pass to `prepareSolanaReportRequest()` to override encoding parameters.
 
 ***
@@ -29488,32 +29502,32 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 
 ## Mainnets
 
-| Network                                                        | CLI      | Go SDK   | TS SDK   |
-| -------------------------------------------------------------- | -------- | -------- | -------- |
-| ADI Mainnet                                                    | v1.16.0+ | v1.10.0+ | v1.8.0+  |
-| Arbitrum One                                                   | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Avalanche                                                      | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Base                                                           | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| BNB Chain                                                      | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Celo                                                           | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Ethereum                                                       | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Gnosis Chain                                                   | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Hyperliquid Mainnet                                            | v1.7.0+  | v1.7.0+  | v1.4.0+  |
-| Ink                                                            | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Jovay                                                          | v1.3.0+  | v1.4.0+  | v1.3.1+  |
-| Linea[\*](/cre/concepts/finality-ts#using-confidence-levels)   | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Mantle[\*](/cre/concepts/finality-ts#using-confidence-levels)  | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| MegaETH                                                        | v1.5.0+  | v1.6.0+  | v1.3.1+  |
-| Monad                                                          | v1.29.0+ | v1.17.0+ | v1.18.0+ |
-| OP Mainnet                                                     | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Pharos                                                         | v1.3.0+  | v1.4.0+  | v1.3.1+  |
-| Plasma                                                         | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Polygon[\*](/cre/concepts/finality-ts#using-confidence-levels) | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Scroll[\*](/cre/concepts/finality-ts#using-confidence-levels)  | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| Sonic                                                          | v1.5.0+  | v1.6.0+  | v1.3.0+  |
-| World Chain                                                    | v1.0.11+ | v1.2.0+  | v1.0.9+  |
-| XLayer                                                         | v1.3.0+  | v1.4.0+  | v1.1.3+  |
-| ZKSync Era                                                     | v1.0.6+  | v1.1.3+  | v1.0.7+  |
+| Network                                                             | CLI      | Go SDK   | TS SDK   |
+| ------------------------------------------------------------------- | -------- | -------- | -------- |
+| ADI Mainnet                                                         | v1.16.0+ | v1.10.0+ | v1.8.0+  |
+| Arbitrum One[\*](/cre/concepts/finality-ts#using-confidence-levels) | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Avalanche                                                           | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Base[\*](/cre/concepts/finality-ts#using-confidence-levels)         | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| BNB Chain                                                           | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Celo[\*](/cre/concepts/finality-ts#using-confidence-levels)         | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Ethereum                                                            | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Gnosis Chain                                                        | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Hyperliquid Mainnet                                                 | v1.7.0+  | v1.7.0+  | v1.4.0+  |
+| Ink[\*](/cre/concepts/finality-ts#using-confidence-levels)          | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Jovay                                                               | v1.3.0+  | v1.4.0+  | v1.3.1+  |
+| Linea[\*](/cre/concepts/finality-ts#using-confidence-levels)        | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Mantle[\*](/cre/concepts/finality-ts#using-confidence-levels)       | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| MegaETH                                                             | v1.5.0+  | v1.6.0+  | v1.3.1+  |
+| Monad                                                               | v1.29.0+ | v1.17.0+ | v1.18.0+ |
+| OP Mainnet                                                          | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Pharos                                                              | v1.3.0+  | v1.4.0+  | v1.3.1+  |
+| Plasma                                                              | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Polygon[\*](/cre/concepts/finality-ts#using-confidence-levels)      | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Scroll[\*](/cre/concepts/finality-ts#using-confidence-levels)       | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| Sonic                                                               | v1.5.0+  | v1.6.0+  | v1.3.0+  |
+| World Chain[\*](/cre/concepts/finality-ts#using-confidence-levels)  | v1.0.11+ | v1.2.0+  | v1.0.9+  |
+| XLayer                                                              | v1.3.0+  | v1.4.0+  | v1.1.3+  |
+| ZKSync Era                                                          | v1.0.6+  | v1.1.3+  | v1.0.7+  |
 
 \* Safe and finalized reads are not reliably supported on these networks. See [Finality and Confidence Levels](/cre/concepts/finality-ts#using-confidence-levels).
 
@@ -29525,7 +29539,7 @@ Network support depends on your CLI and SDK versions. The tables below show the 
 | Apechain Curtis                                                           | v1.0.7+  | v1.1.4+  | v1.0.7+  |
 | Arc Testnet                                                               | v1.0.7+  | v1.1.4+  | v1.3.1+  |
 | Arbitrum Sepolia[\*](/cre/concepts/finality-ts#using-confidence-levels)   | v1.0.0+  | v1.0.0+  | v1.0.1+  |
-| Avalanche Fuji                                                            | v1.0.0+  | v1.0.0+  | v1.0.1+  |
+| Avalanche Fuji[\*](/cre/concepts/finality-ts#using-confidence-levels)     | v1.0.0+  | v1.0.0+  | v1.0.1+  |
 | Base Sepolia                                                              | v1.0.0+  | v1.0.0+  | v1.0.1+  |
 | BNB Chain Testnet                                                         | v1.0.0+  | v1.0.0+  | v1.0.1+  |
 | Celo Sepolia                                                              | v1.15.0+ | v1.9.0+  | v1.7.0+  |
