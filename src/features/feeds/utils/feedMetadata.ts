@@ -145,6 +145,9 @@ export function isV1124x5SessionFeed(metadata: FeedMetadata): boolean {
 
 /** v11 streams with US 24/5 session coverage (Regular, Extended, or Overnight hours). */
 export function is24x5StreamFeed(metadata: FeedMetadata): boolean {
+  // Index streams publish during regular US hours but are a separate product
+  // family with their own table, so keep them out of the 24/5 family tables.
+  if (isIndexStreamFeed(metadata)) return false
   return getSchemaVersion(metadata) === "v11" && isV1124x5SessionFeed(metadata)
 }
 
@@ -179,6 +182,35 @@ export function matchesApacEquitiesStreamFilter(
 ): boolean {
   if (!showApacEquitiesFeeds) return true
   return isApacEquitiesStreamFeed(metadata)
+}
+
+/** Regional group used to split the index tables across the US and APAC equity pages. */
+export type IndexStreamRegion = "us" | "apac"
+
+/** Index streams (US500, US100, US30, 225.JP, KR200.KR) are tagged with RDD `assetSubClass` "Index". */
+export function isIndexStreamFeed(metadata: FeedMetadata): boolean {
+  return metadata.docs?.assetSubClass === "Index"
+}
+
+/**
+ * Regional group for an index stream, derived from its exchange market hours.
+ * APAC index streams track Tokyo or Seoul; US index streams use US equity hours.
+ */
+export function getIndexStreamRegion(metadata: FeedMetadata): IndexStreamRegion | undefined {
+  if (!isIndexStreamFeed(metadata)) return undefined
+  return isApacEquitiesStreamFeed(metadata) ? "apac" : "us"
+}
+
+/** Index stream filter used by the dedicated Indices tables on the equity pages. */
+export function matchesIndexStreamFilter(
+  metadata: FeedMetadata,
+  showIndexStreams: boolean | undefined,
+  region?: IndexStreamRegion
+): boolean {
+  if (!showIndexStreams) return true
+  if (!isIndexStreamFeed(metadata)) return false
+  if (!region) return true
+  return getIndexStreamRegion(metadata) === region
 }
 
 /**

@@ -19,7 +19,9 @@ import {
   networkHasVisibleFeeds,
   type ExtendedHoursCategory,
 } from "../utils/feedVisibility.ts"
-import { chainHasSvrFeeds, getSvrType, type SvrFeedType } from "../utils/svrDetection.ts"
+import { chainHasSvrFeeds, getSvrTypesOnNetwork, getSvrTypeDocLink } from "../utils/svrDetection.ts"
+import { getAtlasContracts } from "../utils/atlasContracts.ts"
+import { AddressCell } from "./AtlasContractsTable.tsx"
 import {
   filterChainsByFeedTypeTag,
   networkMatchesFeedTypeTag,
@@ -32,7 +34,9 @@ import {
   is247USEquitiesStream,
   isApacEquitiesStreamFeed,
   isFuturesStreamFeed,
+  matchesIndexStreamFilter,
   mergeStreamEnvironmentAvailability,
+  type IndexStreamRegion,
 } from "../utils/feedMetadata.ts"
 import { getAddrPerPage, SMART_DATA_CATEGORY_OPTIONS } from "../constants.ts"
 import {
@@ -210,6 +214,8 @@ export const FeedList = ({
   force247TokenizedEquity = false,
   forceApacEquitiesOnly = false,
   forceFuturesOnly = false,
+  forceIndicesOnly = false,
+  forceIndexRegion,
   forceStreamCategoryFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
@@ -232,6 +238,10 @@ export const FeedList = ({
   force247TokenizedEquity?: boolean
   forceApacEquitiesOnly?: boolean
   forceFuturesOnly?: boolean
+  /** Locks the table to index streams (RDD `docs.assetSubClass` "Index"). */
+  forceIndicesOnly?: boolean
+  /** Narrows a forced index table to one region. */
+  forceIndexRegion?: IndexStreamRegion
   forceStreamCategoryFilter?: StreamsRwaFeedTypeValue
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
@@ -418,7 +428,7 @@ export const FeedList = ({
   const [showOnlyDEXFeeds, setShowOnlyDEXFeeds] = useState(false)
   const [showOnlyDEXFeedsTestnet, setShowOnlyDEXFeedsTestnet] = useState(false)
   // SVR type filters (only used when dataFeedType === "svr")
-  const [svrTypeFilters, setSvrTypeFilters] = useState<Set<SvrFeedType>>(new Set())
+  const [svrTypeFilters, setSvrTypeFilters] = useState<Set<string>>(new Set())
   const [showOnlyDatalinkFeeds, setShowOnlyDatalinkFeeds] = useState(false)
   const [showOnlyDatalinkFeedsTestnet, setShowOnlyDatalinkFeedsTestnet] = useState(false)
   // `show24x5` is the legacy URL param kept for existing links; new selections use `marketHours`.
@@ -441,6 +451,7 @@ export const FeedList = ({
   const show247USEquities = force24x7Only
   const showApacEquitiesFeeds = forceApacEquitiesOnly
   const showFuturesFeeds = forceFuturesOnly
+  const showIndexStreams = forceIndicesOnly
 
   const [twentyFourSevenFilterParam, setTwentyFourSevenFilterParam] = useQueryString("247Category")
   const twentyFourSevenFilter: TwentyFourSevenFilterValue =
@@ -522,6 +533,7 @@ export const FeedList = ({
   const show247USEquitiesTestnet = force24x7Only
   const showApacEquitiesFeedsTestnet = forceApacEquitiesOnly
   const showFuturesFeedsTestnet = forceFuturesOnly
+  const showIndexStreamsTestnet = forceIndicesOnly
 
   const [testnetTwentyFourSevenFilterParam, setTestnetTwentyFourSevenFilterParam] = useQueryString("testnet247Category")
   const testnetTwentyFourSevenFilter: TwentyFourSevenFilterValue =
@@ -684,6 +696,20 @@ export const FeedList = ({
     forceExtendedHoursCategory,
     force247TokenizedEquity,
   ])
+
+  const svrTypesOnNetwork = useMemo(() => {
+    if (!isSvr || !currentChainMetadata.processedData) return []
+    const labels = new Set<string>()
+    currentChainMetadata.processedData.networks?.forEach((network) => {
+      getSvrTypesOnNetwork(network).forEach((label) => labels.add(label))
+    })
+    return [...labels].sort()
+  }, [isSvr, currentChainMetadata.processedData])
+
+  const atlasContracts = useMemo(
+    () => (isSvr ? getAtlasContracts(selectedChain.page) : null),
+    [isSvr, selectedChain.page]
+  )
 
   useEffect(() => {
     if (!chainHasSvr && showOnlySVR) {
@@ -1006,6 +1032,16 @@ export const FeedList = ({
           )
         }
 
+        if (isStreams && forceIndicesOnly) {
+          return (
+            network.metadata?.some(
+              (feed) =>
+                isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) &&
+                matchesIndexStreamFilter(feed, true, forceIndexRegion)
+            ) ?? false
+          )
+        }
+
         return networkHasVisibleFeeds(network, dataFeedType, ecosystem, visibilityOptions)
       })
 
@@ -1034,6 +1070,8 @@ export const FeedList = ({
     force247TokenizedEquity,
     forceApacEquitiesOnly,
     forceFuturesOnly,
+    forceIndicesOnly,
+    forceIndexRegion,
     forceExtendedHoursCategory,
   ])
 
@@ -1139,21 +1177,23 @@ export const FeedList = ({
           ? "24/7 Lending Streams"
           : "24/7 US Equities Streams"
 
-  const forcedCategoryLabel = forceApacEquitiesOnly
-    ? "APAC Equities Streams"
-    : force24x7Only
-      ? forced24x7Label
-      : forceFuturesOnly
-        ? "Futures Streams"
-        : forceStreamCategoryFilter === "datalink"
-          ? "DataLink Streams"
-          : forceStreamCategoryFilter === "equities"
-            ? "Equity Streams"
-            : forceStreamCategoryFilter === "forex"
-              ? "Forex Streams"
-              : forceStreamCategoryFilter === "futures"
-                ? "Futures Streams"
-                : null
+  const forcedCategoryLabel = forceIndicesOnly
+    ? "Index Streams"
+    : forceApacEquitiesOnly
+      ? "APAC Equities Streams"
+      : force24x7Only
+        ? forced24x7Label
+        : forceFuturesOnly
+          ? "Futures Streams"
+          : forceStreamCategoryFilter === "datalink"
+            ? "DataLink Streams"
+            : forceStreamCategoryFilter === "equities"
+              ? "Equity Streams"
+              : forceStreamCategoryFilter === "forex"
+                ? "Forex Streams"
+                : forceStreamCategoryFilter === "futures"
+                  ? "Futures Streams"
+                  : null
 
   const streamsMainnetSectionTitle = forcedCategoryLabel
     ? `Mainnet ${forcedCategoryLabel}`
@@ -1446,6 +1486,16 @@ export const FeedList = ({
         )
       }
 
+      if (forceIndicesOnly) {
+        return (
+          network.metadata?.some(
+            (feed) =>
+              isFeedVisible(feed, dataFeedType, ecosystem, visibilityOptions) &&
+              matchesIndexStreamFilter(feed, true, forceIndexRegion)
+          ) ?? false
+        )
+      }
+
       return networkHasVisibleFeeds(network, dataFeedType, ecosystem, visibilityOptions)
     }
 
@@ -1533,6 +1583,7 @@ export const FeedList = ({
                       !force24x7Only &&
                       !forceApacEquitiesOnly &&
                       !forceFuturesOnly &&
+                      !forceIndicesOnly &&
                       !forceStreamCategoryFilter && (
                         <FilterDropdown
                           isOpen={openDropdownId === "main-market-hours"}
@@ -1552,7 +1603,8 @@ export const FeedList = ({
                       !forceStreamCategoryFilter &&
                       !force24x7Only &&
                       !forceApacEquitiesOnly &&
-                      !forceFuturesOnly && (
+                      !forceFuturesOnly &&
+                      !forceIndicesOnly && (
                         <>
                           <FilterDropdown
                             isOpen={openDropdownId === "main-schema"}
@@ -1686,6 +1738,8 @@ export const FeedList = ({
                   twentyFourSevenProduct={force247Product}
                   showApacEquitiesFeeds={showApacEquitiesFeeds}
                   showFuturesFeeds={showFuturesFeeds}
+                  showIndexStreams={showIndexStreams}
+                  indexRegion={forceIndexRegion}
                   tradingHoursFilter={tradingHoursFilter}
                   dataFeedType={dataFeedType}
                   ecosystem={ecosystem}
@@ -1753,6 +1807,7 @@ export const FeedList = ({
                       !force24x7Only &&
                       !forceApacEquitiesOnly &&
                       !forceFuturesOnly &&
+                      !forceIndicesOnly &&
                       !forceStreamCategoryFilter && (
                         <FilterDropdown
                           isOpen={openDropdownId === "test-market-hours"}
@@ -1772,7 +1827,8 @@ export const FeedList = ({
                       !forceStreamCategoryFilter &&
                       !force24x7Only &&
                       !forceApacEquitiesOnly &&
-                      !forceFuturesOnly && (
+                      !forceFuturesOnly &&
+                      !forceIndicesOnly && (
                         <>
                           <FilterDropdown
                             isOpen={openDropdownId === "test-schema"}
@@ -1908,6 +1964,8 @@ export const FeedList = ({
                   twentyFourSevenProduct={force247Product}
                   showApacEquitiesFeeds={showApacEquitiesFeedsTestnet}
                   showFuturesFeeds={showFuturesFeedsTestnet}
+                  showIndexStreams={showIndexStreamsTestnet}
+                  indexRegion={forceIndexRegion}
                   tradingHoursFilter={testnetTradingHoursFilter}
                   firstAddr={testnetFirstAddr}
                   lastAddr={testnetLastAddr}
@@ -1998,6 +2056,36 @@ export const FeedList = ({
                           <a href="/docs/data-feeds/l2-sequencer-feeds/">L2 Sequencer Uptime Feeds</a> page for
                           examples.
                         </p>
+                      )}
+                      {isSvr && atlasContracts && (
+                        <>
+                          <p>
+                            Searchers bond native tokens to the <strong>Atlas</strong> contract and query the{" "}
+                            <strong>DappControl</strong> contract for auction parameters such as the solver gas limit.
+                          </p>
+                          <table className={tableStyles.table} style={{ marginBottom: "1rem" }}>
+                            <thead>
+                              <tr>
+                                <th>Contract</th>
+                                <th>Address</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>Atlas (v1.6.4)</td>
+                                <td>
+                                  <AddressCell address={atlasContracts.atlas} explorerUrl={network.explorerUrl} />
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>DappControl</td>
+                                <td>
+                                  <AddressCell address={atlasContracts.dappControl} explorerUrl={network.explorerUrl} />
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </>
                       )}
                       {network.name === "Aptos Mainnet" && (
                         <>
@@ -2170,91 +2258,36 @@ export const FeedList = ({
                               </a>
                             </span>
                           )}
-                          {isSvr && (
-                            <>
-                              <span className={feedList.filterCheckboxGroup}>
+                          {isSvr &&
+                            svrTypesOnNetwork.map((svrType) => (
+                              <span key={svrType} className={feedList.filterCheckboxGroup}>
                                 <label className={feedList.detailsLabel}>
                                   <input
                                     type="checkbox"
                                     className={feedList.feedCheckbox}
-                                    checked={!svrTypeFilters.has("Aave-SVR")}
+                                    checked={!svrTypeFilters.has(svrType)}
                                     onChange={() => {
                                       setSvrTypeFilters((prev) => {
                                         const next = new Set(prev)
-                                        if (next.has("Aave-SVR")) next.delete("Aave-SVR")
-                                        else next.add("Aave-SVR")
+                                        if (next.has(svrType)) next.delete(svrType)
+                                        else next.add(svrType)
                                         return next
                                       })
                                       setCurrentPage("1")
                                     }}
                                   />
-                                  Aave-SVR
+                                  {svrType}
                                 </label>
                                 <a
-                                  href="/data-feeds/svr-feeds#aave-svr-feeds"
+                                  href={getSvrTypeDocLink(svrType)}
                                   className={feedList.filterHelpLink}
-                                  title="Dedicated SVR feeds exclusively for the Aave protocol"
-                                  aria-label="Learn about Aave-SVR feeds"
+                                  title={`Learn about ${svrType} feeds`}
+                                  aria-label={`Learn about ${svrType} feeds`}
                                 >
                                   ?
                                 </a>
                               </span>
-                              <span className={feedList.filterCheckboxGroup}>
-                                <label className={feedList.detailsLabel}>
-                                  <input
-                                    type="checkbox"
-                                    className={feedList.feedCheckbox}
-                                    checked={!svrTypeFilters.has("SVR")}
-                                    onChange={() => {
-                                      setSvrTypeFilters((prev) => {
-                                        const next = new Set(prev)
-                                        if (next.has("SVR")) next.delete("SVR")
-                                        else next.add("SVR")
-                                        return next
-                                      })
-                                      setCurrentPage("1")
-                                    }}
-                                  />
-                                  SVR
-                                </label>
-                                <a
-                                  href="/data-feeds/svr-feeds#svr-shared"
-                                  className={feedList.filterHelpLink}
-                                  title="Canonical shared SVR feeds for use by any protocol"
-                                  aria-label="Learn about SVR feeds"
-                                >
-                                  ?
-                                </a>
-                              </span>
-                              <span className={feedList.filterCheckboxGroup}>
-                                <label className={feedList.detailsLabel}>
-                                  <input
-                                    type="checkbox"
-                                    className={feedList.feedCheckbox}
-                                    checked={!svrTypeFilters.has("SVR-Backup")}
-                                    onChange={() => {
-                                      setSvrTypeFilters((prev) => {
-                                        const next = new Set(prev)
-                                        if (next.has("SVR-Backup")) next.delete("SVR-Backup")
-                                        else next.add("SVR-Backup")
-                                        return next
-                                      })
-                                      setCurrentPage("1")
-                                    }}
-                                  />
-                                  SVR-Backup
-                                </label>
-                                <a
-                                  href="/data-feeds/svr-feeds#svr-backup-legacy"
-                                  className={feedList.filterHelpLink}
-                                  title="Legacy shared SVR feeds. New integrations should use SVR feeds instead."
-                                  aria-label="Learn about SVR-Backup feeds"
-                                >
-                                  ?
-                                </a>
-                              </span>
-                            </>
-                          )}
+                            ))}
                         </div>
                         <form class={clsx(feedList.tableSearch, feedList.filterDropdown_search)}>
                           <input
