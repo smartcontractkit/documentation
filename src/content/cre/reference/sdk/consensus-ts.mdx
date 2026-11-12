@@ -257,25 +257,27 @@ const fetchPriceData = (sendRequester: HTTPSendRequester, config: Config): Price
 }
 
 const onCronTrigger = (runtime: Runtime<Config>, payload: CronPayload): string => {
+  // Start both independent aggregations before waiting on either one
   // Example 1: Simple median aggregation
-  const simplePrice = runtime.runInNodeMode(fetchSimplePrice, consensusMedianAggregation<bigint>())().result()
-
-  runtime.log(`Simple median price: ${simplePrice}`)
+  const simplePriceCall = runtime.runInNodeMode(fetchSimplePrice, consensusMedianAggregation<bigint>())()
 
   // Example 2: Field-based aggregation
   const httpClient = new HTTPClient()
-  const priceData = httpClient
-    .sendRequest(
-      runtime,
-      fetchPriceData,
-      ConsensusAggregationByFields<PriceData>({
-        price: median, // Median of price values
-        timestamp: median, // Median of timestamps
-        source: identical, // Must be identical across nodes
-      })
-    )(runtime.config)
-    .result()
+  const priceDataCall = httpClient.sendRequest(
+    runtime,
+    fetchPriceData,
+    ConsensusAggregationByFields<PriceData>({
+      price: median, // Median of price values
+      timestamp: median, // Median of timestamps
+      source: identical, // Must be identical across nodes
+    })
+  )(runtime.config)
 
+  // Collect results in a fixed order
+  const simplePrice = simplePriceCall.result()
+  runtime.log(`Simple median price: ${simplePrice}`)
+
+  const priceData = priceDataCall.result()
   runtime.log(`Aggregated price: ${priceData.price} from ${priceData.source}`)
 
   return "Price data aggregated successfully"
@@ -292,6 +294,8 @@ export async function main() {
   await runner.run(initWorkflow)
 }
 ```
+
+This example starts both independent aggregations before resolving either one. For more patterns, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 
 ## Default Values
 

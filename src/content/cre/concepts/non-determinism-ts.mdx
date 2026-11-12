@@ -165,6 +165,12 @@ const onTrigger = (runtime: Runtime<Config>): MyResult => {
 
 The key is to call `.result()` in a **fixed, deterministic order** (API 1, then API 2 if needed), not racing them.
 
+<Aside type="tip" title="Independent calls can still run in parallel">
+  A fallback is sequential because the second API is only used if the first one fails. If the calls are truly
+  independent, start both before resolving either one, then resolve them in a fixed order. See [Optimizing
+  Workflows](/cre/guides/workflow/optimizing-workflows).
+</Aside>
+
 <Aside type="note" title="Custom code vs SDK capabilities">
   You can use `async/await` and Promises in your own custom functions. However, all SDK capabilities (HTTP requests,
   blockchain interactions, secrets) use the `.result()` pattern. See the [Core SDK
