@@ -2,6 +2,7 @@ import path from "node:path"
 import fs from "node:fs/promises"
 import os from "node:os"
 import { describe, expect, test } from "@jest/globals"
+import { createContext } from "astro/middleware"
 import { transformPageBodyToMarkdown } from "@lib/markdown/buildMarkdownArtifact.js"
 import { unescapeMarkdown } from "@lib/markdown/formatters.js"
 import { extractFrontmatter } from "@lib/markdown/utils.js"
@@ -29,6 +30,20 @@ import { GET as getSectionBundle, getStaticPaths } from "../pages/[section]/llms
 import { GET as getVrfBundle, getStaticPaths as vrfPaths } from "../pages/vrf/[version]/llms-full.txt.js"
 
 describe("deprecated product exports", () => {
+  test.each(["v1", "v2"])("prerenders the VRF %s bundle with a real Astro request context", async (version) => {
+    const context = createContext({
+      request: new Request(`https://docs.chain.link/vrf/${version}/llms-full.txt`),
+      params: { version },
+      defaultLocale: "",
+    })
+    // Astro exposes getters such as clientAddress that throw during prerendering.
+    expect(() => context.clientAddress).toThrow()
+    const response = await getVrfBundle(context)
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8")
+    expect(await response.text()).toBe(renderSunsetNotice(`vrf/${version}`))
+  })
+
   test.each(SUNSET_DOC_ROOTS)("generates only a notice for %s, replacing stale content", async (section) => {
     const directory = await fs.mkdtemp(path.join(os.tmpdir(), "sunset-llms-"))
     try {

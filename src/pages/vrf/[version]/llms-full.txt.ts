@@ -1,8 +1,7 @@
 import type { APIRoute } from "astro"
-import { GET as getSection } from "../../[section]/llms-full.txt.js"
+import { serveLlmsFullSection } from "../../../lib/markdown/llmsFull.js"
 
-export const GET: APIRoute = (context) =>
-  getSection({ ...context, params: { section: `vrf/${context.params.version}` } })
+export const GET: APIRoute = ({ params }) => serveLlmsFullSection(`vrf/${params.version}`)
 
 export function getStaticPaths() {
   return ["v1", "v2"].map((version) => ({ params: { version } }))
