@@ -144,7 +144,7 @@ Tokenized equity feeds for assets from different issuers may differ in terms of 
 
 ## Risks
 
-Tokenized equity feeds introduce specific risks related to the nature of traditional equity markets, multi-session data aggregation, smoothing algorithms, and data sourcing. Users must understand these factors and implement appropriate safeguards.
+Tokenized equity feeds introduce specific risks related to the nature of traditional equity markets, multi-session data aggregation, smoothing algorithms, data sourcing, and issuer-specific risk. Users must understand these factors and implement appropriate safeguards.
 
 ### Limited provider coverage during overnight sessions
 
@@ -286,6 +286,14 @@ During these periods, the feed may appear stale or flatline. This reflects true 
 - Monitor exchange halt notifications independently
 - Do not rely solely on feed freshness to determine market status. Users should incorporate external market status sources where available.
 
+### Issuer risk is not priced
+
+The feed answer is the underlying equity price multiplied by the asset issuer's multiplier. It reflects the value of the underlying shares, not the credit or operational condition of the issuer. Events specific to the issuer, such as insolvency, a custody failure, a halt in redemptions, or a token trading at a discount to its underlying, do not change the feed price.
+
+#### Mitigation
+
+- Monitor issuer announcements and secondary market prices of the token, and define how your protocol responds to an issuer event
+
 ---
 
 ## Best practices
@@ -303,6 +311,7 @@ During these periods, the feed may appear stale or flatline. This reflects true 
 - **Monitor deviation**: Compare tokenized equity feed values against other market data sources when available
 - **Log session transitions**: Track behavior during session changes to identify patterns
 - **Set up alerts**: Notify operators of unusual price movements, extended staleness, or deviation from expected ranges
+- **Watch the issuer**: Track issuer announcements and the token's secondary market price. The feed does not reflect issuer-specific events (see [Issuer risk is not priced](#issuer-risk-is-not-priced)).
 
 ### Integration testing
 
