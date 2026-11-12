@@ -7713,7 +7713,7 @@ A 24/7 feed lets the onchain price move gradually over the weekend, so risk buil
 
 ## How 24/7 feeds work
 
-Each feed publishes the **Oracle Price**, a slow price built for collateral valuation, multiplied by the asset issuer's multiplier. As with 24/5 tokenized equity feeds, the answer is the value of the token, not the raw equity price. Multiplier sourcing and issuer-specific methodology are unchanged. See the [Asset Issuer Catalog](/data-feeds/tokenized-equity-feeds/providers) for details.
+Each feed publishes the **Oracle Price**, a slow price built for collateral valuation, multiplied by the asset issuer's multiplier. As with 24/5 tokenized equity feeds, the answer is the calculated primary market value of the token, not the raw equity price. Multiplier sourcing and issuer-specific methodology are unchanged. See the [Asset Issuer Catalog](/data-feeds/tokenized-equity-feeds/providers) for details. The feed reflects the value of the underlying shares, not the issuer's credit or operational condition; see [Issuer risk is not priced](#issuer-risk-is-not-priced).
 
 The Oracle Price comes from the same source as the `lastTradedPrice` field on the underlying [24/7 US Equities v11 streams](/data-streams/rwa-streams/24-7-us-equities). That page covers the methodology in detail. In short:
 
@@ -7754,7 +7754,7 @@ The table below shows the available 24/7 Smoothed Tokenized Equity Feeds.
 | Smoothing              | Session transitions and overnight   | Session transitions, overnight, and all of off-hours |
 | Asset coverage         | Broad                               | Assets reviewed for off-hours liquidity              |
 
-All risks on the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds#risks) page still apply during the trading week. The risks below are specific to 24/7 feeds or change in a meaningful way.
+All risks on the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds#risks) page still apply during the trading week. The risks below are specific to 24/7 feeds, change in a meaningful way, or are especially important for lending.
 
 ## Risks
 
@@ -7811,6 +7811,14 @@ US market holidays are priced as off-hours. The feed does not flag them.
 - Monitor corporate action announcements for every asset you list
 - Use an authoritative exchange holiday calendar
 
+### Issuer risk is not priced
+
+As with the 24/5 feeds, the feed answer is the underlying equity price multiplied by the asset issuer's multiplier. It reflects the value of the underlying shares, not the credit or operational condition of the issuer. Events specific to the issuer, such as insolvency, a custody failure, a halt in redemptions, or a token trading at a discount to its underlying, do not change the feed price.
+
+#### Mitigation
+
+- Monitor issuer announcements and secondary market prices of the token, and define how your protocol responds to an issuer event
+
 For integration responsibilities, see [Developer Responsibilities](/data-feeds/developer-responsibilities).
 
 ---
@@ -7827,6 +7835,10 @@ Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/coinbase
 > Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
 > [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
 > integrating Tokenized Equity feeds in your solution.
+>
+> Issuer-specific risk is not priced into these feeds: events such as issuer insolvency, a custody failure, or a halt
+> in redemptions do not change the feed answer. See [Issuer risk is not
+> priced](/data-feeds/tokenized-equity-feeds#issuer-risk-is-not-priced).
 
 Chainlink provides tokenized equity feeds for Coinbase tokenized stocks on Base. Each tokenized stock is a B20 token, Base's native token standard for real-world assets, an extension of ERC-20, identified by its contract address rather than its ticker. The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read from Coinbase's on-chain oracle registry.
 
@@ -7959,6 +7971,10 @@ Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds
 > Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
 > [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
 > integrating Tokenized Equity feeds in your solution.
+>
+> Issuer-specific risk is not priced into these feeds: events such as issuer insolvency, a custody failure, or a halt
+> in redemptions do not change the feed answer. See [Issuer risk is not
+> priced](/data-feeds/tokenized-equity-feeds#issuer-risk-is-not-priced).
 
 ## What are tokenized equities?
 
@@ -8069,7 +8085,7 @@ Tokenized equity feeds for assets from different issuers may differ in terms of 
 
 ## Risks
 
-Tokenized equity feeds introduce specific risks related to the nature of traditional equity markets, multi-session data aggregation, smoothing algorithms, and data sourcing. Users must understand these factors and implement appropriate safeguards.
+Tokenized equity feeds introduce specific risks related to the nature of traditional equity markets, multi-session data aggregation, smoothing algorithms, data sourcing, and issuer-specific risk. Users must understand these factors and implement appropriate safeguards.
 
 ### Limited provider coverage during overnight sessions
 
@@ -8211,6 +8227,14 @@ During these periods, the feed may appear stale or flatline. This reflects true 
 - Monitor exchange halt notifications independently
 - Do not rely solely on feed freshness to determine market status. Users should incorporate external market status sources where available.
 
+### Issuer risk is not priced
+
+The feed answer is the underlying equity price multiplied by the asset issuer's multiplier. It reflects the value of the underlying shares, not the credit or operational condition of the issuer. Events specific to the issuer, such as insolvency, a custody failure, a halt in redemptions, or a token trading at a discount to its underlying, do not change the feed price.
+
+#### Mitigation
+
+- Monitor issuer announcements and secondary market prices of the token, and define how your protocol responds to an issuer event
+
 ***
 
 ## Best practices
@@ -8228,6 +8252,7 @@ During these periods, the feed may appear stale or flatline. This reflects true 
 - **Monitor deviation**: Compare tokenized equity feed values against other market data sources when available
 - **Log session transitions**: Track behavior during session changes to identify patterns
 - **Set up alerts**: Notify operators of unusual price movements, extended staleness, or deviation from expected ranges
+- **Watch the issuer**: Track issuer announcements and the token's secondary market price. The feed does not reflect issuer-specific events (see [Issuer risk is not priced](#issuer-risk-is-not-priced)).
 
 ### Integration testing
 
@@ -8267,6 +8292,10 @@ Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/ondo
 > Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
 > [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
 > integrating Tokenized Equity feeds in your solution.
+>
+> Issuer-specific risk is not priced into these feeds: events such as issuer insolvency, a custody failure, or a halt
+> in redemptions do not change the feed answer. See [Issuer risk is not
+> priced](/data-feeds/tokenized-equity-feeds#issuer-risk-is-not-priced).
 
 Chainlink provides tokenized equity feeds for Ondo Finance Global Markets (GM) tokenized equities. These feeds differ from standard market-rate feeds in that they report **Total Return Values** rather than raw equity prices.
 
@@ -8400,6 +8429,10 @@ Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/providers
 > Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
 > [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
 > integrating Tokenized Equity feeds in your solution.
+>
+> Issuer-specific risk is not priced into these feeds: events such as issuer insolvency, a custody failure, or a halt
+> in redemptions do not change the feed answer. See [Issuer risk is not
+> priced](/data-feeds/tokenized-equity-feeds#issuer-risk-is-not-priced).
 
 Tokenized equity feeds have issuer-specific implementations that affect pricing methodology, data handling, and operational behavior. This page catalogs the available issuers and their key characteristics.
 
@@ -8429,6 +8462,10 @@ Source: https://docs.chain.link/data-feeds/tokenized-equity-feeds/robinhood
 > Service](https://chain.link/terms) for important information and disclosures. Contact Chainlink Labs at
 > [chainlink_data_feeds@smartcontract.com](mailto:chainlink_data_feeds@smartcontract.com) to learn more about
 > integrating Tokenized Equity feeds in your solution.
+>
+> Issuer-specific risk is not priced into these feeds: events such as issuer insolvency, a custody failure, or a halt
+> in redemptions do not change the feed answer. See [Issuer risk is not
+> priced](/data-feeds/tokenized-equity-feeds#issuer-risk-is-not-priced).
 
 Chainlink provides tokenized equity feeds for Robinhood tokenized stocks. Each Robinhood tokenized stock is represented by its own ERC-20 token contract, deployed on Robinhood Chain (one contract per ticker). The corresponding Chainlink feed reports the Total Return Value of the token by combining the underlying equity's market price with a multiplier read directly from the Robinhood token contract, rather than the raw equity price.
 
