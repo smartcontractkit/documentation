@@ -4,7 +4,7 @@ description: "Let users on other CCIP-connected chains deposit into and redeem f
 ---
 
 import { Aside } from "@components"
-import VaultAdapterComparison from "@components/Solutions/VaultAdapterComparison/VaultAdapterComparison.astro"
+import VaultAdapterRoute from "@components/Solutions/VaultAdapterRoute/VaultAdapterRoute.astro"
 
 ## What the adapter does
 
@@ -52,18 +52,46 @@ A single message carries:
 
 ## Deposit or redeem from another chain
 
-This diagram illustrates the flow of deposits and redemptions with and without the adapter.
+The two diagrams below follow the same deposit or redemption from a wallet on a source chain, first without the adapter and then with it. Both assume a successful request, CCIP fees paid in the native gas token, and one transaction per action.
 
 In a nutshell:
 
 1. When you deposit into a 4626 vault, you put in an ERC-20 asset compliant with the vault, and in return, you receive shares, sometimes referred to as vault tokens, or synthetic tokens, that represent your position in the vault.
 2. When you redeem those shares, you get back an equivalent amount of the underlying asset back.
 
-<VaultAdapterComparison>
+### Without the adapter
 
-The counts assume a successful request from an EVM wallet that uses CCIP directly, pays CCIP fees in the native gas token, and sends each transaction separately. Wallet network switches and CCIP execution are not transactions. A wallet whose allowance already covers the amount skips the approval steps.
+After bridging the asset, the user waits for CCIP to deliver it before they can continue on the hub chain. Including token approvals, a deposit takes six signatures on two chains and two CCIP fees, and a redemption takes five signatures.
 
-</VaultAdapterComparison>
+<VaultAdapterRoute mode="manual">
+
+The user signs six times, in order:
+
+1. Approves the source-chain Router to spend the asset.
+2. Sends the asset through CCIP to their own wallet on the hub chain.
+3. Once CCIP delivers it, switches the wallet to the hub chain and approves the vault to spend the asset.
+4. Deposits the asset into the vault.
+5. Approves the hub-chain Router to spend the shares.
+6. Sends the shares back to the source chain through CCIP.
+
+Signatures 1, 3, and 5 are token approvals, which the user skips when their allowance already covers the amount. A redemption sends shares out, brings the asset back, and needs no vault approval.
+
+</VaultAdapterRoute>
+
+### With the adapter
+
+A deposit drops from six signatures to two and a redemption from five to two, all on the source chain. In the hub-chain transaction that delivers the user's CCIP message, the adapter calls the vault and sends the output back, so the user never needs gas on the hub chain. The vault team funds the return CCIP fee through the adapter's native gas token balance and can charge a flat adapter fee, taken from the asset.
+
+<VaultAdapterRoute mode="adapter">
+
+The user signs twice, both times on the source chain:
+
+1. Approves the source-chain Router to spend the asset, unless their allowance already covers the amount.
+2. Sends the asset and a 128-byte payload to the adapter through CCIP.
+
+On the hub chain, in one transaction, the adapter validates the request, deducts any configured adapter fee, deposits the asset into the vault, checks the shares against the minimum output, and sends them back to the source chain. For a redemption, the adapter redeems the shares first and then deducts its fee from the asset.
+
+</VaultAdapterRoute>
 
 > The repository also contains a separate [multibridge implementation](https://github.com/smartcontractkit/cross-chain-vault-adapters/blob/main/docs/multibridge/README.md) for vaults whose asset or share token moves over other cross-chain protocols. These docs cover the CCIP implementation.
 

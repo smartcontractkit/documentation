@@ -1,7 +1,7 @@
 /**
- * Route model for the Cross-Chain Vault Adapter comparison widget (VaultAdapterComparison.astro).
+ * Route model for the Cross-Chain Vault Adapter route diagrams (VaultAdapterRoute.astro).
  *
- * Pure functions, no DOM. The widget renders these facts:
+ * Pure functions, no DOM. The diagrams render these facts:
  *
  * - A successful, unbatched request from an EVM wallet that uses CCIP directly and
  *   pays CCIP fees in the native gas token. The user already holds the input token
@@ -94,6 +94,10 @@ export const DEFAULT_SCENARIO: Scenario = { flow: "deposit", mode: "manual" }
 
 export function isFlow(value: unknown): value is Flow {
   return value === "deposit" || value === "redeem"
+}
+
+export function isMode(value: unknown): value is Mode {
+  return value === "manual" || value === "adapter"
 }
 
 export function inputToken(flow: Flow): Token {
