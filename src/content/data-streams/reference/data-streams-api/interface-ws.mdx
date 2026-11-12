@@ -65,6 +65,14 @@ GET /api/v1/ws?feedIDs=<feedID1>,<feedID2>,...
 }
 ```
 
+## Connection closures
+
+The server can close a WebSocket connection at any time as part of normal operation. This is expected behavior, not a problem with your request, credentials, or client.
+
+We maintain a connection age limit and close connections when that limit is reached to ensure even load across the system. Clients should reconnect automatically.
+
+The server sends close code `1000` for all server-initiated closures, so the code alone does not indicate the cause. Repeated `1000` closes are not, by themselves, a sign of a problem. If reconnects fail, see [Error response codes](#error-response-codes).
+
 ## Error response codes
 
 | Status Code           | Description                                                                                                                                                                                                                                                                           |
