@@ -380,9 +380,9 @@ function plural(count: number, singular: string, pluralForm = `${singular}s`): s
   return `${count} ${count === 1 ? singular : pluralForm}`
 }
 
-/** "(3 approvals)" */
-export function approvalsLabel(summary: Summary): string {
-  return `(${plural(summary.approvals, "approval")})`
+/** "2 CCIP messages" */
+export function messagesLabel(summary: Summary): string {
+  return plural(summary.messages, "CCIP message")
 }
 
 /** Fees the user pays or bears directly, as a short phrase. */
@@ -390,17 +390,6 @@ export function feesLabel(summary: Summary): string {
   return summary.adapterFeeApplies
     ? `${plural(summary.ccipFeesPaid, "CCIP fee")}, plus any configured adapter fee taken from the asset`
     : plural(summary.ccipFeesPaid, "CCIP fee")
-}
-
-/** Short fact lines for a route card: signatures, chains, gas and messages. */
-export function cardLines(summary: Summary): string[] {
-  return [
-    `${plural(summary.signatures, "signature")} ${approvalsLabel(summary)}`,
-    `${plural(summary.chainsSigned, "chain")} · ${
-      summary.switches === 0 ? "no network switch" : plural(summary.switches, "network switch", "network switches")
-    }`,
-    `gas on ${plural(summary.gasChains, "chain")} · ${plural(summary.messages, "CCIP message")}`,
-  ]
 }
 
 export function allScenarios(): Scenario[] {
