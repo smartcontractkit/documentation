@@ -4,12 +4,11 @@
  * and the custom element (re-render after a control change) produce identical markup.
  */
 import {
-  approvalsLabel,
-  cardLines,
   feesLabel,
   getHubSubsteps,
   getRoute,
   getStops,
+  messagesLabel,
   summarize,
   tokenLabel,
 } from "./vaultAdapterRouteModel.ts"
@@ -117,11 +116,10 @@ export function routeTitle(mode: Mode): string {
   return mode === "manual" ? "Without the adapter" : "With the adapter"
 }
 
-/** One line of facts under the route title, derived from the model. */
+/** One line of facts under the signature count, the same shape on both routes: CCIP messages, then fees. */
 export function routeMeta(scenario: Scenario): string {
   const summary = summarize(scenario)
-  const lines = cardLines(summary)
-  return `${approvalsLabel(summary)} · ${lines[1]} · ${lines[2]} · ${feesLabel(summary)}`
+  return `${messagesLabel(summary)} · ${feesLabel(summary)}`
 }
 
 /**
