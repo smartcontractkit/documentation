@@ -147,7 +147,7 @@ The Go SDK doesn't use `async`/`await` keywords, it uses a `Promise[T]` type wit
 The pitfall specific to Go: don't reach for goroutines, channels, or `sync` primitives (`WaitGroup`, `Mutex`, and so on) to run multiple SDK calls "concurrently" inside your library. CRE workflows execute in a single-threaded WASM environment, so using Go's concurrency primitives to fan out capability calls doesn't get you real parallelism, and a `select` across multiple channels picks a ready channel non-deterministically, which will cause consensus failures if the result depends on which one "won."
 
 - Never use `select` with multiple ready channels to decide which result to use or which branch to take, see [Avoiding Non-Determinism in Workflows](/cre/concepts/non-determinism-go#3-concurrency-and-channel-selection).
-- If you need to make several capability calls, initiate them in a fixed order and resolve them (`.Await()`) in that same fixed order. You can build up several `Promise` values before awaiting any of them, but the order you await them in must never vary.
+- If you need to make several capability calls, initiate them in a fixed order and resolve them (`.Await()`) in that same fixed order. You can build up several `Promise` values before awaiting any of them, but the order you await them in must never vary. For the recommended pattern, see [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
 - `cre.Then()` / `cre.ThenPromise()` are the idiomatic way to chain dependent async steps without nested `.Await()` calls, prefer them over manually orchestrating goroutines.
 
 ### Determinism

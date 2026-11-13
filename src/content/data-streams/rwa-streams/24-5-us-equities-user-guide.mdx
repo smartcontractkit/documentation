@@ -186,13 +186,13 @@ Users should factor this transition period into their switching logic and consid
 
 ##### Overnight Session: Stale Bid/Ask at Session Start
 
-During the early overnight session -- before the overnight venue begins publishing data -- the feed may display the last bid/ask prices and volumes from the previous overnight session. This occurs because no new quotes are available yet from the overnight venue.
+During the early overnight session -- before overnight venues begin publishing data -- the feed may display the last bid/ask prices and volumes from the previous overnight session. This occurs because no new quotes are available yet from overnight venues.
 
-Once the overnight venue starts publishing its own quotes, the data will update to reflect current overnight market conditions. This behavior is normal market microstructure, not a data quality issue. It reflects the actual state of the market during the transition period when overnight liquidity has not yet begun.
+Once overnight venues start publishing their own quotes, the data will update to reflect current overnight market conditions. This behavior is normal market microstructure, not a data quality issue. It reflects the actual state of the market during the transition period when overnight liquidity has not yet begun.
 
 Users relying on bid/ask data during early overnight hours should be aware of this carryover behavior and implement appropriate safeguards, such as checking `lastSeenTimestampNs` for staleness or widening risk parameters during overnight session transitions.
 
-Separately, the overnight stream can occasionally surface **atypical `mid` values**—including **zero**—while timestamps still update. Treat unexpected zeros or discontinuities as unsafe inputs unless confirmed against your reference logic; see [Single Provider for Overnight Data](#single-provider-for-overnight-data).
+Separately, the overnight stream can occasionally surface **atypical `mid` values**—including **zero**—while timestamps still update. Treat unexpected zeros or discontinuities as unsafe inputs unless confirmed against your reference logic; see [Concentrated Venue Coverage for Overnight Data](#concentrated-venue-coverage-for-overnight-data).
 
 ##### Mitigation
 
@@ -378,14 +378,14 @@ While 24/5 streams provide extended market coverage, they introduce specific ris
 
 In the following sections, we outline key risks and recommended mitigation strategies.
 
-### Single Provider for Overnight Data
+### Concentrated Venue Coverage for Overnight Data
 
-Overnight session price feeds are currently sourced from a single data provider, making this session less reliable than the regular and extended hours price feeds, which are multi-sourced.
+Overnight session price feeds are sourced from multiple data providers. However, far fewer venues trade during the overnight session than during regular and extended hours, and a single venue generally accounts for the majority of overnight liquidity. This makes the overnight session less reliable than the regular and extended hours price feeds, which draw on a broad set of venues.
 
-Unlike regular and extended hours, where multiple independent sources cross-validate each other, a single provider means there is no redundant check on individual quote quality. The following risks are closely related:
+Multiple providers reduce exposure to an outage at any one provider, but they do not fully remove the dependency on the dominant overnight venue. The following risks are closely related:
 
-- **Provider outage or disruption:** If the provider experiences downtime, technical failures, or connectivity disruption, the feed may flatline or report highly inaccurate figures, which can prevent users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
-- **Erroneous individual quotes:** Even when the provider is operational, it may publish a single bid or ask quote that is significantly off from the prevailing market price — for example, a bid price printing far below the previous in-session price. Because there is no second source to cross-validate against, this outlier quote directly distorts the mid-price calculation, creating a large artificial price move.
+- **Venue outage or disruption:** If the dominant overnight venue experiences downtime, halts trading, or stops publishing quotes, the remaining venues may not carry enough liquidity to produce a representative price. The feed may flatline, update less frequently, or reflect thin quotes, which can prevent users from reacting to real price movements. Such issues may lead to mispricing, failed liquidations, and potential bad debt accumulation.
+- **Erroneous individual quotes:** One venue makes up most of overnight liquidity. A bid or ask quote on that venue that is significantly off from the prevailing market price (for example, a bid printing far below the previous in-session price) can still distort the mid-price calculation and create a large artificial price move, even when several providers report it consistently.
 
 **Atypical `mid` values (including zero):** In edge cases—most often during **overnight** or other thin-liquidity windows—the reported `mid` can be **zero** or otherwise not a valid economic reference, even when `lastSeenTimestampNs` is advancing. This is a different failure mode from staleness: the stream can look "fresh" while the numeric answer is unsafe for automated risk or execution. **Validate** `mid` (non-zero when required for your model, bounds vs. prior observations, spread plausibility) before using it for liquidations, collateral, or other critical paths.
 
@@ -394,7 +394,7 @@ Unlike regular and extended hours, where multiple independent sources cross-vali
 Consumers should not rely on the staleness indicator alone. A feed can be actively updating with a technically fresh timestamp while still publishing an incorrect mid price derived from a single outlier quote. Recommended safeguards include:
 
 - **Monitor bid/ask spread:** A sudden, significant widening of the spread between `bid` and `ask` is a strong indicator that a single outlier quote has distorted the mid-price. Implement a maximum spread threshold — for example, if `(ask - bid) / mid` exceeds a percentage beyond a configured threshold, treat the price as unreliable and restrict or pause exposure accordingly.
-- **Implement value-level checks on `mid`:** Reject or treat as invalid **zero** and other out-of-range answers; compare against your previous accepted tick and configured bands. Apply these checks to all sessions, and especially to **Overnight Hours** reports, where single-provider risk applies.
+- **Implement value-level checks on `mid`:** Reject or treat as invalid **zero** and other out-of-range answers; compare against your previous accepted tick and configured bands. Apply these checks to all sessions, and especially to **Overnight Hours** reports, where liquidity is concentrated in a single venue.
 - **Implement price deviation checks:** Compare the current mid-price against a reference (e.g., the previous valid price or a short-term moving average) and trigger a circuit breaker if the move exceeds a configured threshold.
 - **Do not use data when `marketStatus` is `closed`:** When the market is closed, data providers may perform maintenance, which can result in stale or incorrect prices being published. Consuming or acting on feed data during a closed market status is not recommended — pause or restrict all activity until the market reopens and a valid `open` status is confirmed.
 - **Check staleness via `lastSeenTimestampNs`:** Detect when data stops updating entirely, which is a separate but complementary signal to the above.
@@ -417,7 +417,7 @@ Users should evaluate whether the full 24/5 price coverage is appropriate for th
 
 Traditional equities are subject to corporate actions which can dramatically change the price of an asset overnight, especially in the case of stock splits and reverse stock splits. These actions are usually announced outside regular trading hours and can cause substantial price movements when markets reopen.
 
-Additionally, the overnight session data provider may disable trading for individual symbols during pending corporate actions such as dividends, splits, or mergers. When this occurs, there will be no overnight session data available for that specific symbol, and this closure will not be reflected in the `marketStatus` field. The overnight feed may continue to display stale data from the previous session, or the data may flatline, making it critical to monitor `lastSeenTimestampNs` for staleness detection.
+Additionally, the venues that trade during the overnight session may suspend trading in individual symbols during pending corporate actions such as dividends, splits, or mergers. When this occurs, overnight data for that specific symbol may be unavailable or thin, and this closure will not be reflected in the `marketStatus` field. The overnight feed may continue to display stale data from the previous session, or the data may flatline, making it critical to monitor `lastSeenTimestampNs` for staleness detection.
 
 ##### Mitigation
 
