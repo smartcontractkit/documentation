@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Step-by-step guide to creating unsigned draft operations in CRE Connect, finalizing them with an external signer, and cancelling before execution."
   datePublished: "2026-08-31"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 [Draft operations](/crec/concepts/drafts) let you create an operation first and collect the signature later. Use this flow when an approval system, MPC signer, KMS operator, or user review screen needs to inspect the operation before it becomes executable.
 
@@ -55,6 +55,11 @@ op := &types.Operation{
 `Deadline` is part of the EIP-712 payload. Choose it before you create the draft. If the operation expires before finalization, CRE Connect rejects finalization with `OPERATION_DEADLINE_ELAPSED`.
 
 ## Create a draft
+
+<RequiredRole product="crec" role="operator">
+  Creating an unsigned draft requires `crec:operation:write` in your API key. Include `crec:operation:read` to fetch and
+  inspect the stored draft. Creating a draft does not authorize its eventual onchain execution.
+</RequiredRole>
 
 Use `SendDraftOperation` when you already have a `types.Operation`.
 
@@ -154,6 +159,12 @@ The same signer types work here as in regular operation flows: local ECDSA, AWS 
 
 ## Finalize the draft
 
+<RequiredRole product="crec" role="operator">
+  Finalizing a draft requires `crec:operation:signature:write` in your API key, separately from the permission to create
+  it. Include `crec:operation:read` for helpers that fetch the draft. The supplied signature must come from a key
+  authorized by the Smart Account.
+</RequiredRole>
+
 If the SDK should sign the digest and finalize in one call, use `ExecuteDraftOperation`:
 
 ```go
@@ -199,6 +210,11 @@ curl -sS -X PATCH "$CREC_BASE_URL/channels/$CHANNEL_ID/operations/$OPERATION_ID"
 After finalization, the operation transitions from `pending_signature` to `accepted`. It then follows the normal operation lifecycle through `sending`, `sent`, `broadcasting`, and a terminal status.
 
 ## Cancel a draft
+
+<RequiredRole product="crec" role="operator">
+  Cancelling a pending draft requires `crec:operation:signature:write` in your API key. This is a draft lifecycle
+  action, so it does not require the Admin archival permissions used for wallets, channels, or watchers.
+</RequiredRole>
 
 Cancel a draft while it is still `pending_signature`:
 

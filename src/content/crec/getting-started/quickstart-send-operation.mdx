@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "End-to-end Go tutorial: scaffold a Go project, create a Chainlink CRE Connect channel and ECDSA Smart Account, build calldata for a contract call, sign an EIP-712 operation with a local signer, and execute it gas-free on Sepolia."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 import CrecCommon from "@features/crec/common/CrecCommon.astro"
 
 <CrecCommon callout="beta" />
@@ -119,6 +119,13 @@ if err != nil {
 `WithOrgID` is not required to _send_ an operation, but without it `client.Events.VerifyOperationStatus(...)` returns `events.ErrOrgIDOrWorkflowOwnerReq` on every call. Set it once at construction so the rest of this quickstart and the [watch-events quickstart](/crec/getting-started/quickstart-watch-events) stay consistent. Your Organization ID looks like `org_example00000000000`; see [Prerequisites](/crec/getting-started/prerequisites) for where to find it.
 
 ## 3. Create a channel
+
+<RequiredRole product="crec" role="operator">
+  Your API key needs `crec:channel:write` to create the channel, `crec:wallet:write` and `crec:wallet:read` to provision
+  and poll the Smart Account, and `crec:operation:write` and `crec:operation:read` to submit and track the operation.
+  The signing key must separately be authorized by the Smart Account; your Platform role does not grant signing
+  authority.
+</RequiredRole>
 
 ```go
 ch, err := client.Channels.Create(ctx, channels.CreateInput{
@@ -362,6 +369,12 @@ End-to-end, one `increment()` call traveled this path:
 6. **The DON** observed the on-chain confirmation and emitted an `operation.status` event back into your channel. Your `GetOperation` polling loop saw that confirmation status on its last iteration.
 
 ## 11. Full program
+
+<RequiredRole product="crec" role="admin">
+  The cleanup calls in this full program require `crec:wallet:archive:write` and `crec:channel:archive:write` in your
+  API key. CRE Connect Operator is sufficient for the preceding creation, submission, and tracking steps; omit the
+  trailing `Archive` calls if your key does not include archival permissions.
+</RequiredRole>
 
 Here is everything wired together as a single `main.go`. The trailing `Archive` calls clean up the wallet and channel so they stop consuming DON capacity for your tenant. Drop them if you want to keep the Smart Account around for follow-up operations.
 

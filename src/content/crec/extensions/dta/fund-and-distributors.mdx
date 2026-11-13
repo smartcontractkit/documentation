@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Use the DTA v2 extension to onboard fund admins, register and toggle fund tokens, manage distributors, and configure cross-DTA settlement (allowDTA / disallowDTA, authorize / revoke distributor)."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 <Aside type="note" title="DTA roles live in the DTA standard docs">
   What a [Transfer Agent](https://docs.chain.link/dta-technical-standard/actors#transfer-agent), [Fund
@@ -30,6 +30,15 @@ ext, _ := dtaop.New(&dtaop.Options{
     DTARequestSettlementAddress: settleAddr.Hex(),
 })
 ```
+
+## Submit prepared DTA operations
+
+<RequiredRole product="crec" role="operator">
+  The `Prepare...Operation` builders on this page construct payloads locally. Submitting those payloads through CRE
+  Connect requires `crec:operation:write` in your API key, plus `crec:operation:read` for `ExecuteOperation`. The Smart
+  Account and signer must separately have the DTA actor or owner authority required by each contract call. CRE Connect
+  Admin is not the same role as DTA Fund Administrator.
+</RequiredRole>
 
 ## Fund admin onboarding
 

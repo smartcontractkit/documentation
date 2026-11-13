@@ -5,16 +5,22 @@ date: Last Modified
 metadata:
   description: "Provision a Chainlink CRE Connect Smart Account (wallet), look it up, list and filter wallets across your channels, rename it, and archive it: through the Platform UI or the Go SDK / REST API."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 
 A **wallet** in CRE Connect is a Smart Account deployed on a specific chain, owned by an EOA you control, and authorised to be driven by one or more **signers** (ECDSA addresses or RSA keys). It is the `op.Account` you target when you build operations.
 
 This guide covers wallet provisioning and life-cycle management. For runtime signer changes see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
 
 ## Create a wallet
+
+<RequiredRole product="crec" role="operator">
+  Creating a CRE Connect wallet requires `crec:wallet:write`. Include it in your API key when using the SDK or REST API.
+  The onchain owner address and allowed signers are separate from Platform member roles; being an Operator or Admin does
+  not make your signing key an authorized Smart Account signer.
+</RequiredRole>
 
 A wallet has two security layers:
 
@@ -142,6 +148,10 @@ Reuse a single dedicated channel per environment for status events, or co-locate
 
 ## Look up a wallet
 
+<RequiredRole product="crec" role="viewer">
+  Looking up or listing wallets, including their signer sets, requires `crec:wallet:read` in your API key.
+</RequiredRole>
+
 ```go
 w, err := client.Wallets.Get(ctx, walletID)
 if err != nil {
@@ -208,6 +218,10 @@ Filters supported by `ListInput`:
 
 ## Rename a wallet
 
+<RequiredRole product="crec" role="operator">
+  Renaming a wallet or updating its description requires `crec:wallet:write`. Include this permission in your API key.
+</RequiredRole>
+
 The only updatable field through the SDK is `Name`. The Platform UI also lets you edit the wallet's **Description** in the same flow.
 
 <MethodTabs>
@@ -242,6 +256,12 @@ curl -sS -X PATCH "$CREC_BASE_URL/wallets/$WALLET_ID" \
 Signer-set changes go through a separate flow; see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
 
 ## Archive a wallet
+
+<RequiredRole product="crec" role="admin">
+  Archiving a wallet requires `crec:wallet:archive:write` in your API key. Wallet write access alone does not include
+  archival. This changes the CRE Connect wallet record, not ownership or signer permissions on the onchain Smart
+  Account.
+</RequiredRole>
 
 Archive is **synchronous**. The wallet transitions to `archived` and stops accepting new operations. The on-chain account is **not** destroyed; you can re-import it via a fresh `Create` if needed.
 

@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Use the in-memory ECDSA signer (crec-sdk/transact/signer/local) for development, tests, and any flow where you control the secp256k1 private key directly."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 The local signer (`github.com/smartcontractkit/crec-sdk/transact/signer/local`) signs CRE Connect operations with a secp256k1 private key held in process memory. It is the simplest signer and the right choice for local development, integration tests, and CI.
 
@@ -73,6 +73,11 @@ opHash, sig, err := client.Transact.SignOperation(ctx, op, s, chainSelector)
 The result is suitable for `ecrecover` on chain: exactly what the Smart Account verifies.
 
 ## Provision the wallet's signer set
+
+<RequiredRole product="crec" role="operator">
+  The wallet creation call below requires `crec:wallet:write` in your API key. Deriving the address and producing
+  signatures locally do not require this permission; the signer key must separately be authorized by the wallet.
+</RequiredRole>
 
 The signer's address is the keccak256-derived address of its public key:
 
