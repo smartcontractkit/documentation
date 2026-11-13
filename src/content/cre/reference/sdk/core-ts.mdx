@@ -109,6 +109,12 @@ Both `Runtime` and `NodeRuntime` provide:
 - **`getSecret(...)`**: Access to workflow secrets
 - **`report(...)`**: Generate cryptographically signed reports. To verify received reports, use [`Report.parse()`](#report-verification).
 
+<Aside type="caution" title="signingAlgo is deprecated">
+  The `signingAlgo` field in `runtime.report()` is deprecated and ignored. CRE derives the signing algorithm from
+  `encoderName`—EVM and Solana reports both use ECDSA—so the field has no effect. The field will be removed in the next
+  major SDK release.
+</Aside>
+
 ### Logging
 
 Use `runtime.log()` to output messages from your workflow. This is the **only way** to produce visible logs—`console.log` does not work in the WASM environment.

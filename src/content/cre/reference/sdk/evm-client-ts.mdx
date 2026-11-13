@@ -426,7 +426,6 @@ const reportResponse = runtime
   .report({
     encodedPayload: hexToBase64(callData),
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -734,7 +733,7 @@ See [Type Conversions](/cre/reference/sdk/type-conversions-ts#protobigint) for m
 
 ### `prepareReportRequest()`
 
-Prepares a report request with default EVM encoding parameters for use with `runtime.report()`. This helper simplifies report generation by automatically setting the standard encoding configuration (`evm`, `ecdsa`, `keccak256`) required for EVM-based workflows.
+Prepares a report request with default EVM encoding parameters for use with `runtime.report()`. This helper simplifies report generation by automatically setting the standard encoding configuration (`evm`, `keccak256`) required for EVM-based workflows. The signing algorithm is derived from the encoder.
 
 **Signature:**
 
@@ -748,7 +747,7 @@ function prepareReportRequest(
 **Parameters:**
 
 - `hexEncodedPayload`: The hex-encoded payload (typically from `encodeFunctionData()`) to be signed by the DON
-- `reportEncoder`: Optional. Custom report encoder configuration. Defaults to `EVM_DEFAULT_REPORT_ENCODER` (`{ encoderName: 'evm', signingAlgo: 'ecdsa', hashingAlgo: 'keccak256' }`)
+- `reportEncoder`: Optional. Custom report encoder configuration. Defaults to `EVM_DEFAULT_REPORT_ENCODER` (`{ encoderName: 'evm', hashingAlgo: 'keccak256' }`). Its `signingAlgo` key is deprecated and ignored.
 
 **Returns:**
 
@@ -774,9 +773,13 @@ const report = runtime.report(prepareReportRequest(callData)).result()
 // The helper automatically sets:
 // - encodedPayload: hexToBase64(callData)
 // - encoderName: "evm"
-// - signingAlgo: "ecdsa"
 // - hashingAlgo: "keccak256"
 ```
+
+<Aside type="caution" title="signingAlgo is deprecated">
+  `signingAlgo` is deprecated and ignored. CRE derives the signing algorithm from `encoderName`—EVM and Solana reports
+  both use ECDSA—so the field has no effect. The field will be removed in the next major SDK release.
+</Aside>
 
 **Equivalent manual approach:**
 
@@ -788,7 +791,6 @@ const report = runtime
   .report({
     encodedPayload: hexToBase64(callData),
     encoderName: "evm",
-    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
