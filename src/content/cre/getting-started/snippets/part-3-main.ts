@@ -56,10 +56,8 @@ const fetchMathResult = (nodeRuntime: NodeRuntime<Config>): bigint => {
 }
 
 const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
-  // Step 1: Fetch offchain data (from Part 2)
-  const offchainValue = runtime.runInNodeMode(fetchMathResult, consensusMedianAggregation())().result()
-
-  runtime.log(`Successfully fetched offchain value: ${offchainValue}`) // highlight-line
+  // Step 1: Start the offchain fetch (from Part 2), but don't wait for it yet.
+  const offchainPromise = runtime.runInNodeMode(fetchMathResult, consensusMedianAggregation())()
 
   // highlight-start
   // Get the first EVM configuration from the list.
@@ -84,16 +82,20 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
   })
 
   // Call the contract
-  const contractCall = evmClient
-    .callContract(runtime, {
-      call: encodeCallMsg({
-        from: zeroAddress,
-        to: evmConfig.storageAddress as `0x${string}`,
-        data: callData,
-      }),
-      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
-    })
-    .result()
+  const contractCallPromise = evmClient.callContract(runtime, {
+    call: encodeCallMsg({
+      from: zeroAddress,
+      to: evmConfig.storageAddress as `0x${string}`,
+      data: callData,
+    }),
+    blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+  })
+
+  // Collect the offchain result, then the onchain result, in a fixed order.
+  const offchainValue = offchainPromise.result()
+  runtime.log(`Successfully fetched offchain value: ${offchainValue}`) // highlight-line
+
+  const contractCall = contractCallPromise.result()
 
   // Decode the result
   const onchainValue = decodeFunctionResult({

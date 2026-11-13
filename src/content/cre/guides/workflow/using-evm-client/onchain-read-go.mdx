@@ -23,6 +23,12 @@ Reading from a contract follows a simple pattern:
 1. **Call a read method**: Call the desired function on the binding instance, specifying a block number. This is an asynchronous call that immediately returns a [`Promise`](/cre/reference/sdk/core-go#promise).
 1. **Await the result**: Call `.Await()` on the returned promise to pause execution and wait for the consensus-verified result from the DON.
 
+{/* prettier-ignore */}
+<Aside type="tip" title="Reading multiple independent values">
+  If you need several independent reads, start all of them before awaiting any of them. This is a common way to reduce
+  execution time. See [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows).
+</Aside>
+
 ## Step-by-step example
 
 Let's assume you have followed the [generating bindings guide](/cre/guides/workflow/using-evm-client/generating-bindings) and have created a binding for the Storage contract with a `get() view returns (uint256)` function.

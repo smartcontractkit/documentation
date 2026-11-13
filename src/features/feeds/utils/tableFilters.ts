@@ -16,8 +16,10 @@ import {
   matchesApacEquitiesStreamFilter,
   matchesFeedSearch,
   matchesFuturesStreamFilter,
+  matchesIndexStreamFilter,
   matchesSelectedFeedCategories,
   type FeedSearchVariant,
+  type IndexStreamRegion,
 } from "./feedMetadata.ts"
 import { isFeedVisible, type FeedVisibilityOptions } from "./feedVisibility.ts"
 import type { FeedCategoryData } from "../components/useBatchedFeedCategories.ts"
@@ -40,6 +42,8 @@ export interface FeedTableFilterParams {
   twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
+  showIndexStreams?: boolean
+  indexRegion?: IndexStreamRegion
   tradingHoursFilter?: TradingHoursFilterValue
   streamCategoryFilter?: StreamsRwaFeedTypeValue
   rwaSchemaFilter?: SchemaFilterValue
@@ -64,6 +68,8 @@ export function filterFeedTableRows({
   twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
+  showIndexStreams,
+  indexRegion,
   tradingHoursFilter,
 }: FeedTableFilterParams) {
   const { isSmartData } = getFeedTypeFlags(dataFeedType, searchVariant)
@@ -89,6 +95,7 @@ export function filterFeedTableRows({
       )
       .filter((metadata) => matchesApacEquitiesStreamFilter(metadata, showApacEquitiesFeeds))
       .filter((metadata) => matchesFuturesStreamFilter(metadata, showFuturesFeeds))
+      .filter((metadata) => matchesIndexStreamFilter(metadata, showIndexStreams, indexRegion))
       .filter((metadata) => matchesSelectedFeedCategories(metadata, selectedFeedCategories, isSmartData))
       .filter((metadata) => matchesFeedSearch(metadata, searchValue, searchVariant))
   )

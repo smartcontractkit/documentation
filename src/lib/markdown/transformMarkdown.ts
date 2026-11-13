@@ -46,6 +46,7 @@ import {
   handleFeedPage,
   handleProductOnly,
   handleProductSection,
+  handleRequiredRole,
   loadCcipCommonMapping,
   replaceNode,
   staticEstreeValue,
@@ -201,6 +202,14 @@ export async function transformMarkdown(
           (node as MdxJsxNode).name === "ProductOnly"
         ) {
           return handleProductOnly(node as MdxJsxNode, parent, index, context)
+        }
+
+        // Handle RequiredRole
+        if (
+          (node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
+          (node as MdxJsxNode).name === "RequiredRole"
+        ) {
+          return handleRequiredRole(node as MdxJsxNode, parent, index, context)
         }
 
         // Handle Aside
@@ -434,6 +443,7 @@ export async function transformMarkdown(
         if (
           ((node.type === "mdxJsxFlowElement" || node.type === "mdxJsxTextElement") &&
             (node as MdxJsxNode).name !== "Aside" &&
+            (node as MdxJsxNode).name !== "RequiredRole" &&
             (node as MdxJsxNode).name !== "CcipCommon" &&
             (node as MdxJsxNode).name !== "ClickToZoom" &&
             (node as MdxJsxNode).name !== "CodeSample" &&
