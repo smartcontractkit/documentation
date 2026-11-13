@@ -25,7 +25,7 @@ Deploy a **BurnMint** token pool on Canton, register it on the Token Admin Regis
 
 This guide assumes you already have a token instrument live on Canton — for example a Registry instrument from Digital Asset's [Registry utility](https://docs.digitalasset.com/registry/overview), or any instrument supporting CIP-56 with the `BurnMintFactory` interface.
 
-**Scope:** On-ledger pool connection — deploy, TAR registration (including the `BurnMintFactory` for custom tokens), and lane enablement. Does not cover end-to-end transfer tests.
+**Scope:** On-ledger pool connection — deploy, TAR registration (including the `BurnMintFactory` setup for custom tokens), and lane enablement. Does not cover end-to-end transfer tests.
 
 <Aside type="note" title="Testnet only">
 
@@ -37,7 +37,7 @@ Starter kit `cct:*` scripts target **Canton testnet** only.
 
 - **Instrument (token managed on Canton Ledger)** with known `InstrumentId = { admin, id }`. The admin party must be the same party that will own the token pool.
 - **Burn/mint authority** — `instrumentId.admin == poolOwner` (enforced by the BurnMint template and by the starter kit).
-- **DARs uploaded and vetted on your participant** — the pool DAR and the CommitteeVerifier DAR for execute. See [Prerequisites (all CCT guides)](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides).
+- **DARs uploaded and vetted on your participant** — the pool DAR, plus the `ccip-runtime-v2` and CommitteeVerifier DARs required for sending and executing transfers on the lane (not for deploying or owning the pool itself). See [Prerequisites (all CCT guides)](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides).
 - **CCIP contract references** from Chainlink ops: CCIP owner party, Token Admin Registry, RMNRemote, FeeQuoter.
 - **Starter kit setup** (if using `cct:*` scripts) — complete [Canton as Source prerequisites](/ccip/canton/tutorials/source/prerequisites) and the [CCT overview](/ccip/canton/tutorials/cross-chain-tokens#starter-kit-cct-scripts).
 
@@ -231,12 +231,24 @@ Admin role can be transferred with `TransferAdminRole` → `AcceptAdminRole`.
   </Fragment>
 </Tabs>
 
-### Pin the BurnMintFactory on the TAR
+### Configure the BurnMintFactory
 
-BurnMint pools do not burn or mint instrument supply themselves — they call a **`BurnMintFactory`** (`Splice.Api.Token.BurnMintV1.BurnMintFactory`) recorded on the instrument's `TokenConfig`. The factory contract implements the actual burn (send) and mint (execute) operations against your token.
+BurnMint pools do not burn or mint instrument supply themselves — they call a **`BurnMintFactory`** (`Splice.Api.Token.BurnMintV1.BurnMintFactory`). The factory contract implements the actual burn (send) and mint (execute) operations against your token, and its contract ID is supplied by the user in the choice context at transfer time.
 
 - **Registry instruments** (created via Digital Asset's [Registry utility](https://docs.digitalasset.com/registry/overview)) already have a factory — the registry resolves it automatically. No action needed.
-- **Custom tokens** (any instrument not created via the Registry utility) must deploy their own `BurnMintFactory` contract and pin it on the TAR via the `SetBurnMintFactory` choice. The reference implementation is [`LinkRegistry`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/link/daml/Link/Token.daml) (`#link:Link.Token:LinkRegistry`) — a custom-token factory that implements both `TransferFactory` and `BurnMintFactory` for the LINK instrument on Canton.
+- **Custom tokens** (any instrument not created via the Registry utility) must deploy their own `BurnMintFactory` contract and serve it from their EDS — see [Serve the factory from your EDS](#serve-the-factory-from-your-eds). The reference implementation is [`LinkRegistry`](https://github.com/smartcontractkit/chainlink-canton/blob/main/contracts/link/daml/Link/Token.daml) (`#link:Link.Token:LinkRegistry`) — a custom-token factory that implements both `TransferFactory` and `BurnMintFactory` for the LINK instrument on Canton.
+
+### Pin the factory on the TAR (optional, advanced)
+
+By default, the factory's contract ID is **not** pinned on the TAR: the pool calls into whatever `BurnMintFactory` the user supplies in the choice context, using the pool owner's authority. As long as only trusted DARs are vetted on the pool owner's participant — specifically DARs containing a `BurnMintFactory` implementation — this is not a concern.
+
+If the pool owner does not fully trust the participant their party is hosted on, they can hard-code the factory's contract ID on the TAR via the `SetBurnMintFactory` choice. The pool then aborts any transfer where the user-supplied factory does not match the pinned one.
+
+<Aside type="caution" title="Only pin long-lived factories">
+
+Pinning only works if the factory's contract ID will never (or very rarely) change — the same restriction as hard-coding preapprovals in `poolReceiveContext` (see [LockRelease preapprovals](/ccip/canton/tutorials/cross-chain-tokens/lock-release-token-pool#set-pool-receive-preapproval)). If the factory is re-created with a new contract ID, every pinned pool must be updated via `SetBurnMintFactory` before transfers can proceed. Only enable this when you know the factory is long-lived and the trust situation calls for it.
+
+</Aside>
 
 `SetBurnMintFactory` is exercised by the token admin on the TAR (same disclosure flow as the other TAR choices):
 
@@ -248,9 +260,9 @@ BurnMint pools do not burn or mint instrument supply themselves — they call a 
 | `context`         | Empty `{"values": {}}` unless your tooling supplies one                |
 | `caller`          | The token admin party                                                  |
 
-<Aside type="note" title="Factory contract shape">
+<Aside type="note" title="Factory contract shape (address mode)">
 
-Your factory template must expose a top-level `instanceId : Text` create argument (no `@`) — the EDS Active Contract Set indexer keys contracts by `instanceId@signatory`, so a template without it cannot be disclosed. `LinkRegistry` shows the expected shape: `registryAdmin`, `registryInstrumentId`, `instanceId`, `registryMeta`.
+If you serve the factory in `address` mode (see below), your factory template must expose a top-level `instanceId : Text` create argument (no `@`) — the EDS Active Contract Set indexer keys contracts by `instanceId@signatory`, so a template without it cannot be disclosed. `LinkRegistry` shows the expected shape: `registryAdmin`, `registryInstrumentId`, `instanceId`, `registryMeta`. This requirement is specific to the reference EDS in `address` mode — in `url` mode the factory is resolved from the DA registry backend instead, and if you bring your own EDS, its factory-serving requirements apply.
 
 </Aside>
 
@@ -292,21 +304,21 @@ npm run cct:enable-lane -- \
 
 **Flags:**
 
-| Flag                        | Required | Description                                                                                              |
-| :-------------------------- | :------- | :------------------------------------------------------------------------------------------------------- |
-| `--kind`                    | Yes      | Token pool family deployed in Step 1: `burnMint` or `lockRelease`                                        |
-| `--poolInstanceId`          | Yes      | Token pool instance ID from Step 1                                                                       |
-| `--remotePool`              | Yes      | Remote token pool address (`0x`-hex) — the pool this lane trusts on the remote chain                     |
-| `--remoteToken`             | Yes      | Remote token address (`0x`-hex) — the token this lane bridges on the remote chain                        |
-| `--poolOwner`               | No       | Party that owns the pool contract (defaults to `party` in `canton-config.json`)                          |
-| `--remoteChainSelector`     | No       | Destination chain selector (defaults to the configured remote chain — Sepolia in the starter kit)        |
-| `--ccv`                     | No       | CommitteeVerifier raw instance address(es) for both directions (defaults to the CCIP-hosted testnet CCV) |
-| `--finality`                | No       | Allowed finality policy for the lane: `finalized` (default) or `blockDepth`                              |
-| `--blockDepth`              | No       | Block depth (1–65535), required with `--finality blockDepth`                                             |
-| `--limiterInstanceIdPrefix` | No       | Prefix for the three rate limiter instance IDs (defaults to `<poolInstanceId>-<remoteChainSelector>`)    |
-| `--enableLimiters`          | No       | Deploy the rate limiters enabled (defaults to disabled with zero capacity/rate for testing)              |
-| `--capacity`                | No       | Rate limiter capacity in the pool's decimal representation (with `--enableLimiters`)                     |
-| `--rate`                    | No       | Rate limiter refill per second in the pool's decimal representation (with `--enableLimiters`)            |
+| Flag                        | Required | Description                                                                                                                                                                                                                          |
+| :-------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--kind`                    | Yes      | Token pool family deployed in Step 1: `burnMint` or `lockRelease`                                                                                                                                                                    |
+| `--poolInstanceId`          | Yes      | Token pool instance ID from Step 1                                                                                                                                                                                                   |
+| `--remotePool`              | Yes      | Remote token pool address (`0x`-hex) — the pool this lane trusts on the remote chain                                                                                                                                                 |
+| `--remoteToken`             | Yes      | Remote token address (`0x`-hex) — the token this lane bridges on the remote chain                                                                                                                                                    |
+| `--poolOwner`               | No       | Party that owns the pool contract (defaults to `party` in `canton-config.json`)                                                                                                                                                      |
+| `--remoteChainSelector`     | No       | Destination chain selector (defaults to the configured remote chain — Sepolia in the starter kit)                                                                                                                                    |
+| `--ccv`                     | No       | CommitteeVerifier raw instance address(es) for both directions (defaults to the CCIP-hosted testnet CCV — the pool itself has no default, so manual `ApplyChainUpdates` must always set `inboundCCVs` and `outboundCCVs` explicitly) |
+| `--finality`                | No       | Allowed finality policy for the lane: `finalized` (default) or `blockDepth`                                                                                                                                                          |
+| `--blockDepth`              | No       | Block depth (1–65535), required with `--finality blockDepth`                                                                                                                                                                         |
+| `--limiterInstanceIdPrefix` | No       | Prefix for the three rate limiter instance IDs (defaults to `<poolInstanceId>-<remoteChainSelector>`)                                                                                                                                |
+| `--enableLimiters`          | No       | Deploy the rate limiters enabled (defaults to disabled with zero capacity/rate for testing)                                                                                                                                          |
+| `--capacity`                | No       | Rate limiter capacity in the pool's decimal representation (with `--enableLimiters`)                                                                                                                                                 |
+| `--rate`                    | No       | Rate limiter refill per second in the pool's decimal representation (with `--enableLimiters`)                                                                                                                                        |
 
 The script deploys the three rate limiters and exercises `ApplyChainUpdates` on the pool in one run.
 
@@ -401,16 +413,16 @@ The choice argument is **not** the pool's `remoteChainConfigs` map — it takes 
 }
 ```
 
-| ChainUpdate field                            | Guidance                                                                        |
-| :------------------------------------------- | :------------------------------------------------------------------------------ |
-| `remoteChainSelector`                        | Destination chain selector — see [CCIP Directory](/ccip/directory/testnet)      |
-| `remotePools`                                | Remote token pool address(es). Padded to 32 bytes in the case of EVM addresses. |
-| `remoteTokenAddress`                         | Remote token address. Padded to 32 bytes in the case of EVM addresses.          |
-| `inboundCCVs` / `outboundCCVs`               | Default CommitteeVerifier (testnet address above) unless custom                 |
-| `finalityConfig`                             | `WaitForFinality` for default finalized source tx                               |
-| `inboundRateLimiter`                         | Inbound default limiter address                                                 |
-| `inboundCustomBlockConfirmationsRateLimiter` | Inbound custom limiter address                                                  |
-| `outboundRateLimiter`                        | Outbound limiter address                                                        |
+| ChainUpdate field                            | Guidance                                                                                                                                                                                                                                                   |
+| :------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `remoteChainSelector`                        | Destination chain selector — see [CCIP Directory](/ccip/directory/testnet)                                                                                                                                                                                 |
+| `remotePools`                                | Remote token pool address(es). Padded to 32 bytes in the case of EVM addresses.                                                                                                                                                                            |
+| `remoteTokenAddress`                         | Remote token address. Padded to 32 bytes in the case of EVM addresses.                                                                                                                                                                                     |
+| `inboundCCVs` / `outboundCCVs`               | Required — the pool has no default. Use the default CommitteeVerifier (testnet address above) unless you run your own. Both directions are required: sending forwards the message to the verifier to generate the verification, and executing verifies it. |
+| `finalityConfig`                             | `WaitForFinality` for default finalized source tx                                                                                                                                                                                                          |
+| `inboundRateLimiter`                         | Inbound default limiter address                                                                                                                                                                                                                            |
+| `inboundCustomBlockConfirmationsRateLimiter` | Inbound custom limiter address                                                                                                                                                                                                                             |
+| `outboundRateLimiter`                        | Outbound limiter address                                                                                                                                                                                                                                   |
 
 Once applied, the on-ledger lane is complete.
 
