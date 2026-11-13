@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Detect, register, view, configure, and archive target contracts in Chainlink ACE using the Platform UI or the Coordinator API."
   datePublished: "2026-04-06"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 
 A **target** is a smart contract protected by ACE and associated with a Policy Engine. ACE can detect a target from its onchain attachment to the engine, or you can register it through the Coordinator API. Once the target appears under the engine, you can configure its [default policy result](#default-allow-behavior) and attach [policy instances](/ace/guides/policy-manager/manage-policies) to its functions through [protections](/ace/guides/policy-manager/manage-protections).
 
@@ -26,6 +26,12 @@ A **target** is a smart contract protected by ACE and associated with a Policy E
 </Aside>
 
 ## Register a target
+
+<RequiredRole product="ace" role="operator">
+  Registering, updating, or linking targets and changing their default policy result requires
+  `ace:policy_manager:target:write`. Include it in your key for API calls. ACE Viewers can view targets with
+  `ace:policy_manager:target:read`.
+</RequiredRole>
 
 When a contract calls `PolicyEngine.attach()`, ACE detects the onchain attachment and creates a target automatically.
 
@@ -250,6 +256,11 @@ Merging transfers the on-chain addresses from the source target(s) to the destin
 </Aside>
 
 ## Archive a target
+
+<RequiredRole product="ace" role="operator">
+  Archiving targets and their protections requires `ace:policy_manager:target:archive:write`. Your API key must include
+  this permission; target write access alone does not include archival.
+</RequiredRole>
 
 Archiving a target removes it from active use. All target protections associated with the target must be archived first.
 

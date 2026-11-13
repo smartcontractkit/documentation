@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Call the Chainlink ACE Evaluation API, monitor a TRM wallet risk evaluation, and use the resulting permit for a protected onchain transaction."
   datePublished: "2026-07-17"
-  lastModified: "2026-07-17"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 After a managed offchain risk policy protects a function, the function rejects calls that do not have a matching permit. Your application must request an evaluation, wait for the permit to be stored onchain, and then submit the protected transaction.
 
@@ -41,6 +41,13 @@ Before requesting an evaluation, verify that:
 - You know the ordered extractor outputs configured on the protection. Your `permit_parameters` must use that same order.
 
 ## Evaluation API
+
+<RequiredRole product="ace" role="operator">
+  Starting evaluations requires `ace:evaluation:permit:write`; polling their status requires
+  `ace:evaluation:permit:read`. Your API key must include both permissions for this workflow. When another organization
+  owns the target, it must also [grant evaluation
+  access](/ace/guides/policy-manager/offchain-policies/grant-evaluation-access) to your organization.
+</RequiredRole>
 
 The production Evaluation API base URL is:
 

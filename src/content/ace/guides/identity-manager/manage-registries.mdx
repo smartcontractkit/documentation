@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Create, view, and manage identity and credential registries in Chainlink ACE using the Platform UI or the Coordinator API."
   datePublished: "2026-04-06"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 
 ## What are registries?
 
@@ -26,6 +26,11 @@ Each sub-registry corresponds to a smart contract deployed on a specific blockch
 </Aside>
 
 ## Create a registry
+
+<RequiredRole product="ace" role="operator">
+  Creating and updating registries requires `ace:identity_manager:registry:write`. Include it in your key for API calls.
+  ACE Viewers can view registries with `ace:identity_manager:registry:read`.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">
@@ -229,9 +234,17 @@ You can update a registry's name, description, and add new sub-registries. Updat
 
 ## Share across organizations
 
+Managing cross-organization access grants requires ACE Admin or the organization Owner. ACE Operators can create
+and update registries, but cannot share them with another organization.
+
 You can grant another organization read access to a registry you own, so it can use your identities and credentials as a credential source without re-issuing them. Grants are read-only for the recipient and can be revoked at any time. For the full workflow — granting, discovering registries shared with you, using them, and revoking — see [External Registries](/ace/guides/identity-manager/external-registries).
 
 ## Archive a registry
+
+<RequiredRole product="ace" role="admin">
+  Archiving a registry requires `ace:identity_manager:registry:archive:write`. Your API key must include this
+  permission. ACE Operators can create and update registries, but cannot archive them.
+</RequiredRole>
 
 Archiving a registry deactivates it and prevents any further operations. Before archiving, all identities associated with the registry must be removed or archived first.
 
