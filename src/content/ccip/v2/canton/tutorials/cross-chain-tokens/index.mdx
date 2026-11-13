@@ -101,8 +101,8 @@ Cross-chain send and receive are validated by Chainlink operations once your tok
 ## Prerequisites (all CCT guides)
 
 - [Starter kit setup](/ccip/canton/tutorials/source/prerequisites) for `cct:*` scripts (`.env`, `canton-config.json`, ledger auth)
-- The token pool DAR for your pool type (`ccip-burn-mint-token-pool-v2` or `ccip-lock-release-token-pool-v2`) — the latest release from the [`contracts/dars/released`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/released) folder, uploaded **and vetted** on your participant (each bundles its CCIP dependencies — the only DAR you upload). Vet every released version you depend on — see [Upgradability](/ccip/canton/concepts/upgradability).
-- To **execute** incoming transfers, the CommitteeVerifier DAR (`ccip-committee-verifier-v2` — a separate release, not bundled in the pool DAR) uploaded and vetted on your participant as well.
+- The token pool DAR for your pool type (`ccip-burn-mint-token-pool-v2` or `ccip-lock-release-token-pool-v2`) — the latest release from the [`contracts/dars/released`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/released) folder, uploaded **and vetted** on your participant. It bundles its CCIP dependencies, but **not** `ccip-runtime-v2` (OnRamp/OffRamp) or the CommitteeVerifier. Vet every released version you depend on — see [Upgradability](/ccip/canton/concepts/upgradability).
+- To **send and execute** transfers on the lane, also upload and vet the `ccip-runtime-v2` DAR (OnRamp/OffRamp — a separate release, not bundled with the pools) and the CommitteeVerifier DAR (`ccip-committee-verifier-v2`). These are needed for the actual sending and executing, not for deploying or owning the pool itself.
 - CCIP contract references from Chainlink ops (owner party, TAR, RMNRemote, FeeQuoter) — EDS and indexer URLs are pre-filled in the starter kit
 - A validator user with `can_act_as` rights for your ledger parties
 - Understanding of [token pools](/ccip/canton/concepts/token-pools) and [explicit disclosure](/ccip/canton/concepts/explicit-disclosure)
