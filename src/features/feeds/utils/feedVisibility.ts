@@ -79,12 +79,15 @@ export function isCoinbaseTokenizedEquityFeed(feed: any): boolean {
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideAddress(feed: any, riskTier?: string | null): boolean {
-  // Tokenized equity feeds — Ondo, Robinhood, and the 24/7-derived feeds — keep
-  // their proxy addresses behind the contact email until launch. This applies to
-  // every provider, so remove the check only once the addresses are cleared for
-  // public release.
-  if (feed.docs?.productTypeCode === "primaryTokenizedPrice" || is247TokenizedEquityFeed(feed)) {
-    return true
+  // 24/7 tokenized equity feeds (247CustomPrice / 247Smoothed) keep their proxy
+  // addresses behind the contact email until launch, on every provider. This is
+  // checked before the Robinhood exception so its 24/7 feeds stay hidden while
+  // its 24/5 feeds keep showing their addresses.
+  if (is247TokenizedEquityFeed(feed)) return true
+
+  // Robinhood tokenized equity feeds display their proxy address directly.
+  if (feed.docs?.blockchainName === "Robinhood" && feed.docs?.productTypeCode === "primaryTokenizedPrice") {
+    return false
   }
 
   if (feed.docs?.productSubType === "calculatedPrice") return true
