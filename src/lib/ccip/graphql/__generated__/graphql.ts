@@ -3166,6 +3166,7 @@ export type GetTokenPoolsQuery = {
       token?: string | null
       tokenSymbol?: string | null
       typeAndVersion?: string | null
+      registry?: string | null
       minBlockConfirmations?: number | null
       info?: any | null
       tokenPool?: string | null
@@ -3366,6 +3367,7 @@ export const GetTokenPoolsDocument = {
                       { kind: "Field", name: { kind: "Name", value: "token" } },
                       { kind: "Field", name: { kind: "Name", value: "tokenSymbol" } },
                       { kind: "Field", name: { kind: "Name", value: "typeAndVersion" } },
+                      { kind: "Field", name: { kind: "Name", value: "registry" } },
                       { kind: "Field", name: { kind: "Name", value: "minBlockConfirmations" } },
                       { kind: "Field", name: { kind: "Name", value: "info" } },
                       { kind: "Field", name: { kind: "Name", value: "tokenPool" } },

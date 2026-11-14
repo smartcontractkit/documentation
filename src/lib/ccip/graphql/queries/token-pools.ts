@@ -19,6 +19,7 @@ export const TOKEN_POOLS_QUERY = gql(`
         token
         tokenSymbol
         typeAndVersion
+        registry
         minBlockConfirmations
         info
         tokenPool
