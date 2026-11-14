@@ -2,12 +2,15 @@ import path from "node:path"
 import fs from "node:fs/promises"
 import os from "node:os"
 import { describe, expect, test } from "@jest/globals"
+import { createContext } from "astro/middleware"
 import { transformPageBodyToMarkdown } from "@lib/markdown/buildMarkdownArtifact.js"
 import { unescapeMarkdown } from "@lib/markdown/formatters.js"
 import { extractFrontmatter } from "@lib/markdown/utils.js"
 import {
   assembleLlmsDocument,
   generateSolutionLlmsFiles,
+  generateSunsetLlmsFiles,
+  filterLlmsPages,
   orderPages,
   renderLlmsPageMarkdown,
   selectLlmsTargets,
@@ -20,6 +23,120 @@ import { collectSolutionPages } from "../utils/solutionPages.js"
 import { readSolutionLlmsPages, renderSolutionLlmsDocument } from "../lib/markdown/solutionLlms.js"
 import { llmsFilesToValidate, validateLlmsFile } from "./validate-llms.js"
 import { SOLUTION_DISCLAIMER } from "../config/solutions/disclaimer.ts"
+import { SUNSET_DOC_ROOTS } from "../config/sunset.js"
+import { renderSunsetNotice } from "../lib/markdown/sunset.js"
+import { buildMarkdownArtifact } from "../lib/markdown/buildMarkdownArtifact.js"
+import { GET as getSectionBundle, getStaticPaths } from "../pages/[section]/llms-full.txt.js"
+import { GET as getVrfBundle, getStaticPaths as vrfPaths } from "../pages/vrf/[version]/llms-full.txt.js"
+
+describe("deprecated product exports", () => {
+  test.each(["v1", "v2"])("prerenders the VRF %s bundle with a real Astro request context", async (version) => {
+    const context = createContext({
+      request: new Request(`https://docs.chain.link/vrf/${version}/llms-full.txt`),
+      params: { version },
+      defaultLocale: "",
+    })
+    // Astro exposes getters such as clientAddress that throw during prerendering.
+    expect(() => context.clientAddress).toThrow()
+    const response = await getVrfBundle(context)
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8")
+    expect(await response.text()).toBe(renderSunsetNotice(`vrf/${version}`))
+  })
+
+  test.each(SUNSET_DOC_ROOTS)("generates only a notice for %s, replacing stale content", async (section) => {
+    const directory = await fs.mkdtemp(path.join(os.tmpdir(), "sunset-llms-"))
+    try {
+      const productDirectory = path.join(directory, section)
+      await fs.mkdir(productDirectory, { recursive: true })
+      await fs.writeFile(path.join(productDirectory, "llms-full.txt"), "Obsolete code examples")
+      await fs.writeFile(path.join(productDirectory, "llms.txt"), "Obsolete navigation")
+      const report = await generateSunsetLlmsFiles(section, directory)
+      const notice = renderSunsetNotice(section)
+      expect(await fs.readFile(path.join(productDirectory, "llms.txt"), "utf8")).toBe(notice)
+      expect(await fs.readFile(path.join(productDirectory, "llms-full.txt"), "utf8")).toBe(notice)
+      expect(report.pagesProcessed).toBe(0)
+      expect(selectLlmsTargets().sections).toContain(section)
+      const file = {
+        path: path.join(productDirectory, "llms-full.txt"),
+        label: section,
+        maxBytes: 5000,
+        sunsetSection: section,
+      }
+      expect(await validateLlmsFile(file)).toEqual({ errors: [], warnings: [] })
+      await fs.appendFile(file.path, "Obsolete code examples")
+      expect((await validateLlmsFile(file)).errors).toContain(
+        `${section}: deprecated section must contain only the standard deprecation notice`
+      )
+    } finally {
+      await fs.rm(directory, { recursive: true, force: true })
+    }
+  })
+
+  test("exposes top-level bundles and versioned VRF bundles", async () => {
+    const sections = getStaticPaths().map(({ params }) => params.section)
+    expect(sections).toEqual(expect.arrayContaining(["any-api", "chainlink-functions", "chainlink-automation"]))
+    expect(sections.every((section) => !section.includes("/"))).toBe(true)
+    expect(vrfPaths()).toEqual([{ params: { version: "v1" } }, { params: { version: "v2" } }])
+    const response = await getVrfBundle({ params: { version: "v2-5" } } as never)
+    expect(response.status).toBe(404)
+  })
+
+  test.each(SUNSET_DOC_ROOTS)("serves the generated notice bundle at /%s/llms-full.txt", async (section) => {
+    const response = section.startsWith("vrf/")
+      ? await getVrfBundle({ params: { version: section.split("/")[1] } } as never)
+      : await getSectionBundle({ params: { section } } as never)
+    expect(response.status).toBe(200)
+    expect(await response.text()).toBe(renderSunsetNotice(section))
+  })
+
+  test.each(["chainlink-functions/getting-started", "vrf/v1/introduction", "chainlink-nodes/job-specs/multi-word-job"])(
+    "identifies the deprecated page in TXT and preserves the individual Markdown replacement guidance for %s",
+    async (docsPath) => {
+      const rendered = await renderLlmsPageMarkdown(
+        "Old content must not be included",
+        path.resolve(`src/content/${docsPath}.mdx`),
+        docsPath.split("/")[0]
+      )
+      expect(rendered.transformMode).toBe("replacement")
+      expect(rendered.markdown).toContain(`Source: https://docs.chain.link/${docsPath}`)
+      const notice = (await buildMarkdownArtifact(docsPath))?.markdown ?? ""
+      const noticeBody = notice.slice(notice.indexOf("\n\n") + 2).trimEnd()
+      expect(rendered.markdown).toContain(noticeBody)
+      expect(rendered.markdown).not.toContain("Old content must not be included")
+    }
+  )
+})
+
+test("excludes deprecated Nodes pages while retaining active node docs and versioned VRF notice entries", () => {
+  const active = path.resolve("src/content/chainlink-nodes/oracle-jobs/jobs.mdx")
+  const legacy = [
+    path.resolve("src/content/chainlink-nodes/job-specs/multi-word-job.mdx"),
+    path.resolve("src/content/chainlink-nodes/job-specs/direct-request-get-bool.mdx"),
+    path.resolve("src/content/chainlink-nodes/external-initiators/building-external-initiators.mdx"),
+  ]
+  expect(filterLlmsPages("chainlink-nodes", [active, ...legacy])).toEqual([active])
+  const vrf = [
+    path.resolve("src/content/vrf/v1/introduction.mdx"),
+    path.resolve("src/content/vrf/v2-5/getting-started.mdx"),
+  ]
+  expect(filterLlmsPages("vrf", vrf)).toEqual(vrf)
+})
+
+test.each([
+  ["vrf/v1/introduction", "Chainlink VRF V1"],
+  ["vrf/v2/subscription/index", "VRF Subscription Method"],
+])("labels the deprecated %s bundle entry with its source page title and canonical URL", async (docsPath, title) => {
+  const absFile = path.resolve(`src/content/${docsPath}.mdx`)
+  const raw = `---\ntitle: "${title}"\n---\n\nDeprecated implementation details must not be exported.`
+  const rendered = await renderLlmsPageMarkdown(raw, absFile, "vrf")
+  const canonicalPath = docsPath.replace(/\/index$/, "")
+  expect(
+    rendered.markdown.startsWith(`# ${title} — Deprecated\nSource: https://docs.chain.link/${canonicalPath}\n`)
+  ).toBe(true)
+  expect(rendered.markdown).toContain("is deprecated. Use Chainlink VRF v2.5 instead.")
+  expect(rendered.markdown).not.toContain("Deprecated implementation details")
+})
 
 test("sidebar links order discovered pages without adding a solution to a product export", () => {
   const first = path.resolve("src/content/ccip/first.mdx")

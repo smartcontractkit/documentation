@@ -19,7 +19,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   if (isSunsetDocsPath(context.url.pathname)) {
     response.headers.set("X-Robots-Tag", "noindex, follow")
-    return response
   }
 
   const contentType = response.headers.get("content-type") || ""
