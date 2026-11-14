@@ -1,0 +1,206 @@
+---
+title: "Market Registry API"
+description: "Endpoints, query parameters, response fields, identifiers, and errors for the read-only Market Registry API."
+---
+
+The Market Registry API returns the events and markets Chainlink resolves: each market's identity, classification, and resolution criteria, and each event's status. The API is read-only and catalog-only. It does not return outcomes or a per-market status.
+
+## Endpoints
+
+Base URL: `https://markets.api.chain.link`
+
+| Method | Path                                         | Returns                                                             |
+| ------ | -------------------------------------------- | ------------------------------------------------------------------- |
+| `GET`  | [`/user/v1/taxonomies`](#list-taxonomies)    | The categories, sub-categories, and groupings available as filters. |
+| `GET`  | [`/user/v1/events`](#list-events)            | A page of events in a date range, each with its markets.            |
+| `GET`  | [`/user/v1/openapi.yaml`](#openapi-document) | The OpenAPI 3.0 document for this API, as `application/yaml`.       |
+| `GET`  | [`/user/v1/openapi`](#openapi-document)      | The same document as `text/plain`, so a browser displays it.        |
+
+Data responses are JSON over HTTPS. Markets exist only inside their event's `markets` array; there is no endpoint for a single event or market.
+
+## Authentication
+
+Send your API key in the `Authorization` header with the `ApiKey` prefix. Every endpoint, including the OpenAPI document, uses the same key.
+
+```bash filename="Terminal"
+export MARKETS_API_URL='https://markets.api.chain.link/user/v1'
+export MARKETS_API_KEY='YOUR_API_KEY'
+
+curl --header "Authorization: ApiKey ${MARKETS_API_KEY}" "${MARKETS_API_URL}/taxonomies"
+```
+
+Keys are issued by the Chainlink team to an organization with Prediction Markets access enabled.
+
+## List taxonomies
+
+**`GET /user/v1/taxonomies`** returns the distinct category, sub-category, and grouping combinations that you can use as filters on [`/events`](#list-events). A **grouping** is a league or competition code, such as `mlb`.
+
+| Parameter | Required | Description                                  |
+| --------- | -------- | -------------------------------------------- |
+| `limit`   | No       | Page size. Default `100`, maximum `100`.     |
+| `offset`  | No       | Rows to skip. Default `0`, maximum `100000`. |
+
+### Example response
+
+```json filename="Response"
+{
+  "taxonomies": [
+    { "category": "sports", "sub_category": "baseball", "grouping": "mlb" },
+    { "category": "sports", "sub_category": "soccer", "grouping": "mls" }
+  ],
+  "total": 2,
+  "limit": 100,
+  "offset": 0
+}
+```
+
+Entries are sorted by `category`, then `sub_category`, then `grouping`. They come from Chainlink's configured coverage, not from existing events: a combination can appear before any of its events exist, and events can remain after coverage ends. Use the entries to build filters, not to confirm that events exist.
+
+## List events
+
+**`GET /user/v1/events`** returns events with their markets.
+
+### Query parameters
+
+| Parameter      | Required | Description                                                                                                                                                                                                    |
+| -------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `from`         | Yes      | First UTC date, `YYYY-MM-DD`, inclusive. Alias: `from_date`, ignored when `from` is set.                                                                                                                       |
+| `to`           | Yes      | Last UTC date, `YYYY-MM-DD`, inclusive. At most 16 days after `from`. Alias: `to_date`, ignored when `to` is set.                                                                                              |
+| `category`     | No       | Exact match on `category`.                                                                                                                                                                                     |
+| `sub_category` | No       | Exact match on `sub_category`. Alias: `subcategory`.                                                                                                                                                           |
+| `grouping`     | No       | Exact match on `grouping`.                                                                                                                                                                                     |
+| `status`       | No       | Exact match on `event_status`. Repeat the parameter to match several: `status=scheduled&status=live`. See [Event statuses](/solutions/prediction-market-resolution-engine/reference/lifecycle#event-statuses). |
+| `event_type`   | No       | `match`, `championship`, `series`, or `elimination_tournament`. See [Event types](#event-types).                                                                                                               |
+| `market_type`  | No       | Return only events with a market of this type, and only those markets in each event. See [Market types](#market-types).                                                                                        |
+| `limit`        | No       | Page size. Default `100`, maximum `100`; larger values return 100. `0` is invalid.                                                                                                                             |
+| `offset`       | No       | Rows to skip. Default `0`, maximum `100000`.                                                                                                                                                                   |
+
+How the date range works:
+
+- `from` and `to` select whole UTC days. Set them to the same date to select one day.
+- An event matches when its `scheduled_start` falls in the range.
+- Events with no scheduled start, such as a championship waiting on its deciding round, are always included and sorted after dated events. `total` counts them.
+- Events are sorted by `scheduled_start`, earliest first. There is no sort parameter.
+
+### Example request
+
+```bash filename="Terminal"
+curl --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
+  "${MARKETS_API_URL}/events?from=2026-08-20&to=2026-08-23&grouping=mlb&market_type=moneyline"
+```
+
+### Example response
+
+```json filename="Response"
+{
+  "events": [
+    {
+      "category": "sports",
+      "sub_category": "baseball",
+      "grouping": "mlb",
+      "event_type": "match",
+      "event_status": "scheduled",
+      "name": "Yankees vs Orioles",
+      "slug": "cl-sports-baseball-mlb-260820-nyan",
+      "scheduled_start": "2026-08-20T23:05:00Z",
+      "markets": [
+        {
+          "name": "Will New York Yankees win?",
+          "slug": "cl-sports-baseball-mlb-260820-nyan-winner-nyan",
+          "hash": "cb3ef6b22d09a15c8843765cb36c1c90fff2923caa3c4334ae375aeaf86c8e49",
+          "market_type": "moneyline",
+          "resolution_criteria": "Resolves YES if the New York Yankees win according to SportsDataio and OddsPapi."
+        }
+      ]
+    }
+  ],
+  "total": 1,
+  "limit": 100,
+  "offset": 0
+}
+```
+
+### Response fields
+
+| Field                           | Type    | Description                                                                                                                      |
+| ------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `events`                        | array   | The events on this page.                                                                                                         |
+| `total`                         | integer | Number of matching events across all pages, including undated events.                                                            |
+| `limit`, `offset`               | integer | The page returned. To fetch the next page, add `limit` to `offset` until `offset` reaches `total`.                               |
+| `category`                      | string  | Top-level category, such as `sports`.                                                                                            |
+| `sub_category`                  | string  | Sport or topic, such as `baseball`.                                                                                              |
+| `grouping`                      | string  | League or competition code, such as `mlb`.                                                                                       |
+| `event_type`                    | string  | Event classification. See [Event types](#event-types).                                                                           |
+| `event_status`                  | string  | Event lifecycle status. See [Event statuses](/solutions/prediction-market-resolution-engine/reference/lifecycle#event-statuses). |
+| `name`                          | string  | Event display name. It can fall back to the event slug. Not an identifier.                                                       |
+| `slug`                          | string  | Stable event identifier.                                                                                                         |
+| `scheduled_start`               | string  | UTC start time, RFC 3339. Omitted when the event has no start yet.                                                               |
+| `markets[].name`                | string  | The market's question, such as `Will New York Yankees win?`.                                                                     |
+| `markets[].slug`                | string  | Canonical, stable market identifier.                                                                                             |
+| `markets[].hash`                | string  | Alias of the market slug: the lowercase hex SHA-256 of `slug`, 64 characters.                                                    |
+| `markets[].market_type`         | string  | Market classification. See [Market types](#market-types).                                                                        |
+| `markets[].resolution_criteria` | string  | Display summary of how the market resolves. See [Resolution criteria](#resolution-criteria).                                     |
+
+### Event types
+
+| `event_type`             | Event                                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------------ |
+| `match`                  | An ordinary fixture.                                                                             |
+| `championship`           | A season or conference champion. Has no `scheduled_start` until its deciding round is scheduled. |
+| `series`                 | A playoff series winner. `scheduled_start` is the latest known start among its games.            |
+| `elimination_tournament` | A tournament or elimination draw.                                                                |
+
+### Market types
+
+| `market_type` | Market                                                                |
+| ------------- | --------------------------------------------------------------------- |
+| `moneyline`   | Winner of a match. In a three-way sport, the draw has its own market. |
+| `draw`        | The match ends in a draw. Used in sports such as soccer.              |
+| `outright`    | Season or tournament winner.                                          |
+| `spread`      | A participant covers the listed line.                                 |
+| `total`       | The combined score is over or under the listed line.                  |
+| `prop`        | A player or team metric against a target.                             |
+| `binary`      | Any other yes/no question.                                            |
+
+### Resolution criteria
+
+`resolution_criteria` is built from the market's question:
+
+- A question that starts with `Will ` becomes `Resolves YES if the …`. Other questions keep their wording.
+- When the event has data providers, the sentence ends with `according to` and their names, such as `SportsDataio`, `OddsPapi`, or `Sportmonks`.
+- When a tie pays out 50/50, it adds `In the event of a tie the market resolves 50/50.`
+- Weather markets return their rules text as written.
+
+The string is a display summary, not a complete rulebook, and its wording can change. Use `slug` to identify a market, not this text.
+
+## Identifiers
+
+- A market's `slug` is its identifier. It never changes, so use it to match a market across requests.
+- `hash` is an alias of `slug`, not a second identifier. Recompute it to check a stored value: `printf '%s' "$SLUG" | shasum -a 256`.
+- Treat a slug as opaque. Read it from the response; do not build it from `name` or other fields.
+- The date in an event slug is part of the identifier, not the schedule. A rescheduled event keeps its slug. Read `scheduled_start` for timing.
+- A change to a market's line can publish a new market with a new slug.
+
+## OpenAPI document
+
+**`GET /user/v1/openapi.yaml`** returns the OpenAPI 3.0 document for this API as `application/yaml`, for code generation and API tools. **`GET /user/v1/openapi`** returns the same document as `text/plain`, so a browser displays it instead of downloading it.
+
+```bash filename="Terminal"
+curl --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
+  "${MARKETS_API_URL}/openapi.yaml" --output openapi-user.yaml
+```
+
+## Errors
+
+| Status | Cause                                                                                                                                                                                                                                                   |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `400`  | Invalid query: missing `from` or `to`, an invalid date, a range over 16 days, an invalid filter value, or an invalid `limit` or `offset`. The body is `{"error": "<message>"}`, such as `{"error": "from and to are required (UTC dates YYYY-MM-DD)"}`. |
+| `401`  | The `Authorization` header is missing, or the organization does not have Prediction Markets access. For the second case, the body is `{"error": "prediction-markets access is not enabled for this organization"}`.                                     |
+| `403`  | The API key is not valid.                                                                                                                                                                                                                               |
+| `404`  | The path does not exist.                                                                                                                                                                                                                                |
+| `500`  | Unexpected server error.                                                                                                                                                                                                                                |
+| `503`  | `/taxonomies` is temporarily unavailable.                                                                                                                                                                                                               |
+
+## Versioning
+
+The version is part of the path: `/user/v1`. Ignore fields and values you do not recognize, so new fields and enum values do not break your integration.

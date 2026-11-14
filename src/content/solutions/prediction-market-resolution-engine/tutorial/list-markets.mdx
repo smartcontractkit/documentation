@@ -1,0 +1,96 @@
+---
+title: "List markets"
+description: "Find a competition in coverage and fetch its upcoming events and markets from the Market Registry API."
+---
+
+**In this step**, you find a competition in Chainlink's coverage, fetch its upcoming events, and read each market's slug, question, and resolution criteria.
+
+The Market Registry is Chainlink's catalog of **events** (real-world occurrences, such as a baseball game) and the **markets** attached to them (yes/no questions, such as "Will the New York Yankees beat the Baltimore Orioles on August 20, 2026?"). Events are grouped by **category**, **sub-category**, and **grouping**, the league or competition, such as `mlb`.
+
+**Concepts:** [Supported markets](/solutions/prediction-market-resolution-engine/overview/supported-markets) · [Market Registry API](/solutions/prediction-market-resolution-engine/reference/market-registry-api)
+
+## Find a competition
+
+List the groupings in coverage:
+
+```bash filename="Terminal"
+curl --silent --show-error \
+  --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
+  "${MARKETS_API_URL}/taxonomies" | jq -r '.taxonomies[] | "\(.sub_category)\t\(.grouping)"'
+```
+
+The output lists one sub-category and grouping per line, for example:
+
+```text filename="Output"
+baseball	mlb
+soccer	mls
+```
+
+A grouping can appear before any of its events exist. This tutorial uses `mlb`.
+
+## Fetch upcoming events
+
+`/events` requires a date range of whole UTC days, `from` to `to`, at most 16 days apart. Set them to cover upcoming games, then fetch the events that have not started:
+
+```bash filename="Terminal"
+export GROUPING='mlb'
+export FROM='2026-08-20'
+export TO='2026-08-23'
+
+curl --silent --show-error \
+  --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
+  "${MARKETS_API_URL}/events?from=${FROM}&to=${TO}&grouping=${GROUPING}&status=scheduled" \
+  --output events.json
+```
+
+Check what you received:
+
+```bash filename="Terminal"
+jq '{total, limit, offset, events: (.events | length), markets: ([.events[].markets | length] | add)}' events.json
+```
+
+`total` counts every matching event; one response holds at most 100. To fetch the next page, repeat the request with `offset` increased by `limit` until `offset` reaches `total`.
+
+The response also includes events with no scheduled start yet, such as a championship waiting on its deciding round. They are listed after the dated events.
+
+## Read the markets
+
+Print each market with its event:
+
+```bash filename="Terminal"
+jq '[.events[] | .slug as $event | .scheduled_start as $start | .markets[] | {
+  slug, event_slug: $event, scheduled_start: $start,
+  question: .name, market_type, resolution_criteria
+}]' events.json
+```
+
+You see one entry per market, for example:
+
+```json filename="Output"
+[
+  {
+    "slug": "cl-sports-baseball-mlb-260820-nyan-winner-nyan",
+    "event_slug": "cl-sports-baseball-mlb-260820-nyan",
+    "scheduled_start": "2026-08-20T23:05:00Z",
+    "question": "Will New York Yankees win?",
+    "market_type": "moneyline",
+    "resolution_criteria": "Resolves YES if the New York Yankees win according to SportsDataio and OddsPapi."
+  }
+]
+```
+
+- `slug` is the market's permanent identifier, used to request its outcome. It does not change if the event is rescheduled. The date (for e.g. `260820`) in the slug is part of the identifier, not the current schedule.
+- `resolution_criteria` is a display summary of how the market resolves, not a complete rulebook.
+
+## Troubleshooting
+
+| Symptom                                          | Cause and fix                                                                                   |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `400` with `from and to are required`            | Add both dates in `YYYY-MM-DD` format.                                                          |
+| `400` with `date range exceeds discovery window` | The dates are more than 16 days apart. Shorten the range.                                       |
+| `401` or `403`                                   | The key is missing, invalid, or not enabled for Prediction Markets. Contact the Chainlink team. |
+| `events` is empty                                | No scheduled events in the range. Move the dates forward, or remove `status=scheduled`.         |
+
+## Next step
+
+[2. Track event status](/solutions/prediction-market-resolution-engine/tutorial/track-event-status)

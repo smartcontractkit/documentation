@@ -1,0 +1,87 @@
+---
+title: "Prediction Market Resolution Engine"
+description: "Resolve prediction markets once independent data providers agree on the outcome, executed on a Chainlink decentralized oracle network."
+---
+
+import { Aside, ClickToZoom, DocCards, DocCard } from "@components"
+
+The Chainlink Resolution Platform is a Chainlink-managed service that proposes outcomes for prediction markets and delivers the result wherever the customer settles, off-chain or on-chain.
+
+It is built on two planes. A control plane, operated by Chainlink Labs, handles coverage registration, market discovery, per-market scheduling, and SLA monitoring. A trust plane runs on a [decentralized oracle network (DON)](/cre/key-terms#decentralized-oracle-network-don) and is the only component allowed to decide an outcome: it fetches independent data sources in parallel, normalizes each answer to a canonical outcome, requires quorum, and fails closed when sources disagree
+
+The Prediction Market Resolution Engine answers the question behind each of your markets, such as _"Will the New York Yankees beat the Baltimore Orioles on August 20, 2026?"_, and delivers the answer to your platform. Chainlink operates the engine and maintains the catalog of markets it resolves. Your platform lists markets from that catalog and receives their outcomes; you do not run oracle infrastructure or manage data providers.
+
+## Problem: Why resolution matters
+
+A prediction market is only as credible as its answers. Until a market resolves, traders cannot redeem winning positions or reuse their capital. When resolution goes wrong, the cost lands on the platform:
+
+- **Slow answers lock capital.** A challenge period or a manual review queue keeps funds tied up after the outcome is already known.
+- **A single source is a single point of failure.** If the one API or the one person deciding outcomes is unavailable or wrong, markets stall or settle incorrectly.
+- **Vague terms invite disputes.** A trader who reads "Will Team A win?" without knowing the source or the tie rule can reasonably disagree with the result.
+
+## What the engine does
+
+When an event ends, a [Chainlink Runtime Environment (CRE)](/cre) workflow running on a decentralized oracle network (DON) fetches the result from independent data providers. The workflow accepts the result only when the providers agree and report it as final, applies the market's rule, records a hash of the outcome onchain, and delivers the outcome to your platform.
+
+<ClickToZoom
+  src="/images/solutions/prediction-market-resolution-engine/resolution-flow.svg"
+  alt="Five steps: list a market from the Market Registry with its resolution criteria; the event ends and providers report a final result; the DON fetches independent providers, requires agreement, and applies the market's rule; the outcome is delivered to the platform; the platform settles positions."
+/>
+
+## What your platform gets
+
+- **Answers from agreement, not from one source.** At least two independent providers must agree before an outcome is accepted automatically.
+- **No challenge period.** Once the data providers confirm a final result and agree, the engine resolves the market. It does not wait for a proposal to go unchallenged.
+- **No answer rather than a wrong answer.** If providers disagree, a result is not final, or the rule cannot decide, the engine delivers nothing and keeps checking for evidence. An unsupported answer never becomes `NO`.
+- **Resolution criteria for every market.** Each market comes with a short statement of what resolves it `YES`, which data providers decide it, and how a tie pays out when it pays 50/50.
+- **One Markets API for your whole listing.** New markets appear in the Market Registry as Chainlink adds coverage. Your platform discovers them through the same API, with no per-market setup.
+- **One answer for every platform.** A market has one Chainlink identifier. Every platform that lists it receives the same outcome from the same evidence.
+
+## How it compares
+
+| Approach                                            | Basis for the answer                                        | When the answer is usable                                 | When data is wrong or missing                     |
+| --------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------- |
+| Optimistic oracle                                   | A proposed answer, accepted if no one challenges it in time | After the challenge period, plus adjudication if disputed | Relies on someone challenging the proposal        |
+| In-house resolution team                            | A staff member's reading of a source                        | Depends on staffing and queue                             | Depends on the reviewer noticing                  |
+| Single data API                                     | One vendor's response                                       | As soon as the vendor reports                             | The wrong value settles the market                |
+| **Chainlink's Prediction Market Resolution Engine** | **Agreement of independent providers, evaluated on a DON**  | **After providers confirm a final result and agree**      | **No outcome is delivered until evidence agrees** |
+
+## Who does what
+
+| Chainlink                                                                  | Your platform                                                                 |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Sources events and markets, and publishes them in the Market Registry      | Lists markets from the registry                                               |
+| Selects and monitors data providers                                        | Runs trading, liquidity, and custody                                          |
+| Decides outcomes on the DON and delivers them as agreed with your platform | Receives outcomes and settles positions                                       |
+| Monitors resolution and escalates failures                                 | Communicates with its traders during an incident and runs its dispute process |
+
+Chainlink currently resolves Soccer, American Football, Tennis, Formula 1, MMA, and Baseball markets. See [Supported markets](/solutions/prediction-market-resolution-engine/overview/supported-markets) for market types and coverage.
+
+<Aside type="note" title="Request access">
+  The engine is available to prediction market platforms through the Chainlink team, which issues Market Registry API
+  keys and agrees outcome delivery with each platform. **TODO: Add the contact form or email address for access
+  requests.**
+</Aside>
+
+## Explore the docs
+
+<DocCards>
+  <DocCard title="Understand it" href="/solutions/prediction-market-resolution-engine/overview/how-it-works">
+    Follow one market from listing to settlement, and see which component decides what.
+  </DocCard>
+  <DocCard
+    title="Assess the trust model"
+    href="/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling"
+  >
+    What you rely on, and what the engine does when data is missing, late, or contradictory.
+  </DocCard>
+  <DocCard title="Try the API" href="/solutions/prediction-market-resolution-engine/tutorial/before-you-begin">
+    List markets from the Market Registry and follow their event status.
+  </DocCard>
+  <DocCard
+    title="Look something up"
+    href="/solutions/prediction-market-resolution-engine/reference/market-registry-api"
+  >
+    Endpoints, parameters, fields, and event statuses.
+  </DocCard>
+</DocCards>
