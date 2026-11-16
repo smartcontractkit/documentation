@@ -734,6 +734,11 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
           highlightAsCurrent: ["cre/guides/workflow/using-randomness-ts", "cre/guides/workflow/using-randomness-go"],
         },
         {
+          title: "Accessing Workflow Metadata",
+          url: "cre/guides/workflow/workflow-metadata",
+          highlightAsCurrent: ["cre/guides/workflow/workflow-metadata-ts", "cre/guides/workflow/workflow-metadata-go"],
+        },
+        {
           title: "Optimizing Workflows",
           url: "cre/guides/workflow/optimizing-workflows",
           highlightAsCurrent: [
