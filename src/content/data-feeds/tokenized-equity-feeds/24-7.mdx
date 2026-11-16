@@ -46,7 +46,7 @@ A 24/7 feed lets the onchain price move gradually over the weekend, so risk buil
 
 ## How 24/7 feeds work
 
-Each feed publishes the **Oracle Price**, a slow price built for collateral valuation, multiplied by the asset issuer's multiplier. As with 24/5 tokenized equity feeds, the answer is the value of the token, not the raw equity price. Multiplier sourcing and issuer-specific methodology are unchanged. See the [Asset Issuer Catalog](/data-feeds/tokenized-equity-feeds/providers) for details.
+Each feed publishes the **Oracle Price**, a slow price built for collateral valuation, multiplied by the asset issuer's multiplier. As with 24/5 tokenized equity feeds, the answer is the calculated primary market value of the token, not the raw equity price. Multiplier sourcing and issuer-specific methodology are unchanged. See the [Asset Issuer Catalog](/data-feeds/tokenized-equity-feeds/providers) for details. The feed reflects the value of the underlying shares, not the issuer's credit or operational condition; see [Issuer risk is not priced](#issuer-risk-is-not-priced).
 
 The Oracle Price comes from the same source as the `lastTradedPrice` field on the underlying [24/7 US Equities v11 streams](/data-streams/rwa-streams/24-7-us-equities). That page covers the methodology in detail. In short:
 
@@ -89,7 +89,7 @@ The table below shows the available 24/7 Smoothed Tokenized Equity Feeds.
 | Smoothing              | Session transitions and overnight   | Session transitions, overnight, and all of off-hours |
 | Asset coverage         | Broad                               | Assets reviewed for off-hours liquidity              |
 
-All risks on the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds#risks) page still apply during the trading week. The risks below are specific to 24/7 feeds or change in a meaningful way.
+All risks on the [Tokenized Equity Feeds](/data-feeds/tokenized-equity-feeds#risks) page still apply during the trading week. The risks below are specific to 24/7 feeds, change in a meaningful way, or are especially important for lending.
 
 ## Risks
 
@@ -145,5 +145,13 @@ US market holidays are priced as off-hours. The feed does not flag them.
 
 - Monitor corporate action announcements for every asset you list
 - Use an authoritative exchange holiday calendar
+
+### Issuer risk is not priced
+
+The feed answer is the underlying equity price multiplied by the asset issuer's multiplier. It reflects the value of the underlying shares, not the credit or operational condition of the issuer. Events specific to the issuer, such as insolvency, a custody failure, a halt in redemptions, or a token trading at a discount to its underlying, do not change the feed price.
+
+#### Mitigation
+
+- Monitor issuer announcements and secondary market prices of the token, and define how your protocol responds to an issuer event
 
 For integration responsibilities, see [Developer Responsibilities](/data-feeds/developer-responsibilities).

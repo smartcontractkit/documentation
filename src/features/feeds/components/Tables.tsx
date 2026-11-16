@@ -32,6 +32,7 @@ import {
   getMarketStatusDocLink,
   getTradingHoursDocLink,
   is247Product,
+  is247TokenizedEquityFeed,
   is247USEquitiesStream,
   is24x5StreamFeed,
   isApacEquitiesStreamFeed,
@@ -575,6 +576,17 @@ const DefaultTr = ({
                 title="Tokenized Equity Feed"
               >
                 Tokenized Equity
+              </a>
+            </div>
+          )}
+          {is247TokenizedEquityFeed(metadata) && (
+            <div style={{ marginTop: "5px" }}>
+              <a
+                href="/data-feeds/tokenized-equity-feeds/24-7"
+                className={tableStyles.feedVariantBadge}
+                title="24/7 Tokenized Equity Feed"
+              >
+                24/7 Tokenized Equity
               </a>
             </div>
           )}
@@ -1690,6 +1702,8 @@ export const MainnetTable = ({
   twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
+  showIndexStreams,
+  indexRegion,
   tradingHoursFilter,
   dataFeedType,
   ecosystem,
@@ -1722,6 +1736,8 @@ export const MainnetTable = ({
   twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
+  showIndexStreams?: boolean
+  indexRegion?: "us" | "apac"
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   dataFeedType: string
   ecosystem: string
@@ -1762,6 +1778,8 @@ export const MainnetTable = ({
     twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
+    showIndexStreams,
+    indexRegion,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,
@@ -1891,6 +1909,8 @@ export const TestnetTable = ({
   twentyFourSevenProduct,
   showApacEquitiesFeeds,
   showFuturesFeeds,
+  showIndexStreams,
+  indexRegion,
   tradingHoursFilter,
   tokenizedEquityProvider,
   forceExtendedHoursCategory,
@@ -1920,6 +1940,8 @@ export const TestnetTable = ({
   twentyFourSevenProduct?: TwentyFourSevenProduct
   showApacEquitiesFeeds?: boolean
   showFuturesFeeds?: boolean
+  showIndexStreams?: boolean
+  indexRegion?: "us" | "apac"
   tradingHoursFilter?: "all" | "regular" | "extended" | "overnight"
   tokenizedEquityProvider?: string
   forceExtendedHoursCategory?: ExtendedHoursCategory
@@ -1953,6 +1975,8 @@ export const TestnetTable = ({
     twentyFourSevenProduct,
     showApacEquitiesFeeds,
     showFuturesFeeds,
+    showIndexStreams,
+    indexRegion,
     tradingHoursFilter,
     visibilityOptions: {
       showOnlyDEXFeeds,

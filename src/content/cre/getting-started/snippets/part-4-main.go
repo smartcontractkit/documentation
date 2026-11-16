@@ -26,6 +26,7 @@ type EvmConfig struct {
 	CalculatorConsumerAddress string `json:"calculatorConsumerAddress"`
 	GasLimit                  uint64 `json:"gasLimit"`
 }
+
 // highlight-end
 
 type Config struct {
@@ -42,6 +43,7 @@ type MyResult struct {
 	FinalResult   *big.Int
 	TxHash        string
 }
+
 // highlight-end
 
 func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
@@ -60,14 +62,9 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 		return nil, fmt.Errorf("invalid chain name: %w", err)
 	}
 
-	// Step 1: Fetch offchain data
+	// Step 1: Start the offchain fetch
 	client := &http.Client{}
 	mathPromise := http.SendRequest(config, runtime, client, fetchMathResult, cre.ConsensusMedianAggregation[*big.Int]())
-	offchainValue, err := mathPromise.Await()
-	if err != nil {
-		return nil, err
-	}
-	logger.Info("Successfully fetched offchain value", "result", offchainValue)
 
 	// Step 2: Read onchain data using the binding for the Storage contract
 	evmClient := &evm.Client{
@@ -81,7 +78,16 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 		return nil, fmt.Errorf("failed to create contract instance: %w", err)
 	}
 
-	onchainValue, err := storageContract.Get(runtime, big.NewInt(-3)).Await()
+	onchainPromise := storageContract.Get(runtime, big.NewInt(-3))
+
+	// Collect both independent results in a fixed order
+	offchainValue, err := mathPromise.Await()
+	if err != nil {
+		return nil, err
+	}
+	logger.Info("Successfully fetched offchain value", "result", offchainValue)
+
+	onchainValue, err := onchainPromise.Await()
 	if err != nil {
 		return nil, fmt.Errorf("failed to read onchain value: %w", err)
 	}
@@ -169,6 +175,7 @@ func updateCalculatorResult(config *Config, runtime cre.Runtime, chainSelector u
 	logger.Info("View transaction at", "url", fmt.Sprintf("https://sepolia.etherscan.io/tx/%s", txHash))
 	return txHash, nil
 }
+
 // highlight-end
 
 func main() {
