@@ -597,7 +597,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 **[CRE CLI version 1.40.0](https://github.com/smartcontractkit/cre-cli/releases/tag/v1.40.0) is now available.**
 
-- **More reliable credential validation**: Fixed "unable to retrieve organization info" errors during login and credential checks. Transient API failures are now retried automatically, and failures report the HTTP status instead of a misleading empty-organization error.
+- **More reliable credential validation**: Fixed "unable to retrieve organization info" errors during credential validation. Transient API failures are now retried automatically, and failures report the HTTP status instead of a misleading empty-organization error.
 
 **How to update:**
 
@@ -4560,6 +4560,7 @@ Use `runtime.GenerateReport()` to create a signed, consensus-verified report fro
 reportPromise := runtime.GenerateReport(&cre.ReportRequest{
     EncodedPayload: encodedValue,
     EncoderName:    "evm",
+    SigningAlgo:    "ecdsa",
     HashingAlgo:    "keccak256",
 })
 
@@ -4574,6 +4575,7 @@ logger.Info("Successfully generated report")
 
 - `EncodedPayload`: The ABI-encoded bytes from step 2
 - `EncoderName`: Always `"evm"` for Ethereum reports
+- `SigningAlgo`: Always `"ecdsa"` for Ethereum
 - `HashingAlgo`: Always `"keccak256"` for Ethereum
 
 #### Understanding the report
@@ -4665,6 +4667,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	reportPromise := runtime.GenerateReport(&cre.ReportRequest{
 		EncodedPayload: encodedValue,
 		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
 		HashingAlgo:    "keccak256",
 	})
 
@@ -4822,6 +4825,7 @@ if err != nil {
 reportPromise := runtime.GenerateReport(&cre.ReportRequest{
     EncodedPayload: encodedStruct,
     EncoderName:    "evm",
+    SigningAlgo:    "ecdsa",
     HashingAlgo:    "keccak256",
 })
 
@@ -4946,6 +4950,7 @@ if err != nil {
 reportPromise := runtime.GenerateReport(&cre.ReportRequest{
     EncodedPayload: encodedStruct,
     EncoderName:    "evm",
+    SigningAlgo:    "ecdsa",
     HashingAlgo:    "keccak256",
 })
 
@@ -5034,6 +5039,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	reportPromise := runtime.GenerateReport(&cre.ReportRequest{
 		EncodedPayload: encodedStruct,
 		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
 		HashingAlgo:    "keccak256",
 	})
 
@@ -5292,6 +5298,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	reportPromise := runtime.GenerateReport(&cre.ReportRequest{
 		EncodedPayload: encodedValue,
 		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
 		HashingAlgo:    "keccak256",
 	})
 
@@ -13851,7 +13858,7 @@ Confidential HTTP takes a different approach: by design, only one request is mad
 
 # Finality and Confidence Levels
 Source: https://docs.chain.link/cre/concepts/finality-go
-Last Updated: 2026-10-19
+Last Updated: 2026-11-16
 
 Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
 
@@ -17744,6 +17751,7 @@ Workflow DON execution—for example, generating a signed report:
 	_, err = donRuntime.GenerateReport(&cre.ReportRequest{
 		EncodedPayload: []byte(resp.Body),
 		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
 		HashingAlgo:    "keccak256",
 	}).Await()
 	if err != nil {
@@ -17841,6 +17849,7 @@ func onCronTrigger(config *Config, runtime cre.TeeRuntime, _ *cron.Payload) (str
 	_, err = donRuntime.GenerateReport(&cre.ReportRequest{
 		EncodedPayload: []byte(resp.Body),
 		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
 		HashingAlgo:    "keccak256",
 	}).Await()
 	if err != nil {
@@ -20634,6 +20643,7 @@ func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (
 	reportPromise := runtime.GenerateReport(&cre.ReportRequest{
 		EncodedPayload: encodedValue,
 		EncoderName:    "evm",
+		SigningAlgo:    "ecdsa",
 		HashingAlgo:    "keccak256",
 	})
 
@@ -25489,6 +25499,7 @@ donRuntime := runtime.UsingTheDons()
 _, err := donRuntime.GenerateReport(&cre.ReportRequest{
 	EncodedPayload: []byte(resp.Body),
 	EncoderName:    "evm",
+	SigningAlgo:    "ecdsa",
 	HashingAlgo:    "keccak256",
 }).Await()
 ```
@@ -25717,12 +25728,6 @@ These interfaces provide access to capabilities and manage the execution context
 - **`cre.NodeRuntime` ("Manual Mode")**: Represents an **individual node's execution context**. This is used when a BFT guarantee cannot be provided automatically (e.g., calling a third-party API). You tell each node to perform a task on its own, and each node returns its own individual answer. You are then responsible for telling the SDK how to combine them into a single, trusted result by providing a consensus and aggregation algorithm. It is used exclusively inside a [`RunInNodeMode`](#creruninnodemode) block and is provided by that function—you do not get this type directly in your handler's callback.
 
 To learn more about how to aggregate results from `NodeRuntime`, see the [Consensus & Aggregation](/cre/reference/sdk/consensus) reference.
-
-> **CAUTION: SigningAlgo is deprecated**
->
-> The `SigningAlgo` field in `cre.ReportRequest` is deprecated and ignored. CRE derives the signing algorithm from
-> `EncoderName`—EVM and Solana reports both use ECDSA—so the field has no effect. The field will be removed in the next
-> major SDK release.
 
 ### `Promise`
 
@@ -27146,6 +27151,7 @@ encoded, err := forwarderReport.Marshal()
 report := runtime.Report(cre.ReportRequest{
     EncodedPayload: base64.StdEncoding.EncodeToString(encoded),
     EncoderName:    "solana",
+    SigningAlgo:    "ecdsa",
     HashingAlgo:    "keccak256",
 }).Result()
 
@@ -27701,7 +27707,7 @@ func onSolanaTrigger(config *Config, runtime cre.Runtime, payload *bindings.Deco
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-go
-Last Updated: 2026-10-19
+Last Updated: 2026-11-16
 
 This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 

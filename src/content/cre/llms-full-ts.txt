@@ -597,7 +597,7 @@ This page provides detailed release notes for CRE. It includes information on ne
 
 **[CRE CLI version 1.40.0](https://github.com/smartcontractkit/cre-cli/releases/tag/v1.40.0) is now available.**
 
-- **More reliable credential validation**: Fixed "unable to retrieve organization info" errors during login and credential checks. Transient API failures are now retried automatically, and failures report the HTTP status instead of a misleading empty-organization error.
+- **More reliable credential validation**: Fixed "unable to retrieve organization info" errors during credential validation. Transient API failures are now retried automatically, and failures report the HTTP status instead of a misleading empty-organization error.
 
 **How to update:**
 
@@ -4277,6 +4277,7 @@ const reportResponse = runtime
   .report({
     encodedPayload: hexToBase64(reportData),
     encoderName: "evm",
+    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -4286,6 +4287,7 @@ const reportResponse = runtime
 
 - `encodedPayload`: Your ABI-encoded data converted to base64
 - `encoderName`: Always `"evm"` for EVM chains
+- `signingAlgo`: Always `"ecdsa"` for EVM chains
 - `hashingAlgo`: Always `"keccak256"` for EVM chains
 
 ### Step 4: Submit to the blockchain
@@ -4362,6 +4364,7 @@ const reportResponse = runtime
   .report({
     encodedPayload: hexToBase64(reportData),
     encoderName: "evm",
+    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -4477,6 +4480,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
     .report({
       encodedPayload: hexToBase64(reportData),
       encoderName: "evm",
+      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -4578,6 +4582,7 @@ const writeDataOnchain = (runtime: Runtime<Config>): string => {
     .report({
       encodedPayload: hexToBase64(reportData),
       encoderName: "evm",
+      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -13798,7 +13803,7 @@ Confidential HTTP takes a different approach: by design, only one request is mad
 
 # Finality and Confidence Levels
 Source: https://docs.chain.link/cre/concepts/finality-ts
-Last Updated: 2026-10-19
+Last Updated: 2026-11-16
 
 Finality determines when a blockchain transaction is considered irreversible. Until a block is finalized, it could be reorganized (replaced by a different block if the chain temporarily forks), which means any data you read from it might change.
 
@@ -15621,6 +15626,7 @@ function updateCalculatorResult(
     .report({
       encodedPayload: hexToBase64(reportData),
       encoderName: "evm",
+      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -15673,7 +15679,7 @@ export async function main() {
 > Once you're comfortable with these core concepts, the SDK provides convenience helpers for more concise code:
 >
 > - **HTTP helpers**: The [`HTTPSendRequester`](/cre/reference/sdk/http-client-ts#using-sendrequester) type includes [`ok()`](/cre/reference/sdk/http-client-ts#ok), [`text()`](/cre/reference/sdk/http-client-ts#text), and [`json()`](/cre/reference/sdk/http-client-ts#json) functions for cleaner response handling
-> - **Report helper**: [`prepareReportRequest()`](/cre/reference/sdk/evm-client-ts#preparereportrequest) automatically sets default encoding parameters (`evm`, `keccak256`) for report generation
+> - **Report helper**: [`prepareReportRequest()`](/cre/reference/sdk/evm-client-ts#preparereportrequest) automatically sets default encoding parameters (`ecdsa`, `keccak256`, `evm`) for report generation
 >
 > These helpers are great for production code, but we use the explicit approach here for educational clarity.
 
@@ -17749,6 +17755,7 @@ donRuntime
   .report({
     encodedPayload: Buffer.from(text(response)).toString("base64"),
     encoderName: "evm",
+    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -17819,6 +17826,7 @@ const onCronTrigger = (runtime: TeeRuntime<Config>) => {
     .report({
       encodedPayload: Buffer.from(text(response)).toString("base64"),
       encoderName: "evm",
+      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -20518,6 +20526,7 @@ const report = runtime
   .report({
     encodedPayload: hexToBase64(encodedValue),
     encoderName: "evm",
+    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -20680,6 +20689,7 @@ const onCronTrigger = (runtime: Runtime<Config>, _payload: CronPayload): MyResul
     .report({
       encodedPayload: hexToBase64(encodedValue),
       encoderName: "evm",
+      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
@@ -24785,6 +24795,7 @@ const report = runtime
   .report({
     encodedPayload: hexToBase64(callData),
     encoderName: "evm",
+    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -25515,6 +25526,7 @@ donRuntime
     // Buffer.from(payloadBytes).toString("base64")
     encodedPayload: encodedValue,
     encoderName: "evm",
+    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -25972,12 +25984,6 @@ Both `Runtime` and `NodeRuntime` provide:
 - **`runInNodeMode(...)`**: Execute code on individual nodes with consensus aggregation
 - **`getSecret(...)`**: Access to workflow secrets
 - **`report(...)`**: Generate cryptographically signed reports. To verify received reports, use [`Report.parse()`](#report-verification).
-
-> **CAUTION: signingAlgo is deprecated**
->
-> The `signingAlgo` field in `runtime.report()` is deprecated and ignored. CRE derives the signing algorithm from
-> `encoderName`—EVM and Solana reports both use ECDSA—so the field has no effect. The field will be removed in the next
-> major SDK release.
 
 ### Logging
 
@@ -26943,6 +26949,7 @@ const reportResponse = runtime
   .report({
     encodedPayload: hexToBase64(callData),
     encoderName: "evm",
+    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -27250,7 +27257,7 @@ See [Type Conversions](/cre/reference/sdk/type-conversions-ts#protobigint) for m
 
 ### `prepareReportRequest()`
 
-Prepares a report request with default EVM encoding parameters for use with `runtime.report()`. This helper simplifies report generation by automatically setting the standard encoding configuration (`evm`, `keccak256`) required for EVM-based workflows. The signing algorithm is derived from the encoder.
+Prepares a report request with default EVM encoding parameters for use with `runtime.report()`. This helper simplifies report generation by automatically setting the standard encoding configuration (`evm`, `ecdsa`, `keccak256`) required for EVM-based workflows.
 
 **Signature:**
 
@@ -27264,7 +27271,7 @@ function prepareReportRequest(
 **Parameters:**
 
 - `hexEncodedPayload`: The hex-encoded payload (typically from `encodeFunctionData()`) to be signed by the DON
-- `reportEncoder`: Optional. Custom report encoder configuration. Defaults to `EVM_DEFAULT_REPORT_ENCODER` (`{ encoderName: 'evm', hashingAlgo: 'keccak256' }`). Its `signingAlgo` key is deprecated and ignored.
+- `reportEncoder`: Optional. Custom report encoder configuration. Defaults to `EVM_DEFAULT_REPORT_ENCODER` (`{ encoderName: 'evm', signingAlgo: 'ecdsa', hashingAlgo: 'keccak256' }`)
 
 **Returns:**
 
@@ -27290,13 +27297,9 @@ const report = runtime.report(prepareReportRequest(callData)).result()
 // The helper automatically sets:
 // - encodedPayload: hexToBase64(callData)
 // - encoderName: "evm"
+// - signingAlgo: "ecdsa"
 // - hashingAlgo: "keccak256"
 ```
-
-> **CAUTION: signingAlgo is deprecated**
->
-> `signingAlgo` is deprecated and ignored. CRE derives the signing algorithm from `encoderName`—EVM and Solana reports
-> both use ECDSA—so the field has no effect. The field will be removed in the next major SDK release.
 
 **Equivalent manual approach:**
 
@@ -27308,6 +27311,7 @@ const report = runtime
   .report({
     encodedPayload: hexToBase64(callData),
     encoderName: "evm",
+    signingAlgo: "ecdsa",
     hashingAlgo: "keccak256",
   })
   .result()
@@ -28637,11 +28641,6 @@ const SOLANA_DEFAULT_REPORT_ENCODER = {
 }
 ```
 
-> **CAUTION: signingAlgo is deprecated**
->
-> `signingAlgo` is deprecated and ignored. CRE derives the signing algorithm from `encoderName`—Solana reports use
-> ECDSA—so the field has no effect. It will be removed from this default in the next major SDK release.
-
 Pass to `prepareSolanaReportRequest()` to override encoding parameters.
 
 ***
@@ -29482,7 +29481,7 @@ Your callback function for Solana log triggers must conform to this signature:
 
 # Supported Networks
 Source: https://docs.chain.link/cre/supported-networks-ts
-Last Updated: 2026-10-19
+Last Updated: 2026-11-16
 
 This page lists networks supported by CRE workflows, along with the minimum CLI and SDK versions required for each network. CRE supports two [chain families](/cre/capabilities#chain-families): EVM-compatible chains and Solana.
 

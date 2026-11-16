@@ -167,6 +167,7 @@ function updateCalculatorResult(
     .report({
       encodedPayload: hexToBase64(reportData),
       encoderName: "evm",
+      signingAlgo: "ecdsa",
       hashingAlgo: "keccak256",
     })
     .result()
