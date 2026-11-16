@@ -17,6 +17,7 @@ import { loadReferenceData } from "~/config/data/ccip/index.ts"
 import { directoryToSupportedChain, getChainTypeAndFamily } from "~/features/utils/index.ts"
 import type { ChainFamily } from "~/lib/ccip/graphql/utils/address-display.ts"
 import { extractRawType, extractVersion } from "~/lib/ccip/graphql/utils/type-version-parser.ts"
+import { normalizeAddressForQuery } from "~/lib/ccip/graphql/utils/address-utils.ts"
 
 // Curated per-chain token entry from tokens.json (fields used by the resolvers below)
 type CuratedTokenEntry = {
@@ -188,6 +189,24 @@ export function resolveAllTokenAddresses(environment: Environment, tokenSymbol: 
 export function toSelectorName(environment: Environment, directoryKey: string): string {
   const { chainIdService } = getRefData(environment)
   return chainIdService.getSelectorName(directoryKey) ?? directoryKey
+}
+
+/**
+ * Resolves the official TokenAdminRegistry address for a chain from chains.json,
+ * normalized for GraphQL queries (lowercase for 0x-prefixed addresses).
+ *
+ * The TokenAdminRegistry is the on-chain source of truth for which token pool
+ * is currently registered for a token. Atlas's `ccip_token_pools.registry`
+ * column records which registry indexed each pool row, so matching it against
+ * this address filters out pools registered in older or staging registries.
+ *
+ * @returns Registry address, or null for chains without an EVM-style registry
+ *   (e.g. canton, solana, ton)
+ */
+export function resolveTokenAdminRegistry(environment: Environment, directoryKey: string): string | null {
+  const { chainsReferenceData } = loadReferenceData({ environment, version: Version.V1_2_0 })
+  const address = chainsReferenceData[directoryKey]?.tokenAdminRegistry?.address
+  return address ? normalizeAddressForQuery(address) : null
 }
 
 /**

@@ -25,6 +25,7 @@ import {
   resolveOnChainSymbol,
   resolvePoolType,
   resolveCuratedPoolInfo,
+  resolveTokenAdminRegistry,
   toSelectorName,
   getAllTokenSymbols,
   getChainFamilyForDirectoryKey,
@@ -413,6 +414,34 @@ function resolveRawTypeAndVersion(
   return { rawType: rawType || curated.rawType, version: version || curated.version }
 }
 
+// ---------- Pool node selection ----------
+
+type PoolNode = NonNullable<NonNullable<GetTokenPoolsQuery["allCcipTokenPools"]>["nodes"]>[number]
+
+/** A pool node guaranteed to have a pool address (the finder skips rows without one). */
+type SelectedPoolNode = PoolNode & { tokenPool: string }
+
+/**
+ * Finds the pool node registered in the chain's official TokenAdminRegistry.
+ *
+ * A token can have multiple `ccip_token_pools` rows for the same chain —
+ * migration history and staging deployments, each recorded with the registry
+ * that indexed it. The TokenAdminRegistry is the on-chain source of truth for
+ * the single current pool, so matching Atlas's `registry` column against the
+ * curated registry address (chains.json) isolates the current pool and
+ * excludes staging registries.
+ *
+ * When no node matches (no curated registry for the chain — e.g. solana,
+ * canton, ton — or no Atlas row in the official registry), callers fall back
+ * to the curated tokens.json pool entry.
+ */
+function findRegisteredPoolNode(nodes: PoolNode[], registryAddress: string | null): SelectedPoolNode | null {
+  if (!registryAddress) return null
+  // At most one row per (token, network, registry) exists in Atlas; take the
+  // first match should that invariant ever be violated.
+  return nodes.find((n): n is SelectedPoolNode => Boolean(n.tokenPool) && n.registry === registryAddress) ?? null
+}
+
 export async function fetchPoolDataForToken(
   environment: Environment,
   tokenSymbol: string,
@@ -431,11 +460,15 @@ export async function fetchPoolDataForToken(
         condition: { token: addr, network },
       })
 
-      const node = result.allCcipTokenPools?.nodes?.find((n) => n.tokenPool)
-      if (!node?.tokenPool) {
-        // Atlas has no pool data for this token on this chain. Fall back to the
-        // curated tokens.json entry so pool type, version, and mechanism still
-        // resolve (e.g. USD1 on canton-mainnet).
+      const node = findRegisteredPoolNode(
+        result.allCcipTokenPools?.nodes ?? [],
+        resolveTokenAdminRegistry(environment, directoryKey)
+      )
+      if (!node) {
+        // Atlas has no pool registered in the official TokenAdminRegistry for
+        // this token on this chain (or the chain has no curated registry —
+        // e.g. solana, canton, ton). Fall back to the curated tokens.json
+        // entry so pool type, version, and mechanism still resolve.
         return buildCuratedPoolInfo(environment, tokenSymbol, directoryKey)
       }
 
@@ -477,12 +510,25 @@ export async function fetchPoolDataForTokenAllChains(environment: Environment, t
         addrNetworkToDir.set(key, dirKey)
       }
 
-      const poolData: PoolData = {}
+      // Group nodes by directory key, then find the registered pool per chain.
+      // A token can have multiple Atlas rows per chain (migration history,
+      // staging deployments); findRegisteredPoolNode picks the one registered
+      // in the official TokenAdminRegistry.
+      const nodesByDirKey = new Map<string, PoolNode[]>()
       for (const node of result.allCcipTokenPools?.nodes ?? []) {
         if (!node.token || !node.tokenPool || !node.network) continue
         const key = `${normalizeAddressForQuery(node.token)}|${node.network}`
         const dirKey = addrNetworkToDir.get(key)
         if (!dirKey) continue
+        const group = nodesByDirKey.get(dirKey)
+        if (group) group.push(node)
+        else nodesByDirKey.set(dirKey, [node])
+      }
+
+      const poolData: PoolData = {}
+      for (const [dirKey, nodes] of nodesByDirKey) {
+        const node = findRegisteredPoolNode(nodes, resolveTokenAdminRegistry(environment, dirKey))
+        if (!node) continue
 
         const chainFamily = getChainFamilyForDirectoryKey(dirKey)
         const { rawType, version } = resolveRawTypeAndVersion(environment, tokenSymbol, dirKey, node.typeAndVersion)
@@ -530,15 +576,27 @@ export async function fetchAllPoolData(environment: Environment): Promise<AllPoo
       // Paginated fetch of ALL pools
       const allNodes = await fetchAllPoolNodes()
 
-      // Map GraphQL results back to tokenSymbol → directoryKey → PoolInfo
-      const allPoolData: AllPoolData = {}
+      // Map GraphQL results back to tokenSymbol → directoryKey → PoolInfo.
+      // Group nodes per token/chain first, then find the registered pool per
+      // group (migration history and staging deployments create duplicates).
+      const nodesByMapping = new Map<string, { tokenSymbol: string; directoryKey: string; nodes: PoolNode[] }>()
       for (const node of allNodes) {
         if (!node.token || !node.network || !node.tokenPool) continue
         const key = `${normalizeAddressForQuery(node.token)}|${node.network}`
         const mapping = addressIndex.get(key)
         if (!mapping) continue
 
-        const { tokenSymbol, directoryKey } = mapping
+        const groupKey = `${mapping.tokenSymbol}|${mapping.directoryKey}`
+        const group = nodesByMapping.get(groupKey)
+        if (group) group.nodes.push(node)
+        else nodesByMapping.set(groupKey, { ...mapping, nodes: [node] })
+      }
+
+      const allPoolData: AllPoolData = {}
+      for (const { tokenSymbol, directoryKey, nodes } of nodesByMapping.values()) {
+        const node = findRegisteredPoolNode(nodes, resolveTokenAdminRegistry(environment, directoryKey))
+        if (!node) continue
+
         const chainFamily = getChainFamilyForDirectoryKey(directoryKey)
         const { rawType, version } = resolveRawTypeAndVersion(
           environment,
@@ -595,8 +653,6 @@ function buildAddressIndex(environment: Environment): Map<string, { tokenSymbol:
   return index
 }
 
-type PoolNode = NonNullable<NonNullable<GetTokenPoolsQuery["allCcipTokenPools"]>["nodes"]>[number]
-
 /**
  * Fetches all token pool nodes with offset-based pagination.
  */
@@ -651,7 +707,10 @@ export async function fetchMinBlockConfirmations(
         condition: { token: addr, network },
       })
 
-      const node = result.allCcipTokenPools?.nodes?.find((n) => n.tokenPool)
+      const node = findRegisteredPoolNode(
+        result.allCcipTokenPools?.nodes ?? [],
+        resolveTokenAdminRegistry(environment, directoryKey)
+      )
       return node?.minBlockConfirmations ?? null
     })
   } catch (error) {
