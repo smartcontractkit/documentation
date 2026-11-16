@@ -109,8 +109,6 @@ export const HIDE_247_STREAM_FEED_IDS = true
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideStreamFeedId(feed: any): boolean {
-  // Futures streams are served through the permissioned Data Streams API, so
-  // their IDs stay visible; hiding them would not gate access to anything.
   return (
     isApacEquitiesStreamFeed(feed) || is247USEquitiesStream(feed) || (HIDE_247_STREAM_FEED_IDS && is247Stream(feed))
   )

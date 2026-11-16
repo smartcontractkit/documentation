@@ -218,7 +218,6 @@ describe("shouldHideStreamFeedId", () => {
   })
 
   it("leaves futures stream feed IDs visible", () => {
-    // Futures streams are permissioned API products, so their IDs are published.
     expect(
       shouldHideStreamFeedId(
         verifierStream({ attributeType: "FuturesPrice", feedType: "Futures", assetClass: "Futures", schema: "v14" })
