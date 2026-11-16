@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Learn how to avoid non-deterministic behaviors in CRE TypeScript workflows that prevent nodes from reaching consensus."
   datePublished: "2025-11-04"
-  lastModified: "2026-02-03"
+  lastModified: "2026-11-16"
 ---
 
 import { Aside } from "@components"
@@ -203,7 +203,7 @@ JavaScript's `Math.random()` generates different random sequences on each node, 
 
 **The problem:** Each node generates different random values, breaking consensus.
 
-**The solution:** Use `Math.random()` inside the CRE WASM runtime, which provides consensus-safe random number generation. The CRE runtime overrides `Math.random()` with a seeded generator so all nodes produce the same sequence, enabling consensus. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-ts) for details.
+**The solution:** Use `Math.random()` inside the CRE WASM runtime, which provides consensus-safe random number generation. The CRE runtime overrides `Math.random()` with a seeded generator so all nodes produce the same sequence, enabling consensus. These values are predictable, so don't use them for keys, secrets, or tokens. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-ts) for details, and [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-ts) for the status of cryptographic randomness in TypeScript.
 
 ## 5. Working with LLMs
 
@@ -221,7 +221,7 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 - Use Maps and Sets when insertion order matters
 - Call `.result()` in a fixed, deterministic order
 - Use `runtime.now()` for all time operations
-- Use `Math.random()` inside the CRE WASM runtime for randomness
+- Use `Math.random()` inside the CRE WASM runtime for randomness (not for keys, secrets, or tokens)
 - Request structured output from LLMs
 
 ### Don't:
