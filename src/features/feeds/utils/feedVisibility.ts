@@ -4,7 +4,6 @@ import {
   is247TokenizedEquityFeed,
   is247USEquitiesStream,
   isApacEquitiesStreamFeed,
-  isFuturesStreamFeed,
   normalizeCategoryKey,
 } from "./feedMetadata.ts"
 import { is247Stream } from "./twentyFourSeven.ts"
@@ -110,11 +109,10 @@ export const HIDE_247_STREAM_FEED_IDS = true
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideStreamFeedId(feed: any): boolean {
+  // Futures streams are served through the permissioned Data Streams API, so
+  // their IDs stay visible; hiding them would not gate access to anything.
   return (
-    isApacEquitiesStreamFeed(feed) ||
-    isFuturesStreamFeed(feed) ||
-    is247USEquitiesStream(feed) ||
-    (HIDE_247_STREAM_FEED_IDS && is247Stream(feed))
+    isApacEquitiesStreamFeed(feed) || is247USEquitiesStream(feed) || (HIDE_247_STREAM_FEED_IDS && is247Stream(feed))
   )
 }
 
