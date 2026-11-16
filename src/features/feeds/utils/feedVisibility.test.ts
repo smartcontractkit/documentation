@@ -147,6 +147,55 @@ describe("shouldHideAddress", () => {
   it("leaves unlisted proxy addresses alone", () => {
     expect(shouldHideAddress({ proxyAddress: "0x1234", docs: {} })).toBe(false)
   })
+
+  it("keeps Robinhood 24/5 tokenized equity addresses visible", () => {
+    expect(
+      shouldHideAddress({
+        proxyAddress: "0x2222222222222222222222222222222222222222",
+        docs: {
+          blockchainName: "Robinhood",
+          productTypeCode: "primaryTokenizedPrice",
+          productSubType: "calculatedPrice",
+        },
+      })
+    ).toBe(false)
+  })
+
+  it("hides calculated-price tokenized equity addresses (Ondo, Coinbase)", () => {
+    expect(
+      shouldHideAddress({
+        proxyAddress: "0x1111111111111111111111111111111111111111",
+        docs: { assetClass: "Equity", productTypeCode: "primaryTokenizedPrice", productSubType: "calculatedPrice" },
+      })
+    ).toBe(true)
+  })
+
+  it("hides 24/7 tokenized equity feed addresses for every provider", () => {
+    const xStocks = {
+      contractType: "",
+      proxyAddress: "0x61340784b9fc02bc737b9cd48e416769857b7de6",
+      docs: { attributeType: "247CustomPrice" },
+    }
+    const robinhood247 = {
+      proxyAddress: "0x4444444444444444444444444444444444444444",
+      docs: {
+        blockchainName: "Robinhood",
+        attributeType: "247CustomPrice",
+        productTypeCode: "247",
+      },
+    }
+    expect(shouldHideAddress(xStocks)).toBe(true)
+    expect(shouldHideAddress(robinhood247)).toBe(true)
+  })
+
+  it("keeps ordinary feed addresses visible", () => {
+    expect(
+      shouldHideAddress({
+        proxyAddress: "0x3333333333333333333333333333333333333333",
+        docs: { assetClass: "Crypto", productTypeCode: "RefPrice" },
+      })
+    ).toBe(false)
+  })
 })
 
 describe("shouldHideStreamFeedId", () => {
