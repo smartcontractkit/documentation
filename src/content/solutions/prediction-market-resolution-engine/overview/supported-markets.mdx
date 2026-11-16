@@ -19,6 +19,8 @@ Coverage is defined per question, not per competition. A covered competition mea
 
 Other categories can be added where qualifying data sources exist. To discuss coverage beyond what is currently available, contact the Chainlink team.
 
+AI can also serve as a data source. Chainlink has used it for a limited set of markets.
+
 ## Market types
 
 Every market is a yes/no question. The Market Registry API classifies each one with a `market_type`:
@@ -33,11 +35,9 @@ Every market is a yes/no question. The Market Registry API classifies each one w
 | `prop`                                              | A player or team metric against a target.                             | "Will Player A record more than 274.5 passing yards?"                      |
 | `binary`                                            | Any other yes/no question.                                            | "Will it rain in New York City on August 20?"                              |
 
-<Aside
-  type="note"
-  title="  Example questions are illustrations, not a list of markets in coverage.
-"
-></Aside>
+<Aside type="note" title="Example questions">
+  Example questions are illustrations, not a list of markets in coverage.
+</Aside>
 
 A market resolves to `YES`, `NO`, or, where its rule allows a tie to pay out 50/50, `PUSH`.
 
@@ -45,12 +45,12 @@ A market resolves to `YES`, `NO`, or, where its rule allows a tie to pay out 50/
 
 Most markets belong to an ordinary fixture, such as one game. Some belong to an event that Chainlink derives from a season or a bracket:
 
-| `event_type`             | Event                                                              |
-| ------------------------ | ------------------------------------------------------------------ |
-| `match`                  | An ordinary fixture.                                               |
-| `championship`           | A season or conference champion, derived from the postseason.      |
-| `series`                 | A playoff series winner, derived from a round and a pair of teams. |
-| `elimination_tournament` | A tournament or elimination draw.                                  |
+| `event_type`             | Event                                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `match`                  | The default event type: any event that is not derived from a season or bracket, including ordinary fixtures. |
+| `championship`           | A season or conference champion, derived from the postseason.                                                |
+| `series`                 | A playoff series winner, derived from a round and a pair of teams.                                           |
+| `elimination_tournament` | A tournament or elimination draw.                                                                            |
 
 A `championship` has no scheduled start until its deciding round is scheduled.
 
@@ -58,7 +58,7 @@ A `championship` has no scheduled start until its deciding round is scheduled.
 
 Chainlink resolves a market only when its answer can come from data that meets this standard:
 
-- **At least two independent providers.** Automated resolution requires agreement between at least two independent providers that report the facts the question needs.
+- **Quorum set per measurement profile.** Automated resolution requires agreement from the market's configured quorum of providers that report the facts the question needs. Most sports markets require two independent providers; weather and calendar rules can use a quorum of one. See [Quorum](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling#quorum).
 - **Single authoritative sources by exception.** A single source is accepted only when it is the official origin of the data, such as government-published economic data or a league's official data feed, and only after a review and approval process. Aggregators never qualify.
 - **Machine-readable and tested.** A provider must offer a structured API that the workflow can call without human intervention. Chainlink tests it end to end against historical outcomes before relying on it.
 - **Durable access.** Access must be contracted or officially published. Chainlink does not resolve markets from scraped pages or undocumented endpoints.

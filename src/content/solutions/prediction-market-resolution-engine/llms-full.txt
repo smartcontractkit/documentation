@@ -3,7 +3,7 @@ Source: https://docs.chain.link/solutions/prediction-market-resolution-engine
 
 ## What is it
 
-A Chainlink-managed service that resolves prediction markets from the agreement of independent data providers, decided on a decentralized oracle network.
+A Chainlink-managed service that resolves prediction markets once independent data providers agree on the outcome, executed on a decentralized oracle network.
 
 [CRE](/cre)
 
@@ -11,11 +11,11 @@ prediction-markets
 
 The Chainlink Resolution Platform is a Chainlink-managed service that proposes outcomes for prediction markets and delivers the result wherever the customer settles, off-chain or on-chain.
 
-It is built on two planes. A control plane, operated by Chainlink Labs, handles coverage registration, market discovery, per-market scheduling, and SLA monitoring. A trust plane runs on the DON and is the only component allowed to decide an outcome: it fetches independent data sources in parallel, normalizes each answer to a canonical outcome, requires quorum, and fails closed when sources disagree
+It is built on two planes. A control plane, operated by Chainlink Labs, handles coverage registration, market discovery, and per-event scheduling. A trust plane runs on a [decentralized oracle network (DON)](/cre/key-terms#decentralized-oracle-network-don) and is the only component allowed to decide an outcome: it fetches independent data sources in parallel, normalizes each answer to a canonical outcome, requires quorum, and fails closed when sources disagree
 
-The Prediction Market Resolution Engine answers the question behind each of your markets, such as *"Will New York Yankees win?"*, and delivers the answer to your platform so you can settle positions. Chainlink operates the engine and maintains the catalog of markets it resolves. Your platform lists markets from that catalog and receives their outcomes; you do not run oracle infrastructure or manage data providers.
+The Prediction Market Resolution Engine answers the question behind each of your markets, such as *"Will the New York Yankees beat the Baltimore Orioles on August 20, 2026?"*, and delivers the answer to your platform. Chainlink operates the engine and maintains the catalog of markets it resolves. Your platform lists markets from that catalog and receives their outcomes; you do not run oracle infrastructure or manage data providers.
 
-## Problem: Why resolution matters
+## Why resolution matters
 
 A prediction market is only as credible as its answers. Until a market resolves, traders cannot redeem winning positions or reuse their capital. When resolution goes wrong, the cost lands on the platform:
 
@@ -25,14 +25,14 @@ A prediction market is only as credible as its answers. Until a market resolves,
 
 ## What the engine does
 
-When an event ends, a [Chainlink Runtime Environment (CRE)](/cre) workflow running on a decentralized oracle network (DON) fetches the result from independent data providers. The workflow accepts the result only when the providers agree and report it as final, applies the market's rule, records a hash of the outcome onchain, and delivers the outcome to your platform.
+When an event ends, a [Chainlink Runtime Environment (CRE)](/cre) workflow running in a decentralized oracle network (DON) fetches the result from independent data providers. The workflow accepts the result only when the providers agree and report it as final, applies the market's rule, records a hash of the outcome onchain, and delivers the outcome to your platform.
 
-![Five steps: list a market from the Market Registry with its resolution criteria; the event ends and providers report a final result; the DON fetches independent providers, requires agreement, and applies the market's rule; the outcome is delivered to the platform; the platform settles positions.](/images/solutions/prediction-market-resolution-engine/resolution-flow.svg)
+![Five steps: list a market from the Market Registry with its resolution criteria; the event ends and providers report a final result; the DON fetches independent providers, requires agreement, and applies the market's rule; the outcome is delivered to the platform; the platform settles positions.](/images/solutions/prediction-market-resolution-engine/resolution-flow.png)
 
 ## What your platform gets
 
-- **Answers from agreement, not from one source.** At least two independent providers must agree before an outcome is accepted automatically.
-- **No challenge period.** Once the data providers confirm a final result and agree, the engine resolves the market. It does not wait for a proposal to go unchallenged.
+- **Answers from agreement.** The engine accepts an outcome automatically only when enough providers agree to meet the market's [quorum](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling#quorum). Most sports markets require two independent providers.
+- **No challenge period in resolution.** Once the data providers confirm a final result and agree, the engine resolves the market. Settlement may still follow your platform's dispute window.
 - **No answer rather than a wrong answer.** If providers disagree, a result is not final, or the rule cannot decide, the engine delivers nothing and keeps checking for evidence. An unsupported answer never becomes `NO`.
 - **Resolution criteria for every market.** Each market comes with a short statement of what resolves it `YES`, which data providers decide it, and how a tie pays out when it pays 50/50.
 - **One Markets API for your whole listing.** New markets appear in the Market Registry as Chainlink adds coverage. Your platform discovers them through the same API, with no per-market setup.
@@ -47,7 +47,7 @@ When an event ends, a [Chainlink Runtime Environment (CRE)](/cre) workflow runni
 | Single data API                                     | One vendor's response                                       | As soon as the vendor reports                             | The wrong value settles the market                |
 | **Chainlink's Prediction Market Resolution Engine** | **Agreement of independent providers, evaluated on a DON**  | **After providers confirm a final result and agree**      | **No outcome is delivered until evidence agrees** |
 
-## Who does what
+## Chainlink and platform responsibilities
 
 | Chainlink                                                                  | Your platform                                                                 |
 | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
@@ -87,7 +87,7 @@ The Resolution Engine is split by a strict trust boundary:
 
 Because the trust plane fetches its own evidence, a faulty or compromised trigger can, at worst, point the workflow at the wrong event. It cannot supply a result. The trust plane keeps no state of its own: every run receives what it needs in the trigger, and the control plane holds the catalog and history.
 
-![Data providers supply schedules to the control plane, which holds the Market Registry, schedules checks, and monitors resolution. The prediction market lists markets through the Registry API. At window open the control plane triggers the CRE trust plane on a DON, which fetches provider evidence, requires agreement, evaluates each market's rule, and produces the outcome. The DON records a hash of the outcome in an onchain contract, and the outcome is delivered to the prediction market, which settles positions.](/images/solutions/prediction-market-resolution-engine/architecture.svg)
+![Data providers supply schedules to the control plane, which holds the Market Registry, schedules checks, and monitors resolution. The prediction market lists markets through the Registry API. At window open the control plane triggers the CRE trust plane on a DON, which fetches provider evidence, requires agreement, evaluates each market's rule, and produces the outcome. The DON records a hash of the outcome in an onchain contract, and the outcome is delivered to the prediction market, which settles positions.](/images/solutions/prediction-market-resolution-engine/architecture.png)
 
 ## Components
 
@@ -103,7 +103,7 @@ Because the trust plane fetches its own evidence, a faulty or compromised trigge
 
 ## Following a full market lifecycle
 
-This example uses the market "Will New York Yankees win?" on a Yankees–Orioles baseball game.
+This example uses the baseball market "Will the New York Yankees beat the Baltimore Orioles on August 20, 2026?"
 
 ### Listing
 
@@ -119,16 +119,16 @@ Event status: `live`, then `final`
 3. **The resolution window opens.** The event's schedule determines when checks begin. If the game is postponed, the checks move for every market on that event.
 4. **The DON gathers evidence.** Each node in the DON fetches every configured provider. The nodes must report identical data for each provider, so no single node can misreport what a provider said.
 5. **Providers must agree.** The workflow normalizes each provider's response into the same facts, such as runs per team. It accepts a fact only when enough independent providers report the same value and all of them mark it final. Until then, the market waits.
-6. **The rule decides.** With agreed final runs of 5–3 for the Yankees, the rule returns `YES` for the Yankees market and `NO` for the Orioles market. Every market on the event is evaluated against the same agreed facts. The event's status becomes `final`.
+6. **The rule decides.** With agreed final runs of 5–3 for the Yankees, the rule returns `YES` for the Yankees market and `NO` for the Orioles market. Every market on the event is evaluated against the same agreed facts.
 
-If providers disagree or the rule cannot decide, the event becomes `unsafe` and nothing is delivered until the evidence supports an answer. See [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling).
+The event's status is already `final` because a provider has reported the game as final. If providers disagree or the rule cannot decide, the market is unsafe and receives no outcome. The event stays `final` while the market remains unresolved and the engine keeps checking. See [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling).
 
 ### Delivery and settlement
 
 Event status: `final`, then `completed`
 
 7. **The outcome is recorded and delivered.** The DON records a hash of the outcome onchain and sends the outcome to your platform as agreed. If your platform holds outcomes for a dispute window, the outcome is sent first as indicative.
-8. **The outcome is finalized.** After any dispute window, Chainlink delivers the final outcome. It reuses the outcome and evidence already decided; it does not fetch providers again. The event's status then becomes `completed`.
+8. **The outcome is finalized.** After any dispute window, Chainlink delivers the final outcome. It normally reuses the stored outcome and evidence. If no stored evidence exists, settlement fetches providers again. The event's status then becomes `completed`.
 9. **Your platform settles** positions under its own rules.
 
 [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle) lists every event status.
@@ -166,21 +166,25 @@ Coverage is defined per question, not per competition. A covered competition mea
 
 Other categories can be added where qualifying data sources exist. To discuss coverage beyond what is currently available, contact the Chainlink team.
 
+AI can also serve as a data source. Chainlink has used it for a limited set of markets.
+
 ## Market types
 
 Every market is a yes/no question. The Market Registry API classifies each one with a `market_type`:
 
-| `market_type` | Market format                                                         | Example question                                      |
-| ------------- | --------------------------------------------------------------------- | ----------------------------------------------------- |
-| `moneyline`   | Winner of a match. In a three-way sport, the draw has its own market. | "Will New York Yankees win?"                          |
-| `draw`        | The match ends in a draw. Used in sports such as soccer.              | "Will the match end in a draw?"                       |
-| `outright`    | Season or tournament winner.                                          | "Will Player A win the tournament?"                   |
-| `spread`      | A participant covers the listed line.                                 | "Will Team A win by more than 1.5 runs?"              |
-| `total`       | The combined score is over or under the listed line.                  | "Will the match have more than 2.5 total goals?"      |
-| `prop`        | A player or team metric against a target.                             | "Will Player A record more than 274.5 passing yards?" |
-| `binary`      | Any other yes/no question.                                            | "Will it rain in New York City on August 20?"         |
+| `market_type` | Market format                                                         | Example question                                                           |
+| ------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `moneyline`   | Winner of a match. In a three-way sport, the draw has its own market. | "Will the New York Yankees beat the Baltimore Orioles on August 20, 2026?" |
+| `draw`        | The match ends in a draw. Used in sports such as soccer.              | "Will the match end in a draw?"                                            |
+| `outright`    | Season or tournament winner.                                          | "Will Player A win the tournament?"                                        |
+| `spread`      | A participant covers the listed line.                                 | "Will Team A win by more than 1.5 runs?"                                   |
+| `total`       | The combined score is over or under the listed line.                  | "Will the match have more than 2.5 total goals?"                           |
+| `prop`        | A player or team metric against a target.                             | "Will Player A record more than 274.5 passing yards?"                      |
+| `binary`      | Any other yes/no question.                                            | "Will it rain in New York City on August 20?"                              |
 
-> **NOTE:   Example questions are illustrations, not a list of markets in coverage.&#xA;**
+> **NOTE: Example questions**
+>
+> Example questions are illustrations, not a list of markets in coverage.
 
 A market resolves to `YES`, `NO`, or, where its rule allows a tie to pay out 50/50, `PUSH`.
 
@@ -188,20 +192,20 @@ A market resolves to `YES`, `NO`, or, where its rule allows a tie to pay out 50/
 
 Most markets belong to an ordinary fixture, such as one game. Some belong to an event that Chainlink derives from a season or a bracket:
 
-| `event_type`             | Event                                                              |
-| ------------------------ | ------------------------------------------------------------------ |
-| `match`                  | An ordinary fixture.                                               |
-| `championship`           | A season or conference champion, derived from the postseason.      |
-| `series`                 | A playoff series winner, derived from a round and a pair of teams. |
-| `elimination_tournament` | A tournament or elimination draw.                                  |
+| `event_type`             | Event                                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `match`                  | The default event type: any event that is not derived from a season or bracket, including ordinary fixtures. |
+| `championship`           | A season or conference champion, derived from the postseason.                                                |
+| `series`                 | A playoff series winner, derived from a round and a pair of teams.                                           |
+| `elimination_tournament` | A tournament or elimination draw.                                                                            |
 
 A `championship` has no scheduled start until its deciding round is scheduled.
 
-## The `data-source` standard
+## The data source standard
 
 Chainlink resolves a market only when its answer can come from data that meets this standard:
 
-- **At least two independent providers.** Automated resolution requires agreement between at least two independent providers that report the facts the question needs.
+- **Quorum set per measurement profile.** Automated resolution requires agreement from the market's configured quorum of providers that report the facts the question needs. Most sports markets require two independent providers; weather and calendar rules can use a quorum of one. See [Quorum](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling#quorum).
 - **Single authoritative sources by exception.** A single source is accepted only when it is the official origin of the data, such as government-published economic data or a league's official data feed, and only after a review and approval process. Aggregators never qualify.
 - **Machine-readable and tested.** A provider must offer a structured API that the workflow can call without human intervention. Chainlink tests it end to end against historical outcomes before relying on it.
 - **Durable access.** Access must be contracted or officially published. Chainlink does not resolve markets from scraped pages or undocumented endpoints.
@@ -244,18 +248,22 @@ Please note, this repo contains community examples only — these are not Chainl
 # Trust and failure handling
 Source: https://docs.chain.link/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling
 
-This page lists what your platform relies on, how each dependency is protected, and how the engine behaves when something goes wrong.
-
-The rule behind every behavior: **the engine would rather delay than resolve incorrectly.** It does not guess, and it does not lower the evidence requirement to reach an answer.
+The engine delays resolution rather than guessing an outcome or lowering its evidence requirements.
 
 ## What you rely on
 
-| Dependency              | What it does                                   | How it is protected                                                                                                                                       |
-| ----------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Data providers          | Report the real-world result                   | At least two independent providers must agree, and every provider must report a final result. Chainlink monitors providers for outages and discrepancies. |
-| The DON                 | Fetches evidence and applies the market's rule | Every node fetches independently, and nodes must agree on what each provider returned. A hash of each outcome is recorded onchain.                        |
-| Chainlink control plane | Schedules checks and maintains the catalog     | It sends identifiers and rules only. It cannot supply evidence or choose an outcome. The DON keeps no state between runs.                                 |
-| The market's rule       | Turns agreed facts into an outcome             | Checked against historical events before coverage goes live.                                                                                              |
+| Dependency              | What it does                                   | How it is protected                                                                                                                           |
+| ----------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Data providers          | Report the real-world result                   | Each market's measurement profile sets a quorum of agreeing providers; see below. Chainlink monitors providers for outages and discrepancies. |
+| The DON                 | Fetches evidence and applies the market's rule | Every node fetches independently, and nodes must agree on what each provider returned. A hash of each outcome is recorded onchain.            |
+| Chainlink control plane | Schedules checks and maintains the catalog     | It sends identifiers and rules only. It cannot supply evidence or choose an outcome. The DON keeps no state between runs.                     |
+| The market's rule       | Turns agreed facts into an outcome             | Checked against historical events before coverage goes live.                                                                                  |
+
+### Quorum
+
+A market's measurement profile sets its quorum: the number of independent providers required to reach a decision. Most sports markets require two independent providers. A single authoritative source can be approved with quorum `1`.
+
+Every provider whose value is counted must report it as final. If fewer than quorum usable providers remain, no outcome is delivered.
 
 ## Provider agreement and DON consensus
 
@@ -266,24 +274,24 @@ The engine applies two separate checks:
 
 DON consensus does not replace provider agreement. Many nodes reading one provider still produce one source. Provider agreement is what protects against a provider reporting a wrong result.
 
-Agreement is checked on each fact the market needs. A missing value stays missing; it is never treated as zero. A value reported by only one provider cannot resolve a market that needs two, however confident that provider is.
+Agreement is checked on each fact the market needs. A missing value stays missing; it is never treated as zero. A value reported by fewer providers than the market's quorum cannot resolve it, however confident those providers are.
 
 Agreement reduces source risk but does not remove it. Two providers can share an upstream feed or make the same error.
 
 ## When the engine withholds an outcome
 
-An outcome that cannot be supported is never delivered as `NO` or any other value. The engine delivers nothing, and the event's status in the Market Registry shows why:
+The engine withholds an outcome when the evidence cannot support it. It never substitutes `NO` or another value. Its response depends on the failure:
 
-| Situation                                                           | What the engine does                                                                               | Event status |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ------------ |
-| The event has not finished, or a provider's result is not yet final | Waits and checks again.                                                                            | `live`       |
-| A provider is unavailable or returns an error                       | Retries automatically.                                                                             | Unchanged    |
-| Providers report different final results                            | Fails closed: delivers nothing, keeps checking for evidence, and escalates to Chainlink operators. | `unsafe`     |
-| The rule cannot decide, for example a tie the rule does not allow   | Fails closed and escalates.                                                                        | `unsafe`     |
-| The event is cancelled                                              | Delivers no outcome.                                                                               | `cancelled`  |
-| The event is postponed                                              | Moves the checks for every market on the event.                                                    | `postponed`  |
+| Situation                                                           | What the engine does                                                                                               | Event status                        |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
+| The event has not finished, or a provider's result is not yet final | Waits and checks again.                                                                                            | `scheduled`, `live`, or `postponed` |
+| A provider is unavailable or returns an error                       | Retries automatically. The provider is excluded while it fails.                                                    | Unchanged                           |
+| Providers report different final results                            | Fails closed for that market: delivers nothing, keeps checking for evidence, and escalates to Chainlink operators. | `final`; the market is unsafe       |
+| The rule cannot decide, for example a tie the rule does not allow   | Fails closed for that market and escalates.                                                                        | `final`; the market is unsafe       |
+| The event is cancelled                                              | Delivers no outcome.                                                                                               | `cancelled`                         |
+| The event is postponed                                              | Moves the checks for every market on the event.                                                                    | `postponed`                         |
 
-`unsafe` is not final. A later round of evidence can resolve the event, which then moves to `final`. A market that stays unsafe never receives an outcome. The [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle) reference lists every status and transition.
+Use `completed` as the reliable signal that resolution is done. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle#event-statuses) for event statuses and internal review states.
 
 ## Timing
 
@@ -293,7 +301,7 @@ An outcome can take longer when providers are slow to mark a result final, when 
 
 ## Monitoring and disputes
 
-Chainlink monitors resolution and escalates failures, including every `unsafe` event, to its operators. Chainlink contacts your team about incidents that affect your markets. TODO: Add the incident contact channel and notification commitments.
+Chainlink monitors resolution and escalates failures, including every unresolved market and event, to its operators. Chainlink contacts your team about incidents that affect your markets. TODO: Add the incident contact channel and notification commitments.
 
 Your platform runs its own dispute process for traders.
 
@@ -333,8 +341,8 @@ Chainlink sends outcomes to the destination agreed for your platform: an API you
 
 If your platform holds outcomes for a dispute window before they are final, delivery follows that window in two steps:
 
-1. When the outcome is determined, Chainlink sends it as an indicative outcome. The event's status becomes `final`.
-2. After the dispute window, Chainlink sends the final outcome. It reuses the outcome and evidence already decided; providers are not queried again, so the final outcome cannot drift from the indicative one. The event's status becomes `completed`.
+1. When the outcome is determined, Chainlink sends it as an indicative outcome.
+2. After the dispute window, Chainlink sends the final outcome. It normally reuses the stored outcome and evidence without querying providers again, so the final outcome normally matches the indicative one. If no stored evidence exists, settlement fetches providers again. The event's status becomes `completed`.
 
 Discuss your platform's settlement flow with the Chainlink team.
 
@@ -342,15 +350,14 @@ TODO: Confirm which delivery destinations and formats are offered without custom
 
 ## Follow progress in the registry
 
-The Market Registry API does not return outcomes, but each event's `event_status` shows where resolution stands:
+The registry's `event_status` provides tentative tracking information. It does not replace your platform's agreed outcome delivery integration. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle#event-statuses) for status definitions and internal review states.
 
-| `event_status` | Delivery                                                    |
-| -------------- | ----------------------------------------------------------- |
-| `live`         | No outcome yet. The event is in progress.                   |
-| `unsafe`       | No outcome. The evidence cannot support an answer yet.      |
-| `final`        | Outcomes are determined. Delivery can still be in progress. |
-| `completed`    | Resolution and delivery are complete.                       |
-| `cancelled`    | The event will not occur. No outcome is delivered.          |
+| `event_status` | Delivery                                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `live`         | No outcome yet. The event is in progress.                                                                                                                     |
+| `final`        | The event has ended. This does not mean every market has an outcome: a market that cannot be decided stays unresolved, and delivery can still be in progress. |
+| `completed`    | Resolution and delivery are complete. This is the done signal.                                                                                                |
+| `cancelled`    | The event will not occur. No outcome is delivered.                                                                                                            |
 
 See [Track event status](/solutions/prediction-market-resolution-engine/tutorial/track-event-status) to read these statuses from the API.
 
@@ -409,7 +416,7 @@ curl --silent --show-error --output /dev/null --write-out '%{http_code}\n' \
   "${MARKETS_API_URL}/taxonomies"
 ```
 
-The command prints `200`. A `401` or `403` means the key is missing, invalid, or not enabled for Prediction Markets; contact the Chainlink team.
+The command prints `200`. A `401` means the key is missing, invalid, or not enabled for Prediction Markets; contact the Chainlink team.
 
 ## Next step
 
@@ -426,7 +433,7 @@ Source: https://docs.chain.link/solutions/prediction-market-resolution-engine/tu
 
 **In this step**, you find a competition in Chainlink's coverage, fetch its upcoming events, and read each market's slug, question, and resolution criteria.
 
-The Market Registry is Chainlink's catalog of **events** (real-world occurrences, such as a baseball game) and the **markets** attached to them (yes/no questions, such as "Will New York Yankees win?"). Events are grouped by **category**, **sub-category**, and **grouping**, the league or competition, such as `mlb`.
+The Market Registry is Chainlink's catalog of **events** (real-world occurrences, such as a baseball game) and the **markets** attached to them (yes/no questions, such as "Will the New York Yankees beat the Baltimore Orioles on August 20, 2026?"). Events are grouped by **category**, **sub-category**, and **grouping**, the league or competition, such as `mlb`.
 
 **Concepts:** [Supported markets](/solutions/prediction-market-resolution-engine/overview/supported-markets) · [Market Registry API](/solutions/prediction-market-resolution-engine/reference/market-registry-api)
 
@@ -509,7 +516,7 @@ You see one entry per market, for example:
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
 | `400` with `from and to are required`            | Add both dates in `YYYY-MM-DD` format.                                                          |
 | `400` with `date range exceeds discovery window` | The dates are more than 16 days apart. Shorten the range.                                       |
-| `401` or `403`                                   | The key is missing, invalid, or not enabled for Prediction Markets. Contact the Chainlink team. |
+| `401`                                            | The key is missing, invalid, or not enabled for Prediction Markets. Contact the Chainlink team. |
 | `events` is empty                                | No scheduled events in the range. Move the dates forward, or remove `status=scheduled`.         |
 
 ## Next step
@@ -525,11 +532,11 @@ Please note, this repo contains community examples only — these are not Chainl
 # Track event status
 Source: https://docs.chain.link/solutions/prediction-market-resolution-engine/tutorial/track-event-status
 
-**In this step**, you re-read the events from [step 1](/solutions/prediction-market-resolution-engine/tutorial/list-markets) and interpret each event's status. Status is how the Market Registry API reports progress: whether an event is open, delayed, resolving, or done. Every market on an event shares its event's status.
+Read each event's `event_status` to track whether it is open, delayed, resolving, or done. Use the events from [List markets](/solutions/prediction-market-resolution-engine/tutorial/list-markets).
+
+Event status is tentative tracking information. Confirm any dependency on it with the Chainlink team, and receive outcomes through your agreed delivery integration. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle) for the integration limits.
 
 The API has no webhook or change feed. To follow changes, request the same date window again.
-
-**Concepts:** [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling) · [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle)
 
 ## Read event statuses
 
@@ -552,17 +559,14 @@ Run the command again later to see statuses change as games are played and resol
 
 ## Interpret each status
 
-| `event_status` | Meaning                                                                                                                                    | Suggested handling for this tutorial                                        |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| `scheduled`    | The event has not started.                                                                                                                 | Treat its markets as open.                                                  |
-| `live`         | The event is in progress. No outcome is ready.                                                                                             | Keep the event open.                                                        |
-| `postponed`    | The event is delayed and can be rescheduled.                                                                                               | Keep the event pending, and read the new `scheduled_start` when it appears. |
-| `final`        | Every market reached a terminal state. Outcomes are determined, except for markets that were cancelled. Delivery can still be in progress. | Stop treating the event as open.                                            |
-| `completed`    | Resolution, and delivery where configured, are complete.                                                                                   | Treat the event as closed.                                                  |
-| `cancelled`    | The event will not occur.                                                                                                                  | Treat the event as cancelled.                                               |
-| `unsafe`       | At least one market has missing or conflicting evidence. The engine keeps checking.                                                        | Keep the event pending. Never show it as `NO`.                              |
-
-`unsafe` is not final: a later round of evidence can move the event to `final`. A market that stays unsafe never receives an outcome.
+| `event_status` | Meaning                                                                                                                                                                                                                                                         | Suggested handling for this tutorial                                                      |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `scheduled`    | The event has not started.                                                                                                                                                                                                                                      | Treat its markets as open.                                                                |
+| `live`         | The event is in progress. No outcome is ready.                                                                                                                                                                                                                  | Keep the event open.                                                                      |
+| `postponed`    | The event is delayed and can be rescheduled.                                                                                                                                                                                                                    | Keep the event pending, and read the new `scheduled_start` when it appears.               |
+| `final`        | The event is over. Resolution is in progress or complete. Outcomes are determined where the evidence supports them, and a market that cannot be decided stays unresolved. `final` does not mean every market has an outcome. Delivery can still be in progress. | Stop treating the event as open. Wait for `completed` before treating resolution as done. |
+| `completed`    | Resolution, and delivery where configured, are complete.                                                                                                                                                                                                        | Treat the event as closed.                                                                |
+| `cancelled`    | The event will not occur.                                                                                                                                                                                                                                       | Treat the event as cancelled.                                                             |
 
 ## Rescheduled events
 
@@ -591,7 +595,7 @@ Please note, this repo contains community examples only — these are not Chainl
 # Market Registry API
 Source: https://docs.chain.link/solutions/prediction-market-resolution-engine/reference/market-registry-api
 
-The Market Registry API returns the events and markets Chainlink resolves: each market's identity, classification, and resolution criteria, and each event's status. The API is read-only and catalog-only. It does not return outcomes or a per-market status.
+The Market Registry API returns the events and markets Chainlink resolves: each market's identity, classification, and resolution criteria, and each event's [status](/solutions/prediction-market-resolution-engine/reference/lifecycle). The API is read-only and catalog-only. It does not return outcomes.
 
 ## Endpoints
 
@@ -733,7 +737,7 @@ curl --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
 
 | `event_type`             | Event                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------ |
-| `match`                  | An ordinary fixture.                                                                             |
+| `match`                  | The default event type, including ordinary fixtures.                                             |
 | `championship`           | A season or conference champion. Has no `scheduled_start` until its deciding round is scheduled. |
 | `series`                 | A playoff series winner. `scheduled_start` is the latest known start among its games.            |
 | `elimination_tournament` | A tournament or elimination draw.                                                                |
@@ -783,11 +787,10 @@ curl --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
 | Status | Cause                                                                                                                                                                                                                                                   |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `400`  | Invalid query: missing `from` or `to`, an invalid date, a range over 16 days, an invalid filter value, or an invalid `limit` or `offset`. The body is `{"error": "<message>"}`, such as `{"error": "from and to are required (UTC dates YYYY-MM-DD)"}`. |
-| `401`  | The `Authorization` header is missing, or the organization does not have Prediction Markets access. For the second case, the body is `{"error": "prediction-markets access is not enabled for this organization"}`.                                     |
-| `403`  | The API key is not valid.                                                                                                                                                                                                                               |
+| `401`  | The API key is missing or invalid, or the organization does not have Prediction Markets access. For the second case, the body is `{"error": "prediction-markets access is not enabled for this organization"}`.                                         |
 | `404`  | The path does not exist.                                                                                                                                                                                                                                |
 | `500`  | Unexpected server error.                                                                                                                                                                                                                                |
-| `503`  | `/taxonomies` is temporarily unavailable.                                                                                                                                                                                                               |
+| `503`  | `/taxonomies` is called while the service has no coverage store configured. The body is `{"error": "coverage not configured"}`.                                                                                                                         |
 
 ## Versioning
 
@@ -802,39 +805,42 @@ Please note, this repo contains community examples only — these are not Chainl
 # Market lifecycle
 Source: https://docs.chain.link/solutions/prediction-market-resolution-engine/reference/lifecycle
 
-`event_status` is the only lifecycle signal in the Market Registry API. Every market on an event shares its event's status. The API does not return a per-market status or outcome; outcomes reach your platform as agreed with Chainlink. See [Outcome delivery](/solutions/prediction-market-resolution-engine/overview/outcome-delivery).
+The Market Registry API exposes one status per event through `event_status` and no per-market status. See [Outcome delivery](/solutions/prediction-market-resolution-engine/overview/outcome-delivery) for how outcomes reach your platform.
 
 ## Event statuses
 
-| `event_status` | Meaning                                                                                                                                    |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scheduled`    | The event has not started.                                                                                                                 |
-| `live`         | The event is in progress. No outcome is ready.                                                                                             |
-| `postponed`    | The event is delayed and can be rescheduled. A new `scheduled_start` appears when it is.                                                   |
-| `final`        | Every market reached a terminal state. Outcomes are determined, except for markets that were cancelled. Delivery can still be in progress. |
-| `completed`    | Resolution, and delivery where configured, are complete.                                                                                   |
-| `cancelled`    | The event will not occur.                                                                                                                  |
-| `unsafe`       | At least one market has missing or conflicting evidence. Nothing is delivered for it. The engine keeps checking.                           |
+The user API does not currently expose the internal event-level `unsafe` state included below.
 
-`unsafe` is not terminal. A later round of evidence can move the event back to `final`. A market that stays unsafe never receives an outcome, and an absent outcome is not `NO`.
+| `event_status` | Meaning                                                                                                                                                                                                                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scheduled`    | The event has not started.                                                                                                                                                                                                                                                                          |
+| `live`         | The event is in progress. No outcome is ready.                                                                                                                                                                                                                                                      |
+| `postponed`    | The event is delayed and can be rescheduled. A new `scheduled_start` appears when it is.                                                                                                                                                                                                            |
+| `final`        | The event is over. Resolution is in progress or complete. Outcomes are determined where the evidence supports them. A market that cannot be decided stays unresolved and the engine keeps checking. `final` does not guarantee that every market has an outcome. Delivery can still be in progress. |
+| `completed`    | Resolution, and delivery where configured, are complete. This is the reliable done signal.                                                                                                                                                                                                          |
+| `cancelled`    | The event will not occur.                                                                                                                                                                                                                                                                           |
+| `unsafe`       | The event itself is parked for review because the engine cannot decide it. This is an event-level state for derived and AI Oracle events. For an ordinary fixture, an unsafe market does not change the event from `final`. `unsafe` is not terminal.                                               |
+
+A market that stays unsafe never receives an outcome. An absent outcome is not `NO`.
 
 To list events in particular statuses, pass `status` to [`/events`](/solutions/prediction-market-resolution-engine/reference/market-registry-api#list-events). Repeat it to match several.
 
 ## Transitions
 
-![An event starts as scheduled and moves to live when it starts, then to final when it ends, then to completed when resolution and delivery finish. A final event moves to unsafe on an evidence conflict or gap, and back to final when the evidence resolves. A scheduled or live event can be postponed, and a postponed event returns to scheduled when rescheduled. A scheduled or live event can be cancelled. Completed and cancelled are terminal.](/images/solutions/prediction-market-resolution-engine/event-status.svg)
+![An event starts as scheduled and moves to live when it starts, then to final when it ends, then to completed when resolution and delivery finish. A scheduled or live event can be postponed, and a postponed event returns to scheduled when rescheduled. A scheduled, live, or postponed event can be cancelled. Derived and AI Oracle events can enter the internal event-level unsafe state. They return to final when the evidence supports an answer. An ordinary fixture with an unsafe market stays final. The user API does not expose unsafe. These transitions are tentative. Completed and cancelled are terminal.](/images/solutions/prediction-market-resolution-engine/event-status.png)
 
-| From                  | To          | When                                        |
-| --------------------- | ----------- | ------------------------------------------- |
-| `scheduled`           | `live`      | The event starts.                           |
-| `live`                | `final`     | The event ends and outcomes are determined. |
-| `final`               | `completed` | Resolution and delivery are complete.       |
-| `final`               | `unsafe`    | Evidence is missing or conflicting.         |
-| `unsafe`              | `final`     | The evidence resolves.                      |
-| `scheduled`           | `postponed` | The event is delayed.                       |
-| `live`                | `postponed` | The event is suspended.                     |
-| `postponed`           | `scheduled` | The event is rescheduled.                   |
-| `scheduled` or `live` | `cancelled` | The event is cancelled.                     |
+| From                                | To          | When                                       |
+| ----------------------------------- | ----------- | ------------------------------------------ |
+| `scheduled`                         | `live`      | The event starts.                          |
+| `live`                              | `final`     | A provider reports the event as final.     |
+| `final`                             | `completed` | Resolution and delivery are complete.      |
+| `scheduled`                         | `postponed` | The event is delayed.                      |
+| `live`                              | `postponed` | The event is suspended.                    |
+| `postponed`                         | `scheduled` | The event is rescheduled.                  |
+| `scheduled`, `live`, or `postponed` | `cancelled` | The event is cancelled.                    |
+| `unsafe` (internal)                 | `final`     | Evidence supports an answer for the event. |
+
+Only the tournament resolver and the AI Oracle rollup can set event-level `unsafe`. Applying evidence can mark a market `unsafe` without changing its event status.
 
 `completed` and `cancelled` are terminal for resolution. If a provider relists a cancelled event under the same fixture, the event returns to the catalog with the same slug. A relisting under a new fixture is a new event with a new slug.
 
@@ -844,12 +850,12 @@ A rescheduled event keeps its slug. The date in an event slug is part of the ide
 
 ## Resolution timing
 
-Resolution follows the real end of the event, not its scheduled start: the engine resolves once the data providers confirm a final result and agree. Overtime, extra innings, and delays move that point. Resolution takes longer when providers are slow to mark a result final, or while the event is `unsafe`.
+Resolution follows the real end of the event, not its scheduled start: the engine resolves once the data providers confirm a final result and agree. Overtime, extra innings, and delays move that point. Resolution takes longer when providers are slow to mark a result final, or while a market is unsafe.
 
 ## Next steps
 
 - [Track event status](/solutions/prediction-market-resolution-engine/tutorial/track-event-status): Read these statuses from the API.
-- [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling): Why an event becomes `unsafe`.
+- [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling): Why a market or an event becomes `unsafe`.
 
 ## Disclaimer
 
@@ -860,28 +866,28 @@ Please note, this repo contains community examples only — these are not Chainl
 # Glossary
 Source: https://docs.chain.link/solutions/prediction-market-resolution-engine/reference/glossary
 
-| Term                | Meaning                                                                                                                                                                      |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Control plane       | Chainlink-operated services that maintain the catalog, schedule checks, and monitor resolution. They never decide an outcome.                                                |
-| Coverage            | The events and markets Chainlink resolves, usually configured per season, tournament, or competition.                                                                        |
-| Delivery            | Sending a market's outcome to a prediction market's platform or contract, as agreed with Chainlink.                                                                          |
-| DON                 | Decentralized oracle network: the Chainlink nodes that run the resolution workflow. See [CRE](/cre).                                                                         |
-| Event               | A real-world occurrence with a verifiable result, such as a game or a rate decision. One event can carry many markets.                                                       |
-| Event status        | The `event_status` field: where an event and its markets are in their lifecycle. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle). |
-| Evidence provider   | An independent data source that supplies the facts used to decide an outcome.                                                                                                |
-| Fail closed         | Delivering no outcome when evidence is missing, late, or contradictory. The event reports `unsafe`. A fail-closed market is never resolved as `NO`.                          |
-| Grouping            | The league or competition an event belongs to, such as `mlb`.                                                                                                                |
-| Market              | One yes/no question about an event, such as "Will New York Yankees win?". The unit Chainlink resolves.                                                                       |
-| Market Registry     | Chainlink's catalog of the events and markets it can resolve, read through the Market Registry API.                                                                          |
-| Outcome             | The result of a market: `YES`, `NO`, or `PUSH` for a tie that pays out 50/50.                                                                                                |
-| Prediction market   | The platform or protocol where traders take positions. It lists markets and settles positions.                                                                               |
-| Provider agreement  | The requirement that independent providers report the same final value for each fact a market needs.                                                                         |
-| Quorum              | The minimum number of agreeing providers a market requires.                                                                                                                  |
-| Resolution          | Determining a market's outcome from provider evidence.                                                                                                                       |
-| Resolution criteria | The `resolution_criteria` field: a one-sentence display summary of how a market resolves. Not a complete rulebook.                                                           |
-| Settlement          | A prediction market applying an outcome to its traders' positions.                                                                                                           |
-| Slug                | The stable identifier of an event or market, such as `cl-sports-baseball-mlb-260820-nyan-winner-nyan`.                                                                       |
-| Trust plane         | The CRE workflow on the DON. The only component that can decide an outcome.                                                                                                  |
+| Term                | Meaning                                                                                                                                                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Control plane       | Chainlink-operated services that maintain the catalog, schedule checks, and monitor resolution. They never decide an outcome.                                                                                                                                 |
+| Coverage            | The events and markets Chainlink resolves, usually configured per season, tournament, or competition.                                                                                                                                                         |
+| Delivery            | Sending a market's outcome to a prediction market's platform or contract, as agreed with Chainlink.                                                                                                                                                           |
+| DON                 | Decentralized oracle network: the Chainlink nodes that run the resolution workflow. See [Key terms](/cre/key-terms#decentralized-oracle-network-don).                                                                                                         |
+| Event               | A real-world occurrence with a verifiable result, such as a game or a rate decision. One event can carry many markets.                                                                                                                                        |
+| Event status        | The `event_status` field tracks an event's lifecycle. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle).                                                                                                             |
+| Evidence provider   | An independent data source that supplies the facts used to decide an outcome.                                                                                                                                                                                 |
+| Fail closed         | Delivering no outcome when evidence is missing, late, or contradictory. A fail-closed market is never resolved as `NO`. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle#event-statuses) for internal review states. |
+| Grouping            | The league or competition an event belongs to, such as `mlb`.                                                                                                                                                                                                 |
+| Market              | One yes/no question about an event, such as "Will the New York Yankees beat the Baltimore Orioles on August 20, 2026?" The unit Chainlink resolves.                                                                                                           |
+| Market Registry     | Chainlink's catalog of the events and markets it can resolve, read through the Market Registry API.                                                                                                                                                           |
+| Outcome             | The result of a market: `YES`, `NO`, or `PUSH` for a tie that pays out 50/50.                                                                                                                                                                                 |
+| Prediction market   | The platform or protocol where traders take positions. It lists markets and settles positions.                                                                                                                                                                |
+| Provider agreement  | The requirement that independent providers report the same final value for each fact a market needs.                                                                                                                                                          |
+| Quorum              | The minimum number of agreeing providers a market requires.                                                                                                                                                                                                   |
+| Resolution          | Determining a market's outcome from provider evidence.                                                                                                                                                                                                        |
+| Resolution criteria | The `resolution_criteria` field: a one-sentence display summary of how a market resolves. Not a complete rulebook.                                                                                                                                            |
+| Settlement          | A prediction market applying an outcome to its traders' positions.                                                                                                                                                                                            |
+| Slug                | The stable identifier of an event or market, such as `cl-sports-baseball-mlb-260820-nyan-winner-nyan`.                                                                                                                                                        |
+| Trust plane         | The CRE workflow on the DON. The only component that can decide an outcome.                                                                                                                                                                                   |
 
 ## Disclaimer
 

@@ -25,8 +25,8 @@ Chainlink sends outcomes to the destination agreed for your platform: an API you
 
 If your platform holds outcomes for a dispute window before they are final, delivery follows that window in two steps:
 
-1. When the outcome is determined, Chainlink sends it as an indicative outcome. The event's status becomes `final`.
-1. After the dispute window, Chainlink sends the final outcome. It reuses the outcome and evidence already decided; providers are not queried again, so the final outcome cannot drift from the indicative one. The event's status becomes `completed`.
+1. When the outcome is determined, Chainlink sends it as an indicative outcome.
+1. After the dispute window, Chainlink sends the final outcome. It normally reuses the stored outcome and evidence without querying providers again, so the final outcome normally matches the indicative one. If no stored evidence exists, settlement fetches providers again. The event's status becomes `completed`.
 
 Discuss your platform's settlement flow with the Chainlink team.
 
@@ -34,15 +34,14 @@ TODO: Confirm which delivery destinations and formats are offered without custom
 
 ## Follow progress in the registry
 
-The Market Registry API does not return outcomes, but each event's `event_status` shows where resolution stands:
+The registry's `event_status` provides tentative tracking information. It does not replace your platform's agreed outcome delivery integration. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle#event-statuses) for status definitions and internal review states.
 
-| `event_status` | Delivery                                                    |
-| -------------- | ----------------------------------------------------------- |
-| `live`         | No outcome yet. The event is in progress.                   |
-| `unsafe`       | No outcome. The evidence cannot support an answer yet.      |
-| `final`        | Outcomes are determined. Delivery can still be in progress. |
-| `completed`    | Resolution and delivery are complete.                       |
-| `cancelled`    | The event will not occur. No outcome is delivered.          |
+| `event_status` | Delivery                                                                                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `live`         | No outcome yet. The event is in progress.                                                                                                                     |
+| `final`        | The event has ended. This does not mean every market has an outcome: a market that cannot be decided stays unresolved, and delivery can still be in progress. |
+| `completed`    | Resolution and delivery are complete. This is the done signal.                                                                                                |
+| `cancelled`    | The event will not occur. No outcome is delivered.                                                                                                            |
 
 See [Track event status](/solutions/prediction-market-resolution-engine/tutorial/track-event-status) to read these statuses from the API.
 

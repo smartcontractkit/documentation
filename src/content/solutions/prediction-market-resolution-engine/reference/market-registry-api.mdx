@@ -3,7 +3,7 @@ title: "Market Registry API"
 description: "Endpoints, query parameters, response fields, identifiers, and errors for the read-only Market Registry API."
 ---
 
-The Market Registry API returns the events and markets Chainlink resolves: each market's identity, classification, and resolution criteria, and each event's status. The API is read-only and catalog-only. It does not return outcomes or a per-market status.
+The Market Registry API returns the events and markets Chainlink resolves: each market's identity, classification, and resolution criteria, and each event's [status](/solutions/prediction-market-resolution-engine/reference/lifecycle). The API is read-only and catalog-only. It does not return outcomes.
 
 ## Endpoints
 
@@ -145,7 +145,7 @@ curl --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
 
 | `event_type`             | Event                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------ |
-| `match`                  | An ordinary fixture.                                                                             |
+| `match`                  | The default event type, including ordinary fixtures.                                             |
 | `championship`           | A season or conference champion. Has no `scheduled_start` until its deciding round is scheduled. |
 | `series`                 | A playoff series winner. `scheduled_start` is the latest known start among its games.            |
 | `elimination_tournament` | A tournament or elimination draw.                                                                |
@@ -195,11 +195,10 @@ curl --header "Authorization: ApiKey ${MARKETS_API_KEY}" \
 | Status | Cause                                                                                                                                                                                                                                                   |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `400`  | Invalid query: missing `from` or `to`, an invalid date, a range over 16 days, an invalid filter value, or an invalid `limit` or `offset`. The body is `{"error": "<message>"}`, such as `{"error": "from and to are required (UTC dates YYYY-MM-DD)"}`. |
-| `401`  | The `Authorization` header is missing, or the organization does not have Prediction Markets access. For the second case, the body is `{"error": "prediction-markets access is not enabled for this organization"}`.                                     |
-| `403`  | The API key is not valid.                                                                                                                                                                                                                               |
+| `401`  | The API key is missing or invalid, or the organization does not have Prediction Markets access. For the second case, the body is `{"error": "prediction-markets access is not enabled for this organization"}`.                                         |
 | `404`  | The path does not exist.                                                                                                                                                                                                                                |
 | `500`  | Unexpected server error.                                                                                                                                                                                                                                |
-| `503`  | `/taxonomies` is temporarily unavailable.                                                                                                                                                                                                               |
+| `503`  | `/taxonomies` is called while the service has no coverage store configured. The body is `{"error": "coverage not configured"}`.                                                                                                                         |
 
 ## Versioning
 

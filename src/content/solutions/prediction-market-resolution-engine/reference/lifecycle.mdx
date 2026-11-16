@@ -5,42 +5,45 @@ description: "Event statuses returned by the Market Registry API, the transition
 
 import { ClickToZoom } from "@components"
 
-`event_status` is the only lifecycle signal in the Market Registry API. Every market on an event shares its event's status. The API does not return a per-market status or outcome; outcomes reach your platform as agreed with Chainlink. See [Outcome delivery](/solutions/prediction-market-resolution-engine/overview/outcome-delivery).
+The Market Registry API exposes one status per event through `event_status` and no per-market status. See [Outcome delivery](/solutions/prediction-market-resolution-engine/overview/outcome-delivery) for how outcomes reach your platform.
 
 ## Event statuses
 
-| <div style={{ width: "140px" }}>`event_status`</div> | Meaning                                                                                                                                    |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scheduled`                                          | The event has not started.                                                                                                                 |
-| `live`                                               | The event is in progress. No outcome is ready.                                                                                             |
-| `postponed`                                          | The event is delayed and can be rescheduled. A new `scheduled_start` appears when it is.                                                   |
-| `final`                                              | Every market reached a terminal state. Outcomes are determined, except for markets that were cancelled. Delivery can still be in progress. |
-| `completed`                                          | Resolution, and delivery where configured, are complete.                                                                                   |
-| `cancelled`                                          | The event will not occur.                                                                                                                  |
-| `unsafe`                                             | At least one market has missing or conflicting evidence. Nothing is delivered for it. The engine keeps checking.                           |
+The user API does not currently expose the internal event-level `unsafe` state included below.
 
-`unsafe` is not terminal. A later round of evidence can move the event back to `final`. A market that stays unsafe never receives an outcome, and an absent outcome is not `NO`.
+| <div style={{ width: "140px" }}>`event_status`</div> | Meaning                                                                                                                                                                                                                                                                                             |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scheduled`                                          | The event has not started.                                                                                                                                                                                                                                                                          |
+| `live`                                               | The event is in progress. No outcome is ready.                                                                                                                                                                                                                                                      |
+| `postponed`                                          | The event is delayed and can be rescheduled. A new `scheduled_start` appears when it is.                                                                                                                                                                                                            |
+| `final`                                              | The event is over. Resolution is in progress or complete. Outcomes are determined where the evidence supports them. A market that cannot be decided stays unresolved and the engine keeps checking. `final` does not guarantee that every market has an outcome. Delivery can still be in progress. |
+| `completed`                                          | Resolution, and delivery where configured, are complete. This is the reliable done signal.                                                                                                                                                                                                          |
+| `cancelled`                                          | The event will not occur.                                                                                                                                                                                                                                                                           |
+| `unsafe`                                             | The event itself is parked for review because the engine cannot decide it. This is an event-level state for derived and AI Oracle events. For an ordinary fixture, an unsafe market does not change the event from `final`. `unsafe` is not terminal.                                               |
+
+A market that stays unsafe never receives an outcome. An absent outcome is not `NO`.
 
 To list events in particular statuses, pass `status` to [`/events`](/solutions/prediction-market-resolution-engine/reference/market-registry-api#list-events). Repeat it to match several.
 
 ## Transitions
 
 <ClickToZoom
-  src="/images/solutions/prediction-market-resolution-engine/event-status.svg"
-  alt="An event starts as scheduled and moves to live when it starts, then to final when it ends, then to completed when resolution and delivery finish. A final event moves to unsafe on an evidence conflict or gap, and back to final when the evidence resolves. A scheduled or live event can be postponed, and a postponed event returns to scheduled when rescheduled. A scheduled or live event can be cancelled. Completed and cancelled are terminal."
+  src="/images/solutions/prediction-market-resolution-engine/event-status.png"
+  alt="An event starts as scheduled and moves to live when it starts, then to final when it ends, then to completed when resolution and delivery finish. A scheduled or live event can be postponed, and a postponed event returns to scheduled when rescheduled. A scheduled, live, or postponed event can be cancelled. Derived and AI Oracle events can enter the internal event-level unsafe state. They return to final when the evidence supports an answer. An ordinary fixture with an unsafe market stays final. The user API does not expose unsafe. These transitions are tentative. Completed and cancelled are terminal."
 />
 
-| From                  | To          | When                                        |
-| --------------------- | ----------- | ------------------------------------------- |
-| `scheduled`           | `live`      | The event starts.                           |
-| `live`                | `final`     | The event ends and outcomes are determined. |
-| `final`               | `completed` | Resolution and delivery are complete.       |
-| `final`               | `unsafe`    | Evidence is missing or conflicting.         |
-| `unsafe`              | `final`     | The evidence resolves.                      |
-| `scheduled`           | `postponed` | The event is delayed.                       |
-| `live`                | `postponed` | The event is suspended.                     |
-| `postponed`           | `scheduled` | The event is rescheduled.                   |
-| `scheduled` or `live` | `cancelled` | The event is cancelled.                     |
+| From                                | To          | When                                       |
+| ----------------------------------- | ----------- | ------------------------------------------ |
+| `scheduled`                         | `live`      | The event starts.                          |
+| `live`                              | `final`     | A provider reports the event as final.     |
+| `final`                             | `completed` | Resolution and delivery are complete.      |
+| `scheduled`                         | `postponed` | The event is delayed.                      |
+| `live`                              | `postponed` | The event is suspended.                    |
+| `postponed`                         | `scheduled` | The event is rescheduled.                  |
+| `scheduled`, `live`, or `postponed` | `cancelled` | The event is cancelled.                    |
+| `unsafe` (internal)                 | `final`     | Evidence supports an answer for the event. |
+
+Only the tournament resolver and the AI Oracle rollup can set event-level `unsafe`. Applying evidence can mark a market `unsafe` without changing its event status.
 
 `completed` and `cancelled` are terminal for resolution. If a provider relists a cancelled event under the same fixture, the event returns to the catalog with the same slug. A relisting under a new fixture is a new event with a new slug.
 
@@ -50,9 +53,9 @@ A rescheduled event keeps its slug. The date in an event slug is part of the ide
 
 ## Resolution timing
 
-Resolution follows the real end of the event, not its scheduled start: the engine resolves once the data providers confirm a final result and agree. Overtime, extra innings, and delays move that point. Resolution takes longer when providers are slow to mark a result final, or while the event is `unsafe`.
+Resolution follows the real end of the event, not its scheduled start: the engine resolves once the data providers confirm a final result and agree. Overtime, extra innings, and delays move that point. Resolution takes longer when providers are slow to mark a result final, or while a market is unsafe.
 
 ## Next steps
 
 - [Track event status](/solutions/prediction-market-resolution-engine/tutorial/track-event-status): Read these statuses from the API.
-- [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling): Why an event becomes `unsafe`.
+- [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling): Why a market or an event becomes `unsafe`.

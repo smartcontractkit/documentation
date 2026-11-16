@@ -3,11 +3,11 @@ title: "Track event status"
 description: "Poll the Market Registry API for event status changes and new start times, and interpret each status."
 ---
 
-**In this step**, you re-read the events from [step 1](/solutions/prediction-market-resolution-engine/tutorial/list-markets) and interpret each event's status. Status is how the Market Registry API reports progress: whether an event is open, delayed, resolving, or done. Every market on an event shares its event's status.
+Read each event's `event_status` to track whether it is open, delayed, resolving, or done. Use the events from [List markets](/solutions/prediction-market-resolution-engine/tutorial/list-markets).
+
+Event status is tentative tracking information. Confirm any dependency on it with the Chainlink team, and receive outcomes through your agreed delivery integration. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle) for the integration limits.
 
 The API has no webhook or change feed. To follow changes, request the same date window again.
-
-**Concepts:** [Trust and failure handling](/solutions/prediction-market-resolution-engine/overview/trust-and-failure-handling) · [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle)
 
 ## Read event statuses
 
@@ -30,17 +30,14 @@ Run the command again later to see statuses change as games are played and resol
 
 ## Interpret each status
 
-| <div style={{ width: "140px" }}>`event_status`</div> | Meaning                                                                                                                                    | Suggested handling for this tutorial                                        |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
-| `scheduled`                                          | The event has not started.                                                                                                                 | Treat its markets as open.                                                  |
-| `live`                                               | The event is in progress. No outcome is ready.                                                                                             | Keep the event open.                                                        |
-| `postponed`                                          | The event is delayed and can be rescheduled.                                                                                               | Keep the event pending, and read the new `scheduled_start` when it appears. |
-| `final`                                              | Every market reached a terminal state. Outcomes are determined, except for markets that were cancelled. Delivery can still be in progress. | Stop treating the event as open.                                            |
-| `completed`                                          | Resolution, and delivery where configured, are complete.                                                                                   | Treat the event as closed.                                                  |
-| `cancelled`                                          | The event will not occur.                                                                                                                  | Treat the event as cancelled.                                               |
-| `unsafe`                                             | At least one market has missing or conflicting evidence. The engine keeps checking.                                                        | Keep the event pending. Never show it as `NO`.                              |
-
-`unsafe` is not final: a later round of evidence can move the event to `final`. A market that stays unsafe never receives an outcome.
+| <div style={{ width: "140px" }}>`event_status`</div> | Meaning                                                                                                                                                                                                                                                         | Suggested handling for this tutorial                                                      |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `scheduled`                                          | The event has not started.                                                                                                                                                                                                                                      | Treat its markets as open.                                                                |
+| `live`                                               | The event is in progress. No outcome is ready.                                                                                                                                                                                                                  | Keep the event open.                                                                      |
+| `postponed`                                          | The event is delayed and can be rescheduled.                                                                                                                                                                                                                    | Keep the event pending, and read the new `scheduled_start` when it appears.               |
+| `final`                                              | The event is over. Resolution is in progress or complete. Outcomes are determined where the evidence supports them, and a market that cannot be decided stays unresolved. `final` does not mean every market has an outcome. Delivery can still be in progress. | Stop treating the event as open. Wait for `completed` before treating resolution as done. |
+| `completed`                                          | Resolution, and delivery where configured, are complete.                                                                                                                                                                                                        | Treat the event as closed.                                                                |
+| `cancelled`                                          | The event will not occur.                                                                                                                                                                                                                                       | Treat the event as cancelled.                                                             |
 
 ## Rescheduled events
 
