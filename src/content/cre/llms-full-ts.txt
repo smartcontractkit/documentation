@@ -23977,7 +23977,7 @@ Last Updated: 2026-11-16
 Every workflow execution has an identity: which workflow is running, who owns it, and which specific run this is. Your workflow code can read that identity at runtime, which is useful when you want to:
 
 - **Correlate logs and results** with a specific execution.
-- **Label outbound requests** (for example, an API call or a report) with the workflow that produced them.
+- **Add context to your own logic**, such as including the workflow ID in an error message or branching on the workflow owner.
 - **Build identifiers** that are unique per workflow or per execution, such as idempotency keys.
 
 ## Available metadata
@@ -24072,7 +24072,7 @@ const result = runtime
   .runInNodeMode((nodeRuntime: NodeRuntime<Config>): string => {
     const { executionID } = executionMetadata(nodeRuntime)
 
-    // Use the metadata in your per-node logic, for example to label an API request
+    // Use the metadata in your per-node logic, for example to build an idempotency key
     return executionID
   }, consensusIdenticalAggregation<string>())()
   .result()
@@ -24084,6 +24084,15 @@ const result = runtime
 - **The values are read-only.** `executionMetadata()` returns a copy, so changing the returned object does not affect the runtime.
 - **The Execution ID is assigned by CRE.** It is not available until your workflow is running, and you can't set it yourself.
 - **Missing metadata returns empty strings.** If the environment running your workflow does not provide metadata, each field is an empty string. Check for an empty value if your logic depends on it.
+
+> **CAUTION: Don't use these values as proof of origin**
+>
+> The metadata you read in your workflow code is for your own logic. If you attach it to an outbound request, such as an
+> HTTP header or body field, the recipient can't verify it, because anyone can send a request that makes the same claim.
+> When a downstream system needs to know which workflow produced some data, send the data as a signed
+> [report](/cre/guides/workflow/using-http-client/submitting-reports-http). A report carries the Workflow ID, Workflow
+> Owner, and Execution ID as part of DON consensus, and the recipient can [verify it
+> offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
 
 ## Testing your workflow
 
