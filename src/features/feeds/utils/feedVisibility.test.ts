@@ -8,8 +8,15 @@ jest.unstable_mockModule("../../../db/supabase.ts", () => ({
 }))
 
 const { is247Stream, get247Category, matches247StreamFilter } = await import("./twentyFourSeven.ts")
-const { is247USEquitiesStream, matches247USEquitiesStreamFilter, is247TokenizedEquityFeed } =
-  await import("./feedMetadata.ts")
+const {
+  is247USEquitiesStream,
+  matches247USEquitiesStreamFilter,
+  is247TokenizedEquityFeed,
+  isIndexStreamFeed,
+  getIndexStreamRegion,
+  matchesIndexStreamFilter,
+  is24x5StreamFeed,
+} = await import("./feedMetadata.ts")
 const { isFeedVisible, shouldHideAddress, shouldHideStreamFeedId } = await import("./feedVisibility.ts")
 
 const verifierStream = (docs: Record<string, unknown>, overrides: Record<string, unknown> = {}) => ({
@@ -140,6 +147,55 @@ describe("shouldHideAddress", () => {
   it("leaves unlisted proxy addresses alone", () => {
     expect(shouldHideAddress({ proxyAddress: "0x1234", docs: {} })).toBe(false)
   })
+
+  it("keeps Robinhood 24/5 tokenized equity addresses visible", () => {
+    expect(
+      shouldHideAddress({
+        proxyAddress: "0x2222222222222222222222222222222222222222",
+        docs: {
+          blockchainName: "Robinhood",
+          productTypeCode: "primaryTokenizedPrice",
+          productSubType: "calculatedPrice",
+        },
+      })
+    ).toBe(false)
+  })
+
+  it("hides calculated-price tokenized equity addresses (Ondo, Coinbase)", () => {
+    expect(
+      shouldHideAddress({
+        proxyAddress: "0x1111111111111111111111111111111111111111",
+        docs: { assetClass: "Equity", productTypeCode: "primaryTokenizedPrice", productSubType: "calculatedPrice" },
+      })
+    ).toBe(true)
+  })
+
+  it("hides 24/7 tokenized equity feed addresses for every provider", () => {
+    const xStocks = {
+      contractType: "",
+      proxyAddress: "0x61340784b9fc02bc737b9cd48e416769857b7de6",
+      docs: { attributeType: "247CustomPrice" },
+    }
+    const robinhood247 = {
+      proxyAddress: "0x4444444444444444444444444444444444444444",
+      docs: {
+        blockchainName: "Robinhood",
+        attributeType: "247CustomPrice",
+        productTypeCode: "247",
+      },
+    }
+    expect(shouldHideAddress(xStocks)).toBe(true)
+    expect(shouldHideAddress(robinhood247)).toBe(true)
+  })
+
+  it("keeps ordinary feed addresses visible", () => {
+    expect(
+      shouldHideAddress({
+        proxyAddress: "0x3333333333333333333333333333333333333333",
+        docs: { assetClass: "Crypto", productTypeCode: "RefPrice" },
+      })
+    ).toBe(false)
+  })
 })
 
 describe("shouldHideStreamFeedId", () => {
@@ -159,6 +215,14 @@ describe("shouldHideStreamFeedId", () => {
         })
       )
     ).toBe(true)
+  })
+
+  it("leaves futures stream feed IDs visible", () => {
+    expect(
+      shouldHideStreamFeedId(
+        verifierStream({ attributeType: "FuturesPrice", feedType: "Futures", assetClass: "Futures", schema: "v14" })
+      )
+    ).toBe(false)
   })
 
   it("leaves regular TWAP and ordinary streams alone", () => {
@@ -258,6 +322,59 @@ describe("is247USEquitiesStream", () => {
     expect(matches247USEquitiesStreamFilter(perps, true, "twap")).toBe(false)
     expect(matches247USEquitiesStreamFilter(lending, true, "lending")).toBe(true)
     expect(matches247USEquitiesStreamFilter(lending, true, "perps")).toBe(false)
+  })
+})
+
+describe("index streams", () => {
+  const usIndex = verifierStream({
+    assetClass: "Equities",
+    assetSubClass: "Index",
+    feedType: "Equities",
+    marketHours: "US Equities Regular",
+    schema: "v11",
+  })
+  const apacIndex = verifierStream({
+    assetClass: "Equities",
+    assetSubClass: "Index",
+    feedType: "Equities",
+    marketHours: "Tokyo",
+    schema: "v11",
+  })
+  const singleName = verifierStream({
+    assetClass: "Equities",
+    feedType: "Equities",
+    marketHours: "Tokyo",
+    schema: "v11",
+  })
+
+  it("detects index streams by assetSubClass", () => {
+    expect(isIndexStreamFeed(usIndex)).toBe(true)
+    expect(isIndexStreamFeed(apacIndex)).toBe(true)
+    expect(isIndexStreamFeed(singleName)).toBe(false)
+  })
+
+  it("groups index streams by exchange market hours", () => {
+    expect(getIndexStreamRegion(usIndex)).toBe("us")
+    expect(getIndexStreamRegion(apacIndex)).toBe("apac")
+    expect(getIndexStreamRegion(singleName)).toBeUndefined()
+  })
+
+  it("filters rows to the requested index region", () => {
+    expect(matchesIndexStreamFilter(singleName, true, "us")).toBe(false)
+    expect(matchesIndexStreamFilter(apacIndex, true, "us")).toBe(false)
+    expect(matchesIndexStreamFilter(usIndex, true, "us")).toBe(true)
+    expect(matchesIndexStreamFilter(apacIndex, true, "apac")).toBe(true)
+    expect(matchesIndexStreamFilter(usIndex, true)).toBe(true)
+  })
+
+  it("passes every stream through when the index filter is off", () => {
+    expect(matchesIndexStreamFilter(singleName, false)).toBe(true)
+    expect(matchesIndexStreamFilter(usIndex, undefined)).toBe(true)
+  })
+
+  it("keeps index streams out of the 24/5 family tables", () => {
+    expect(is24x5StreamFeed(usIndex)).toBe(false)
+    expect(is24x5StreamFeed(verifierStream({ assetSubClass: "Regular Hours", schema: "v11" }))).toBe(true)
   })
 })
 

@@ -57,10 +57,8 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
     throw new Error(`Unknown chain name: ${evmConfig.chainName}`)
   }
 
-  // Step 1: Fetch offchain data
-  const offchainValue = runtime.runInNodeMode(fetchMathResult, consensusMedianAggregation())().result()
-
-  runtime.log(`Successfully fetched offchain value: ${offchainValue}`)
+  // Step 1: Start the offchain fetch
+  const offchainPromise = runtime.runInNodeMode(fetchMathResult, consensusMedianAggregation())()
 
   // Step 2: Read onchain data using the EVM client
   const evmClient = new EVMClient(network.chainSelector.selector)
@@ -70,16 +68,20 @@ const onCronTrigger = (runtime: Runtime<Config>): MyResult => {
     functionName: "get",
   })
 
-  const contractCall = evmClient
-    .callContract(runtime, {
-      call: encodeCallMsg({
-        from: zeroAddress,
-        to: evmConfig.storageAddress as `0x${string}`,
-        data: callData,
-      }),
-      blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
-    })
-    .result()
+  const contractCallPromise = evmClient.callContract(runtime, {
+    call: encodeCallMsg({
+      from: zeroAddress,
+      to: evmConfig.storageAddress as `0x${string}`,
+      data: callData,
+    }),
+    blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
+  })
+
+  // Collect both independent results in a fixed order
+  const offchainValue = offchainPromise.result()
+  runtime.log(`Successfully fetched offchain value: ${offchainValue}`)
+
+  const contractCall = contractCallPromise.result()
 
   const onchainValue = decodeFunctionResult({
     abi: Storage,
