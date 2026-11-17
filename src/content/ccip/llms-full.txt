@@ -128,7 +128,7 @@ The smart contract in this tutorial is designed to interact with CCIP to send da
 
 ```sol
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity ^0.8.24;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
@@ -262,7 +262,7 @@ The smart contract in this tutorial is designed to interact with CCIP to receive
 
 ```sol
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity ^0.8.24;
 
 import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
@@ -84591,7 +84591,7 @@ It does not override chain finality or minimum confirmation requirements enforce
 The following example requests a confirmation depth of 10 blocks with a gas limit of 200,000, using the `ExtraArgsCodec` encoding helper:
 
 ```solidity
-import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+import {ExtraArgsCodec} from "@chainlink/contracts-ccip/contracts/libraries/ExtraArgsCodec.sol";
 
 bytes memory extraArgs = ExtraArgsCodec._getBasicEncodedExtraArgsV3BlockDepth(
   200_000, // gasLimit: gas available for the receiver callback on the destination chain
@@ -85571,7 +85571,7 @@ The Token Admin Registry (TAR) is a per-chain registry that maps each CCIP-enabl
 
 ## Token Handling Mechanisms
 
-There are three possible token handling mechanisms within CCIP, depending on how pools are paired across chains:
+There are four possible token handling mechanisms within CCIP, depending on how pools are paired across chains:
 
 | Token Handling Mechanism                                         | Source Pool Type and action                                | Destination Pool Type and action                              | Use Case                                                                                                                                                                                                                       |
 | :--------------------------------------------------------------- | :--------------------------------------------------------- | :------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -86499,12 +86499,15 @@ contract InboundOnlyReceiver is CCIPClientExample {
   {}
 
   /// @notice Configure inbound finality policy for a source chain.
-  /// extraArgs is unused here because this contract never sends outbound.
+  /// extraArgs is not used for inbound messages because this contract never sends outbound,
+  /// but it must be non-empty: CCIPClientExample.ccipReceive reverts with InvalidChain otherwise.
+  /// Pass any valid encoded ExtraArgs, for example from ExtraArgsCodec.
   function configureInboundPolicy(
     uint64 sourceChainSelector,
+    bytes calldata extraArgs,
     bytes4 allowedFinalityConfig
   ) external onlyOwner {
-    enableChain(sourceChainSelector, "", allowedFinalityConfig);
+    enableChain(sourceChainSelector, extraArgs, allowedFinalityConfig);
   }
 
   function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
@@ -86769,13 +86772,13 @@ Legacy (V1) pools and receivers cannot opt into FTF. The OnRamp reverts an FTF s
 
 FTF requires explicit opt-in at every layer that participates in the message path. All layers default to full finality (`WAIT_FOR_FINALITY_FLAG`):
 
-| Layer                                   | What must permit FTF                                                                                           |
-| --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| Sender                                  | Sets `requestedFinalityConfig` in `ExtraArgsV3` to a non-finality mode (a block depth or `WAIT_FOR_SAFE_FLAG`) |
-| Token pool                              | Configures an `allowedFinalityConfig` that permits the requested mode (token transfers only)                   |
-| Committee Verifier (and any other CCVs) | Each CCV's `allowedFinalityConfig` must permit the request                                                     |
-| Executor                                | Executor contract's `allowedFinalityConfig` must permit the request                                            |
-| Receiver                                | For messages that call `ccipReceive`, the receiver's `allowedFinalityConfig` must permit the request           |
+| Layer                                   | What must permit FTF                                                                                                              |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Sender                                  | Sets `requestedFinalityConfig` in `ExtraArgsV3` to a non-finality mode (a block depth; `WAIT_FOR_SAFE_FLAG` is not activated yet) |
+| Token pool                              | Configures an `allowedFinalityConfig` that permits the requested mode (token transfers only)                                      |
+| Committee Verifier (and any other CCVs) | Each CCV's `allowedFinalityConfig` must permit the request                                                                        |
+| Executor                                | Executor contract's `allowedFinalityConfig` must permit the request                                                               |
+| Receiver                                | For messages that call `ccipReceive`, the receiver's `allowedFinalityConfig` must permit the request                              |
 
 If any layer rejects the requested mode, the message cannot be sent (revert at `ccipSend`) or cannot be executed (the OffRamp's finality check fails and the message is recorded as FAILURE). See [FINALITY_INVARIANTS.md](https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/FINALITY_INVARIANTS.md).
 
@@ -86841,7 +86844,7 @@ Users who wait for full finality are not affected by the FTF behavior of other u
 
 When using FTF, the core tradeoff is speed vs. reorg risk. Since double execution may occur when your confirmation depth is less than or equal to the reorg depth, the right setting depends on the reorg profile of your source chain.
 
-Senders request exactly one finality mode per message (full finality, a single block depth, or `WAIT_FOR_SAFE_FLAG`). Receivers and pools may configure multiple permitted modes simultaneously (e.g., accept safe-tag requests or depth ≥ 5 or full finality). See `FinalityCodec` and [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side configuration.
+Senders request exactly one finality mode per message (full finality or a single block depth; `WAIT_FOR_SAFE_FLAG` is defined but not activated in the protocol yet). Receivers and pools may configure multiple permitted modes simultaneously (e.g., accept safe-tag requests or depth ≥ 5 or full finality). See `FinalityCodec` and [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side configuration.
 
 **L1 chains with instant or fast finality:** Use the default (full finality), since these chains already finalize fast enough for most use cases. CCIP still defaults to `WAIT_FOR_FINALITY_FLAG` unless you explicitly opt in, even on chains with fast native finality.
 
@@ -89970,8 +89973,8 @@ Returns:
 
 ```solidity
 function getCCVsAndFinalityConfig(
-  uint64 destChainSelector,
-  bytes calldata extraData
+  uint64 sourceChainSelector,
+  bytes calldata sender
 ) external view virtual returns (
   address[] memory requiredCCVs,
   address[] memory optionalCCVs,
@@ -89980,16 +89983,16 @@ function getCCVsAndFinalityConfig(
 )
 ```
 
-> Returns the Cross-Chain Verifier (CCV) set and finality requirements used to validate and execute incoming messages.
+> Returns the Cross-Chain Verifier (CCV) set and finality requirements to apply when processing messages from a given source chain and sender.
 >
 > Override this function to customize how messages are verified before execution, such as requiring specific verifiers or stricter finality guarantees.
 >
 > Most applications do not need to override this unless they require custom verification or security assumptions.
 
-| Parameter           | Type             | Description                                                          |
-| ------------------- | ---------------- | -------------------------------------------------------------------- |
-| `destChainSelector` | `uint64`         | Destination chain identifier for the message.                        |
-| `extraData`         | `bytes calldata` | Additional data used to determine verification or finality behavior. |
+| Parameter             | Type             | Description                                         |
+| --------------------- | ---------------- | --------------------------------------------------- |
+| `sourceChainSelector` | `uint64`         | Identifier of the source chain sending the message. |
+| `sender`              | `bytes calldata` | Encoded address of the sender on the source chain.  |
 
 Returns:
 
@@ -90807,7 +90810,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {CCVConfigValidation} from "chainlink-ccip/libraries/CCVConfigValidation.sol";
+import {CCVConfigValidation} from "@chainlink/contracts-ccip/contracts/libraries/CCVConfigValidation.sol";
 ```
 
 ## Functions
@@ -90927,7 +90930,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {Client} from "chainlink-ccip/libraries/Client.sol";
+import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
 ```
 
 If you have not installed the package:
@@ -91082,8 +91085,8 @@ Used by:
 Example: construct an outbound CCIP message with a gas limit of 300,000 and the default finality (wait for full finalization):
 
 ```solidity
-import {Client} from "chainlink-ccip/libraries/Client.sol";
-import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+import {ExtraArgsCodec} from "@chainlink/contracts-ccip/contracts/libraries/ExtraArgsCodec.sol";
 
 // Construct outbound CCIP message
 Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
@@ -91815,7 +91818,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ERC165CheckerReverting} from "chainlink-ccip/libraries/ERC165CheckerReverting.sol";
+import {ERC165CheckerReverting} from "@chainlink/contracts-ccip/contracts/libraries/ERC165CheckerReverting.sol";
 ```
 
 ## Functions
@@ -92893,7 +92896,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+import {ExtraArgsCodec} from "@chainlink/contracts-ccip/contracts/libraries/ExtraArgsCodec.sol";
 ```
 
 ## High-level Encoding Functions
@@ -93657,7 +93660,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {FeeTokenHandler} from "chainlink-ccip/libraries/FeeTokenHandler.sol";
+import {FeeTokenHandler} from "@chainlink/contracts-ccip/contracts/libraries/FeeTokenHandler.sol";
 ```
 
 ## Functions
@@ -98400,7 +98403,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {MessageV1Codec} from "chainlink-ccip/libraries/MessageV1Codec.sol";
+import {MessageV1Codec} from "@chainlink/contracts-ccip/contracts/libraries/MessageV1Codec.sol";
 ```
 
 ## Functions
@@ -98775,7 +98778,7 @@ For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/er
 - Each entry in `verifierResults` must correspond to the CCV at the same index in `ccvs`.
 - CCV ordering does not affect validation but must align with provided verifier results.
 - Each message can only be executed once.
-- `gasLimitOverride` must not exceed the message-defined gas limit.
+- A non-zero `gasLimitOverride` must be greater than or equal to the message-defined gas limit.
 - Messages from chains not explicitly enabled in source chain configuration will be rejected.
 - Execution will revert if validation fails, gas limits are insufficient, or token handling fails.
 - Receiver execution failures are captured and emitted but still update execution state.
@@ -99623,7 +99626,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {Pool} from "chainlink-ccip/libraries/Pool.sol";
+import {Pool} from "@chainlink/contracts-ccip/contracts/libraries/Pool.sol";
 ```
 
 ## Source Chain (Lock/Burn)
@@ -100015,7 +100018,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {RateLimiter} from "chainlink-ccip/libraries/RateLimiter.sol";
+import {RateLimiter} from "@chainlink/contracts-ccip/contracts/libraries/RateLimiter.sol";
 ```
 
 If you have not installed the package:
@@ -102725,7 +102728,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {USDPriceWith18Decimals} from "chainlink-ccip/libraries/USDPriceWith18Decimals.sol";
+import {USDPriceWith18Decimals} from "@chainlink/contracts-ccip/contracts/libraries/USDPriceWith18Decimals.sol";
 ```
 
 ## Functions
@@ -102834,7 +102837,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {USDCSourcePoolDataCodec} from "chainlink-ccip/libraries/USDCSourcePoolDataCodec.sol";
+import {USDCSourcePoolDataCodec} from "@chainlink/contracts-ccip/contracts/libraries/USDCSourcePoolDataCodec.sol";
 ```
 
 ## Constants
@@ -106313,7 +106316,7 @@ The sender contract interacts with CCIP to send data cross-chain. Key elements a
 
 ```sol
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity ^0.8.24;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
@@ -106445,7 +106448,7 @@ The receiver contract interacts with CCIP to receive data on the destination cha
 
 ```sol
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity ^0.8.24;
 
 import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
