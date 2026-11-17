@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Register, update, and manage cross-chain identities (CCIDs) in Chainlink ACE using the Platform UI or the Coordinator API."
   datePublished: "2026-03-31"
-  lastModified: "2026-04-06"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 
 This guide covers how to register, view, update, and archive cross-chain identities (CCIDs) using the ACE Platform UI or the Coordinator API. Identities are the foundation of ACE's credential system — every credential is issued against an identity.
 
@@ -33,6 +33,12 @@ Each identity includes:
 For a deeper look at how CCIDs work, how they are generated, and the privacy considerations involved, see [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
 
 ## Register an identity
+
+<RequiredRole product="ace" role="operator">
+  Registering, importing, and updating identities, including issuing credentials, requires
+  `ace:identity_manager:identity:write`. Include it in your key for API calls. ACE Viewers can view identities and
+  credentials with `ace:identity_manager:identity:read`.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">
@@ -301,6 +307,11 @@ All three addresses resolve to the same CCID. A credential issued against this i
 To add or remove chains later, use the [full update (PUT)](#full-update-put) endpoint with the updated list of on-chain identities.
 
 ## Archive an identity
+
+<RequiredRole product="ace" role="operator">
+  Archiving identities and their credentials requires `ace:identity_manager:identity:archive:write`. Include this
+  permission in your API key when using the API.
+</RequiredRole>
 
 Archiving marks an identity as inactive. Archived identities are retained for audit purposes but are no longer considered active.
 

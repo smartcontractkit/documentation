@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Group multiple Transactions into one Chainlink CRE Connect Operation so they execute atomically (all-or-nothing) under a single EIP-712 signature."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 A CRE Connect operation can carry **any number of transactions**. The Smart Account executes them in order under a single signature; if any sub-call reverts, the entire operation reverts and the on-chain state is rolled back.
 
@@ -54,6 +54,12 @@ op := &types.Operation{
     },
 }
 ```
+
+<RequiredRole product="crec" role="operator">
+  Submitting the batch requires `crec:operation:write` in your API key. Include `crec:operation:read` for
+  `ExecuteOperation`, which reads the created operation. Building the transaction list and signing it locally are
+  separate from API authorization; the signer must be authorized by the Smart Account.
+</RequiredRole>
 
 Sign and submit exactly as you would a single-transaction operation:
 

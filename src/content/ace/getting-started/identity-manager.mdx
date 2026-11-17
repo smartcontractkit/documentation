@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Get started as an Identity Manager with Chainlink ACE: create your account, set up identity and credential registries, register identities, issue credentials, and verify compliance via the Reporting Manager."
   datePublished: "2026-04-06"
-  lastModified: "2026-05-26"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, ClickToZoom, MethodTabs } from "@components"
+import { Aside, ClickToZoom, MethodTabs, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -25,6 +25,13 @@ This guide walks you through the **Identity Manager** — the ACE component for 
 Complete the [Account Setup](/ace/getting-started/account-setup) steps — organization creation, API key generation, and CRE Connect Wallet deployment — before proceeding.
 
 ### 3. Set up your registries
+
+<RequiredRole product="ace" role="operator">
+  Creating registries and credential types requires `ace:identity_manager:registry:write`. Registering identities and
+  issuing credentials requires `ace:identity_manager:identity:write`. For the API, select these permissions and the
+  corresponding read permissions for your key. Querying credentials through Reporting also requires
+  `ace:reporting:identity:read`.
+</RequiredRole>
 
 A **registry** is the top-level resource that groups an **identity registry** and a **credential registry**, deployed together on each chain you operate on.
 

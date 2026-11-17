@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "End-to-end Go tutorial: create a Chainlink CRE Connect channel, attach a custom-ABI watcher to the Sepolia WETH token, poll the channel, verify the OCR proof, and decode the first few Transfer events."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 import CrecCommon from "@features/crec/common/CrecCommon.astro"
 
 <CrecCommon callout="beta" />
@@ -94,6 +94,12 @@ if err != nil {
 The SDK ships with the production DON signer addresses baked in, so the **Off-Chain Reporting (OCR) signature** check is configured automatically. You still need to tell the client **which org's events you trust**: that's what `crec.WithOrgID(...)` does. It derives your unique workflow-owner address from the org ID and binds every event hash to your tenant. Skip it and `client.Events.Verify(...)` returns [`events.ErrOrgIDOrWorkflowOwnerReq`](/crec/reference/error-handling) on every call. Your Organization ID looks like `org_example00000000000`; see [Prerequisites](/crec/getting-started/prerequisites) for where to find it.
 
 ## 3. Create a channel
+
+<RequiredRole product="crec" role="operator">
+  Creating the channel and watcher requires `crec:channel:write` and `crec:watcher:write`. Your API key also needs
+  `crec:watcher:read` to wait for activation and `crec:event:read` to poll events. The watcher reads onchain data, but
+  creating it is a write operation on CRE Connect.
+</RequiredRole>
 
 A channel is a logical grouping for the watchers and events that belong to a single application. Pick a descriptive name: channel names must be unique within your tenant.
 
@@ -348,6 +354,12 @@ End-to-end, every `Transfer` event traveled this path:
 In production you would either keep polling or use [`SearchEvents`](/crec/guides/events/poll-and-search) for historical reads.
 
 ## 9. Full program
+
+<RequiredRole product="crec" role="admin">
+  The cleanup calls in this full program require `crec:watcher:archive:write` and `crec:channel:archive:write` in your
+  API key. These permissions are needed only for cleanup. To run the channel, watcher, and event-reading steps with CRE
+  Connect Operator permissions, omit the trailing `Archive` calls and keep the resources.
+</RequiredRole>
 
 Here is everything wired together as a single `main.go`. The trailing `Archive` calls clean up the watcher and channel so they stop consuming DON capacity for your tenant. Drop them if you want to keep the watcher running between runs.
 

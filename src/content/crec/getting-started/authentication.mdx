@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Initialize the Chainlink CRE Connect client with your API key, configure optional parameters, and run a ListNetworks smoke test to confirm connectivity."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 import CrecCommon from "@features/crec/common/CrecCommon.astro"
 
 <CrecCommon callout="beta" />
@@ -121,6 +121,11 @@ The full set of options is documented in the [SDK Configuration](/crec/reference
 </Aside>
 
 ## Smoke test: `ListNetworks`
+
+<RequiredRole product="crec" role="viewer">
+  Listing networks requires `crec:network:read` in your API key. A successful smoke test confirms this read access;
+  other guides may require additional permissions to create, update, or archive resources.
+</RequiredRole>
 
 `ListNetworks` performs a single authenticated `GET /networks` and returns the list of networks your tenant can use. It confirms in one call that your client, your API key, and the CRE Connect endpoint are all healthy.
 

@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Authentication, base URL, error shapes, and async semantics of the CRE Connect REST API."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 import CrecCommon from "@features/crec/common/CrecCommon.astro"
 
 <CrecCommon callout="beta" />
@@ -60,6 +60,14 @@ security:
 </Aside>
 
 Treat API keys as secrets: they grant full access to your organisation's channels, watchers, wallets, and operations. Rotate any key that may have been exposed.
+
+## Roles and API key permissions
+
+Member roles and API key scopes serve different purposes. Role callouts identify the member role needed for a UI task or to grant the corresponding permissions to a key. API calls are authorized by the permissions selected for the key.
+
+CRE Connect Viewer includes read permissions. Operator adds resource creation and updates, query creation, and operation submission, finalization, or cancellation. Admin also includes wallet, channel, and watcher archival. The organization Owner has every permission, but a key remains limited to its selected scopes. See [RBAC](/chainlink-platform/rbac?parent=crec#cre-connect) and [API Keys](/chainlink-platform/api-keys?parent=crec#cre-connect).
+
+Signer authorization on a Smart Account and DTA contract roles are separate from Platform member roles. A chain query also needs `crec:query:write` to create the query resource even though the EVM call is read-only.
 
 ## Endpoint groups
 
@@ -166,6 +174,11 @@ When `has_more: true`, paginate using the endpoint-specific cursor parameters (`
 The OpenAPI document declares `info.version`. The current spec is **`0.8.0`**. Backwards-incompatible changes are limited to major-version bumps; minor bumps may add new optional fields and endpoints. Pin your dependencies (Go SDK, generated clients) to a known minor.
 
 ## Try it
+
+<RequiredRole product="crec" role="viewer">
+  The `GET /networks` smoke test requires `crec:network:read` in your API key. A successful response confirms network
+  read access; it does not prove that the key can create or archive resources.
+</RequiredRole>
 
 The fastest way to validate authentication is to call `ListNetworks`:
 
