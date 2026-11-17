@@ -179,12 +179,15 @@ contract InboundOnlyReceiver is CCIPClientExample {
   {}
 
   /// @notice Configure inbound finality policy for a source chain.
-  /// extraArgs is unused here because this contract never sends outbound.
+  /// extraArgs is not used for inbound messages because this contract never sends outbound,
+  /// but it must be non-empty: CCIPClientExample.ccipReceive reverts with InvalidChain otherwise.
+  /// Pass any valid encoded ExtraArgs, for example from ExtraArgsCodec.
   function configureInboundPolicy(
     uint64 sourceChainSelector,
+    bytes calldata extraArgs,
     bytes4 allowedFinalityConfig
   ) external onlyOwner {
-    enableChain(sourceChainSelector, "", allowedFinalityConfig);
+    enableChain(sourceChainSelector, extraArgs, allowedFinalityConfig);
   }
 
   function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
