@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Create a Chainlink CRE Connect watcher for an arbitrary smart contract by providing the chain selector, contract address, target events, and the matching Solidity event ABI fragments."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 
 For contracts not covered by a [CRE Connect extension](/crec/concepts/extensions), use **`watchers.Client.CreateWithABI`**. You provide the event ABI fragments yourself and CRE Connect provisions a generic listener for that contract.
 
@@ -20,6 +20,12 @@ For contracts not covered by a [CRE Connect extension](/crec/concepts/extensions
 | You only need a subset of events from the ABI.            | You want service-managed defaults and typed decoders.                          |
 
 ## Procedure
+
+<RequiredRole product="crec" role="operator">
+  Creating an ABI-backed watcher requires `crec:watcher:write`. Your API key also needs `crec:watcher:read` to wait for
+  activation. Monitoring logs does not modify the target contract, but provisioning the watcher still requires CRE
+  Connect write access.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">

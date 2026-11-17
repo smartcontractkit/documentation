@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Sign Chainlink CRE Connect operations with an ECDSA secp256k1 key held in AWS KMS: the production-grade choice for AWS-based deployments."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 The KMS signer (`github.com/smartcontractkit/crec-sdk/transact/signer/kms`) signs CRE Connect operations using a secp256k1 key held in AWS Key Management Service. The private key never leaves the AWS HSM; the signer asks KMS to sign a digest and returns an Ethereum-canonical 65-byte signature.
 
@@ -102,6 +102,12 @@ Internally `Sign(ctx, hash)`:
 The result is a 65-byte `(r ∥ s ∥ v)` signature that the Smart Account verifies with `ecrecover` (the on-chain verifier accepts the raw recovery byte).
 
 ## End-to-end flow
+
+<RequiredRole product="crec" role="operator">
+  `ExecuteOperation` submits to CRE Connect and reads the created operation, so your API key needs
+  `crec:operation:write` and `crec:operation:read`. KMS permissions to use the signing key are separate from these CRE
+  Connect permissions.
+</RequiredRole>
 
 ```go
 import (

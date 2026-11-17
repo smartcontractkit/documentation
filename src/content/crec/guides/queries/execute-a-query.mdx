@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Step-by-step guide to executing DON-backed verifiable chain queries in CRE Connect: one-call helpers, manual lifecycle, block selection, idempotency, and result verification."
   datePublished: "2026-08-26"
-  lastModified: "2026-08-26"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 A **chain query** is a one-shot, read-only EVM call executed by a Chainlink DON. You submit the query to CRE Connect, the DON executes it against the block you selected, and you receive a signed result you can verify off-chain. Nothing is written on chain.
 
@@ -24,6 +24,12 @@ You need:
 - The **contract address** you want to read from.
 
 ## Path 1: One-call with `CallContract`
+
+<RequiredRole product="crec" role="operator">
+  All three paths create a CRE Connect query, so your API key needs `crec:query:write` even though the EVM call is
+  read-only. The one-call helpers also need `crec:query:read` to wait for the result. CRE Connect Viewers can read
+  existing queries but cannot initiate new ones.
+</RequiredRole>
 
 The simplest path: submit the query, wait for completion, and decode the result in a single call.
 
@@ -160,6 +166,11 @@ If you retry after a network error with the same key and the same request parame
 
 ## Detecting completion via channel events
 
+<RequiredRole product="crec" role="viewer">
+  Searching for `query.status` events requires `crec:event:read` in your API key. This event-reading permission is
+  separate from the query permissions used to submit a query or fetch its record.
+</RequiredRole>
+
 For event-driven architectures, search for `query.status` events instead of polling the query resource:
 
 ```go
@@ -254,6 +265,11 @@ curl -X POST https://cre-connect.api.chain.link/v1/channels/$CHANNEL_ID/queries 
 Returns `202 Accepted` with the query in the `accepted` state.
 
 ### Get a query
+
+<RequiredRole product="crec" role="viewer">
+  Fetching an existing query or listing queries requires `crec:query:read` in your API key. Verifying a result you
+  already have is a local cryptographic operation.
+</RequiredRole>
 
 ```bash
 curl https://cre-connect.api.chain.link/v1/channels/$CHANNEL_ID/queries/$QUERY_ID \
