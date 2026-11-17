@@ -40,6 +40,34 @@ const isValidStartingElement = (element: Element) => {
 }
 
 /**
+ * Islands hydrate once. Moving one re-runs Astro's start(), which can queue a second
+ * hydration and render the island's client-only output twice (seen in Safari).
+ */
+const hydrationLimitedIslands = new WeakSet<Element>()
+
+const limitIslandHydration = (element: Element) => {
+  const island = element as HTMLElement & { hydrate?: () => Promise<void> }
+  if (typeof island.hydrate !== "function" || hydrationLimitedIslands.has(element)) return
+  const hydrate = island.hydrate
+  let hasHydrated = !island.hasAttribute("ssr")
+  island.hydrate = async () => {
+    if (hasHydrated) return
+    hasHydrated = true
+    await hydrate()
+    // hydrate() leaves ssr set when it defers to a parent island; allow that call later.
+    if (island.hasAttribute("ssr")) hasHydrated = false
+  }
+  hydrationLimitedIslands.add(element)
+}
+
+/** Moving an element reconnects island descendants, so gate them too. */
+const moveInto = (parent: Element, element: Element) => {
+  if (element.nodeName === "ASTRO-ISLAND") limitIslandHydration(element)
+  element.querySelectorAll("astro-island").forEach(limitIslandHydration)
+  parent.appendChild(element)
+}
+
+/**
  * Creates section wrappers around content
  * and headers that interact with observers and TOC
  */
@@ -67,7 +95,7 @@ const wrapSection = (start: Element) => {
     wrapper.id = start.id
   }
   start.parentNode?.insertBefore(wrapper, start)
-  elements.forEach((e) => wrapper.appendChild(e))
+  elements.forEach((e) => moveInto(wrapper, e))
   return next // Get the start of the next wrapper
 }
 
