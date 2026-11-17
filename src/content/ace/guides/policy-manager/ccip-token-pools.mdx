@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Use Chainlink ACE policies with CCIP AdvancedPoolHooks to enforce rules before cross-chain tokens leave the source chain or reach recipients on the destination chain."
   datePublished: "2026-09-23"
-  lastModified: "2026-09-23"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 Use the built-in `CCIP-AdvancedPoolHooks` contract type to apply ACE policies to cross-chain token transfers. You can evaluate a transfer before the source Token Pool locks or burns tokens and before the destination Token Pool releases or mints tokens.
 
@@ -71,6 +71,13 @@ Use `postflightCheck` to enforce recipient or destination-specific requirements 
 You can protect either hook or both. Protecting both provides independent enforcement at the source and destination.
 
 ## Configure ACE
+
+<RequiredRole product="ace" role="operator">
+  The ACE setup below creates an engine and policies, updates a detected target, and attaches protections. For API
+  calls, your key needs the policy engine, policy, and target write permissions described in the linked guides.
+  Configuring the Token Pool and `AdvancedPoolHooks` onchain also requires authority on those contracts; an ACE role
+  does not grant that authority.
+</RequiredRole>
 
 ### Create a policy engine
 

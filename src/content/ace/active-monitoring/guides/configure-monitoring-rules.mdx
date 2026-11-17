@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Create, view, and delete the Chainlink ACE Active Monitoring rule of a token that maps each TRM risk level to a response, using the Platform UI or the Coordinator API."
   datePublished: "2026-10-05"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -25,6 +25,12 @@ A token has one active rule, and you cannot edit it. To change a rule, delete it
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
 
 ## Create a monitoring rule
+
+<RequiredRole product="ace" role="operator">
+  Creating or deleting a rule requires `ace:active_monitoring:rule_group:write`. Include it in your key for API calls.
+  Deleting a rule uses this same permission, even though the operation archives it. ACE Viewers can view rules with
+  `ace:active_monitoring:rule_group:read`.
+</RequiredRole>
 
 The following rule is used in both tabs. It applies to a token called Example Treasury Fund, registered as in [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): the token has the enforcement function `freezePartialTokens`, and an associated contract called Example Blocklist has `addBlacklist`. The blocklist is only an example of an action on a second contract. If you registered your token alone, keep the freeze and leave out the blocklist action.
 
