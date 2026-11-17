@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Share ACE identity and credential registries across organizations. Grant another organization read access to your registry, discover registries shared with you, and use them as credential sources in your policies."
   datePublished: "2026-07-17"
-  lastModified: "2026-07-17"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 
 **External registries** let one organization reuse another organization's [registry](/ace/guides/identity-manager/manage-registries) without re-issuing identities or credentials. The registry owner grants a second organization **read access**, and that organization can then reference the registry's identities and credentials — for example, to enforce KYC in its own policies using a KYC provider's registry.
 
@@ -38,6 +38,12 @@ An active grant gives the grantee **read access** to the registry:
 </Aside>
 
 ## Grant access to another organization
+
+<RequiredRole product="ace" role="admin">
+  Granting and revoking access requires `ace:identity_manager:registry_access:write` in the organization that owns the
+  registry. Listing its grants requires `ace:identity_manager:registry_access:read`. Your API key must include the
+  relevant permissions; owning the registry does not replace these member-role requirements.
+</RequiredRole>
 
 Granting access requires the grantee's **Org ID**. Ask the grantee to retrieve it and share it with you:
 
@@ -83,6 +89,12 @@ curl https://ace.api.chain.link/v1/registries/<REGISTRY_ID>/access-grants \
 Each entry includes the grantee, the status (`active` or `revoked`), and the `granted_at` / `revoked_at` timestamps, giving you an audit trail of who was granted access and when.
 
 ## Use a registry shared with you
+
+<RequiredRole product="ace" role="viewer">
+  Discovering shared registries requires `ace:identity_manager:registry:read`; reading their identities and credentials
+  requires `ace:identity_manager:identity:read`. Include the permissions you use in your API key. Configuring your own
+  policies to use the registry requires ACE Operator or higher and `ace:policy_manager:policy:write`.
+</RequiredRole>
 
 As a grantee, include `include_granted=true` when listing registries to see registries other organizations have shared with you, alongside your own:
 

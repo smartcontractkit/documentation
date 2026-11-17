@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Grant another organization access to request offchain permit evaluations against your protected target contract. Manage evaluation access grants for cross-organization compliance workflows."
   datePublished: "2026-07-17"
-  lastModified: "2026-07-17"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 By default, only the organization that owns a target contract can request offchain permit evaluations for it through the [Evaluation API](/ace/guides/policy-manager/offchain-policies/request-offchain-permits). **Evaluation access grants** let you extend this capability to other organizations — for example, allowing a DEX or lending protocol to request permits against your token's compliance rules.
 
@@ -63,6 +63,12 @@ curl https://ace.api.chain.link/v1/organizations/me \
 
 ## Grant evaluation access
 
+<RequiredRole product="ace" role="admin">
+  Granting and revoking evaluation access requires `ace:policy_manager:target_access:write` in the organization that
+  owns the policy and target. Listing grants requires `ace:policy_manager:target_access:read`. Your API key must include
+  the relevant permissions. These permissions do not let you manage another organization's grants.
+</RequiredRole>
+
 As the target and policy owner, create the grant by specifying the offchain policy ID, target ID, and the grantee's Org ID:
 
 ```bash
@@ -99,6 +105,12 @@ curl https://ace.api.chain.link/v1/policies/<POLICY_ID>/targets/<TARGET_ID>/acce
 Each entry includes the grantee, the status (`active` or `revoked`), and timestamps, giving you an audit trail of who was granted access and when.
 
 ## Discover granted targets (grantee)
+
+<RequiredRole product="ace" role="viewer">
+  Listing granted targets requires `ace:policy_manager:target:read` in your API key. Starting evaluations against a
+  granted target requires ACE Operator or higher and `ace:evaluation:permit:write`; polling requires
+  `ace:evaluation:permit:read`.
+</RequiredRole>
 
 As a grantee, include `include_granted=true` when listing targets to see targets other organizations have shared with you, alongside your own:
 

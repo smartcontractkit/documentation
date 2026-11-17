@@ -1824,7 +1824,7 @@ Before diving in, these pages provide essential context:
 
 # Account Setup
 Source: https://docs.chain.link/ace/getting-started/account-setup
-Last Updated: 2026-10-26
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -1911,6 +1911,13 @@ curl https://ace.api.chain.link/v1/<endpoint> \
 > Schedule](/ace/active-monitoring/guides/configure-screening).
 
 ## 4. Set up CRE Connect Wallets
+
+**Required role:** ACE Admin. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating a wallet requires `ace:core:wallet:write`. Include this permission in your API key when using the API. ACE
+Operators can view existing wallets but cannot create them. The organization Owner also has this permission. If you
+need a different ACE role, ask your Owner, Platform Admin, or ACE Admin to [assign
+it](/chainlink-platform/assigning-and-modifying-roles?parent=ace).
 
 Before you can use ACE — whether from the Platform UI or the Coordinator API — you need a **CRE Connect Wallet** on each blockchain network where you want to operate.
 
@@ -2010,7 +2017,7 @@ Many organizations use more than one. Start with whichever is most relevant to y
 
 # Policy Manager Quick Start
 Source: https://docs.chain.link/ace/getting-started/policy-manager
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -2036,6 +2043,14 @@ This guide walks you through the **Policy Manager** — the ACE component for at
 Complete the [Account Setup](/ace/getting-started/account-setup) steps — organization creation, API key generation, and CRE Connect Wallet deployment — before proceeding.
 
 ### 3. Create a PolicyEngine
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating an engine, registering a target, and configuring policies in this guide require ACE write permissions. For
+the API, your key needs `ace:policy_manager:policy_engine:write`, `ace:policy_manager:target:write`, and
+`ace:policy_manager:policy:write`, plus the read permissions used to check the results. Creating the wallets in
+[Account Setup](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets) requires ACE Admin or the
+organization Owner.
 
 A **PolicyEngine** is the onchain contract that evaluates compliance rules on your smart contract. When you create a PolicyEngine, you also attach **extractors** — modules that decode transaction calldata so the PolicyEngine can evaluate policies against function arguments (sender, recipient, amount, etc.).
 
@@ -2295,7 +2310,7 @@ Make a transaction against your protected contract, verify the policy enforces c
 
 # Identity Manager Quick Start
 Source: https://docs.chain.link/ace/getting-started/identity-manager
-Last Updated: 2026-05-26
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -2314,6 +2329,13 @@ This guide walks you through the **Identity Manager** — the ACE component for 
 Complete the [Account Setup](/ace/getting-started/account-setup) steps — organization creation, API key generation, and CRE Connect Wallet deployment — before proceeding.
 
 ### 3. Set up your registries
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating registries and credential types requires `ace:identity_manager:registry:write`. Registering identities and
+issuing credentials requires `ace:identity_manager:identity:write`. For the API, select these permissions and the
+corresponding read permissions for your key. Querying credentials through Reporting also requires
+`ace:reporting:identity:read`.
 
 A **registry** is the top-level resource that groups an **identity registry** and a **credential registry**, deployed together on each chain you operate on.
 
@@ -3478,7 +3500,7 @@ Use [Approach 2](#approach-2-implement-ipolicyprotected-advanced), which adds on
 
 # Custom Contract Types & Extractors
 Source: https://docs.chain.link/ace/guides/policy-manager/contracts/custom-contract-types
-Last Updated: 2026-09-23
+Last Updated: 2026-11-10
 
 Any contract that routes calls through a Policy Engine can use ACE policy enforcement. Most custom integrations inherit `PolicyProtected`, mark protected functions with the `runPolicy` modifier, and connect to a Policy Engine. The platform ships built-in ERC-20, ERC-3643, and `CCIP-AdvancedPoolHooks` contract types with pre-built, audited extractors.
 
@@ -3620,6 +3642,12 @@ curl https://ace.api.chain.link/v1/contract-types/<CONTRACT_TYPE_ID> \
 
 ## Register your extractor
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Registering and updating extractors requires `ace:policy_manager:implementation:write`. Your API key must include this
+permission. Deploying your extractor contract uses your own blockchain wallet; an ACE role does not provide signing
+authority for that deployment.
+
 After deploying your extractor contract onchain, register it with the Coordinator API. The `onchain_extractors` array maps each deployment chain to the deployed contract address:
 
 ```bash
@@ -3650,10 +3678,17 @@ curl -X POST https://ace.api.chain.link/v1/extractors \
 >
 > An active extractor name must be unique within your organization. If you re-register an updated version, archive the
 > old extractor first (`PATCH /extractors/{id}` with `{"status": "archived"}`) or use a new name.
+> Archiving an extractor requires ACE Admin or the organization Owner, and `ace:policy_manager:implementation:archive:write`
+> in your API key. ACE Operators can register the new version under a different name.
 
 The `outputs` you declare must match what your contract's `extract()` returns: same names, same order.
 
 ## Attach the contract type to your engine and target
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Updating the engine requires `ace:policy_manager:policy_engine:write`, and registering or updating the target requires
+`ace:policy_manager:target:write`. Your API key needs these permissions in addition to implementation write access.
 
 When creating (or updating) your [policy engine](/ace/guides/policy-manager/manage-engines), pass `contract_type_ids` alongside `extractor_ids`:
 
@@ -3778,7 +3813,7 @@ This guarantees that the policy chain always completes and returns a definitive 
 
 # Managing Policy Engines
 Source: https://docs.chain.link/ace/guides/policy-manager/manage-engines
-Last Updated: 2026-09-23
+Last Updated: 2026-11-10
 
 A **policy engine** is the on-chain orchestrator that evaluates policies whenever a protected function is called. Each policy engine is deployed as a smart contract on one or more chains, and all your targets, policies, and protections are scoped to a specific engine. For a deeper explanation of how policy engines fit into the architecture, see [Architecture](/ace/concepts/architecture) and [Policy Management](/ace/concepts/policy-management).
 
@@ -3789,6 +3824,12 @@ A **policy engine** is the on-chain orchestrator that evaluates policies wheneve
 > where you want the engine to operate.
 
 ## Create a policy engine
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating and updating engines, including adding or removing attached extractors, requires
+`ace:policy_manager:policy_engine:write`. Include it in your key for API calls. ACE Viewers can view engines with
+`ace:policy_manager:policy_engine:read`.
 
 **Platform UI**
 
@@ -3995,6 +4036,11 @@ curl -X PUT https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
 
 ## Archive a policy engine
 
+**Required role:** ACE Admin. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Archiving an engine requires `ace:policy_manager:policy_engine:archive:write`, which is separate from the permission
+to create or update it. Your API key must include this archival permission.
+
 Archiving a policy engine deactivates it and prevents any further operations. All policy instances associated with the engine must be archived first.
 
 **Platform UI**
@@ -4034,7 +4080,7 @@ curl -X PATCH https://ace.api.chain.link/v1/policy-engines/<POLICY_ENGINE_ID> \
 
 # Managing Targets
 Source: https://docs.chain.link/ace/guides/policy-manager/manage-targets
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 A **target** is a smart contract protected by ACE and associated with a Policy Engine. ACE can detect a target from its onchain attachment to the engine, or you can register it through the Coordinator API. Once the target appears under the engine, you can configure its [default policy result](#default-allow-behavior) and attach [policy instances](/ace/guides/policy-manager/manage-policies) to its functions through [protections](/ace/guides/policy-manager/manage-protections).
 
@@ -4052,6 +4098,12 @@ A **target** is a smart contract protected by ACE and associated with a Policy E
 > Policy Engine and no contract integration.
 
 ## Register a target
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Registering, updating, or linking targets and changing their default policy result requires
+`ace:policy_manager:target:write`. Include it in your key for API calls. ACE Viewers can view targets with
+`ace:policy_manager:target:read`.
 
 When a contract calls `PolicyEngine.attach()`, ACE detects the onchain attachment and creates a target automatically.
 
@@ -4268,6 +4320,11 @@ The response returns the updated destination target with all merged on-chain add
 
 ## Archive a target
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Archiving targets and their protections requires `ace:policy_manager:target:archive:write`. Your API key must include
+this permission; target write access alone does not include archival.
+
 Archiving a target removes it from active use. All target protections associated with the target must be archived first.
 
 **Platform UI**
@@ -4306,7 +4363,7 @@ curl -X PATCH https://ace.api.chain.link/v1/targets/<TARGET_ID> \
 
 # Managing Policies
 Source: https://docs.chain.link/ace/guides/policy-manager/manage-policies
-Last Updated: 2026-04-15
+Last Updated: 2026-11-10
 
 This guide covers how to browse available policy types, create policy instances, and configure their parameters. For attaching policies to specific functions on your contracts, see [Protecting Target Functions](/ace/guides/policy-manager/manage-protections).
 
@@ -4352,6 +4409,11 @@ curl https://ace.api.chain.link/v1/policy-implementations/<IMPLEMENTATION_ID> \
 ```
 
 ## Create a policy instance
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating instances and updating their configuration requires `ace:policy_manager:policy:write`. Include it in your key
+for API calls. ACE Viewers can browse implementations and instances with the corresponding read permissions.
 
 A policy instance is created from a policy implementation and deployed on-chain within a policy engine.
 
@@ -4455,6 +4517,11 @@ The JSON patch format follows [RFC 6902](https://datatracker.ietf.org/doc/html/r
 
 ## Archive a policy
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Archiving a policy instance requires `ace:policy_manager:policy:archive:write`. Your API key must include this
+permission. Archiving a policy implementation instead requires ACE Admin.
+
 Archiving a policy instance removes it from active use. All target protections that reference this policy must be archived first.
 
 **Platform UI**
@@ -4494,7 +4561,7 @@ curl -X PATCH https://ace.api.chain.link/v1/policies/<POLICY_ID> \
 
 # Protecting Target Functions
 Source: https://docs.chain.link/ace/guides/policy-manager/manage-protections
-Last Updated: 2026-09-23
+Last Updated: 2026-11-10
 
 A **target protection** is the link between a [policy instance](/ace/guides/policy-manager/manage-policies) and a specific function on a [target contract](/ace/guides/policy-manager/manage-targets). When a user calls the protected function, the policy engine evaluates the bound policies in order and decides whether to allow or reject the transaction. Target protections are the final step in setting up on-chain compliance enforcement.
 
@@ -4508,6 +4575,11 @@ Before creating a target protection, you need:
 4. Extractors attached to the engine that support the function signatures you want to protect (see the [Policy Manager Quick Start](/ace/getting-started/policy-manager#extractor-ids-for-api-creation) for the full list).
 
 ## Create a target protection
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating protections and extending them to additional chains requires `ace:policy_manager:target:write`. Include it in
+your key for API calls. ACE Viewers can view protections with `ace:policy_manager:target:read`.
 
 A protection binds a policy instance to a specific function on your target contract. Once created, every call to that function is evaluated against the policy.
 
@@ -4660,6 +4732,11 @@ curl -X PUT https://ace.api.chain.link/v1/targets/<TARGET_ID>/protections/<PROTE
 
 ### Archive a protection
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Detaching a policy by archiving its protection requires `ace:policy_manager:target:archive:write`. Include this
+permission in your API key when using the API.
+
 Archiving a protection unbinds the policy from the function. Once archived, the policy no longer evaluates transactions on that function.
 
 **Platform UI**
@@ -4707,7 +4784,7 @@ ACE enforces an ordered archival flow. You must archive resources from the outsi
 
 # Managing Data Validators
 Source: https://docs.chain.link/ace/guides/policy-manager/manage-data-validators
-Last Updated: 2026-07-17
+Last Updated: 2026-11-10
 
 A **Data Validator** is an on-chain contract that inspects the **contents** of a credential — not just whether it exists. Attaching a Data Validator to an identity-validation policy lets you enforce rules on credential data, such as "only allow investors whose credential says they are in the US or Canada" or "reject any account whose credential country is on a sanctions list".
 
@@ -4762,6 +4839,11 @@ Before creating a Data Validator:
 3. Credentials issued **with data** against that credential type. See [Managing Credentials](/ace/guides/identity-manager/manage-credentials#issue-a-credential-with-data).
 
 ## Create a Data Validator
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating Data Validator instances and updating their configuration requires `ace:policy_manager:policy:write`. Your
+API key must include this permission. ACE Viewers can list and view instances with `ace:policy_manager:policy:read`.
 
 A **Data Validator instance** is a deployed copy of a Data Validator implementation (such as the AllowDenyList country-code validator), configured with your specific allow and deny lists and scoped to one or more chains — the same shape as a policy instance.
 
@@ -4873,6 +4955,11 @@ curl https://ace.api.chain.link/v1/data-validators/<DATA_VALIDATOR_ID> \
 
 ## Archive a Data Validator
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Archiving an instance requires `ace:policy_manager:policy:archive:write`. Include this permission in your API key.
+Updating a credential source to detach the validator also requires `ace:policy_manager:policy:write`.
+
 Archiving a Data Validator deactivates the instance. Before archiving, detach it from any credential source that references it (set that source's `dataValidator` back to the zero address).
 
 Archive a Data Validator with a `PATCH` request:
@@ -4899,7 +4986,7 @@ curl -X PATCH https://ace.api.chain.link/v1/data-validators/<DATA_VALIDATOR_ID> 
 
 # Protect CCIP Token Pools with ACE
 Source: https://docs.chain.link/ace/guides/policy-manager/ccip-token-pools
-Last Updated: 2026-09-23
+Last Updated: 2026-11-10
 
 Use the built-in `CCIP-AdvancedPoolHooks` contract type to apply ACE policies to cross-chain token transfers. You can evaluate a transfer before the source Token Pool locks or burns tokens and before the destination Token Pool releases or mints tokens.
 
@@ -4962,6 +5049,13 @@ Use `postflightCheck` to enforce recipient or destination-specific requirements 
 You can protect either hook or both. Protecting both provides independent enforcement at the source and destination.
 
 ## Configure ACE
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+The ACE setup below creates an engine and policies, updates a detected target, and attaches protections. For API
+calls, your key needs the policy engine, policy, and target write permissions described in the linked guides.
+Configuring the Token Pool and `AdvancedPoolHooks` onchain also requires authority on those contracts; an ACE role
+does not grant that authority.
 
 ### Create a policy engine
 
@@ -5114,7 +5208,7 @@ If `to` appears in the destination Reject policy instance's denylist, destinatio
 
 # Custom Policies
 Source: https://docs.chain.link/ace/guides/policy-manager/custom-policies
-Last Updated: 2026-07-17
+Last Updated: 2026-11-10
 
 In addition to the [pre-built Policy Library](/ace/reference/policy-library), you can write and deploy **your own policy contract** and register it with the ACE Platform. Once registered, a custom policy behaves exactly like a library policy — you create instances of it, configure them, and attach them to protected functions.
 
@@ -5215,6 +5309,12 @@ Deploy your policy contract on each chain where you intend to use it. This deplo
 > `Policy` contract handles this. If it does not, instance creation reverts.
 
 ## Step 3: Register the implementation
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Registering and updating a custom policy implementation requires `ace:policy_manager:implementation:write`. Your API
+key must include this permission. Creating and configuring instances later requires `ace:policy_manager:policy:write`;
+attaching them to targets requires `ace:policy_manager:target:write`.
 
 Register the deployed implementation with the Coordinator API so the platform can manage it. Provide a name, description, the on-chain addresses, and a **config schema**.
 
@@ -5318,8 +5418,18 @@ From here, a custom policy is used exactly like a library policy:
 
 ## Manage a custom implementation
 
-- **Update** name, description, or on-chain addresses with `PUT /policy-implementations/{id}`.
-- **Archive** with `PATCH /policy-implementations/{id}` (`{"status":"archived"}`). All instances of the implementation must be archived first.
+Update the name, description, or on-chain addresses with `PUT /policy-implementations/{id}` using
+`ace:policy_manager:implementation:write` in your API key.
+
+### Archive a custom implementation
+
+**Required role:** ACE Admin. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Archiving an implementation requires `ace:policy_manager:implementation:archive:write`. Your API key must include this
+permission. ACE Operators can update implementations and archive their instances, but cannot archive the
+implementation itself.
+
+Archive with `PATCH /policy-implementations/{id}` (`{"status":"archived"}`). All instances of the implementation must be archived first.
 
 ## Security considerations
 
@@ -5377,7 +5487,7 @@ See [Offchain Policies](/ace/concepts/off-chain-policies) for the architecture a
 
 # Managing Offchain Policies (MVP)
 Source: https://docs.chain.link/ace/guides/policy-manager/offchain-policies/manage-offchain-policies
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 ACE managed offchain risk policies screen wallet addresses with [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) before allowing a protected onchain action. You configure the risk rules and the target functions to protect. Chainlink manages the CRE workflow, deploys the onchain permit validator, calls TRM, and delivers approved permits onchain.
 
@@ -5417,6 +5527,11 @@ Before creating a managed offchain risk policy, you need:
 6. A TRM Labs account with Wallet Screening API access and a valid API key. ACE does not provide a TRM account or API credentials. See [TRM Wallet Screening](https://www.trmlabs.com/blockchain-intelligence-platform/wallet-screening) to learn about the product and request access.
 
 ## Store the TRM credential in Vault DON
+
+**Required role:** CRE Developer or higher. [What each role can do](/chainlink-platform/rbac?parent=cre#cre)
+
+Uploading this secret with the CRE CLI requires `cre:secret:write`, included in CRE Developer and CRE Admin.
+Authenticate with your CRE login for the browser-auth command below. Your ACE role does not grant CRE permissions.
 
 The managed workflow retrieves your TRM credential from Vault DON at runtime. The credential remains encrypted and is not included in the offchain policy configuration.
 
@@ -5517,6 +5632,11 @@ Category names are matched case-insensitively against the categories returned by
 
 ## Create the offchain policy
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating the policy and updating its configuration requires `ace:policy_manager:policy:write`. Your ACE API key must
+include this permission, and `ace:policy_manager:policy:read` to poll deployment status.
+
 Create the policy with `POST /v1/policies`. Use the same policy engine and chains as the target you plan to protect:
 
 ```bash
@@ -5562,6 +5682,11 @@ ACE creates a managed CRE workflow and deploys one CADV contract per selected ch
 > `active`.
 
 ## Attach the policy to a target function
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Attaching a protection requires `ace:policy_manager:target:write`. Include this permission in your ACE API key; policy
+write access alone does not allow changes to target protections.
 
 A protection connects the managed policy to a function on your target. The `extractor_output_ids` must identify, in order, the values that the permit will bind to onchain.
 
@@ -5624,6 +5749,11 @@ The policy enters `config_updating` and returns to `active` after the workflow i
 
 ## Remove a protection or policy
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Removing protections requires `ace:policy_manager:target:archive:write`; archiving the policy requires
+`ace:policy_manager:policy:archive:write`. Your API key must include both permissions to complete these steps.
+
 Remove a protection before archiving its policy:
 
 ```bash
@@ -5667,7 +5797,7 @@ Archiving removes the managed workflow and its event watchers. It also allows th
 
 # Requesting Offchain Permits
 Source: https://docs.chain.link/ace/guides/policy-manager/offchain-policies/request-offchain-permits
-Last Updated: 2026-07-17
+Last Updated: 2026-11-10
 
 After a managed offchain risk policy protects a function, the function rejects calls that do not have a matching permit. Your application must request an evaluation, wait for the permit to be stored onchain, and then submit the protected transaction.
 
@@ -5700,6 +5830,13 @@ Before requesting an evaluation, verify that:
 - You know the ordered extractor outputs configured on the protection. Your `permit_parameters` must use that same order.
 
 ## Evaluation API
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Starting evaluations requires `ace:evaluation:permit:write`; polling their status requires
+`ace:evaluation:permit:read`. Your API key must include both permissions for this workflow. When another organization
+owns the target, it must also [grant evaluation
+access](/ace/guides/policy-manager/offchain-policies/grant-evaluation-access) to your organization.
 
 The production Evaluation API base URL is:
 
@@ -5911,7 +6048,7 @@ If a TRM HTTP error should allow the action, review the policy's `fail_mode`. Us
 
 # Granting Evaluation Access
 Source: https://docs.chain.link/ace/guides/policy-manager/offchain-policies/grant-evaluation-access
-Last Updated: 2026-07-17
+Last Updated: 2026-11-10
 
 By default, only the organization that owns a target contract can request offchain permit evaluations for it through the [Evaluation API](/ace/guides/policy-manager/offchain-policies/request-offchain-permits). **Evaluation access grants** let you extend this capability to other organizations — for example, allowing a DEX or lending protocol to request permits against your token's compliance rules.
 
@@ -5966,6 +6103,12 @@ curl https://ace.api.chain.link/v1/organizations/me \
 
 ## Grant evaluation access
 
+**Required role:** ACE Admin. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Granting and revoking evaluation access requires `ace:policy_manager:target_access:write` in the organization that
+owns the policy and target. Listing grants requires `ace:policy_manager:target_access:read`. Your API key must include
+the relevant permissions. These permissions do not let you manage another organization's grants.
+
 As the target and policy owner, create the grant by specifying the offchain policy ID, target ID, and the grantee's Org ID:
 
 ```bash
@@ -6002,6 +6145,12 @@ curl https://ace.api.chain.link/v1/policies/<POLICY_ID>/targets/<TARGET_ID>/acce
 Each entry includes the grantee, the status (`active` or `revoked`), and timestamps, giving you an audit trail of who was granted access and when.
 
 ## Discover granted targets (grantee)
+
+**Required role:** ACE Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Listing granted targets requires `ace:policy_manager:target:read` in your API key. Starting evaluations against a
+granted target requires ACE Operator or higher and `ace:evaluation:permit:write`; polling requires
+`ace:evaluation:permit:read`.
 
 As a grantee, include `include_granted=true` when listing targets to see targets other organizations have shared with you, alongside your own:
 
@@ -6060,7 +6209,7 @@ These guides cover the day-to-day operations of an Identity Manager — from set
 
 # Managing Registries
 Source: https://docs.chain.link/ace/guides/identity-manager/manage-registries
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 ## What are registries?
 
@@ -6078,6 +6227,11 @@ Each sub-registry corresponds to a smart contract deployed on a specific blockch
 > Watchlist](/ace/active-monitoring/guides/manage-watchlist#add-addresses-from-an-identity-registry).
 
 ## Create a registry
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating and updating registries requires `ace:identity_manager:registry:write`. Include it in your key for API calls.
+ACE Viewers can view registries with `ace:identity_manager:registry:read`.
 
 **Platform UI**
 
@@ -6274,9 +6428,17 @@ This example adds sub-registries on Base Sepolia to an existing registry. The ex
 
 ## Share across organizations
 
+Managing cross-organization access grants requires ACE Admin or the organization Owner. ACE Operators can create
+and update registries, but cannot share them with another organization.
+
 You can grant another organization read access to a registry you own, so it can use your identities and credentials as a credential source without re-issuing them. Grants are read-only for the recipient and can be revoked at any time. For the full workflow — granting, discovering registries shared with you, using them, and revoking — see [External Registries](/ace/guides/identity-manager/external-registries).
 
 ## Archive a registry
+
+**Required role:** ACE Admin. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Archiving a registry requires `ace:identity_manager:registry:archive:write`. Your API key must include this
+permission. ACE Operators can create and update registries, but cannot archive them.
 
 Archiving a registry deactivates it and prevents any further operations. Before archiving, all identities associated with the registry must be removed or archived first.
 
@@ -6313,7 +6475,7 @@ curl -X PATCH https://ace.api.chain.link/v1/registries/a1b2c3d4-e5f6-7890-abcd-e
 
 # Managing Identities
 Source: https://docs.chain.link/ace/guides/identity-manager/manage-identities
-Last Updated: 2026-04-06
+Last Updated: 2026-11-10
 
 This guide covers how to register, view, update, and archive cross-chain identities (CCIDs) using the ACE Platform UI or the Coordinator API. Identities are the foundation of ACE's credential system — every credential is issued against an identity.
 
@@ -6338,6 +6500,12 @@ Each identity includes:
 For a deeper look at how CCIDs work, how they are generated, and the privacy considerations involved, see [Cross-Chain Identity](/ace/concepts/cross-chain-identity).
 
 ## Register an identity
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Registering, importing, and updating identities, including issuing credentials, requires
+`ace:identity_manager:identity:write`. Include it in your key for API calls. ACE Viewers can view identities and
+credentials with `ace:identity_manager:identity:read`.
 
 **Platform UI**
 
@@ -6600,6 +6768,11 @@ To add or remove chains later, use the [full update (PUT)](#full-update-put) end
 
 ## Archive an identity
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Archiving identities and their credentials requires `ace:identity_manager:identity:archive:write`. Include this
+permission in your API key when using the API.
+
 Archiving marks an identity as inactive. Archived identities are retained for audit purposes but are no longer considered active.
 
 **Platform UI**
@@ -6631,7 +6804,7 @@ curl -X PATCH "https://ace.api.chain.link/v1/identities/98765432-10fe-dcba-9876-
 
 # Managing Credential Types
 Source: https://docs.chain.link/ace/guides/identity-manager/manage-credential-types
-Last Updated: 2026-07-17
+Last Updated: 2026-11-10
 
 Credential types define the categories of attestations you can issue to [cross-chain identities (CCIDs)](/ace/concepts/cross-chain-identity). Each credential type represents a distinct kind of verification — for example, KYC completion, accredited investor status, or sanctions clearance. When you create a credential type, the `credential_type` string you provide is hashed to produce a `credential_type_hash` that policy contracts reference on-chain.
 
@@ -6652,6 +6825,12 @@ A credential type is a string you define to represent a specific compliance chec
 The `credential_type` string is case-sensitive and must be unique within a registry.
 
 ## Define a credential type
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating and updating credential types, including linking a data schema, requires
+`ace:identity_manager:registry:write`. Your API key must include this permission. ACE Viewers can view types with
+`ace:identity_manager:registry:read`.
 
 Register a credential type with a `POST` request:
 
@@ -6793,7 +6972,7 @@ If active credentials still reference the type, the request returns an error. Ar
 
 # Managing Credentials
 Source: https://docs.chain.link/ace/guides/identity-manager/manage-credentials
-Last Updated: 2026-07-17
+Last Updated: 2026-11-10
 
 Credentials are attestations that a [cross-chain identity (CCID)](/ace/concepts/cross-chain-identity) holds a specific qualification — for example, KYC verification, accredited investor status, or sanctions clearance. Each credential links a **credential type** to an **identity** and is recorded on-chain across every chain where the credential registry is deployed.
 
@@ -6809,6 +6988,11 @@ ACE supports two kinds of credentials:
 In both cases, no PII should be stored on-chain — credential data must be a minimal, non-sensitive value (such as an ISO country code) or a hash. For a deeper discussion of credential data and privacy, see [Credential Data and Privacy](/ace/concepts/cross-chain-identity#credential-data-and-privacy).
 
 ## Issue a credential
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Issuing and updating credentials, including credentials with data, requires `ace:identity_manager:identity:write`.
+Your API key must include this permission. ACE Viewers can read credentials with `ace:identity_manager:identity:read`.
 
 To issue a credential, you need a registered [identity](/ace/guides/identity-manager/manage-identities) and at least one [credential type](/ace/guides/identity-manager/manage-credential-types) defined in your registry.
 
@@ -6969,6 +7153,11 @@ curl -X PATCH "https://ace.api.chain.link/v1/credentials/<CREDENTIAL_ID>" \
 
 ## Revoke (archive) a credential
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Revoking a credential requires `ace:identity_manager:identity:archive:write`. Your API key must include this
+permission; identity write access alone does not include archival.
+
 Archiving a credential removes it from the on-chain credential registry. After archival, policy contracts will no longer see this credential — any policy that requires it (such as the [Credential Registry Identity Validator](/ace/reference/policy-library/credential-registry-identity-validator-policy)) will reject transactions from the associated addresses.
 
 Common reasons to revoke a credential:
@@ -7007,7 +7196,7 @@ curl -X PATCH "https://ace.api.chain.link/v1/credentials/<CREDENTIAL_ID>" \
 
 # External Registries
 Source: https://docs.chain.link/ace/guides/identity-manager/external-registries
-Last Updated: 2026-07-17
+Last Updated: 2026-11-10
 
 **External registries** let one organization reuse another organization's [registry](/ace/guides/identity-manager/manage-registries) without re-issuing identities or credentials. The registry owner grants a second organization **read access**, and that organization can then reference the registry's identities and credentials — for example, to enforce KYC in its own policies using a KYC provider's registry.
 
@@ -7037,6 +7226,12 @@ An active grant gives the grantee **read access** to the registry:
 > registry that was shared with it.
 
 ## Grant access to another organization
+
+**Required role:** ACE Admin. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Granting and revoking access requires `ace:identity_manager:registry_access:write` in the organization that owns the
+registry. Listing its grants requires `ace:identity_manager:registry_access:read`. Your API key must include the
+relevant permissions; owning the registry does not replace these member-role requirements.
 
 Granting access requires the grantee's **Org ID**. Ask the grantee to retrieve it and share it with you:
 
@@ -7082,6 +7277,12 @@ curl https://ace.api.chain.link/v1/registries/<REGISTRY_ID>/access-grants \
 Each entry includes the grantee, the status (`active` or `revoked`), and the `granted_at` / `revoked_at` timestamps, giving you an audit trail of who was granted access and when.
 
 ## Use a registry shared with you
+
+**Required role:** ACE Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Discovering shared registries requires `ace:identity_manager:registry:read`; reading their identities and credentials
+requires `ace:identity_manager:identity:read`. Include the permissions you use in your API key. Configuring your own
+policies to use the registry requires ACE Operator or higher and `ace:policy_manager:policy:write`.
 
 As a grantee, include `include_granted=true` when listing registries to see registries other organizations have shared with you, alongside your own:
 
@@ -8269,7 +8470,7 @@ The [cross-chain-identity docs](https://github.com/smartcontractkit/chainlink-ac
 
 # ACE API Overview
 Source: https://docs.chain.link/ace/reference/apis
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -8355,6 +8556,12 @@ The Evaluation API is the runtime interface for [managed offchain risk policies]
 For the integration flow, ABI encoding requirements, idempotency, and retry guidance, see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits). For the full schema, see the [Evaluation API Reference](/api/ace/evaluation/docs).
 
 ## Reporting API
+
+**Required role:** ACE Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Reporting queries require the read permission for the resource you query, such as `ace:reporting:transaction:read` or
+`ace:reporting:identity:read`. Select the relevant reporting permissions for your API key; Coordinator read
+permissions do not grant access to the Reporting API.
 
 The Reporting API provides read-only access to onchain state indexed by Chainlink's infrastructure. Use it for audit trails, compliance verification, and monitoring. For a detailed explanation of the data model and indexing pipeline, see [Reporting Manager](/ace/concepts/reporting).
 
@@ -8468,7 +8675,7 @@ ACE is in Beta. See [Beta Scope](/ace/beta-scope#active-monitoring-is-limited-du
 
 # Active Monitoring Quick Start
 Source: https://docs.chain.link/ace/active-monitoring/quick-start
-Last Updated: 2026-10-07
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -8491,6 +8698,12 @@ The examples use a token called Example Treasury Fund (EXTF) on Ethereum Sepolia
 
 ## 1. Create your CRE Connect Wallets
 
+**Required role:** ACE Admin. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating wallets requires `ace:core:wallet:write`, including in your API key when using the API. The organization
+Owner also qualifies. If wallets already exist on all required networks, an ACE Operator can reuse them and continue
+with the monitoring setup below.
+
 Active Monitoring executes enforcement operations through your CRE Connect Wallet, one per network. If you do not have one on every network where your token runs, create it. See [Set up CRE Connect Wallets](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets).
 
 Only networks with a created wallet are offered when you register a token.
@@ -8510,6 +8723,12 @@ Repeat on every network. Other contracts use other mechanisms, such as an `Acces
 To try Active Monitoring without any onchain action, skip this step and map every risk level to Silently log or Flag in step 5.
 
 ## 3. Store your TRM API key
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Steps 3-7 configure screening, tokens, monitoring rules, and the watchlist. For the API, select the write permissions
+for each of these resources in your ACE API key; the linked guides identify the permissions for each task. Granting
+the onchain role in step 2 separately requires an account authorized by your token contract.
 
 **Platform UI**
 
@@ -8616,6 +8835,12 @@ The response is `202` with `"result": "enqueued"`.
 The first run starts immediately and repeats at the interval you chose.
 
 ## 8. Read your first decisions
+
+**Required role:** ACE Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Viewing decisions requires `ace:active_monitoring:decision_log:read`. Include this permission in your key if you query
+decisions through the API. Resolving or enforcing flagged decisions later requires ACE Operator or higher and is
+available only to signed-in users in the Platform UI.
 
 When the first run completes, the **Decisions log** lists a decision for each rule that matched a risk event. Every address creates a risk event at its first screening, so each address appears for each rule it matches.
 
@@ -9156,7 +9381,7 @@ These guides cover the tasks you repeat when you run Active Monitoring: from pre
 
 # Prepare Your Token
 Source: https://docs.chain.link/ace/active-monitoring/guides/prepare-your-token
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -9178,7 +9403,8 @@ An **enforcement function** is a function on your token or on an associated cont
 > Active Monitoring needs only one thing: your CRE Connect Wallet must be allowed to call the enforcement functions. How
 > you allow it depends on the contract. This guide uses a standard ERC-3643 (T-REX) token, where the owner adds the
 > wallet as an agent. Other contracts use an OpenZeppelin `AccessControl` role, an owner-only function, or another
-> check. Use the access check your contract implements.
+> check. Use the access check your contract implements. These are onchain permissions on your contracts. Assigning a
+> Platform or ACE role to a member does not grant these permissions to the member or the CRE Connect Wallet.
 
 ## Grant the role to your CRE Connect Wallet
 
@@ -9219,6 +9445,12 @@ cast send <BLOCKLIST_ADDRESS> "setOperator(address,bool)" <CRE_CONNECT_WALLET_AD
 ```
 
 ### Example: a token that uses ACE policies
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating and configuring an ACE role-based policy requires `ace:policy_manager:policy:write`; attaching it to
+functions requires `ace:policy_manager:target:write`. Include these permissions in your API key when using the API.
+This ACE role is separate from the onchain role assigned to the CRE Connect Wallet.
 
 If your token also uses ACE for preventive enforcement, a [RoleBasedAccessControlPolicy](/ace/reference/policy-library/role-based-access-control-policy) on its policy engine can decide who calls each function. In that case, [create the policy](/ace/guides/policy-manager/manage-policies#create-a-policy-instance), assign the role to your CRE Connect Wallet, and [attach the policy](/ace/guides/policy-manager/manage-protections#create-a-target-protection) to each enforcement function. Active Monitoring does not require ACE policies on your token.
 
@@ -9286,7 +9518,7 @@ You control enforcement from your token, not only from ACE:
 
 # Configure the TRM API Key and Screening Schedule
 Source: https://docs.chain.link/ace/active-monitoring/guides/configure-screening
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -9301,6 +9533,12 @@ Active Monitoring screens your watchlist with TRM Wallet Screening, using your o
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key). It is a different key from your TRM API key.
 
 ## Store the TRM API key and choose the interval
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Storing or removing the TRM key requires `ace:active_monitoring:provider_api_key:write`. Setting the interval and
+starting or stopping screening requires `ace:active_monitoring:screening_interval:write`. Your ACE API key must
+include the permissions for the actions you perform. These permissions are separate from the TRM key itself.
 
 **Platform UI**
 
@@ -9434,7 +9672,7 @@ The response is `204`. To check whether a key is stored, call `GET /active-monit
 
 # Manage Monitored Tokens
 Source: https://docs.chain.link/ace/active-monitoring/guides/manage-monitored-tokens
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -9451,6 +9689,13 @@ A **monitored token** is a token contract you register with Active Monitoring, o
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
 
 ## Register a monitored token
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Registering tokens and their associated contracts requires `ace:active_monitoring:contract_group:write`. Include it in
+your key for API calls. ACE Viewers can view registered tokens with `ace:active_monitoring:contract_group:read`. The
+CRE Connect Wallet also needs the onchain permissions described in [Prepare Your
+Token](/ace/active-monitoring/guides/prepare-your-token).
 
 A monitored token has a **primary** contract, which is your token, and optionally one or more **associated** contracts. You select the **enforcement functions** of each contract: the functions that Active Monitoring may call when a rule enforces an action. In most cases the token itself has the functions you need, such as `freezePartialTokens`, so you register the primary contract alone. Add an associated contract only when an action must run on a different contract, for example a separate blocklist that your token does not call.
 
@@ -9642,7 +9887,7 @@ You cannot edit or remove a monitored token after you register it. Check the add
 
 # Configure Monitoring Rules
 Source: https://docs.chain.link/ace/active-monitoring/guides/configure-monitoring-rules
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -9661,6 +9906,12 @@ A token has one active rule, and you cannot edit it. To change a rule, delete it
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
 
 ## Create a monitoring rule
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating or deleting a rule requires `ace:active_monitoring:rule_group:write`. Include it in your key for API calls.
+Deleting a rule uses this same permission, even though the operation archives it. ACE Viewers can view rules with
+`ace:active_monitoring:rule_group:read`.
 
 The following rule is used in both tabs. It applies to a token called Example Treasury Fund, registered as in [Manage Monitored Tokens](/ace/active-monitoring/guides/manage-monitored-tokens): the token has the enforcement function `freezePartialTokens`, and an associated contract called Example Blocklist has `addBlacklist`. The blocklist is only an example of an action on a second contract. If you registered your token alone, keep the freeze and leave out the blocklist action.
 
@@ -9864,7 +10115,7 @@ An archived rule cannot be reactivated. Archiving it again returns `409`.
 
 # Manage the Watchlist
 Source: https://docs.chain.link/ace/active-monitoring/guides/manage-watchlist
-Last Updated: 2026-10-07
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -9884,6 +10135,11 @@ The watchlist has no fixed size limit. The Platform UI accepts up to 100 rows pe
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
 
 ## Add addresses from a CSV file
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Adding addresses from a CSV or an identity registry requires `ace:active_monitoring:monitored_address:write`. Include
+it in your key for API calls. ACE Viewers can view the watchlist with `ace:active_monitoring:monitored_address:read`.
 
 **Platform UI**
 
@@ -10015,7 +10271,7 @@ You cannot remove an address from the watchlist in Beta, in the Platform UI or i
 
 # Review Decisions and Track Operations
 Source: https://docs.chain.link/ace/active-monitoring/guides/review-decisions
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -10029,10 +10285,15 @@ Most decisions need nothing from you: a **silently logged** decision is a record
 ## Prerequisites
 
 - Screening is running, and at least one risk event matched a rule. See [Configure the TRM API Key and Screening Schedule](/ace/active-monitoring/guides/configure-screening).
-- To resolve or enforce a flagged decision, a signed-in user. These two actions are available in the Platform UI only.
+- To resolve or enforce a flagged decision, a signed-in ACE Operator, ACE Admin, or organization Owner. These two actions are available in the Platform UI only.
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
 
 ## List decisions
+
+**Required role:** ACE Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Listing and opening decisions requires `ace:active_monitoring:decision_log:read`. Include this permission in your ACE
+API key when reading decisions through the API.
 
 **Platform UI**
 
@@ -10099,6 +10360,11 @@ The response contains the outcome in `output`, the `input_events` (the TRM resul
 
 ## Resolve a flagged decision
 
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Resolving a decision requires `ace:active_monitoring:decision_log:write` and a signed-in user. Use the Platform UI; an
+API key cannot perform this action.
+
 Resolve a flagged decision when you review it and decide that no onchain action is needed. The decision closes, and your reason is recorded with your name.
 
 **Platform UI**
@@ -10117,6 +10383,12 @@ The outcome becomes **Resolved**.
 > Resolving a flagged decision is available in the Platform UI only. The record names the person who resolves the decision, so the action requires a signed-in user. A request authenticated with an API key returns `400`.
 
 ## Enforce an action on a flagged decision
+
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Enforcing a decision requires `ace:active_monitoring:decision_log:write` and a signed-in user in the Platform UI. The
+CRE Connect Wallet must separately be authorized to call the enforcement function onchain. Your ACE role does not
+grant that onchain authority.
 
 Enforce an action when you decide that the address needs an onchain action. You choose the function and the values, and Active Monitoring creates the operation on the network of the decision.
 
@@ -10165,7 +10437,7 @@ If an operation fails, open the decision. The **Action · Enforcement failed** c
 
 # Troubleshoot Active Monitoring
 Source: https://docs.chain.link/ace/active-monitoring/guides/troubleshooting
-Last Updated: 2026-10-07
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -10175,6 +10447,11 @@ Last Updated: 2026-10-07
 This guide lists the problems you are most likely to hit with Active Monitoring, with the cause and the fix for each. Find your symptom, then follow the steps.
 
 ## The Start screening button is disabled
+
+Starting screening requires ACE Operator or higher. For the API, your key must include
+`ace:active_monitoring:screening_interval:write`. ACE Viewers can read monitoring data but cannot start screening.
+If you need a different role, ask your Owner, Platform Admin, or ACE Admin to
+[assign it](/chainlink-platform/assigning-and-modifying-roles?parent=ace).
 
 Starting screening needs a TRM API key, a monitored token with an active monitoring rule, and at least one watchlist address. Hover over the button to see which one is missing, then complete it:
 
@@ -10253,7 +10530,7 @@ After you fix the cause, enforce the action again from a flagged decision, or wa
 
 # Rule Examples
 Source: https://docs.chain.link/ace/active-monitoring/guides/rule-examples
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -10266,7 +10543,12 @@ The examples illustrate what is possible. They are not recommendations: the righ
 
 ## Detect only
 
-Use this to learn what your watchlist produces before any onchain action. No role is needed, and no operation is created.
+**Required role:** ACE Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=ace#ace)
+
+Creating a monitoring rule from these examples requires `ace:active_monitoring:rule_group:write`. Include this
+permission in your ACE API key when using the API. Detect-only rules need no onchain enforcement role on the token.
+
+Use this to learn what your watchlist produces before any onchain action. No onchain enforcement role is needed, and no operation is created.
 
 | Risk level                       | Response     |
 | :------------------------------- | :----------- |
@@ -10346,7 +10628,7 @@ Each card has its own **Enforced action** fields, so the two cards can use diffe
 
 # Active Monitoring API
 Source: https://docs.chain.link/ace/active-monitoring/reference/api
-Last Updated: 2026-10-05
+Last Updated: 2026-11-10
 
 > **NOTE: Private Beta**
 >
@@ -10365,6 +10647,11 @@ curl https://ace.api.chain.link/v1/active-monitoring/contract-groups \
 ```
 
 ## Endpoints by task
+
+ACE Viewers can read Active Monitoring data. Creating or changing its configuration and starting or stopping
+screening requires ACE Operator or higher. Your API key must include the read or write permission for each resource
+you use; see [ACE permissions](/chainlink-platform/api-keys?parent=ace#ace) and the task guides below. The organization
+Owner has every permission, but each key is limited to the permissions selected for it.
 
 | Task                                        | Method and path                                                    | Guide                                                                                  |
 | ------------------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
