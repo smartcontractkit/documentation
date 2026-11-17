@@ -49,7 +49,7 @@ const limitIslandHydration = (element: Element) => {
   const island = element as HTMLElement & { hydrate?: () => Promise<void> }
   if (typeof island.hydrate !== "function" || hydrationLimitedIslands.has(element)) return
   const hydrate = island.hydrate
-  let hasHydrated = false
+  let hasHydrated = !island.hasAttribute("ssr")
   island.hydrate = async () => {
     if (hasHydrated) return
     hasHydrated = true
