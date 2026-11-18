@@ -162,7 +162,7 @@ uint32 numWords =  1;
 - `address vrfCoordinator`: The address of the Chainlink VRF Coordinator contract.
 - `bytes32 s_keyHash`: The gas lane key hash value, which is the maximum gas price you are willing to pay for a request in wei. It functions as an ID of the offchain VRF job that runs in response to requests.
 - `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords` function. It must be less than the `maxGasLimit` on the coordinator contract. Adjust this value for larger requests depending on how your `fulfillRandomWords` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
-- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` value on the coordinator contract. For Sepolia, the `minimumRequestBlockConfirmations` value is 3. You can check this and the other configuration values on the coordinator contract by querying [the `s_config` value in the Sepolia Etherscan block explorer](https://sepolia.etherscan.io/address/0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B#readContract#F12).
+- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than or equal to the `minimumRequestConfirmations` value on the coordinator contract. For Sepolia, the `minimumRequestConfirmations` value is 3. You can check this and the other configuration values on the coordinator contract by querying [the `s_config` value in the Sepolia Etherscan block explorer](https://sepolia.etherscan.io/address/0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B#readContract#F12).
 - `uint32 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. In this example, each transaction requests one random value.
 
 To keep track of addresses that roll the dice, the contract uses mappings. [Mappings](https://medium.com/upstate-interactive/mappings-in-solidity-explained-in-under-two-minutes-ecba88aff96e) are unique key-value pair data structures similar to hash tables in Java.
@@ -1480,23 +1480,23 @@ be used with Chainlink oracles. However, it can be [**converted to the official 
 
 ### Direct funding
 
-| Item                                           | Value                                                                                                                |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                                     | [0x404460C6A5EdE2D891e8297795264fDe62ADBB75](https://bscscan.com/token/0x404460C6A5EdE2D891e8297795264fDe62ADBB75)   |
-| VRF Wrapper                                    | [0x471506e6ADED0b9811D05B8cAc8Db25eE839Ac94](https://bscscan.com/address/0x471506e6ADED0b9811D05B8cAc8Db25eE839Ac94) |
-| VRF Coordinator                                | [0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9](https://bscscan.com/address/0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9) |
-| 200 gwei Key Hash                              | 0x130dba50ad435d4ecc214aad0d5820474137bd68e7e77724144f27c3c377d3d4                                                   |
-| 500 gwei Key Hash                              | 0xeb0f72532fed5c94b4caf7b49caf454b35a729608a441101b9269efb7efe2c6c                                                   |
-| 1000 gwei Key Hash                             | 0xb94a4fdb12830e15846df59b27d7c5d92c9c24c10cf6ae49655681ba560848dd                                                   |
-| Premium percentage  (paying with testnet BNB)  | 60                                                                                                                   |
-| Premium percentage  (paying with testnet LINK) | 50                                                                                                                   |
-| Minimum Confirmations                          | 3                                                                                                                    |
-| Maximum Confirmations                          | 200                                                                                                                  |
-| Maximum Random Values                          | 10                                                                                                                   |
-| Wrapper Gas overhead                           | 13400                                                                                                                |
-| Coordinator Gas Overhead (Native)              | 99500                                                                                                                |
-| Coordinator Gas Overhead (LINK)                | 121500                                                                                                               |
-| Coordinator Gas Overhead per Word              | 435                                                                                                                  |
+| Item                                   | Value                                                                                                                |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                             | [0x404460C6A5EdE2D891e8297795264fDe62ADBB75](https://bscscan.com/token/0x404460C6A5EdE2D891e8297795264fDe62ADBB75)   |
+| VRF Wrapper                            | [0x471506e6ADED0b9811D05B8cAc8Db25eE839Ac94](https://bscscan.com/address/0x471506e6ADED0b9811D05B8cAc8Db25eE839Ac94) |
+| VRF Coordinator                        | [0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9](https://bscscan.com/address/0xd691f04bc0C9a24Edb78af9E005Cf85768F694C9) |
+| 200 gwei Key Hash                      | 0x130dba50ad435d4ecc214aad0d5820474137bd68e7e77724144f27c3c377d3d4                                                   |
+| 500 gwei Key Hash                      | 0xeb0f72532fed5c94b4caf7b49caf454b35a729608a441101b9269efb7efe2c6c                                                   |
+| 1000 gwei Key Hash                     | 0xb94a4fdb12830e15846df59b27d7c5d92c9c24c10cf6ae49655681ba560848dd                                                   |
+| Premium percentage  (paying with BNB)  | 60                                                                                                                   |
+| Premium percentage  (paying with LINK) | 50                                                                                                                   |
+| Minimum Confirmations                  | 3                                                                                                                    |
+| Maximum Confirmations                  | 200                                                                                                                  |
+| Maximum Random Values                  | 10                                                                                                                   |
+| Wrapper Gas overhead                   | 13400                                                                                                                |
+| Coordinator Gas Overhead (Native)      | 99500                                                                                                                |
+| Coordinator Gas Overhead (LINK)        | 121500                                                                                                               |
+| Coordinator Gas Overhead per Word      | 435                                                                                                                  |
 
 ### BNB Chain Testnet
 
@@ -1618,37 +1618,37 @@ Testnet ETH is also available from several public [ETH faucets](https://faucetli
 
 ### Subscription
 
-| Item                                         | Value                                                                                                                            |
-| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                                   | [0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6](https://optimistic.etherscan.io/address/0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6) |
-| VRF Coordinator                              | [0x5FE58960F730153eb5A84a47C51BD4E58302E1c8](https://optimistic.etherscan.io/address/0x5FE58960F730153eb5A84a47C51BD4E58302E1c8) |
-| 2 gwei Key Hash                              | 0xa16a2316f92fa0abfd0029eea74e947d0613728e934d9794cd78bc02e2f69de4                                                               |
-| 30 gwei Key Hash                             | 0x8e7a847ba0757d1c302a3f0fde7b868ef8cf4acc32e48505f1a1d53693a10a19                                                               |
-| Premium percentage  (paying with OP Mainnet) | 60                                                                                                                               |
-| Premium percentage  (paying with LINK)       | 50                                                                                                                               |
-| Max Gas Limit                                | 2,500,000                                                                                                                        |
-| Minimum Confirmations                        | 0                                                                                                                                |
-| Maximum Confirmations                        | 200                                                                                                                              |
-| Maximum Random Values                        | 500                                                                                                                              |
+| Item                                   | Value                                                                                                                            |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                             | [0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6](https://optimistic.etherscan.io/address/0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6) |
+| VRF Coordinator                        | [0x5FE58960F730153eb5A84a47C51BD4E58302E1c8](https://optimistic.etherscan.io/address/0x5FE58960F730153eb5A84a47C51BD4E58302E1c8) |
+| 2 gwei Key Hash                        | 0xa16a2316f92fa0abfd0029eea74e947d0613728e934d9794cd78bc02e2f69de4                                                               |
+| 30 gwei Key Hash                       | 0x8e7a847ba0757d1c302a3f0fde7b868ef8cf4acc32e48505f1a1d53693a10a19                                                               |
+| Premium percentage  (paying with ETH)  | 60                                                                                                                               |
+| Premium percentage  (paying with LINK) | 50                                                                                                                               |
+| Max Gas Limit                          | 2,500,000                                                                                                                        |
+| Minimum Confirmations                  | 0                                                                                                                                |
+| Maximum Confirmations                  | 200                                                                                                                              |
+| Maximum Random Values                  | 500                                                                                                                              |
 
 ### Direct funding
 
-| Item                                         | Value                                                                                                                            |   |
-| -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | - |
-| LINK Token                                   | [0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6](https://optimistic.etherscan.io/address/0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6) |   |
-| VRF Wrapper                                  | [0x6A39cE9604FAD060B32bc35BE2e0D3825B2b8D4B](https://optimistic.etherscan.io/address/0x6A39cE9604FAD060B32bc35BE2e0D3825B2b8D4B) |   |
-| VRF Coordinator                              | [0x5FE58960F730153eb5A84a47C51BD4E58302E1c8](https://optimistic.etherscan.io/address/0x5FE58960F730153eb5A84a47C51BD4E58302E1c8) |   |
-| 2 gwei Key Hash                              | 0xa16a2316f92fa0abfd0029eea74e947d0613728e934d9794cd78bc02e2f69de4                                                               |   |
-| 30 gwei Key Hash                             | 0x8e7a847ba0757d1c302a3f0fde7b868ef8cf4acc32e48505f1a1d53693a10a19                                                               |   |
-| Premium percentage  (paying with OP Mainnet) | 60                                                                                                                               |   |
-| Premium percentage  (paying with LINK)       | 50                                                                                                                               |   |
-| Minimum Confirmations                        | 0                                                                                                                                |   |
-| Maximum Confirmations                        | 200                                                                                                                              |   |
-| Maximum Random Values                        | 10                                                                                                                               |   |
-| Wrapper Gas overhead                         | 13400                                                                                                                            |   |
-| Coordinator Gas Overhead (Native)            | 128500                                                                                                                           |   |
-| Coordinator Gas Overhead (LINK)              | 150400                                                                                                                           |   |
-| Coordinator Gas Overhead per Word            | 435                                                                                                                              |   |
+| Item                                   | Value                                                                                                                            |   |
+| -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | - |
+| LINK Token                             | [0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6](https://optimistic.etherscan.io/address/0x350a791bfc2c21f9ed5d10980dad2e2638ffa7f6) |   |
+| VRF Wrapper                            | [0x6A39cE9604FAD060B32bc35BE2e0D3825B2b8D4B](https://optimistic.etherscan.io/address/0x6A39cE9604FAD060B32bc35BE2e0D3825B2b8D4B) |   |
+| VRF Coordinator                        | [0x5FE58960F730153eb5A84a47C51BD4E58302E1c8](https://optimistic.etherscan.io/address/0x5FE58960F730153eb5A84a47C51BD4E58302E1c8) |   |
+| 2 gwei Key Hash                        | 0xa16a2316f92fa0abfd0029eea74e947d0613728e934d9794cd78bc02e2f69de4                                                               |   |
+| 30 gwei Key Hash                       | 0x8e7a847ba0757d1c302a3f0fde7b868ef8cf4acc32e48505f1a1d53693a10a19                                                               |   |
+| Premium percentage  (paying with ETH)  | 60                                                                                                                               |   |
+| Premium percentage  (paying with LINK) | 50                                                                                                                               |   |
+| Minimum Confirmations                  | 0                                                                                                                                |   |
+| Maximum Confirmations                  | 200                                                                                                                              |   |
+| Maximum Random Values                  | 10                                                                                                                               |   |
+| Wrapper Gas overhead                   | 13400                                                                                                                            |   |
+| Coordinator Gas Overhead (Native)      | 128500                                                                                                                           |   |
+| Coordinator Gas Overhead (LINK)        | 150400                                                                                                                           |   |
+| Coordinator Gas Overhead per Word      | 435                                                                                                                              |   |
 
 ### OP Sepolia Testnet
 
@@ -1768,19 +1768,19 @@ Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
 ### Subscription
 
-| Item                                          | Value                                                                                                                       |
-| --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                                    | [0x3902228D6A3d2Dc44731fD9d45FeE6a61c722D0b](https://app.roninchain.com/address/0x3902228D6A3d2Dc44731fD9d45FeE6a61c722D0b) |
-| VRF Coordinator                               | [0xa18FD3db9B869AD2A8c55267e0D54dbf6ECEbEda](https://app.roninchain.com/address/0xa18FD3db9B869AD2A8c55267e0D54dbf6ECEbEda) |
-| 50 gwei Key Hash                              | 0x1aefc70f3533a251306d6b85a6b336ba0ae2e384226274b236f42c3d5366dbbd                                                          |
-| 200 gwei Key Hash                             | 0x01753ec79fbf37f6332977d62f25c6d701b11bac255d7e79674fd2886622b0cc                                                          |
-| 1000 gwei Key Hash                            | 0xdb64d2a17ee501f6c6a8c090e058dfa39ea79d5fd121185bb903f5a69b8038a3                                                          |
-| Premium percentage  (paying with testnet ETH) | 60                                                                                                                          |
-| Premium percentage  (paying with LINK)        | 50                                                                                                                          |
-| Max Gas Limit                                 | 2,500,000                                                                                                                   |
-| Minimum Confirmations                         | 3                                                                                                                           |
-| Maximum Confirmations                         | 200                                                                                                                         |
-| Maximum Random Values                         | 500                                                                                                                         |
+| Item                                   | Value                                                                                                                       |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                             | [0x3902228D6A3d2Dc44731fD9d45FeE6a61c722D0b](https://app.roninchain.com/address/0x3902228D6A3d2Dc44731fD9d45FeE6a61c722D0b) |
+| VRF Coordinator                        | [0xa18FD3db9B869AD2A8c55267e0D54dbf6ECEbEda](https://app.roninchain.com/address/0xa18FD3db9B869AD2A8c55267e0D54dbf6ECEbEda) |
+| 50 gwei Key Hash                       | 0x1aefc70f3533a251306d6b85a6b336ba0ae2e384226274b236f42c3d5366dbbd                                                          |
+| 200 gwei Key Hash                      | 0x01753ec79fbf37f6332977d62f25c6d701b11bac255d7e79674fd2886622b0cc                                                          |
+| 1000 gwei Key Hash                     | 0xdb64d2a17ee501f6c6a8c090e058dfa39ea79d5fd121185bb903f5a69b8038a3                                                          |
+| Premium percentage  (paying with RON)  | 60                                                                                                                          |
+| Premium percentage  (paying with LINK) | 50                                                                                                                          |
+| Max Gas Limit                          | 2,500,000                                                                                                                   |
+| Minimum Confirmations                  | 3                                                                                                                           |
+| Maximum Confirmations                  | 200                                                                                                                         |
+| Maximum Random Values                  | 500                                                                                                                         |
 
 ### Direct funding
 
@@ -1792,7 +1792,7 @@ Chainlink's PegSwap service**](https://pegswap.chain.link/)
 | 50 gwei Key Hash                       | 0x1aefc70f3533a251306d6b85a6b336ba0ae2e384226274b236f42c3d5366dbbd                                                          |
 | 200 gwei Key Hash                      | 0x01753ec79fbf37f6332977d62f25c6d701b11bac255d7e79674fd2886622b0cc                                                          |
 | 1000 gwei Key Hash                     | 0xdb64d2a17ee501f6c6a8c090e058dfa39ea79d5fd121185bb903f5a69b8038a3                                                          |
-| Premium percentage  (paying with ETH)  | 60                                                                                                                          |
+| Premium percentage  (paying with RON)  | 60                                                                                                                          |
 | Premium percentage  (paying with LINK) | 50                                                                                                                          |
 | Minimum Confirmations                  | 3                                                                                                                           |
 | Maximum Confirmations                  | 200                                                                                                                         |
@@ -1811,7 +1811,7 @@ Chainlink's PegSwap service**](https://pegswap.chain.link/)
 | LINK Token                                    | [0x5bB50A6888ee6a67E22afFDFD9513be7740F1c15](https://saigon-app.roninchain.com/address/0x5bB50A6888ee6a67E22afFDFD9513be7740F1c15) |
 | VRF Coordinator                               | [0xc052324E6A27D0E4b2CbF0FdFFBCb3796ea8f8B8](https://saigon-app.roninchain.com/address/0xc052324E6A27D0E4b2CbF0FdFFBCb3796ea8f8B8) |
 | 200 gwei Key Hash                             | 0x0a79a60cc054d8da06a5050a1d07f0fec08088ca64192cf67477f8cc3e549f71                                                                 |
-| Premium percentage  (paying with testnet ETH) | 60                                                                                                                                 |
+| Premium percentage  (paying with testnet RON) | 60                                                                                                                                 |
 | Premium percentage  (paying with LINK)        | 50                                                                                                                                 |
 | Max Gas Limit                                 | 2,500,000                                                                                                                          |
 | Minimum Confirmations                         | 3                                                                                                                                  |
@@ -1826,7 +1826,7 @@ Chainlink's PegSwap service**](https://pegswap.chain.link/)
 | VRF Wrapper                                   | [0x4664273cf5Eb350c864c2F37F63b045a883F93C6](https://saigon-app.roninchain.com/address/0x4664273cf5Eb350c864c2F37F63b045a883F93C6) |
 | VRF Coordinator                               | [0xc052324E6A27D0E4b2CbF0FdFFBCb3796ea8f8B8](https://saigon-app.roninchain.com/address/0xc052324E6A27D0E4b2CbF0FdFFBCb3796ea8f8B8) |
 | 200 gwei Key Hash                             | 0x0a79a60cc054d8da06a5050a1d07f0fec08088ca64192cf67477f8cc3e549f71                                                                 |
-| Premium percentage  (paying with testnet ETH) | 60                                                                                                                                 |
+| Premium percentage  (paying with testnet RON) | 60                                                                                                                                 |
 | Premium percentage  (paying with LINK)        | 50                                                                                                                                 |
 | Minimum Confirmations                         | 3                                                                                                                                  |
 | Maximum Confirmations                         | 200                                                                                                                                |
@@ -1842,18 +1842,18 @@ Chainlink's PegSwap service**](https://pegswap.chain.link/)
 
 ### Subscription
 
-| Item                                          | Value                                                                                                                           |
-| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| LINK Token                                    | [0x32D8F819C8080ae44375F8d383Ffd39FC642f3Ec](https://soneium.blockscout.com/address/0x32D8F819C8080ae44375F8d383Ffd39FC642f3Ec) |
-| VRF Coordinator                               | [0xb89BB0aB64b219Ba7702f862020d879786a2BC49](https://soneium.blockscout.com/address/0xb89BB0aB64b219Ba7702f862020d879786a2BC49) |
-| 2 gwei Key Hash                               | 0x508b86c17b9abbdef2b903bd4f1b03ae321d7c1431b9ccac97d5927b4619e050                                                              |
-| 30 gwei Key Hash                              | 0x7611210a5ac0abd39b581bd4ce1108aa0b9e63994daa32cc7302d98ed47747c1                                                              |
-| Premium percentage  (paying with testnet ETH) | 60                                                                                                                              |
-| Premium percentage  (paying with LINK)        | 50                                                                                                                              |
-| Max Gas Limit                                 | 2,500,000                                                                                                                       |
-| Minimum Confirmations                         | 0                                                                                                                               |
-| Maximum Confirmations                         | 200                                                                                                                             |
-| Maximum Random Values                         | 500                                                                                                                             |
+| Item                                   | Value                                                                                                                           |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| LINK Token                             | [0x32D8F819C8080ae44375F8d383Ffd39FC642f3Ec](https://soneium.blockscout.com/address/0x32D8F819C8080ae44375F8d383Ffd39FC642f3Ec) |
+| VRF Coordinator                        | [0xb89BB0aB64b219Ba7702f862020d879786a2BC49](https://soneium.blockscout.com/address/0xb89BB0aB64b219Ba7702f862020d879786a2BC49) |
+| 2 gwei Key Hash                        | 0x508b86c17b9abbdef2b903bd4f1b03ae321d7c1431b9ccac97d5927b4619e050                                                              |
+| 30 gwei Key Hash                       | 0x7611210a5ac0abd39b581bd4ce1108aa0b9e63994daa32cc7302d98ed47747c1                                                              |
+| Premium percentage  (paying with ETH)  | 60                                                                                                                              |
+| Premium percentage  (paying with LINK) | 50                                                                                                                              |
+| Max Gas Limit                          | 2,500,000                                                                                                                       |
+| Minimum Confirmations                  | 0                                                                                                                               |
+| Maximum Confirmations                  | 200                                                                                                                             |
+| Maximum Random Values                  | 500                                                                                                                             |
 
 ### Direct funding
 
@@ -2005,7 +2005,7 @@ If you need to generate a random number within a given range, use [modulo](https
 ```solidity
 function fulfillRandomWords(
   uint256, /* requestId */
-  uint256[] memory randomWords
+  uint256[] calldata randomWords
 ) internal override {
   // Assuming only one random word was requested.
   s_randomRange = (randomWords[0] % 50) + 1;
@@ -2049,7 +2049,7 @@ function requestRandomWords() external onlyOwner returns (uint256) {
 
 function fulfillRandomWords(
     uint256 requestId,
-    uint256[] memory randomWords
+    uint256[] calldata randomWords
   ) internal override {
   // You can return the value to the requester,
   // but this example simply stores it.
@@ -2081,7 +2081,7 @@ function requestRandomWords() external onlyOwner {
 
 function fulfillRandomWords(
     uint256 requestId,
-    uint256[] memory randomWords
+    uint256[] calldata randomWords
   ) internal override {
   uint256 requestNumber = s_requestIdToRequestIndex[requestId];
   s_requestIndexToRandomWords[requestNumber] = randomWords;
@@ -2177,7 +2177,7 @@ contract VRFv2MultiplePaths is VRFConsumerBaseV2Plus {
 
     function fulfillRandomWords(
         uint256 requestId,
-        uint256[] memory randomWords
+        uint256[] calldata randomWords
     ) internal override {
         Variable variable = requests[requestId];
         if (variable == Variable.A) {
@@ -2662,7 +2662,7 @@ In the Subscription Manager, the minimum subscription balance is displayed as th
 
 The minimum subscription balance must be sufficient for each new consuming contract that you add to a subscription. For example, the minimum balance for a subscription that supports 20 consuming contracts needs to cover all the requests for all 20 contracts, while a subscription with one consuming contract only needs to cover that one contract.
 
-For one request, the required size of the minimum balance depends on the gas lane and the size of the request. For example, a consuming contract that requests one random value will require a smaller minimum balance than a consuming contract that requests 50 random values. In general, you can estimate the required minimum balance using the following formula where max verification gas is always 200,000 gwei.
+For one request, the required size of the minimum balance depends on the gas lane and the size of the request. For example, a consuming contract that requests one random value will require a smaller minimum balance than a consuming contract that requests 50 random values. In general, you can estimate the required minimum balance using the following formula where max verification gas is always 200,000 gas.
 
 The following formulas show how the minimum subscription balance is calculated for LINK and native tokens in general. [Specific examples of each](/vrf/v2-5/billing#estimate-minimum-subscription-balance) are available on the Billing page, where you can compare the higher minimum subscription balance with the lower amount for an actual request.
 
@@ -3304,7 +3304,7 @@ The parameters define how your requests will be processed. You can find the valu
 
 - `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your subscription is still charged for the work done to generate your requested random values.
 
-- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract.
+- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than or equal to the `minimumRequestConfirmations` limit on the coordinator contract.
 
 - `uint32 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly.
 
@@ -3815,7 +3815,7 @@ The parameters define how your requests will be processed. You can find the valu
 
 - `uint32 callbackGasLimit`: The limit for how much gas to use for the callback request to your contract's `fulfillRandomWords()` function. It must be less than the `maxGasLimit` limit on the coordinator contract minus the `wrapperGasOverhead`. See the [VRF v2.5 Direct funding limits](/vrf/v2-5/overview/direct-funding#limits) for more details. Adjust this value for larger requests depending on how your `fulfillRandomWords()` function processes and stores the received random values. If your `callbackGasLimit` is not sufficient, the callback will fail and your consuming contract is still charged for the work done to generate your requested random values.
 
-- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than the `minimumRequestBlockConfirmations` limit on the coordinator contract.
+- `uint16 requestConfirmations`: How many confirmations the Chainlink node should wait before responding. The longer the node waits, the more secure the random value is. It must be greater than or equal to the `minimumRequestConfirmations` limit on the coordinator contract.
 
 - `uint32 numWords`: How many random values to request. If you can use several random values in a single callback, you can reduce the amount of gas that you spend per random value. The total cost of the callback request depends on how your `fulfillRandomWords()` function processes and stores the received random values, so adjust your `callbackGasLimit` accordingly.
 
