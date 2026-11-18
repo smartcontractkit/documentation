@@ -25,7 +25,7 @@ If you need to generate a random number within a given range, use [modulo](https
 ```solidity
 function fulfillRandomWords(
   uint256, /* requestId */
-  uint256[] memory randomWords
+  uint256[] calldata randomWords
 ) internal override {
   // Assuming only one random word was requested.
   s_randomRange = (randomWords[0] % 50) + 1;
@@ -70,7 +70,7 @@ function requestRandomWords() external onlyOwner returns (uint256) {
 
 function fulfillRandomWords(
     uint256 requestId,
-    uint256[] memory randomWords
+    uint256[] calldata randomWords
   ) internal override {
   // You can return the value to the requester,
   // but this example simply stores it.
@@ -103,7 +103,7 @@ function requestRandomWords() external onlyOwner {
 
 function fulfillRandomWords(
     uint256 requestId,
-    uint256[] memory randomWords
+    uint256[] calldata randomWords
   ) internal override {
   uint256 requestNumber = s_requestIdToRequestIndex[requestId];
   s_requestIndexToRandomWords[requestNumber] = randomWords;
@@ -200,7 +200,7 @@ contract VRFv2MultiplePaths is VRFConsumerBaseV2Plus {
 
     function fulfillRandomWords(
         uint256 requestId,
-        uint256[] memory randomWords
+        uint256[] calldata randomWords
     ) internal override {
         Variable variable = requests[requestId];
         if (variable == Variable.A) {
