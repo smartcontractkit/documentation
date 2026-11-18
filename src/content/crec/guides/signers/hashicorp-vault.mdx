@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Sign Chainlink CRE Connect operations with a key stored in HashiCorp Vault's Transit secrets engine: supports RSA-2048/4096 and ECDSA P-256/P-384/P-521."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 The Vault signer (`github.com/smartcontractkit/crec-sdk/transact/signer/vault`) signs CRE Connect payloads using HashiCorp Vault's **Transit** secrets engine. Vault holds the key (optionally backed by an HSM) and signs digests on request.
 
@@ -86,6 +86,11 @@ s, err := vault.NewSigner("http://127.0.0.1:8200", "dev-only-token", "transit", 
 ```
 
 ## Provision the wallet's signer set
+
+<RequiredRole product="crec" role="operator">
+  Creating the CRE Connect wallet below requires `crec:wallet:write` in your API key. Access to the Vault key is
+  controlled separately by your Vault policy; a CRE Connect role does not grant permission to use that key.
+</RequiredRole>
 
 Read back the key's hex-encoded modulus and pass it (with hex-encoded exponent for RSA-65537) into `wallets.Create`. Both `e` and `n` must be **`0x`-prefixed hex** strings. `GetRSAModulus()` returns hex **without** the prefix, so prepend `0x` before passing it to the API:
 

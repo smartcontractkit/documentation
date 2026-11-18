@@ -4,7 +4,6 @@ import {
   is247TokenizedEquityFeed,
   is247USEquitiesStream,
   isApacEquitiesStreamFeed,
-  isFuturesStreamFeed,
   normalizeCategoryKey,
 } from "./feedMetadata.ts"
 import { is247Stream } from "./twentyFourSeven.ts"
@@ -111,10 +110,7 @@ export const HIDE_247_STREAM_FEED_IDS = true
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function shouldHideStreamFeedId(feed: any): boolean {
   return (
-    isApacEquitiesStreamFeed(feed) ||
-    isFuturesStreamFeed(feed) ||
-    is247USEquitiesStream(feed) ||
-    (HIDE_247_STREAM_FEED_IDS && is247Stream(feed))
+    isApacEquitiesStreamFeed(feed) || is247USEquitiesStream(feed) || (HIDE_247_STREAM_FEED_IDS && is247Stream(feed))
   )
 }
 

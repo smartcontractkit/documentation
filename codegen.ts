@@ -23,7 +23,7 @@ const config: CodegenConfig = {
     },
   },
   documents: ["./src/lib/ccip/graphql/queries/**/*.ts"],
-  emitLegacyCommonJSImports: false,
+  importExtension: ".js",
   generates: {
     "./src/lib/ccip/graphql/__generated__/": {
       preset: "client",

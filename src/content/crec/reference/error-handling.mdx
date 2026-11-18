@@ -5,7 +5,7 @@ date: Last Modified
 metadata:
   description: "Sentinel errors per SDK sub-package, REST error responses, and the SDK's transient-vs-permanent error classification used by the watchers client's polling loops."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
 This page collects every sentinel error exposed by the Go SDK, the REST error envelope, and the transient-vs-permanent error classification used by the SDK's polling loops.
@@ -23,6 +23,12 @@ Every non-2xx HTTP response uses the same shape:
 ```
 
 `type` ∈ `NOT_FOUND | VALIDATION_ERROR | CONFLICT | INTERNAL_ERROR | ORGANIZATION_NOT_FOUND`. The `code` field provides a machine-readable error code for `NOT_FOUND` and `CONFLICT` responses (e.g. `CHANNEL_NOT_FOUND`, `OPERATION_NOT_FINALIZABLE`, `IDEMPOTENCY_KEY_MISMATCH`). See the [REST API Reference](/crec/reference/rest-api#error-responses) for the full table.
+
+## Missing permissions
+
+If a request reports a missing permission, compare its permission ID with the scopes selected for your API key. A valid key can authenticate successfully while lacking permission for an action. Read access does not include writes, and wallet, channel, and watcher archival use separate `archive:write` permissions.
+
+Only permissions included in your member roles can be added to a key. If you need a different CRE Connect role, ask your Owner, Platform Admin, or CRE Connect Admin to [assign it](/chainlink-platform/assigning-and-modifying-roles?parent=crec). See [API Keys](/chainlink-platform/api-keys?parent=crec#cre-connect) for the available scopes. Fix the permissions before retrying. An onchain signature or contract-authorization failure is a separate issue; changing an API key scope does not authorize a signer on the Smart Account.
 
 ## Transient vs permanent errors
 

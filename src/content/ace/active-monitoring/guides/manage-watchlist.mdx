@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Add wallet addresses to the Chainlink ACE Active Monitoring watchlist from a CSV file or an identity registry, and view them, using the Platform UI or the Coordinator API."
   datePublished: "2026-10-05"
-  lastModified: "2026-10-07"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -26,6 +26,11 @@ The watchlist has no fixed size limit. The Platform UI accepts up to 100 rows pe
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key).
 
 ## Add addresses from a CSV file
+
+<RequiredRole product="ace" role="operator">
+  Adding addresses from a CSV or an identity registry requires `ace:active_monitoring:monitored_address:write`. Include
+  it in your key for API calls. ACE Viewers can view the watchlist with `ace:active_monitoring:monitored_address:read`.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">

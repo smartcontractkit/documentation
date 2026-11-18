@@ -5,16 +5,21 @@ date: Last Modified
 metadata:
   description: "Create, list, filter, update, and archive Chainlink CRE Connect channels through the Platform UI or the Go SDK / REST API."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 
 A **channel** is a logical container for the watchers, events, and operations that belong to one application or environment. Most teams create a channel per application (and per environment within that application).
 
 This guide covers the four channel-management operations exposed by the SDK and the [Channels page](https://app.chain.link/cre-connect/channels) in the CRE Connect UI: **create**, **list/filter**, **update**, and **archive**.
 
 ## Create a channel
+
+<RequiredRole product="crec" role="operator">
+  Creating a channel or updating its metadata requires `crec:channel:write`. Include this permission in your API key
+  when using the SDK or REST API.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">
@@ -66,6 +71,10 @@ The server returns the created channel with HTTP **201**.
 </MethodTabs>
 
 ## List and filter channels
+
+<RequiredRole product="crec" role="viewer">
+  Listing channels and reading their details requires `crec:channel:read`. Include this permission in your API key.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">
@@ -144,6 +153,11 @@ Both `Name` and `Description` can be updated. If the channel does not exist the 
 </MethodTabs>
 
 ## Archive a channel
+
+<RequiredRole product="crec" role="admin">
+  Archiving a channel requires `crec:channel:archive:write` in your API key. Channel write access alone does not allow
+  archival. Archiving any watchers that block cleanup also requires `crec:watcher:archive:write`.
+</RequiredRole>
 
 <Aside type="caution" title="Active watchers block archive">
   A channel cannot be archived while it still has watchers in `active`, `pending`, or `archiving` state. Archive every

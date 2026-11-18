@@ -5,8 +5,10 @@ date: Last Modified
 metadata:
   description: "Configure which keys are authorised to drive a Chainlink CRE Connect wallet: set the allowed-signer list at wallet-creation time and read it back via the Go SDK or REST API."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
+
+import { RequiredRole } from "@components"
 
 A wallet's **signer set** is the list of keys CRE Connect will accept signatures from when executing operations against the wallet's Smart Account. The set is typed: `ecdsa` wallets accept EVM addresses, `rsa` wallets accept RSA public keys.
 
@@ -21,6 +23,12 @@ A wallet's **signer set** is the list of keys CRE Connect will accept signatures
 | Archive wallet                  | Yes                  | `Wallets.Archive` is synchronous (PATCHes status to `archived`); the on-chain Smart Account contract is not modified.           |
 
 ## Set the signer set at creation time
+
+<RequiredRole product="crec" role="operator">
+  Provisioning a wallet with its initial signer set requires `crec:wallet:write` in your API key. The allowed signer
+  addresses or public keys are onchain authorization settings; assigning a member a CRE Connect role does not add the
+  member's key to this signer set.
+</RequiredRole>
 
 `StatusChannelId` is optional on `Create` (the SDK rejects a zero-UUID value with `wallets.ErrStatusChannelIDZero`); pass the channel where you want `wallet.status` events to land.
 
@@ -72,6 +80,11 @@ Service limits enforced by the API (`RSASignersList` / `ECDSASignersList` schema
 
 ## Read the current signer set
 
+<RequiredRole product="crec" role="viewer">
+  Reading a wallet's signer set requires `crec:wallet:read` in your API key. Reading the set does not grant access to
+  the private signing keys.
+</RequiredRole>
+
 ```go
 w, err := client.Wallets.Get(ctx, walletID)
 if err != nil { return err }
@@ -98,7 +111,7 @@ curl -sS "$CREC_BASE_URL/wallets/$WALLET_ID" \
 
 ## Changing the signer set after creation
 
-The signer set is fixed at creation. To use a different signer set, provision a new wallet with `Wallets.Create` and (when the old wallet is no longer needed) archive it with `Wallets.Archive`. Both APIs are the same ones documented above.
+The signer set is fixed at creation. To use a different signer set, provision a new wallet with `Wallets.Create` using `crec:wallet:write` (CRE Connect Operator or higher). If you also archive the old wallet with `Wallets.Archive`, that separate action requires `crec:wallet:archive:write` (CRE Connect Admin or the organization Owner). See [Archive a wallet](/crec/guides/wallets/create-and-manage#archive-a-wallet). These API actions do not transfer ownership of the original onchain Smart Account.
 
 ## Choosing signer addresses up front
 

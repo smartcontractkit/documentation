@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Set up Chainlink ACE Active Monitoring end to end: grant the onchain role, store your TRM API key, register a token, create a monitoring rule, add a watchlist, start screening, and read your first decision."
   datePublished: "2026-10-05"
-  lastModified: "2026-10-07"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -29,6 +29,12 @@ The examples use a token called Example Treasury Fund (EXTF) on Ethereum Sepolia
 
 ## 1. Create your CRE Connect Wallets
 
+<RequiredRole product="ace" role="admin">
+  Creating wallets requires `ace:core:wallet:write`, including in your API key when using the API. The organization
+  Owner also qualifies. If wallets already exist on all required networks, an ACE Operator can reuse them and continue
+  with the monitoring setup below.
+</RequiredRole>
+
 Active Monitoring executes enforcement operations through your CRE Connect Wallet, one per network. If you do not have one on every network where your token runs, create it. See [Set up CRE Connect Wallets](/ace/getting-started/account-setup#4-set-up-cre-connect-wallets).
 
 Only networks with a created wallet are offered when you register a token.
@@ -48,6 +54,12 @@ Repeat on every network. Other contracts use other mechanisms, such as an `Acces
 To try Active Monitoring without any onchain action, skip this step and map every risk level to Silently log or Flag in step 5.
 
 ## 3. Store your TRM API key
+
+<RequiredRole product="ace" role="operator">
+  Steps 3-7 configure screening, tokens, monitoring rules, and the watchlist. For the API, select the write permissions
+  for each of these resources in your ACE API key; the linked guides identify the permissions for each task. Granting
+  the onchain role in step 2 separately requires an account authorized by your token contract.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">
@@ -169,6 +181,12 @@ You cannot remove an address after you add it. See [Manage the Watchlist](/ace/a
 The first run starts immediately and repeats at the interval you chose.
 
 ## 8. Read your first decisions
+
+<RequiredRole product="ace" role="viewer">
+  Viewing decisions requires `ace:active_monitoring:decision_log:read`. Include this permission in your key if you query
+  decisions through the API. Resolving or enforcing flagged decisions later requires ACE Operator or higher and is
+  available only to signed-in users in the Platform UI.
+</RequiredRole>
 
 When the first run completes, the **Decisions log** lists a decision for each rule that matched a risk event. Every address creates a risk event at its first screening, so each address appears for each rule it matches.
 

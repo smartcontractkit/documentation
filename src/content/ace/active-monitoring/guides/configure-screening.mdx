@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Store your TRM API key, choose how often Chainlink ACE Active Monitoring screens your watchlist, and start or stop screening, using the Platform UI or the Coordinator API."
   datePublished: "2026-10-05"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs } from "@components"
+import { Aside, MethodTabs, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -21,6 +21,12 @@ Active Monitoring screens your watchlist with TRM Wallet Screening, using your o
 - To use the **API** tab, an ACE API key, sent in the `Authorization: Apikey <API_KEY>` header of each request. See [Create an API key](/ace/getting-started/account-setup#3-create-an-api-key). It is a different key from your TRM API key.
 
 ## Store the TRM API key and choose the interval
+
+<RequiredRole product="ace" role="operator">
+  Storing or removing the TRM key requires `ace:active_monitoring:provider_api_key:write`. Setting the interval and
+  starting or stopping screening requires `ace:active_monitoring:screening_interval:write`. Your ACE API key must
+  include the permissions for the actions you perform. These permissions are separate from the TRM key itself.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">

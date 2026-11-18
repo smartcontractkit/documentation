@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Overview of the Chainlink ACE Coordinator, Evaluation, and Reporting APIs."
   datePublished: "2026-03-31"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -93,6 +93,12 @@ The Evaluation API is the runtime interface for [managed offchain risk policies]
 For the integration flow, ABI encoding requirements, idempotency, and retry guidance, see [Requesting Offchain Permits](/ace/guides/policy-manager/offchain-policies/request-offchain-permits). For the full schema, see the <a href="/api/ace/evaluation/docs" target="_blank">Evaluation API Reference</a>.
 
 ## Reporting API
+
+<RequiredRole product="ace" role="viewer">
+  Reporting queries require the read permission for the resource you query, such as `ace:reporting:transaction:read` or
+  `ace:reporting:identity:read`. Select the relevant reporting permissions for your API key; Coordinator read
+  permissions do not grant access to the Reporting API.
+</RequiredRole>
 
 The Reporting API provides read-only access to onchain state indexed by Chainlink's infrastructure. Use it for audit trails, compliance verification, and monitoring. For a detailed explanation of the data model and indexing pipeline, see [Reporting Manager](/ace/concepts/reporting).
 

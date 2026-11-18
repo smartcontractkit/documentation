@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "List, filter, update, and archive Chainlink CRE Connect watchers, plus how to handle the asynchronous archive flow and recover from deployment failures."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, MethodTabs, ClickToZoom } from "@components"
+import { Aside, MethodTabs, ClickToZoom, RequiredRole } from "@components"
 
 Once a watcher is created (see [Create with Service](/crec/guides/watchers/create-with-service) or [Create with ABI](/crec/guides/watchers/create-with-abi)), you can list, filter, rename, and archive it.
 
@@ -21,6 +21,11 @@ A watcher moves through these states:
 The entity statuses surfaced by the REST API are `pending`, `active`, `archiving`, `archived`, and `failed` (the API maps internal `archive_failed` to `failed` on the entity response). The richer `archive_failed` state is visible on the `watcher.status` event payload (`apiClient.WatcherEventStatus`).
 
 ## List and filter
+
+<RequiredRole product="crec" role="viewer">
+  Listing watchers and fetching a watcher requires `crec:watcher:read` in your API key. Reading `watcher.status` events
+  to inspect a status reason separately requires `crec:event:read`.
+</RequiredRole>
 
 <MethodTabs>
   <Fragment slot="ui">
@@ -84,6 +89,11 @@ The watcher's `Status`, `ChainSelector`, `Address`, and (for service watchers) `
 
 ## Update metadata (name only)
 
+<RequiredRole product="crec" role="operator">
+  Renaming a watcher requires `crec:watcher:write`. Include this permission in your API key; it does not include
+  archival.
+</RequiredRole>
+
 The SDK only supports updating the watcher **name**. Address, ABI, service, and chain selector are immutable; create a new watcher to change them.
 
 <MethodTabs>
@@ -111,6 +121,12 @@ curl -sS -X PATCH "$CREC_BASE_URL/channels/$CHANNEL_ID/watchers/$WATCHER_ID" \
 </MethodTabs>
 
 ## Archive
+
+<RequiredRole product="crec" role="admin">
+  Archiving a watcher requires `crec:watcher:archive:write`. Your API key also needs `crec:watcher:read` if you use
+  `WaitForArchived` to poll the asynchronous archive. CRE Connect Operators can create and rename watchers, but cannot
+  archive them.
+</RequiredRole>
 
 Archiving is **asynchronous**. The PATCH returns HTTP **202** with the watcher in `archiving`; you must poll until it reaches `archived` or `archive_failed`.
 
