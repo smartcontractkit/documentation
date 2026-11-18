@@ -86772,13 +86772,13 @@ Legacy (V1) pools and receivers cannot opt into FTF. The OnRamp reverts an FTF s
 
 FTF requires explicit opt-in at every layer that participates in the message path. All layers default to full finality (`WAIT_FOR_FINALITY_FLAG`):
 
-| Layer                                   | What must permit FTF                                                                                                              |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Sender                                  | Sets `requestedFinalityConfig` in `ExtraArgsV3` to a non-finality mode (a block depth; `WAIT_FOR_SAFE_FLAG` is not activated yet) |
-| Token pool                              | Configures an `allowedFinalityConfig` that permits the requested mode (token transfers only)                                      |
-| Committee Verifier (and any other CCVs) | Each CCV's `allowedFinalityConfig` must permit the request                                                                        |
-| Executor                                | Executor contract's `allowedFinalityConfig` must permit the request                                                               |
-| Receiver                                | For messages that call `ccipReceive`, the receiver's `allowedFinalityConfig` must permit the request                              |
+| Layer                                   | What must permit FTF                                                                                           |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Sender                                  | Sets `requestedFinalityConfig` in `ExtraArgsV3` to a non-finality mode (a block depth or `WAIT_FOR_SAFE_FLAG`) |
+| Token pool                              | Configures an `allowedFinalityConfig` that permits the requested mode (token transfers only)                   |
+| Committee Verifier (and any other CCVs) | Each CCV's `allowedFinalityConfig` must permit the request                                                     |
+| Executor                                | Executor contract's `allowedFinalityConfig` must permit the request                                            |
+| Receiver                                | For messages that call `ccipReceive`, the receiver's `allowedFinalityConfig` must permit the request           |
 
 If any layer rejects the requested mode, the message cannot be sent (revert at `ccipSend`) or cannot be executed (the OffRamp's finality check fails and the message is recorded as FAILURE). See [FINALITY_INVARIANTS.md](https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/evm/contracts/invariants/FINALITY_INVARIANTS.md).
 
@@ -86844,7 +86844,7 @@ Users who wait for full finality are not affected by the FTF behavior of other u
 
 When using FTF, the core tradeoff is speed vs. reorg risk. Since double execution may occur when your confirmation depth is less than or equal to the reorg depth, the right setting depends on the reorg profile of your source chain.
 
-Senders request exactly one finality mode per message (full finality or a single block depth; `WAIT_FOR_SAFE_FLAG` is defined but not activated in the protocol yet). Receivers and pools may configure multiple permitted modes simultaneously (e.g., accept safe-tag requests or depth ≥ 5 or full finality). See `FinalityCodec` and [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side configuration.
+Senders request exactly one finality mode per message (full finality, a single block depth, or `WAIT_FOR_SAFE_FLAG`). Receivers and pools may configure multiple permitted modes simultaneously (e.g., accept safe-tag requests or depth ≥ 5 or full finality). See `FinalityCodec` and [FTF - dApps](/ccip/concepts/execution-latency/ftf-dapps) for receiver-side configuration.
 
 **L1 chains with instant or fast finality:** Use the default (full finality), since these chains already finalize fast enough for most use cases. CCIP still defaults to `WAIT_FOR_FINALITY_FLAG` unless you explicitly opt in, even on chains with fast native finality.
 
