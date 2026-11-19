@@ -9106,17 +9106,11 @@ Index streams publish `mid`, `bid`, and `ask`. Indices are not traded directly, 
 
 Stream names describe the benchmark each stream tracks. They are not official index names, and these streams are not affiliated with, sponsored, or endorsed by any index provider. Find stream IDs in the [RWA stream directory](/data-streams/rwa-streams).
 
-> **CAUTION: Index streams are single-source**
->
-> US single-name equity streams aggregate data from multiple market data vendors. Index streams do not: each index
-> stream relies on a single data provider, with no cross-validation and no fallback source. Review [Single Source Data
-> Providers](/data-streams/selecting-data-streams#single-source-data-providers) before integrating.
-
 ### Index risks&#x20;
 
 Integrating protocols are responsible for monitoring and risk controls. In addition to the risks in the [24/5 US Equities User Guide](/data-streams/rwa-streams/24-5-us-equities-user-guide), index streams carry the following:
 
-- **Single data provider.** If the provider publishes incorrect data, is delayed, or stops delivering during an open session, the stream reflects that issue. A gap may not be accompanied by a `marketStatus` change: the stream can keep reporting `marketStatus = 2` (Open) while `lastSeenTimestampNs` stops advancing. Monitor freshness during open sessions, apply deviation checks against recent valid observations, and pause or restrict activity when data quality signals trigger.
+- **Data gaps during open sessions.** If source data is incorrect, delayed, or stops arriving during an open session, the stream can reflect that issue. A gap may not be accompanied by a `marketStatus` change: the stream can keep reporting `marketStatus = 2` (Open) while `lastSeenTimestampNs` stops advancing. Monitor freshness during open sessions, apply deviation checks against recent valid observations, and pause or restrict activity when data quality signals trigger.
 - **Not the official index level.** The stream value is an independent representation of the index and can differ from the level published by the index provider, including official opening and closing levels. Do not assume the stream will match an official settlement or closing value.
 - **Regular hours only.** Outside regular trading hours `marketStatus = 5` (Closed) and the price holds at its last value. The first prints after the open can gap materially from the prior close. Don't combine index streams with Extended or Overnight single-name streams and expect a continuous index price.
 - **Market-wide and constituent halts.** Market-wide circuit breakers halt trading across US equities, and individual constituents can be halted while others trade. **Neither is reflected in `marketStatus`.** During a halt, the index value may be frozen or computed from stale constituent prices.
