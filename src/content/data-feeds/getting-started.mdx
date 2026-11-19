@@ -50,6 +50,8 @@ The contract has the following components:
 
 - The `getChainlinkDataFeedLatestAnswer()` function calls your `dataFeed` object and runs the `latestRoundData()` function. When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at `0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43`, which is the proxy address for the Sepolia BTC / USD data feed. Your contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable.
 
+This example ignores the `updatedAt` and `answeredInRound` values returned by `latestRoundData()` for clarity. `answeredInRound` is deprecated, but `updatedAt` is not: in a production contract, check that it is recent enough for your use case before you rely on an answer, and pause or fall back to an alternate operation mode when it is not. See [Check the timestamp of the latest answer](/data-feeds/overview#check-the-timestamp-of-the-latest-answer) for details.
+
 ## Compile, deploy, and run the contract
 
 <Aside type="caution" title="Configure and fund your wallet">
