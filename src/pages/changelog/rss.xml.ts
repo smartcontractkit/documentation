@@ -3,6 +3,9 @@ import type { APIContext } from "astro"
 import { getSecret } from "astro:env/server"
 import { searchClient } from "@algolia/client-search"
 import type { ChangelogItem } from "~/components/ChangelogSnippet/types.ts"
+import { toFeedDescription } from "~/components/ChangelogSnippet/feedDescription.ts"
+
+const FEED_ITEM_LIMIT = 50
 
 export async function GET(context: APIContext) {
   const appId = getSecret("ALGOLIA_APP_ID")
@@ -19,16 +22,21 @@ export async function GET(context: APIContext) {
     }
   }
 
+  // Algolia's ranking doesn't guarantee date order, so sort newest first before limiting
+  const latest = logs
+    .sort((a, b) => Date.parse(b["date-of-release"]) - Date.parse(a["date-of-release"]))
+    .slice(0, FEED_ITEM_LIMIT)
+
   return rss({
     title: "Chainlink Documentation Changelog",
     description: "Updates and releases across Chainlink products and networks.",
     site: context.site ?? "https://docs.chain.link",
     trailingSlash: false,
-    items: logs.map((log) => ({
+    items: latest.map((log) => ({
       title: log.name,
       link: `/changelog/${log.slug}`,
       pubDate: new Date(log["date-of-release"]),
-      description: log["text-description"],
+      description: toFeedDescription(log["text-description"] ?? ""),
       categories: [log.type, log.topic].filter(Boolean),
     })),
   })
