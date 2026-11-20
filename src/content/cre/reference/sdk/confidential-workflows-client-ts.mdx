@@ -7,7 +7,7 @@ pageId: "reference-sdk-confidential-workflows-client"
 metadata:
   description: "Reference for the TypeScript Confidential Workflows client: handlerInTee, TeeRuntime, and TEE constraint types for running workflow logic inside a secure enclave."
   datePublished: "2026-07-21"
-  lastModified: "2026-07-28"
+  lastModified: "2026-11-16"
 ---
 
 import { Aside } from "@components"
@@ -46,6 +46,12 @@ interface TeeRuntime<C> extends BaseRuntime<C>, SecretsProvider {
 ```
 
 `BaseRuntime<C>` provides `config`, `now()`, `log()`, and `emitMetric()`, same as on a regular `Runtime<C>`. `SecretsProvider` provides `getSecret()` and `getSecrets()`.
+
+<Aside type="caution" title="Math.random() is not cryptographically secure">
+  Do not use `Math.random()` inside a `handlerInTee` callback for keys, secrets, or tokens. Cryptographically secure
+  randomness is not currently supported in the TypeScript SDK. See [Secure Randomness in Confidential
+  Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-ts).
+</Aside>
 
 ### `TeeConstraint`
 
