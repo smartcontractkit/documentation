@@ -16,6 +16,7 @@ import { demoSinglePage } from "./demo-single-page.ts"
 import { demoMultiPage } from "./demo-multi-page.ts"
 import { crossChainVaultAdapter } from "./cross-chain-vault-adapter.ts"
 import { chainlinkForAgents } from "./chainlink-for-agents.ts"
+import { predictionMarketResolutionEngine } from "./prediction-market-resolution-engine.ts"
 
 export type { Solution, SolutionNavGroup } from "./types.ts"
 export { SOLUTION_PRODUCTS, productLabel } from "./products.ts"
@@ -25,7 +26,13 @@ export { SOLUTIONS_HUB_ENABLED } from "./hub.ts"
  * Every registered solution. Add yours here.
  * This is the only shared file a contributor touches.
  */
-const ALL_REGISTERED: Solution[] = [demoSinglePage, demoMultiPage, crossChainVaultAdapter, chainlinkForAgents]
+const ALL_REGISTERED: Solution[] = [
+  demoSinglePage,
+  demoMultiPage,
+  crossChainVaultAdapter,
+  chainlinkForAgents,
+  predictionMarketResolutionEngine,
+]
 
 export const SOLUTIONS: Solution[] = ALL_REGISTERED.filter((s) => !s.hidden)
 

@@ -10,4 +10,5 @@
  * routes and its "Solutions" entries in the product sidebars. This lets solutions ship
  * one by one.
  */
-export const SOLUTIONS_HUB_ENABLED = false
+// Preview the hub and site navigation locally without enabling the production hub.
+export const SOLUTIONS_HUB_ENABLED = import.meta.env?.DEV ?? false
