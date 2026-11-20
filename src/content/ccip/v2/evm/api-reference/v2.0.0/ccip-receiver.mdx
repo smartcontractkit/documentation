@@ -50,7 +50,7 @@ This contract provides:
 ## Import
 
 ```solidity
-import {CCIPReceiver} from "chainlink-ccip/applications/CCIPReceiver.sol";
+import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 ```
 
 If you have not installed the package:
@@ -138,8 +138,8 @@ Returns:
 
 ```solidity
 function getCCVsAndFinalityConfig(
-  uint64 destChainSelector,
-  bytes calldata extraData
+  uint64 sourceChainSelector,
+  bytes calldata sender
 ) external view virtual returns (
   address[] memory requiredCCVs,
   address[] memory optionalCCVs,
@@ -148,16 +148,16 @@ function getCCVsAndFinalityConfig(
 )
 ```
 
-> Returns the Cross-Chain Verifier (CCV) set and finality requirements used to validate and execute incoming messages.
+> Returns the Cross-Chain Verifier (CCV) set and finality requirements to apply when processing messages from a given source chain and sender.
 >
 > Override this function to customize how messages are verified before execution, such as requiring specific verifiers or stricter finality guarantees.
 >
 > Most applications do not need to override this unless they require custom verification or security assumptions.
 
-| Parameter           | Type             | Description                                                          |
-| ------------------- | ---------------- | -------------------------------------------------------------------- |
-| `destChainSelector` | `uint64`         | Destination chain identifier for the message.                        |
-| `extraData`         | `bytes calldata` | Additional data used to determine verification or finality behavior. |
+| Parameter             | Type             | Description                                         |
+| --------------------- | ---------------- | --------------------------------------------------- |
+| `sourceChainSelector` | `uint64`         | Identifier of the source chain sending the message. |
+| `sender`              | `bytes calldata` | Encoded address of the sender on the source chain.  |
 
 Returns:
 

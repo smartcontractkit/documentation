@@ -128,7 +128,7 @@ The smart contract in this tutorial is designed to interact with CCIP to send da
 
 ```sol
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity ^0.8.24;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
@@ -262,7 +262,7 @@ The smart contract in this tutorial is designed to interact with CCIP to receive
 
 ```sol
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity ^0.8.24;
 
 import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
@@ -84591,7 +84591,7 @@ It does not override chain finality or minimum confirmation requirements enforce
 The following example requests a confirmation depth of 10 blocks with a gas limit of 200,000, using the `ExtraArgsCodec` encoding helper:
 
 ```solidity
-import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+import {ExtraArgsCodec} from "@chainlink/contracts-ccip/contracts/libraries/ExtraArgsCodec.sol";
 
 bytes memory extraArgs = ExtraArgsCodec._getBasicEncodedExtraArgsV3BlockDepth(
   200_000, // gasLimit: gas available for the receiver callback on the destination chain
@@ -85571,7 +85571,7 @@ The Token Admin Registry (TAR) is a per-chain registry that maps each CCIP-enabl
 
 ## Token Handling Mechanisms
 
-There are three possible token handling mechanisms within CCIP, depending on how pools are paired across chains:
+There are four possible token handling mechanisms within CCIP, depending on how pools are paired across chains:
 
 | Token Handling Mechanism                                         | Source Pool Type and action                                | Destination Pool Type and action                              | Use Case                                                                                                                                                                                                                       |
 | :--------------------------------------------------------------- | :--------------------------------------------------------- | :------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -86499,12 +86499,15 @@ contract InboundOnlyReceiver is CCIPClientExample {
   {}
 
   /// @notice Configure inbound finality policy for a source chain.
-  /// extraArgs is unused here because this contract never sends outbound.
+  /// extraArgs is not used for inbound messages because this contract never sends outbound,
+  /// but it must be non-empty: CCIPClientExample.ccipReceive reverts with InvalidChain otherwise.
+  /// Pass any valid encoded ExtraArgs, for example from ExtraArgsCodec.
   function configureInboundPolicy(
     uint64 sourceChainSelector,
+    bytes calldata extraArgs,
     bytes4 allowedFinalityConfig
   ) external onlyOwner {
-    enableChain(sourceChainSelector, "", allowedFinalityConfig);
+    enableChain(sourceChainSelector, extraArgs, allowedFinalityConfig);
   }
 
   function _ccipReceive(Client.Any2EVMMessage memory message) internal override {
@@ -87876,7 +87879,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {AdvancedPoolHooksExtractor} from "chainlink-ccip/chains/evm/contracts/pools/extractors/AdvancedPoolHooksExtractor.sol";
+import {AdvancedPoolHooksExtractor} from "@chainlink/contracts-ccip/contracts/pools/extractors/AdvancedPoolHooksExtractor.sol";
 ```
 
 ***
@@ -88103,7 +88106,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {AdvancedPoolHooks} from "chainlink-ccip/chains/evm/contracts/pools/AdvancedPoolHooks.sol";
+import {AdvancedPoolHooks} from "@chainlink/contracts-ccip/contracts/pools/AdvancedPoolHooks.sol";
 ```
 
 ***
@@ -88729,7 +88732,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {BaseVerifier} from "chainlink-ccip/ccvs/components/BaseVerifier.sol";
+import {BaseVerifier} from "@chainlink/contracts-ccip/contracts/ccvs/components/BaseVerifier.sol";
 ```
 
 ## Inheritance
@@ -88938,7 +88941,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {BurnFromMintTokenPool} from "chainlink-ccip/pools/BurnFromMintTokenPool.sol";
+import {BurnFromMintTokenPool} from "@chainlink/contracts-ccip/contracts/pools/BurnFromMintTokenPool.sol";
 ```
 
 If you have not installed the package:
@@ -89082,7 +89085,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {BurnMintTokenPoolAbstract} from "chainlink-ccip/chains/evm/contracts/pools/BurnMintTokenPoolAbstract.sol";
+import {BurnMintTokenPoolAbstract} from "@chainlink/contracts-ccip/contracts/pools/BurnMintTokenPoolAbstract.sol";
 ```
 
 ***
@@ -89231,7 +89234,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {BurnMintTokenPool} from "chainlink-ccip/pools/BurnMintTokenPool.sol";
+import {BurnMintTokenPool} from "@chainlink/contracts-ccip/contracts/pools/BurnMintTokenPool.sol";
 ```
 
 If you have not installed the package:
@@ -89381,7 +89384,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {BurnMintWithLockReleaseFlagTokenPool} from "chainlink-ccip/pools/USDC/BurnMintWithLockReleaseFlagTokenPool.sol";
+import {BurnMintWithLockReleaseFlagTokenPool} from "@chainlink/contracts-ccip/contracts/pools/USDC/BurnMintWithLockReleaseFlagTokenPool.sol";
 ```
 
 If you have not installed the package:
@@ -89561,7 +89564,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {BurnToAddressMintTokenPool} from "chainlink-ccip/pools/BurnToAddressMintTokenPool.sol";
+import {BurnToAddressMintTokenPool} from "@chainlink/contracts-ccip/contracts/pools/BurnToAddressMintTokenPool.sol";
 ```
 
 If you have not installed the package:
@@ -89725,7 +89728,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {BurnWithFromMintTokenPool} from "chainlink-ccip/pools/BurnWithFromMintTokenPool.sol";
+import {BurnWithFromMintTokenPool} from "@chainlink/contracts-ccip/contracts/pools/BurnWithFromMintTokenPool.sol";
 ```
 
 If you have not installed the package:
@@ -89882,7 +89885,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {CCIPReceiver} from "chainlink-ccip/applications/CCIPReceiver.sol";
+import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 ```
 
 If you have not installed the package:
@@ -89970,8 +89973,8 @@ Returns:
 
 ```solidity
 function getCCVsAndFinalityConfig(
-  uint64 destChainSelector,
-  bytes calldata extraData
+  uint64 sourceChainSelector,
+  bytes calldata sender
 ) external view virtual returns (
   address[] memory requiredCCVs,
   address[] memory optionalCCVs,
@@ -89980,16 +89983,16 @@ function getCCVsAndFinalityConfig(
 )
 ```
 
-> Returns the Cross-Chain Verifier (CCV) set and finality requirements used to validate and execute incoming messages.
+> Returns the Cross-Chain Verifier (CCV) set and finality requirements to apply when processing messages from a given source chain and sender.
 >
 > Override this function to customize how messages are verified before execution, such as requiring specific verifiers or stricter finality guarantees.
 >
 > Most applications do not need to override this unless they require custom verification or security assumptions.
 
-| Parameter           | Type             | Description                                                          |
-| ------------------- | ---------------- | -------------------------------------------------------------------- |
-| `destChainSelector` | `uint64`         | Destination chain identifier for the message.                        |
-| `extraData`         | `bytes calldata` | Additional data used to determine verification or finality behavior. |
+| Parameter             | Type             | Description                                         |
+| --------------------- | ---------------- | --------------------------------------------------- |
+| `sourceChainSelector` | `uint64`         | Identifier of the source chain sending the message. |
+| `sender`              | `bytes calldata` | Encoded address of the sender on the source chain.  |
 
 Returns:
 
@@ -90118,7 +90121,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {CCTPMessageTransmitterProxy} from "chainlink-ccip/chains/evm/contracts/pools/USDC/CCTPMessageTransmitterProxy.sol";
+import {CCTPMessageTransmitterProxy} from "@chainlink/contracts-ccip/contracts/pools/USDC/CCTPMessageTransmitterProxy.sol";
 ```
 
 ***
@@ -90311,7 +90314,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {CCTPVerifier} from "chainlink-ccip/verifiers/CCTPVerifier.sol";
+import {CCTPVerifier} from "@chainlink/contracts-ccip/contracts/ccvs/CCTPVerifier.sol";
 ```
 
 If you have not installed the package:
@@ -90463,7 +90466,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {CCTPVerifier} from "chainlink-ccip/ccvs/CCTPVerifier.sol";
+import {CCTPVerifier} from "@chainlink/contracts-ccip/contracts/ccvs/CCTPVerifier.sol";
 ```
 
 ## Inheritance
@@ -90807,7 +90810,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {CCVConfigValidation} from "chainlink-ccip/libraries/CCVConfigValidation.sol";
+import {CCVConfigValidation} from "@chainlink/contracts-ccip/contracts/libraries/CCVConfigValidation.sol";
 ```
 
 ## Functions
@@ -90927,7 +90930,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {Client} from "chainlink-ccip/libraries/Client.sol";
+import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
 ```
 
 If you have not installed the package:
@@ -91082,8 +91085,8 @@ Used by:
 Example: construct an outbound CCIP message with a gas limit of 300,000 and the default finality (wait for full finalization):
 
 ```solidity
-import {Client} from "chainlink-ccip/libraries/Client.sol";
-import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
+import {ExtraArgsCodec} from "@chainlink/contracts-ccip/contracts/libraries/ExtraArgsCodec.sol";
 
 // Construct outbound CCIP message
 Client.EVM2AnyMessage memory message = Client.EVM2AnyMessage({
@@ -91140,7 +91143,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {CommitteeVerifier} from "chainlink-ccip/ccvs/CommitteeVerifier.sol";
+import {CommitteeVerifier} from "@chainlink/contracts-ccip/contracts/ccvs/CommitteeVerifier.sol";
 ```
 
 ## Inheritance
@@ -91539,7 +91542,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {CREATE2Factory} from "chainlink-ccip/chains/evm/contracts/CREATE2Factory.sol";
+import {CREATE2Factory} from "@chainlink/contracts-ccip/contracts/CREATE2Factory.sol";
 ```
 
 ***
@@ -91815,7 +91818,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ERC165CheckerReverting} from "chainlink-ccip/libraries/ERC165CheckerReverting.sol";
+import {ERC165CheckerReverting} from "@chainlink/contracts-ccip/contracts/libraries/ERC165CheckerReverting.sol";
 ```
 
 ## Functions
@@ -91927,7 +91930,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ERC20LockBox} from "chainlink-ccip/chains/evm/contracts/pools/ERC20LockBox.sol";
+import {ERC20LockBox} from "@chainlink/contracts-ccip/contracts/pools/ERC20LockBox.sol";
 ```
 
 ***
@@ -92626,7 +92629,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {Executor} from "chainlink-ccip/executor/Executor.sol";
+import {Executor} from "@chainlink/contracts-ccip/contracts/executor/Executor.sol";
 ```
 
 ## Inheritance
@@ -92893,7 +92896,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ExtraArgsCodec} from "chainlink-ccip/libraries/ExtraArgsCodec.sol";
+import {ExtraArgsCodec} from "@chainlink/contracts-ccip/contracts/libraries/ExtraArgsCodec.sol";
 ```
 
 ## High-level Encoding Functions
@@ -93214,7 +93217,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {FeeQuoter} from "chainlink-ccip/FeeQuoter.sol";
+import {FeeQuoter} from "@chainlink/contracts-ccip/contracts/FeeQuoter.sol";
 ```
 
 ## Inheritance
@@ -93657,7 +93660,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {FeeTokenHandler} from "chainlink-ccip/libraries/FeeTokenHandler.sol";
+import {FeeTokenHandler} from "@chainlink/contracts-ccip/contracts/libraries/FeeTokenHandler.sol";
 ```
 
 ## Functions
@@ -93747,7 +93750,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IAdvancedPoolHooks} from "chainlink-ccip/chains/evm/contracts/interfaces/IAdvancedPoolHooks.sol";
+import {IAdvancedPoolHooks} from "@chainlink/contracts-ccip/contracts/interfaces/IAdvancedPoolHooks.sol";
 ```
 
 ***
@@ -93884,7 +93887,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IAny2EVMMessageReceiverV2} from "chainlink-ccip/interfaces/IAny2EVMMessageReceiverV2.sol";
+import {IAny2EVMMessageReceiverV2} from "@chainlink/contracts-ccip/contracts/interfaces/IAny2EVMMessageReceiverV2.sol";
 ```
 
 If you have not installed the package:
@@ -93986,7 +93989,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IAny2EVMMessageReceiver} from "chainlink-ccip/interfaces/IAny2EVMMessageReceiver.sol";
+import {IAny2EVMMessageReceiver} from "@chainlink/contracts-ccip/contracts/interfaces/IAny2EVMMessageReceiver.sol";
 ```
 
 If you have not installed the package:
@@ -94073,7 +94076,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IBridgeV2} from "chainlink-ccip/chains/evm/contracts/interfaces/lombard/IBridgeV2.sol";
+import {IBridgeV2} from "@chainlink/contracts-ccip/contracts/interfaces/lombard/IBridgeV2.sol";
 ```
 
 ***
@@ -94206,7 +94209,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IBridgeV3} from "chainlink-ccip/chains/evm/contracts/interfaces/lombard/IBridgeV3.sol";
+import {IBridgeV3} from "@chainlink/contracts-ccip/contracts/interfaces/lombard/IBridgeV3.sol";
 ```
 
 ***
@@ -94306,7 +94309,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IBurnMintERC20} from "chainlink-ccip/chains/evm/contracts/interfaces/IBurnMintERC20.sol";
+import {IBurnMintERC20} from "@chainlink/contracts-ccip/contracts/interfaces/IBurnMintERC20.sol";
 ```
 
 ***
@@ -94419,7 +94422,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ICrossChainVerifierResolver} from "chainlink-ccip/interfaces/ICrossChainVerifierResolver.sol";
+import {ICrossChainVerifierResolver} from "@chainlink/contracts-ccip/contracts/interfaces/ICrossChainVerifierResolver.sol";
 ```
 
 If you have not installed the package:
@@ -94531,7 +94534,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ICrossChainVerifierV1} from "chainlink-ccip/interfaces/ICrossChainVerifierV1.sol";
+import {ICrossChainVerifierV1} from "@chainlink/contracts-ccip/contracts/interfaces/ICrossChainVerifierV1.sol";
 ```
 
 If you have not installed the package:
@@ -94706,7 +94709,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IEVM2AnyOnRampClient} from "chainlink-ccip/interfaces/IEVM2AnyOnRampClient.sol";
+import {IEVM2AnyOnRampClient} from "@chainlink/contracts-ccip/contracts/interfaces/IEVM2AnyOnRampClient.sol";
 ```
 
 If you have not installed the package:
@@ -94853,7 +94856,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IExecutor} from "chainlink-ccip/interfaces/IExecutor.sol";
+import {IExecutor} from "@chainlink/contracts-ccip/contracts/interfaces/IExecutor.sol";
 ```
 
 If you have not installed the package:
@@ -94963,7 +94966,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IFeeQuoter} from "chainlink-ccip/chains/evm/contracts/interfaces/IFeeQuoter.sol";
+import {IFeeQuoter} from "@chainlink/contracts-ccip/contracts/interfaces/IFeeQuoter.sol";
 ```
 
 ***
@@ -95164,7 +95167,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IGetCCIPAdmin} from "chainlink-ccip/interfaces/IGetCCIPAdmin.sol";
+import {IGetCCIPAdmin} from "@chainlink/contracts-ccip/contracts/interfaces/IGetCCIPAdmin.sol";
 ```
 
 If you have not installed the package:
@@ -95232,7 +95235,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ILegacyFeeQuoter} from "chainlink-ccip/chains/evm/contracts/interfaces/ILegacyFeeQuoter.sol";
+import {ILegacyFeeQuoter} from "@chainlink/contracts-ccip/contracts/interfaces/ILegacyFeeQuoter.sol";
 ```
 
 ***
@@ -95380,7 +95383,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ILockBox} from "chainlink-ccip/chains/evm/contracts/interfaces/ILockBox.sol";
+import {ILockBox} from "@chainlink/contracts-ccip/contracts/interfaces/ILockBox.sol";
 ```
 
 ***
@@ -95481,7 +95484,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IMailbox} from "chainlink-ccip/chains/evm/contracts/interfaces/lombard/IMailbox.sol";
+import {IMailbox} from "@chainlink/contracts-ccip/contracts/interfaces/lombard/IMailbox.sol";
 ```
 
 ***
@@ -95665,7 +95668,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IOwner} from "chainlink-ccip/interfaces/IOwner.sol";
+import {IOwner} from "@chainlink/contracts-ccip/contracts/interfaces/IOwner.sol";
 ```
 
 If you have not installed the package:
@@ -95738,7 +95741,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IPoolV1V2} from "chainlink-ccip/interfaces/IPoolV1V2.sol";
+import {IPoolV1V2} from "@chainlink/contracts-ccip/contracts/interfaces/IPoolV1V2.sol";
 ```
 
 If you have not installed the package:
@@ -95807,7 +95810,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IPoolV1} from "chainlink-ccip/interfaces/IPool.sol";
+import {IPoolV1} from "@chainlink/contracts-ccip/contracts/interfaces/IPool.sol";
 ```
 
 If you have not installed the package:
@@ -95959,7 +95962,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IPoolV2} from "chainlink-ccip/interfaces/IPoolV2.sol";
+import {IPoolV2} from "@chainlink/contracts-ccip/contracts/interfaces/IPoolV2.sol";
 ```
 
 If you have not installed the package:
@@ -96194,7 +96197,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IRMN} from "chainlink-ccip/chains/evm/contracts/interfaces/IRMN.sol";
+import {IRMN} from "@chainlink/contracts-ccip/contracts/interfaces/IRMN.sol";
 ```
 
 ***
@@ -96295,7 +96298,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IRouterClient} from "chainlink-ccip/interfaces/IRouterClient.sol";
+import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 ```
 
 If you have not installed the package:
@@ -96463,7 +96466,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IRouter} from "chainlink-ccip/chains/evm/contracts/interfaces/IRouter.sol";
+import {IRouter} from "@chainlink/contracts-ccip/contracts/interfaces/IRouter.sol";
 ```
 
 ***
@@ -96580,7 +96583,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {ITokenAdminRegistry} from "chainlink-ccip/interfaces/ITokenAdminRegistry.sol";
+import {ITokenAdminRegistry} from "@chainlink/contracts-ccip/contracts/interfaces/ITokenAdminRegistry.sol";
 ```
 
 If you have not installed the package:
@@ -96792,7 +96795,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {IWrappedNative} from "chainlink-ccip/chains/evm/contracts/interfaces/IWrappedNative.sol";
+import {IWrappedNative} from "@chainlink/contracts-ccip/contracts/interfaces/IWrappedNative.sol";
 ```
 
 ***
@@ -97025,7 +97028,7 @@ The library contains no storage and no external calls.
 ## Import
 
 ```solidity
-import {Internal} from "chainlink-ccip/chains/evm/contracts/libraries/Internal.sol";
+import {Internal} from "@chainlink/contracts-ccip/contracts/libraries/Internal.sol";
 ```
 
 ***
@@ -97275,7 +97278,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {LockReleaseTokenPool} from "chainlink-ccip/pools/LockReleaseTokenPool.sol";
+import {LockReleaseTokenPool} from "@chainlink/contracts-ccip/contracts/pools/LockReleaseTokenPool.sol";
 ```
 
 If you have not installed the package:
@@ -97447,7 +97450,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {LombardTokenPool} from "chainlink-ccip/chains/evm/contracts/pools/Lombard/LombardTokenPool.sol";
+import {LombardTokenPool} from "@chainlink/contracts-ccip/contracts/pools/Lombard/LombardTokenPool.sol";
 ```
 
 ***
@@ -97827,7 +97830,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {LombardVerifier} from "chainlink-ccip/chains/evm/contracts/ccvs/LombardVerifier.sol";
+import {LombardVerifier} from "@chainlink/contracts-ccip/contracts/ccvs/LombardVerifier.sol";
 ```
 
 ***
@@ -98400,7 +98403,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {MessageV1Codec} from "chainlink-ccip/libraries/MessageV1Codec.sol";
+import {MessageV1Codec} from "@chainlink/contracts-ccip/contracts/libraries/MessageV1Codec.sol";
 ```
 
 ## Functions
@@ -98593,7 +98596,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {OffRamp} from "chainlink-ccip/offRamp/OffRamp.sol";
+import {OffRamp} from "@chainlink/contracts-ccip/contracts/offRamp/OffRamp.sol";
 ```
 
 ## Inheritance
@@ -98775,7 +98778,7 @@ For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/er
 - Each entry in `verifierResults` must correspond to the CCV at the same index in `ccvs`.
 - CCV ordering does not affect validation but must align with provided verifier results.
 - Each message can only be executed once.
-- `gasLimitOverride` must not exceed the message-defined gas limit.
+- A non-zero `gasLimitOverride` must be greater than or equal to the message-defined gas limit.
 - Messages from chains not explicitly enabled in source chain configuration will be rejected.
 - Execution will revert if validation fails, gas limits are insufficient, or token handling fails.
 - Receiver execution failures are captured and emitted but still update execution state.
@@ -98877,7 +98880,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {OnRamp} from "chainlink-ccip/onRamp/OnRamp.sol";
+import {OnRamp} from "@chainlink/contracts-ccip/contracts/onRamp/OnRamp.sol";
 ```
 
 ## Inheritance
@@ -99623,7 +99626,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {Pool} from "chainlink-ccip/libraries/Pool.sol";
+import {Pool} from "@chainlink/contracts-ccip/contracts/libraries/Pool.sol";
 ```
 
 ## Source Chain (Lock/Burn)
@@ -99736,7 +99739,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {Proxy} from "chainlink-ccip/chains/evm/contracts/Proxy.sol";
+import {Proxy} from "@chainlink/contracts-ccip/contracts/Proxy.sol";
 ```
 
 ***
@@ -100015,7 +100018,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {RateLimiter} from "chainlink-ccip/libraries/RateLimiter.sol";
+import {RateLimiter} from "@chainlink/contracts-ccip/contracts/libraries/RateLimiter.sol";
 ```
 
 If you have not installed the package:
@@ -100167,7 +100170,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {RegistryModuleOwnerCustom} from "chainlink-ccip/chains/evm/contracts/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
+import {RegistryModuleOwnerCustom} from "@chainlink/contracts-ccip/contracts/tokenAdminRegistry/RegistryModuleOwnerCustom.sol";
 ```
 
 ***
@@ -100392,7 +100395,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {RMNProxy} from "chainlink-ccip/chains/evm/contracts/rmn/RMNProxy.sol";
+import {RMNProxy} from "@chainlink/contracts-ccip/contracts/rmn/RMNProxy.sol";
 ```
 
 ***
@@ -100594,7 +100597,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {RMN} from "chainlink-ccip/chains/evm/contracts/rmn/RMN.sol";
+import {RMN} from "@chainlink/contracts-ccip/contracts/rmn/RMN.sol";
 ```
 
 ***
@@ -100758,7 +100761,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {Router} from "chainlink-ccip/Router.sol";
+import {Router} from "@chainlink/contracts-ccip/contracts/Router.sol";
 ```
 
 If you have not installed the package:
@@ -101176,7 +101179,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {SignatureQuorumValidator} from "chainlink-ccip/chains/evm/contracts/ccvs/components/SignatureQuorumValidator.sol";
+import {SignatureQuorumValidator} from "@chainlink/contracts-ccip/contracts/ccvs/components/SignatureQuorumValidator.sol";
 ```
 
 ***
@@ -101403,7 +101406,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {SiloedLockReleaseTokenPool} from "chainlink-ccip/pools/SiloedLockReleaseTokenPool.sol";
+import {SiloedLockReleaseTokenPool} from "@chainlink/contracts-ccip/contracts/pools/SiloedLockReleaseTokenPool.sol";
 ```
 
 If you have not installed the package:
@@ -101614,7 +101617,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {SiloedUSDCTokenPool} from "chainlink-ccip/pools/USDC/SiloedUSDCTokenPool.sol";
+import {SiloedUSDCTokenPool} from "@chainlink/contracts-ccip/contracts/pools/USDC/SiloedUSDCTokenPool.sol";
 ```
 
 If you have not installed the package:
@@ -101838,7 +101841,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {TokenAdminRegistry} from "chainlink-ccip/tokenAdminRegistry/TokenAdminRegistry.sol";
+import {TokenAdminRegistry} from "@chainlink/contracts-ccip/contracts/tokenAdminRegistry/TokenAdminRegistry.sol";
 ```
 
 If you have not installed the package:
@@ -102101,7 +102104,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {TokenPoolFactory} from "chainlink-ccip/chains/evm/contracts/TokenPoolFactory.sol";
+import {TokenPoolFactory} from "@chainlink/contracts-ccip/contracts/TokenPoolFactory.sol";
 ```
 
 ***
@@ -102447,7 +102450,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {TokenPool} from "chainlink-ccip/chains/evm/contracts/pools/TokenPool.sol";
+import {TokenPool} from "@chainlink/contracts-ccip/contracts/pools/TokenPool.sol";
 ```
 
 ***
@@ -102725,7 +102728,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {USDPriceWith18Decimals} from "chainlink-ccip/libraries/USDPriceWith18Decimals.sol";
+import {USDPriceWith18Decimals} from "@chainlink/contracts-ccip/contracts/libraries/USDPriceWith18Decimals.sol";
 ```
 
 ## Functions
@@ -102834,7 +102837,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {USDCSourcePoolDataCodec} from "chainlink-ccip/libraries/USDCSourcePoolDataCodec.sol";
+import {USDCSourcePoolDataCodec} from "@chainlink/contracts-ccip/contracts/libraries/USDCSourcePoolDataCodec.sol";
 ```
 
 ## Constants
@@ -102908,7 +102911,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {USDCTokenPoolProxy} from "chainlink-ccip/chains/evm/contracts/pools/usdc/USDCTokenPoolProxy.sol";
+import {USDCTokenPoolProxy} from "@chainlink/contracts-ccip/contracts/pools/USDC/USDCTokenPoolProxy.sol";
 ```
 
 ***
@@ -103425,7 +103428,7 @@ Check out the complete code on GitHub.
 ## Import
 
 ```solidity
-import {VersionedVerifierResolver} from "chainlink-ccip/ccvs/VersionedVerifierResolver.sol";
+import {VersionedVerifierResolver} from "@chainlink/contracts-ccip/contracts/ccvs/VersionedVerifierResolver.sol";
 ```
 
 ## Inheritance
@@ -106313,7 +106316,7 @@ The sender contract interacts with CCIP to send data cross-chain. Key elements a
 
 ```sol
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity ^0.8.24;
 
 import {IRouterClient} from "@chainlink/contracts-ccip/contracts/interfaces/IRouterClient.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
@@ -106445,7 +106448,7 @@ The receiver contract interacts with CCIP to receive data on the destination cha
 
 ```sol
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.24;
+pragma solidity ^0.8.24;
 
 import {CCIPReceiver} from "@chainlink/contracts-ccip/contracts/applications/CCIPReceiver.sol";
 import {Client} from "@chainlink/contracts-ccip/contracts/libraries/Client.sol";
