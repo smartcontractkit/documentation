@@ -2048,6 +2048,7 @@ The guides below all run your workflow's logic on Workflow DON nodes, the defaul
 | [Secrets](/cre/guides/workflow/secrets)                                | Manage API keys and credentials safely, in simulation and in deployed workflows.    |
 | [Using Time in Workflows](/cre/guides/workflow/time-in-workflows)      | Get a deterministic, consensus-safe timestamp with `runtime.now()`.                 |
 | [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) | Generate random numbers that stay consistent across nodes so consensus still holds. |
+| [Accessing Workflow Metadata](/cre/guides/workflow/workflow-metadata)  | Read the Workflow ID, Workflow Owner, and Execution ID while your workflow runs.    |
 | [Optimizing Workflows](/cre/guides/workflow/optimizing-workflows)      | Reduce execution time by running independent capability calls in parallel.          |
 
 ---
@@ -23838,6 +23839,191 @@ trigger only reacts to events emitted **after** it is deployed — it does not r
 
 ---
 
+# Accessing Workflow Metadata
+Source: https://docs.chain.link/cre/guides/workflow/workflow-metadata-go
+Last Updated: 2026-11-16
+
+> **NOTE: TL;DR**
+>
+> Use `cre.ExecutionMetadata(runtime)` to read the **Workflow ID**, **Workflow Owner**, and **Execution ID** of the
+> workflow that is currently running. The call returns immediately: it does not make a capability call and does not need
+> consensus.
+
+## Why workflow metadata is useful
+
+Every workflow execution has an identity: which workflow is running, who owns it, and which specific run this is. Your workflow code can read that identity at runtime, which is useful when you want to:
+
+- **Correlate logs and results** with a specific execution.
+- **Add context to your own logic**, such as including the workflow ID in an error message or branching on the workflow owner.
+- **Build identifiers** that are unique per workflow or per execution, such as idempotency keys.
+
+## Available metadata
+
+`cre.ExecutionMetadata()` returns a `cre.WorkflowExecutionMetadata` struct. It contains the following fields:
+
+| Field           | Type     | Description                                                                              |
+| --------------- | -------- | ---------------------------------------------------------------------------------------- |
+| `WorkflowID`    | `string` | The unique ID of the workflow. 32 bytes, lowercase hex, **without** a `0x` prefix.       |
+| `WorkflowOwner` | `string` | The address of the workflow's owner. 20 bytes, lowercase hex, **without** a `0x` prefix. |
+| `ExecutionID`   | `string` | The ID of the current execution. CRE generates a new one each time your workflow runs.   |
+
+## Usage
+
+Pass the `runtime` that the SDK gives your trigger callback to `cre.ExecutionMetadata()`:
+
+```go
+metadata := cre.ExecutionMetadata(runtime)
+
+workflowID := metadata.WorkflowID
+workflowOwner := metadata.WorkflowOwner
+executionID := metadata.ExecutionID
+```
+
+Unlike most `runtime` methods, `cre.ExecutionMetadata()` returns the struct directly. There is no `Promise` to await and no error to handle.
+
+## Complete example: Logging execution metadata
+
+Here's a complete example that reads the metadata in a cron-triggered workflow and writes it to the workflow logs:
+
+```go
+//go:build wasip1
+
+package main
+
+import (
+	"log/slog"
+
+	"github.com/smartcontractkit/cre-sdk-go/capabilities/scheduler/cron"
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/wasm"
+)
+
+type Config struct {
+	Schedule string `json:"schedule"`
+}
+
+type MyResult struct {
+	WorkflowID    string
+	WorkflowOwner string
+	ExecutionID   string
+}
+
+func InitWorkflow(config *Config, logger *slog.Logger, secretsProvider cre.SecretsProvider) (cre.Workflow[*Config], error) {
+	return cre.Workflow[*Config]{
+		cre.Handler(cron.Trigger(&cron.Config{Schedule: config.Schedule}), onCronTrigger),
+	}, nil
+}
+
+func onCronTrigger(config *Config, runtime cre.Runtime, trigger *cron.Payload) (*MyResult, error) {
+	logger := runtime.Logger()
+
+	// Read the metadata for the current execution
+	metadata := cre.ExecutionMetadata(runtime)
+
+	logger.Info("Workflow execution metadata",
+		"workflowID", metadata.WorkflowID,
+		"workflowOwner", metadata.WorkflowOwner,
+		"executionID", metadata.ExecutionID,
+	)
+
+	return &MyResult{
+		WorkflowID:    metadata.WorkflowID,
+		WorkflowOwner: metadata.WorkflowOwner,
+		ExecutionID:   metadata.ExecutionID,
+	}, nil
+}
+
+func main() {
+	wasm.NewRunner(cre.ParseJSON[Config]).Run(InitWorkflow)
+}
+```
+
+**What this example demonstrates:**
+
+1. **Reading metadata**: Calls `cre.ExecutionMetadata(runtime)` directly in the trigger callback and reads the three fields from the returned struct.
+
+2. **Structured logging**: Writes each value as a key-value pair with `runtime.Logger()`, so you can find a specific execution's logs by its `executionID`.
+
+3. **Returning metadata**: Includes the values in the workflow's result.
+
+## Formatting the values
+
+The `WorkflowID` and `WorkflowOwner` values are plain hex strings without a `0x` prefix. If a downstream system expects a `0x`-prefixed value, add the prefix yourself:
+
+```go
+metadata := cre.ExecutionMetadata(runtime)
+
+workflowID := "0x" + metadata.WorkflowID
+workflowOwner := "0x" + metadata.WorkflowOwner
+```
+
+## Using metadata in Node Mode
+
+`cre.ExecutionMetadata()` accepts the `cre.NodeRuntime` that you receive inside [`cre.RunInNodeMode`](/cre/reference/sdk/core-go#creruninnodemode), so you can read the same values there:
+
+```go
+resultPromise := cre.RunInNodeMode(config, runtime,
+	func(config *Config, nodeRuntime cre.NodeRuntime) (string, error) {
+		metadata := cre.ExecutionMetadata(nodeRuntime)
+
+		// Use the metadata in your per-node logic, for example to build an idempotency key
+		return metadata.ExecutionID, nil
+	},
+	cre.ConsensusIdenticalAggregation[string](),
+)
+```
+
+## Things to know
+
+- **Read the metadata fresh in each execution.** The values change between executions, so don't store them in package-level variables or reuse them across callbacks.
+- **The values are read-only.** `cre.ExecutionMetadata()` returns a copy, so changing the returned struct does not affect the runtime.
+- **The Execution ID is assigned by CRE.** It is not available until your workflow is running, and you can't set it yourself.
+- **Missing metadata returns empty strings.** If the environment running your workflow does not provide metadata, each field is an empty string. Check for an empty value if your logic depends on it.
+
+> **CAUTION: Don't use these values as proof of origin**
+>
+> The metadata you read in your workflow code is for your own logic. If you attach it to an outbound request, such as an
+> HTTP header or body field, the recipient can't verify it, because anyone can send a request that makes the same claim.
+> When a downstream system needs to know which workflow produced some data, send the data as a signed
+> [report](/cre/guides/workflow/using-http-client/submitting-reports-http). A report carries the Workflow ID, Workflow
+> Owner, and Execution ID as part of DON consensus, and the recipient can [verify it
+> offchain](/cre/guides/workflow/using-http-client/verifying-reports-offchain).
+
+## Testing your workflow
+
+When you unit test a callback, use `SetExecutionMetadata` on the test runtime to control the values it sees. If you don't call it, all fields are empty strings.
+
+```go
+import (
+	"testing"
+
+	"github.com/smartcontractkit/cre-sdk-go/cre"
+	"github.com/smartcontractkit/cre-sdk-go/cre/testutils"
+	"github.com/stretchr/testify/require"
+)
+
+func TestReadsMetadata(t *testing.T) {
+	runtime := testutils.NewRuntime(t, nil)
+	runtime.SetExecutionMetadata(cre.WorkflowExecutionMetadata{
+		WorkflowID:    "0020350fb4f89856a031268826d6e9b9340996637aa27859baa7b07db58bb020",
+		WorkflowOwner: "5366890c26e8737b89d9084b4c632f7de73d1674",
+		ExecutionID:   "9f38bdece8892b3452c401a7a2d5a170f078ab9b2c98c591e24028ce94b33ed2",
+	})
+
+	metadata := cre.ExecutionMetadata(runtime)
+
+	require.Equal(t, "5366890c26e8737b89d9084b4c632f7de73d1674", metadata.WorkflowOwner)
+}
+```
+
+## Where to go next
+
+- [Using Time in Workflows](/cre/guides/workflow/time-in-workflows): Get a consensus-safe timestamp.
+- [Using Randomness in Workflows](/cre/guides/workflow/using-randomness): Generate random values that stay consistent across nodes.
+- [SDK Reference: Core](/cre/reference/sdk/core): Learn more about `Runtime` and `NodeRuntime`.
+
+---
+
 # Chainlink Runtime Environment (CRE)
 Source: https://docs.chain.link/cre
 Last Updated: 2026-10-19
@@ -25728,6 +25914,8 @@ These interfaces provide access to capabilities and manage the execution context
 - **`cre.NodeRuntime` ("Manual Mode")**: Represents an **individual node's execution context**. This is used when a BFT guarantee cannot be provided automatically (e.g., calling a third-party API). You tell each node to perform a task on its own, and each node returns its own individual answer. You are then responsible for telling the SDK how to combine them into a single, trusted result by providing a consensus and aggregation algorithm. It is used exclusively inside a [`RunInNodeMode`](#creruninnodemode) block and is provided by that function—you do not get this type directly in your handler's callback.
 
 To learn more about how to aggregate results from `NodeRuntime`, see the [Consensus & Aggregation](/cre/reference/sdk/consensus) reference.
+
+To read the Workflow ID, Workflow Owner, and Execution ID of the current execution from either runtime, use `cre.ExecutionMetadata()`. See [Accessing Workflow Metadata](/cre/guides/workflow/workflow-metadata).
 
 ### `Promise`
 
