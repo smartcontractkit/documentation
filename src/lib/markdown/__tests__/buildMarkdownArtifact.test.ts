@@ -8,6 +8,8 @@ import {
 } from "@lib/markdown/buildMarkdownArtifact.js"
 import { extractFrontmatter } from "@lib/markdown/utils.js"
 
+import { renderSunsetNotice } from "../sunset.js"
+
 const CONTENT_ROOT = path.resolve("src/content")
 
 async function sourceMarkdown(requestPath: string): Promise<{ transformMode: string; markdown: string }> {
@@ -64,7 +66,7 @@ describe("buildMarkdownArtifact", () => {
     ["v2", "vrf/v2/subscription/supported-networks"],
     ["v2", "vrf/v2/subscription/ui"],
   ])("preserves the %s deprecation warning and migration link on %s", async (version, requestPath) => {
-    await expect(buildMarkdownArtifact(requestPath)).resolves.toBeNull()
+    await expect(buildMarkdownArtifact(requestPath)).resolves.toMatchObject({ transformMode: "replacement" })
 
     const transformed = await sourceMarkdown(requestPath)
     const markdown = transformed.markdown
@@ -131,7 +133,7 @@ describe("buildMarkdownArtifact", () => {
     ["vrf/v2/subscription/supported-networks", "](/vrf/v2-5/supported-networks)"],
     ["vrf/v2/direct-funding/supported-networks", "](/vrf/v2-5/supported-networks)"],
   ])("preserves the V2.5 contextual link on %s", async (requestPath, expectedLink) => {
-    await expect(buildMarkdownArtifact(requestPath)).resolves.toBeNull()
+    await expect(buildMarkdownArtifact(requestPath)).resolves.toMatchObject({ transformMode: "replacement" })
 
     const transformed = await sourceMarkdown(requestPath)
 
@@ -142,7 +144,7 @@ describe("buildMarkdownArtifact", () => {
   it.each(["vrf/v2/subscription", "vrf/v2/subscription/examples/get-a-random-number"])(
     "preserves the Subscription Manager limits on %s",
     async (requestPath) => {
-      await expect(buildMarkdownArtifact(requestPath)).resolves.toBeNull()
+      await expect(buildMarkdownArtifact(requestPath)).resolves.toMatchObject({ transformMode: "replacement" })
 
       const transformed = await sourceMarkdown(requestPath)
       const markdown = transformed.markdown
@@ -168,24 +170,38 @@ describe("buildMarkdownArtifact", () => {
     expect(artifact?.routeKind).toBe(routeKind)
   })
 
-  it("does not build Markdown for sunset Functions and Automation pages", async () => {
-    await expect(buildMarkdownArtifact("chainlink-functions")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("chainlink-functions/getting-started")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("chainlink-automation/overview/supported-networks")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("quickstarts/time-based-upkeep")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("quickstarts/functions-demo-app")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("any-api/introduction")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("chainlink-nodes/job-specs/multi-word-job")).resolves.toBeNull()
-    await expect(
-      buildMarkdownArtifact("chainlink-nodes/external-initiators/external-initiators-introduction")
-    ).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("vrf/v1/introduction")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("vrf/v2/subscription")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("vrf/v2/subscription/ui")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("quickstarts/chainlink-demo-app")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("quickstarts/vrf-enabled-lootbox-pack")).resolves.toBeNull()
-    await expect(buildMarkdownArtifact("quickstarts/vrf-mystery-box")).resolves.not.toBeNull()
-    await expect(buildMarkdownArtifact("vrf/v2-5/getting-started")).resolves.not.toBeNull()
+  it.each([
+    "any-api",
+    "chainlink-functions",
+    "chainlink-functions/getting-started",
+    "chainlink-functions/resources/concepts",
+    "chainlink-automation/overview/supported-networks",
+    "quickstarts/time-based-upkeep",
+    "quickstarts/functions-demo-app",
+    "any-api/introduction",
+    "chainlink-nodes/job-specs/multi-word-job",
+    "chainlink-nodes/external-initiators/external-initiators-introduction",
+    "vrf/v1",
+    "vrf/v1/introduction",
+    "vrf/v2/subscription",
+    "vrf/v2/subscription/ui",
+    "quickstarts/chainlink-demo-app",
+    "quickstarts/vrf-enabled-lootbox-pack",
+  ])("replaces deprecated content at %s with a notice", async (requestPath) => {
+    const artifact = await buildMarkdownArtifact(requestPath)
+    expect(artifact?.transformMode).toBe("replacement")
+    expect(artifact?.markdown).toBe(renderSunsetNotice(requestPath))
+    expect(artifact?.markdown).not.toContain("```")
+    expect(artifact?.markdown).not.toContain("import ")
+  })
+
+  it("keeps current products and rejects unknown deprecated pages", async () => {
+    await expect(buildMarkdownArtifact("chainlink-functions/nonexistent-page")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("vrf/v2/nonexistent-page")).resolves.toBeNull()
+    await expect(buildMarkdownArtifact("quickstarts/vrf-mystery-box")).resolves.toMatchObject({
+      transformMode: "normal",
+    })
+    await expect(buildMarkdownArtifact("vrf/v2-5/getting-started")).resolves.toMatchObject({ transformMode: "normal" })
   })
 
   it("rejects path escapes", async () => {

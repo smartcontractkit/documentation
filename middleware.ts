@@ -28,10 +28,10 @@ export default function middleware(request: Request): Response {
   }
 
   if (decision.action === "html") {
-    // Sunset pages keep their URL but are left out of Markdown output.
-    const headers: Record<string, string> = isSunsetDocsPath(url.pathname)
-      ? { "X-Robots-Tag": "noindex, follow" }
-      : { Link: `<${decision.alternatePath}>; rel="alternate"; type="text/markdown"` }
+    const headers: Record<string, string> = {
+      Link: `<${decision.alternatePath}>; rel="alternate"; type="text/markdown"`,
+      ...(isSunsetDocsPath(url.pathname) ? { "X-Robots-Tag": "noindex, follow" } : {}),
+    }
     return next({ headers })
   }
 
