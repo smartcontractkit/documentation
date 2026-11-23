@@ -7,7 +7,7 @@ sdkLang: "go"
 metadata:
   description: "Essential tips before building your own CRE workflows: working with time, randomness, and next steps for production deployment."
   datePublished: "2026-02-04"
-  lastModified: "2026-10-19"
+  lastModified: "2026-11-23"
 ---
 
 import { Aside } from "@components"
@@ -27,11 +27,11 @@ If your workflow uses timestamps (e.g., for API authentication or time-based que
 
 ## Working with randomness
 
-If your workflow needs random values (e.g., selecting a winner or generating nonces), use `runtime.Rand()` instead of Go's `rand` package. This ensures all nodes generate the same random sequence and can reach consensus.
+If your workflow needs random values (for example, to select an item, sample, or add jitter), use `runtime.Rand()` instead of Go's `rand` package. This ensures all nodes generate the same random sequence and can reach consensus. The values are derived from the execution ID, so they are predictable and not cryptographically secure—don't use them for private keys, secrets, or tokens.
 
 {/* prettier-ignore */}
 <Aside type="tip" title="Learn more">
-  See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for usage examples and best practices.
+  See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for usage examples and best practices, and [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go) if you need cryptographically secure randomness.
 </Aside>
 
 {/* prettier-ignore */}

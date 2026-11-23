@@ -7,7 +7,7 @@ pageId: "building-a-library"
 metadata:
   description: "How to build and publish a Go module that CRE workflows can import, including WASI/WASM restrictions and CRE SDK HTTP requirements."
   datePublished: "2026-08-14"
-  lastModified: "2026-08-14"
+  lastModified: "2026-11-23"
 ---
 
 import { Aside } from "@components"
@@ -155,7 +155,7 @@ The pitfall specific to Go: don't reach for goroutines, channels, or `sync` prim
 Every trigger callback in a CRE workflow runs independently on every DON node and must produce identical results (DON mode), except inside `cre.RunInNodeMode()` blocks, which are explicitly for non-deterministic, per-node work that then gets aggregated. If nodes diverge, they generate different request IDs for capability calls and consensus fails outright.
 
 - **Never call `time.Now()` or any other `time` package clock function.** Always use `runtime.Now()` instead, so you don't need to branch on whether you're inside a `RunInNodeMode` block.
-- **Never use `math/rand` (or `crypto/rand`) directly.** Use `runtime.Rand()` from the CRE SDK, which provides a consensus-safe generator so every node produces the same sequence.
+- **Never use `math/rand` (or `crypto/rand`) directly in DON-mode code.** Use `runtime.Rand()` from the CRE SDK, which provides a consensus-safe generator so every node produces the same sequence. These values are predictable and not cryptographically secure; for keys or secrets, run the logic in a Confidential Workflow and use `crypto/rand`. See [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
 - **Never iterate a Go map directly** when the order affects your output. Go maps intentionally randomize iteration order. Use [`cre.OrderedEntries`](/cre/reference/sdk/core-go#creorderedentries-and-creorderedentriesfunc) (or `cre.OrderedEntriesFunc` for non-`cmp.Ordered` keys) instead of `for k, v := range someMap`.
 - **Use `encoding/json` v1, not v2.** The v2 library uses randomized hashing for field ordering, which serializes the same struct differently across nodes. If you serialize Protocol Buffers, use `proto.MarshalOptions{Deterministic: true}.Marshal()` too, since the default `proto.Marshal` doesn't guarantee field order.
 - **Never use `select` with multiple ready channels** to make a decision, see [`Promise`/`Await` concurrency, not goroutines](#promiseawait-concurrency-not-goroutines).
