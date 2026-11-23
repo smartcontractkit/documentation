@@ -41,12 +41,12 @@ The engine withholds an outcome when the evidence cannot support it. It never su
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------- |
 | The event has not finished, or a provider's result is not yet final | Waits and checks again.                                                                                            | `scheduled`, `live`, or `postponed` |
 | A provider is unavailable or returns an error                       | Retries automatically. The provider is excluded while it fails.                                                    | Unchanged                           |
-| Providers report different final results                            | Fails closed for that market: delivers nothing, keeps checking for evidence, and escalates to Chainlink operators. | `final`; the market is unsafe       |
-| The rule cannot decide, for example a tie the rule does not allow   | Fails closed for that market and escalates.                                                                        | `final`; the market is unsafe       |
+| Providers report different final results                            | Fails closed for that market: delivers nothing, keeps checking for evidence, and escalates to Chainlink operators. | `final`; the market is unresolved   |
+| The rule cannot decide, for example a tie the rule does not allow   | Fails closed for that market and escalates.                                                                        | `final`; the market is unresolved   |
 | The event is cancelled                                              | Delivers no outcome.                                                                                               | `cancelled`                         |
 | The event is postponed                                              | Moves the checks for every market on the event.                                                                    | `postponed`                         |
 
-Use `completed` as the reliable signal that resolution is done. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle#event-statuses) for event statuses and internal review states.
+An ordinary fixture remains `final` while any unresolved markets await sufficient evidence. An unresolved market receives no outcome. Use `completed` as the reliable signal that resolution is done. See [Market lifecycle](/solutions/prediction-market-resolution-engine/reference/lifecycle#event-statuses) for event statuses.
 
 ## Timing
 
@@ -56,7 +56,7 @@ An outcome can take longer when providers are slow to mark a result final, when 
 
 ## Monitoring and disputes
 
-Chainlink monitors resolution and escalates failures, including every unresolved market and event, to its operators. Chainlink contacts your team about incidents that affect your markets. TODO: Add the incident contact channel and notification commitments.
+Chainlink monitors resolution and escalates failures, including every unresolved market and event, to its operators.
 
 Your platform runs its own dispute process for traders.
 
