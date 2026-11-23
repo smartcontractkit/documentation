@@ -71,7 +71,7 @@ export const chainToProvider: Record<SupportedChain, () => Provider> = {
   WORLD_MAINNET: () => new JsonRpcProvider("https://worldchain.drpc.org"),
   WORLD_SEPOLIA: () => new JsonRpcProvider("https://worldchain-sepolia.gateway.tenderly.co"),
   XLAYER_MAINNET: () => new JsonRpcProvider("https://rpc.xlayer.tech"),
-  XLAYER_TESTNET: () => new JsonRpcProvider("https://testrpc.xlayer.tech/terigon"),
+  XLAYER_TESTNET: () => new JsonRpcProvider("https://testrpc.xlayer.tech"),
   BITLAYER_MAINNET: () => new JsonRpcProvider("https://rpc.bitlayer.org"),
   BITLAYER_TESTNET: () => new JsonRpcProvider("https://testnet-rpc.bitlayer-rpc.com"),
   INK_MAINNET: () => new JsonRpcProvider("https://rpc-qnd.inkonchain.com"),
