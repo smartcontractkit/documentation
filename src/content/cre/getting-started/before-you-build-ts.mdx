@@ -7,7 +7,7 @@ sdkLang: "ts"
 metadata:
   description: "Essential tips before building your own CRE workflows: library compatibility, Solidity integers, safe decimal scaling, working with time, and next steps for production deployment."
   datePublished: "2026-02-04"
-  lastModified: "2026-10-19"
+  lastModified: "2026-11-23"
 ---
 
 import { Aside } from "@components"
@@ -102,11 +102,11 @@ If your workflow uses timestamps (e.g., for API authentication or time-based que
 
 ## Working with randomness
 
-If your workflow needs random values (e.g., selecting a winner or generating nonces), use `Math.random()` inside the CRE WASM runtime instead of browser or Node.js random APIs. The CRE runtime overrides `Math.random()` with a consensus-safe generator so all nodes produce the same sequence and can reach consensus.
+If your workflow needs random values (for example, to select an item, sample, or add jitter), use `Math.random()` inside the CRE WASM runtime instead of browser or Node.js random APIs. The CRE runtime overrides `Math.random()` with a consensus-safe generator so all nodes produce the same sequence and can reach consensus. The values are derived from the execution ID, so they are predictable and not cryptographically secure—don't use them for private keys, secrets, or tokens.
 
 {/* prettier-ignore */}
 <Aside type="tip" title="Learn more">
-  See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for usage examples and best practices.
+  See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for usage examples and best practices, and [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-ts) for the status of cryptographic randomness in TypeScript.
 </Aside>
 
 {/* prettier-ignore */}

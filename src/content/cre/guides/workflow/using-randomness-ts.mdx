@@ -5,9 +5,9 @@ sdkLang: "ts"
 pageId: "using-randomness"
 date: Last Modified
 metadata:
-  description: "Generate random numbers safely in CRE: use Math.random() in the CRE WASM runtime to ensure all nodes get the same values and maintain consensus."
+  description: "Generate consensus-safe random numbers in CRE with Math.random() in the CRE WASM runtime, so all nodes get the same values and maintain consensus. These values are not cryptographically secure."
   datePublished: "2025-11-04"
-  lastModified: "2026-11-16"
+  lastModified: "2026-11-23"
 ---
 
 import { Aside } from "@components"
@@ -36,7 +36,7 @@ For example, if your workflow selects a lottery winner using each node's local r
 
 ## The solution: Consensus-safe randomness
 
-CRE provides randomness through the `Math.random()` function inside the CRE WASM runtime. The SDK's WASM plugin overrides `Math.random()` with a seeded pseudo-random generator managed by the CRE platform. This ensures all nodes generate the same sequence of random values, enabling consensus. The generator is seeded from a hash of the workflow execution ID, so each execution gets a different sequence, but anyone who knows the execution ID and your workflow code can recompute the same values. The output is **verifiable** (anyone can re-derive it), not **secret** or **unpredictable**.
+CRE provides randomness through the `Math.random()` function inside the CRE WASM runtime. The SDK's WASM plugin overrides `Math.random()` with a seeded pseudo-random generator managed by the CRE platform. This ensures all nodes generate the same sequence of random values, enabling consensus. The generator is seeded from a hash of the workflow execution ID, so in production each execution gets a different sequence, but anyone who knows the execution ID and your workflow code can recompute the same values. The output is **verifiable** (anyone can re-derive it), not **secret** or **unpredictable**.
 
 ### Usage
 
@@ -150,7 +150,7 @@ export async function main() {
 
 1. **Logging**: Uses `runtime.log()` for output in the WASM environment.
 
-When you run this workflow multiple times, each execution will select different winners and prize amounts (because each execution gets a different seed), but within a single execution, all nodes in the DON would arrive at the same winner.
+In production, each execution has its own execution ID and therefore its own seed, so repeated executions select different winners and prize amounts. Within a single execution, all nodes in the DON arrive at the same winner. In simulation, the execution ID can be fixed, so running the same workflow twice may return the same result—don't rely on simulation for fresh randomness.
 
 ## Best practices
 

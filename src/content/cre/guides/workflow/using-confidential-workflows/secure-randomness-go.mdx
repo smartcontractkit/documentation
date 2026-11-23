@@ -7,7 +7,7 @@ pageId: "guides-workflow-confidential-workflows-secure-randomness"
 metadata:
   description: "Generate unpredictable, cryptographically secure random values in Go by running your handler in a Confidential Workflow and using crypto/rand."
   datePublished: "2026-11-16"
-  lastModified: "2026-11-16"
+  lastModified: "2026-11-23"
 ---
 
 import { Aside } from "@components"
@@ -144,7 +144,7 @@ _ = mrand1.New(mrand1.NewSource(time.Now().UnixNano())) // where mrand1 is "math
 - **Trust assumptions.** Confidential Workflows rely on the attestation of the enclave and the trust assumptions of the underlying [TEE](/cre/key-terms#tee-trusted-execution-environment), currently AWS Nitro. Attestation lets consumers verify which code ran. It doesn't prove the randomness itself. This is a different trust model from [Chainlink VRF](/vrf), which provides an onchain cryptographic proof.
 - **Your code is not confidential.** Anyone can read your handler's source, so never rely on the secrecy of your algorithm. Rely on the entropy from `crypto/rand`.
 - **Randomness doesn't prevent front-running.** An unpredictable value does not stop participants from exploiting information before a result is final. Design the consuming contract, for example with commit/reveal or an ordering that prevents late participation, so nobody can profit from information they have before the result is final.
-- **Don't treat simulated values as secure.** Simulation isn't guaranteed to run inside an enclave, so use `cre workflow simulate` to test your logic, not to generate real keys or secrets.
+- **Don't treat simulated values as secure.** The simulator is not a real TEE: it runs your handler in a simulated enclave for debugging and says so in its output. Use `cre workflow simulate` to test your logic, not to generate real keys or secrets.
 
 ## FAQ
 
