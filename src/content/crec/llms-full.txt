@@ -433,7 +433,7 @@ See [Supported Networks](/crec/supported-networks).
 
 # Prerequisites
 Source: https://docs.chain.link/crec/getting-started/prerequisites
-Last Updated: 2026-10-26
+Last Updated: 2026-11-10
 
 > **NOTE: Beta: permissioned access**
 >
@@ -469,26 +469,36 @@ Once your account has been provisioned, create an API key.
 
 > **NOTE: Roles needed to create a CRE Connect API key**
 >
-> Creating an API key requires a Platform role that includes API key permissions: Platform User, Platform Admin, or Owner. You can only give a key permissions that your own roles include, so to grant every permission below you also need the CRE Connect Admin role. CRE Connect Operators can grant every permission below except the three `archive:write` permissions. See [RBAC](/chainlink-platform/rbac?parent=crec#cre-connect) for what each role includes, and [Inviting Team Members](/chainlink-platform/inviting-team-members?parent=crec) to invite members and assign roles.
+> Creating a key requires Platform User, Platform Admin, or the organization Owner. You can grant only permissions
+> included in your own product roles. CRE Connect Operator covers the routine creation and update steps; CRE Connect
+> Admin is needed to grant the three archival permissions used by the optional cleanup calls. The Owner has every
+> permission. Select only the scopes your integration needs. If you need a different CRE Connect role, ask your Owner,
+> Platform Admin, or CRE Connect Admin to [assign it](/chainlink-platform/assigning-and-modifying-roles?parent=crec).
+> See [RBAC](/chainlink-platform/rbac?parent=crec#cre-connect) for the complete role reference.
 
 1. Log in to the [Chainlink Platform](https://app.chain.link), click your account icon in the top-right corner of the navbar, then click **Org settings** to open the **Organization** page, then open the **API Keys** tab.
 
 2. Click **Create API Key** and enter a name for the key.
 
-3. In the **API Scope** section, expand the **CRE Connect** section and grant the key the permissions that this Getting Started guide uses.
+3. In the **API Scope** section, expand **CRE Connect** and select the permissions your examples use. The table includes read permissions for polling and inspection, and archival permissions for optional cleanup. You can omit permissions for tasks you will not perform.
 
    | Name                       | Permission                       | Description                                  |
    | -------------------------- | -------------------------------- | -------------------------------------------- |
    | Network: Read              | `crec:network:read`              | Read available blockchain networks.          |
+   | Channel: Read              | `crec:channel:read`              | List channels and read their details.        |
    | Channel: Write             | `crec:channel:write`             | Create or update channel.                    |
-   | Channel archive: Write     | `crec:channel:archive:write`     | Archive channel.                             |
+   | Channel archive: Write     | `crec:channel:archive:write`     | Archive channel (optional cleanup).          |
+   | Watcher: Read              | `crec:watcher:read`              | Read watchers and poll lifecycle status.     |
    | Watcher: Write             | `crec:watcher:write`             | Create or update watcher.                    |
-   | Watcher archive: Write     | `crec:watcher:archive:write`     | Archive watcher.                             |
+   | Watcher archive: Write     | `crec:watcher:archive:write`     | Archive watcher (optional cleanup).          |
    | Event: Read                | `crec:event:read`                | Read events, run history, and search events. |
+   | Wallet: Read               | `crec:wallet:read`               | Read wallets and poll provisioning status.   |
    | Wallet: Write              | `crec:wallet:write`              | Create or update wallet.                     |
-   | Wallet archive: Write      | `crec:wallet:archive:write`      | Archive wallet.                              |
+   | Wallet archive: Write      | `crec:wallet:archive:write`      | Archive wallet (optional cleanup).           |
+   | Operation: Read            | `crec:operation:read`            | Read and track operations.                   |
    | Operation: Write           | `crec:operation:write`           | Create operation (draft or pre-signed).      |
-   | Operation signature: Write | `crec:operation:signature:write` | Sign (finalize) or cancel operation.         |
+   | Operation signature: Write | `crec:operation:signature:write` | Finalize or cancel a pending draft.          |
+   | Query: Read                | `crec:query:read`                | Read queries and poll for results.           |
    | Query: Write               | `crec:query:write`               | Create query.                                |
 
    See [API Keys](/chainlink-platform/api-keys?parent=crec#cre-connect) for the full list of permissions available for CRE Connect.
@@ -760,7 +770,7 @@ If that prints without errors, you are ready for [Authentication](/crec/getting-
 
 # Authentication
 Source: https://docs.chain.link/crec/getting-started/authentication
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 > **NOTE: Beta: permissioned access**
 >
@@ -876,6 +886,11 @@ The full set of options is documented in the [SDK Configuration](/crec/reference
 
 ## Smoke test: `ListNetworks`
 
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Listing networks requires `crec:network:read` in your API key. A successful smoke test confirms this read access;
+other guides may require additional permissions to create, update, or archive resources.
+
 `ListNetworks` performs a single authenticated `GET /networks` and returns the list of networks your tenant can use. It confirms in one call that your client, your API key, and the CRE Connect endpoint are all healthy.
 
 ```go
@@ -948,7 +963,7 @@ Once `ListNetworks` returns at least one network, you have everything needed to 
 
 # Quickstart: Watch On-Chain Events
 Source: https://docs.chain.link/crec/getting-started/quickstart-watch-events
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 > **NOTE: Beta: permissioned access**
 >
@@ -1036,6 +1051,12 @@ if err != nil {
 The SDK ships with the production DON signer addresses baked in, so the **Off-Chain Reporting (OCR) signature** check is configured automatically. You still need to tell the client **which org's events you trust**: that's what `crec.WithOrgID(...)` does. It derives your unique workflow-owner address from the org ID and binds every event hash to your tenant. Skip it and `client.Events.Verify(...)` returns [`events.ErrOrgIDOrWorkflowOwnerReq`](/crec/reference/error-handling) on every call. Your Organization ID looks like `org_example00000000000`; see [Prerequisites](/crec/getting-started/prerequisites) for where to find it.
 
 ## 3. Create a channel
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Creating the channel and watcher requires `crec:channel:write` and `crec:watcher:write`. Your API key also needs
+`crec:watcher:read` to wait for activation and `crec:event:read` to poll events. The watcher reads onchain data, but
+creating it is a write operation on CRE Connect.
 
 A channel is a logical grouping for the watchers and events that belong to a single application. Pick a descriptive name: channel names must be unique within your tenant.
 
@@ -1291,6 +1312,12 @@ In production you would either keep polling or use [`SearchEvents`](/crec/guides
 
 ## 9. Full program
 
+**Required role:** CRE Connect Admin. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+The cleanup calls in this full program require `crec:watcher:archive:write` and `crec:channel:archive:write` in your
+API key. These permissions are needed only for cleanup. To run the channel, watcher, and event-reading steps with CRE
+Connect Operator permissions, omit the trailing `Archive` calls and keep the resources.
+
 Here is everything wired together as a single `main.go`. The trailing `Archive` calls clean up the watcher and channel so they stop consuming DON capacity for your tenant. Drop them if you want to keep the watcher running between runs.
 
 ```go
@@ -1476,7 +1503,7 @@ go run .
 
 # Quickstart: Send Your First Operation
 Source: https://docs.chain.link/crec/getting-started/quickstart-send-operation
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 > **NOTE: Beta: permissioned access**
 >
@@ -1587,6 +1614,13 @@ if err != nil {
 `WithOrgID` is not required to *send* an operation, but without it `client.Events.VerifyOperationStatus(...)` returns `events.ErrOrgIDOrWorkflowOwnerReq` on every call. Set it once at construction so the rest of this quickstart and the [watch-events quickstart](/crec/getting-started/quickstart-watch-events) stay consistent. Your Organization ID looks like `org_example00000000000`; see [Prerequisites](/crec/getting-started/prerequisites) for where to find it.
 
 ## 3. Create a channel
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Your API key needs `crec:channel:write` to create the channel, `crec:wallet:write` and `crec:wallet:read` to provision
+and poll the Smart Account, and `crec:operation:write` and `crec:operation:read` to submit and track the operation.
+The signing key must separately be authorized by the Smart Account; your Platform role does not grant signing
+authority.
 
 ```go
 ch, err := client.Channels.Create(ctx, channels.CreateInput{
@@ -1824,6 +1858,12 @@ End-to-end, one `increment()` call traveled this path:
 6. **The DON** observed the on-chain confirmation and emitted an `operation.status` event back into your channel. Your `GetOperation` polling loop saw that confirmation status on its last iteration.
 
 ## 11. Full program
+
+**Required role:** CRE Connect Admin. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+The cleanup calls in this full program require `crec:wallet:archive:write` and `crec:channel:archive:write` in your
+API key. CRE Connect Operator is sufficient for the preceding creation, submission, and tracking steps; omit the
+trailing `Archive` calls if your key does not include archival permissions.
 
 Here is everything wired together as a single `main.go`. The trailing `Archive` calls clean up the wallet and channel so they stop consuming DON capacity for your tenant. Drop them if you want to keep the Smart Account around for follow-up operations.
 
@@ -3406,13 +3446,18 @@ The DTA extension repository uses contract versioning (`/v1`, `/v2`, …) to exp
 
 # Create and Manage Channels
 Source: https://docs.chain.link/crec/guides/channels/manage-channels
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 A **channel** is a logical container for the watchers, events, and operations that belong to one application or environment. Most teams create a channel per application (and per environment within that application).
 
 This guide covers the four channel-management operations exposed by the SDK and the [Channels page](https://app.chain.link/cre-connect/channels) in the CRE Connect UI: **create**, **list/filter**, **update**, and **archive**.
 
 ## Create a channel
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Creating a channel or updating its metadata requires `crec:channel:write`. Include this permission in your API key
+when using the SDK or REST API.
 
 **Platform UI**
 
@@ -3459,6 +3504,10 @@ The SDK validates locally that:
 The server returns the created channel with HTTP **201**.
 
 ## List and filter channels
+
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Listing channels and reading their details requires `crec:channel:read`. Include this permission in your API key.
 
 **Platform UI**
 
@@ -3528,6 +3577,11 @@ Both `Name` and `Description` can be updated. If the channel does not exist the 
 
 ## Archive a channel
 
+**Required role:** CRE Connect Admin. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Archiving a channel requires `crec:channel:archive:write` in your API key. Channel write access alone does not allow
+archival. Archiving any watchers that block cleanup also requires `crec:watcher:archive:write`.
+
 > **CAUTION: Active watchers block archive**
 >
 > A channel cannot be archived while it still has watchers in `active`, `pending`, or `archiving` state. Archive every
@@ -3574,7 +3628,7 @@ Channel names must be **unique within your organisation** (verified by the SDK p
 
 # Create a Watcher with a Predefined Service
 Source: https://docs.chain.link/crec/guides/watchers/create-with-service
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 When the contract you want to monitor is supported by a published CRE Connect service (for example `dta.v2`), use **`watchers.Client.CreateWithService`** instead of `CreateWithABI`. The service ships everything CRE Connect needs to monitor that contract: the ABIs, the event schemas, and the underlying processing pipeline. You only supply the chain selector, address, the event names you want to subscribe to, and (optionally) a `service_config` map.
 
@@ -3587,6 +3641,12 @@ When the contract you want to monitor is supported by a published CRE Connect se
 | You want service-managed defaults (confidence level, polling cadence).        | You need an ad-hoc watcher with no protocol-specific behavior.         |
 
 ## Procedure
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Creating a service-backed watcher requires `crec:watcher:write`. Your API key also needs `crec:watcher:read` for
+`WaitForActive` and other lifecycle checks. The channel must already exist; creating one separately requires
+`crec:channel:write`.
 
 **Platform UI**
 
@@ -3688,7 +3748,7 @@ Every service defines its own config schema. The DTA v2 service accepts an empty
 
 # Create a Watcher with a Custom ABI
 Source: https://docs.chain.link/crec/guides/watchers/create-with-abi
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 For contracts not covered by a [CRE Connect extension](/crec/concepts/extensions), use **`watchers.Client.CreateWithABI`**. You provide the event ABI fragments yourself and CRE Connect provisions a generic listener for that contract.
 
@@ -3700,6 +3760,12 @@ For contracts not covered by a [CRE Connect extension](/crec/concepts/extensions
 | You only need a subset of events from the ABI.            | You want service-managed defaults and typed decoders.                          |
 
 ## Procedure
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Creating an ABI-backed watcher requires `crec:watcher:write`. Your API key also needs `crec:watcher:read` to wait for
+activation. Monitoring logs does not modify the target contract, but provisioning the watcher still requires CRE
+Connect write access.
 
 **Platform UI**
 
@@ -3834,7 +3900,7 @@ The SDK polls every `Options.PollInterval` (default 2 s) and tolerates `404` for
 
 # Manage Watcher Lifecycle
 Source: https://docs.chain.link/crec/guides/watchers/manage-lifecycle
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 Once a watcher is created (see [Create with Service](/crec/guides/watchers/create-with-service) or [Create with ABI](/crec/guides/watchers/create-with-abi)), you can list, filter, rename, and archive it.
 
@@ -3847,6 +3913,11 @@ A watcher moves through these states:
 The entity statuses surfaced by the REST API are `pending`, `active`, `archiving`, `archived`, and `failed` (the API maps internal `archive_failed` to `failed` on the entity response). The richer `archive_failed` state is visible on the `watcher.status` event payload (`apiClient.WatcherEventStatus`).
 
 ## List and filter
+
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Listing watchers and fetching a watcher requires `crec:watcher:read` in your API key. Reading `watcher.status` events
+to inspect a status reason separately requires `crec:event:read`.
 
 **Platform UI**
 
@@ -3905,6 +3976,11 @@ The watcher's `Status`, `ChainSelector`, `Address`, and (for service watchers) `
 
 ## Update metadata (name only)
 
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Renaming a watcher requires `crec:watcher:write`. Include this permission in your API key; it does not include
+archival.
+
 The SDK only supports updating the watcher **name**. Address, ABI, service, and chain selector are immutable; create a new watcher to change them.
 
 **Platform UI**
@@ -3927,6 +4003,12 @@ curl -sS -X PATCH "$CREC_BASE_URL/channels/$CHANNEL_ID/watchers/$WATCHER_ID" \
 ```
 
 ## Archive
+
+**Required role:** CRE Connect Admin. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Archiving a watcher requires `crec:watcher:archive:write`. Your API key also needs `crec:watcher:read` if you use
+`WaitForArchived` to poll the asynchronous archive. CRE Connect Operators can create and rename watchers, but cannot
+archive them.
 
 Archiving is **asynchronous**. The PATCH returns HTTP **202** with the watcher in `archiving`; you must poll until it reaches `archived` or `archive_failed`.
 
@@ -3986,7 +4068,7 @@ For details on tuning the poll interval and consistency window, see [SDK Configu
 
 # Poll and Search Events
 Source: https://docs.chain.link/crec/guides/events/poll-and-search
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 The events client exposes three read paths:
 
@@ -3997,6 +4079,12 @@ The events client exposes three read paths:
 | `apiClient.GetChannelsChannelIdEventsSearchEventIdWithResponse` | Fetch one event by UUID (via the underlying generated client) | —              | —                                                                      |
 
 ## Poll for new events
+
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Polling a channel, searching its history, and fetching a single event require `crec:event:read` in your API key.
+Creating the channel or its watchers separately requires their write permissions. Verification and decoding after
+fetching an event run locally.
 
 `Poll` is the simplest path: it returns a batch ordered by **descending offset** (newest first) and a `hasMore` flag. Most consumers run it in a loop with a small back-off when the channel is idle.
 
@@ -4176,9 +4264,15 @@ ev := *resp.JSON200
 
 # Verify Event Signatures
 Source: https://docs.chain.link/crec/guides/events/verify-signatures
-Last Updated: 2026-08-26
+Last Updated: 2026-11-10
 
 Every event the SDK consumes carries an Off-Chain Reporting (OCR) proof from the Chainlink DON, and the SDK refuses to trust an event that does not check out cryptographically. This guide covers the three verification helpers, their per-call variants, and the sentinel errors they return. The deeper algorithm is documented in [Concepts: Event Verification](/crec/concepts/event-verification).
+
+> **NOTE: Local verification and API access**
+>
+> Verifying an event you already have runs locally and does not require an API key permission. Fetching events from CRE
+> Connect requires `crec:event:read`, available to CRE Connect Viewer and higher roles. See [Poll and Search
+> Events](/crec/guides/events/poll-and-search) for that API access step.
 
 ## The verification methods
 
@@ -4493,9 +4587,16 @@ The resulting `VerifiableEvent.Data` carries the operation outcome (`status`, `t
 
 # Build and Sign Operations
 Source: https://docs.chain.link/crec/guides/operations/build-and-sign
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 A CRE Connect **operation** is a batch of one or more transactions, signed once with EIP-712 and executed atomically by your Smart Account. This guide covers the build → sign half of the lifecycle. The submit → track half is in [Submit and Track Operations](/crec/guides/operations/submit-and-track).
+
+> **NOTE: Platform permissions and signing authority**
+>
+> Building, hashing, and signing an operation in this guide do not submit it to the CRE Connect API. Access to your
+> signer is controlled separately by your key or custody system. [Submitting the
+> operation](/crec/guides/operations/submit-and-track) requires the relevant API key permissions, and the Smart Account
+> must authorize the signing key.
 
 ## The data model
 
@@ -4652,7 +4753,7 @@ Use this for MPC policy review, human approval queues, KMS workflows, or preview
 
 # Draft Operations: Create, Finalize, Cancel
 Source: https://docs.chain.link/crec/guides/operations/drafts
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 [Draft operations](/crec/concepts/drafts) let you create an operation first and collect the signature later. Use this flow when an approval system, MPC signer, KMS operator, or user review screen needs to inspect the operation before it becomes executable.
 
@@ -4699,6 +4800,11 @@ op := &types.Operation{
 `Deadline` is part of the EIP-712 payload. Choose it before you create the draft. If the operation expires before finalization, CRE Connect rejects finalization with `OPERATION_DEADLINE_ELAPSED`.
 
 ## Create a draft
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Creating an unsigned draft requires `crec:operation:write` in your API key. Include `crec:operation:read` to fetch and
+inspect the stored draft. Creating a draft does not authorize its eventual onchain execution.
 
 Use `SendDraftOperation` when you already have a `types.Operation`.
 
@@ -4798,6 +4904,12 @@ The same signer types work here as in regular operation flows: local ECDSA, AWS 
 
 ## Finalize the draft
 
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Finalizing a draft requires `crec:operation:signature:write` in your API key, separately from the permission to create
+it. Include `crec:operation:read` for helpers that fetch the draft. The supplied signature must come from a key
+authorized by the Smart Account.
+
 If the SDK should sign the digest and finalize in one call, use `ExecuteDraftOperation`:
 
 ```go
@@ -4843,6 +4955,11 @@ curl -sS -X PATCH "$CREC_BASE_URL/channels/$CHANNEL_ID/operations/$OPERATION_ID"
 After finalization, the operation transitions from `pending_signature` to `accepted`. It then follows the normal operation lifecycle through `sending`, `sent`, `broadcasting`, and a terminal status.
 
 ## Cancel a draft
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Cancelling a pending draft requires `crec:operation:signature:write` in your API key. This is a draft lifecycle
+action, so it does not require the Admin archival permissions used for wallets, channels, or watchers.
 
 Cancel a draft while it is still `pending_signature`:
 
@@ -4897,13 +5014,19 @@ See [Error Handling](/crec/reference/error-handling) for the full REST and SDK e
 
 # Submit and Track Operations
 Source: https://docs.chain.link/crec/guides/operations/submit-and-track
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 Once you have a signed `(Operation, signature)` pair (see [Build and Sign Operations](/crec/guides/operations/build-and-sign)), submitting it is a single SDK call. Tracking it to a final status takes a little more work. This guide covers both REST polling and the `operation.status` verifiable event.
 
 If you need to create the operation before collecting a signature, use [Draft Operations](/crec/guides/operations/drafts). Drafts start in `pending_signature` and move into this submit-and-track flow after finalization.
 
 ## One-shot submission with `ExecuteOperation`
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Submitting a pre-signed operation requires `crec:operation:write`. Your API key also needs `crec:operation:read` for
+the SDK helper's follow-up read. Local EIP-712 signing uses your signer separately; its key must be accepted by the
+Smart Account.
 
 `ExecuteOperation` signs and sends in one call. This is the simplest path:
 
@@ -4983,6 +5106,11 @@ There are two complementary paths.
 
 ### Path A: Poll `GetOperation`
 
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Fetching and listing operation records requires `crec:operation:read` in your API key. A Viewer can track an existing
+operation without permission to submit a new one.
+
 Simple, no event subscription required:
 
 ```go
@@ -5017,6 +5145,11 @@ curl -sS "$CREC_BASE_URL/channels/$CHANNEL_ID/operations/$OPERATION_ID" \
 ```
 
 ### Path B: Subscribe to `operation.status` events
+
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Polling or searching channel events requires `crec:event:read` in your API key. This is separate from
+`crec:operation:read`, which reads operation records. Verifying an event's proof after fetching it runs locally.
 
 This is the **verifiable** path: CRE Connect emits a signed `operation.status` event each time the operation transitions. Combine it with the regular event poller:
 
@@ -5088,7 +5221,7 @@ curl -sS "$CREC_BASE_URL/channels/$CHANNEL_ID/operations?status=failed" \
 
 # Batch Multiple Transactions
 Source: https://docs.chain.link/crec/guides/operations/batch-transactions
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 A CRE Connect operation can carry **any number of transactions**. The Smart Account executes them in order under a single signature; if any sub-call reverts, the entire operation reverts and the on-chain state is rolled back.
 
@@ -5134,6 +5267,12 @@ op := &types.Operation{
     },
 }
 ```
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Submitting the batch requires `crec:operation:write` in your API key. Include `crec:operation:read` for
+`ExecuteOperation`, which reads the created operation. Building the transaction list and signing it locally are
+separate from API authorization; the signer must be authorized by the Smart Account.
 
 Sign and submit exactly as you would a single-transaction operation:
 
@@ -5382,7 +5521,7 @@ Call `Summarise` immediately before `SignOperationHash` and surface the `Summary
 
 # Execute a Chain Query
 Source: https://docs.chain.link/crec/guides/queries/execute-a-query
-Last Updated: 2026-08-26
+Last Updated: 2026-11-10
 
 A **chain query** is a one-shot, read-only EVM call executed by a Chainlink DON. You submit the query to CRE Connect, the DON executes it against the block you selected, and you receive a signed result you can verify off-chain. Nothing is written on chain.
 
@@ -5398,6 +5537,12 @@ You need:
 - The **contract address** you want to read from.
 
 ## Path 1: One-call with `CallContract`
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+All three paths create a CRE Connect query, so your API key needs `crec:query:write` even though the EVM call is
+read-only. The one-call helpers also need `crec:query:read` to wait for the result. CRE Connect Viewers can read
+existing queries but cannot initiate new ones.
 
 The simplest path: submit the query, wait for completion, and decode the result in a single call.
 
@@ -5534,6 +5679,11 @@ If you retry after a network error with the same key and the same request parame
 
 ## Detecting completion via channel events
 
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Searching for `query.status` events requires `crec:event:read` in your API key. This event-reading permission is
+separate from the query permissions used to submit a query or fetch its record.
+
 For event-driven architectures, search for `query.status` events instead of polling the query resource:
 
 ```go
@@ -5629,6 +5779,11 @@ Returns `202 Accepted` with the query in the `accepted` state.
 
 ### Get a query
 
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Fetching an existing query or listing queries requires `crec:query:read` in your API key. Verifying a result you
+already have is a local cryptographic operation.
+
 ```bash
 curl https://cre-connect.api.chain.link/v1/channels/$CHANNEL_ID/queries/$QUERY_ID \
   -H "Authorization: Apikey $CREC_API_KEY"
@@ -5651,13 +5806,19 @@ curl "https://cre-connect.api.chain.link/v1/channels/$CHANNEL_ID/queries?status=
 
 # Create and Manage Wallets
 Source: https://docs.chain.link/crec/guides/wallets/create-and-manage
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 A **wallet** in CRE Connect is a Smart Account deployed on a specific chain, owned by an EOA you control, and authorised to be driven by one or more **signers** (ECDSA addresses or RSA keys). It is the `op.Account` you target when you build operations.
 
 This guide covers wallet provisioning and life-cycle management. For runtime signer changes see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
 
 ## Create a wallet
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Creating a CRE Connect wallet requires `crec:wallet:write`. Include it in your API key when using the SDK or REST API.
+The onchain owner address and allowed signers are separate from Platform member roles; being an Operator or Admin does
+not make your signing key an authorized Smart Account signer.
 
 A wallet has two security layers:
 
@@ -5780,6 +5941,10 @@ Reuse a single dedicated channel per environment for status events, or co-locate
 
 ## Look up a wallet
 
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Looking up or listing wallets, including their signer sets, requires `crec:wallet:read` in your API key.
+
 ```go
 w, err := client.Wallets.Get(ctx, walletID)
 if err != nil {
@@ -5841,6 +6006,10 @@ Filters supported by `ListInput`:
 
 ## Rename a wallet
 
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Renaming a wallet or updating its description requires `crec:wallet:write`. Include this permission in your API key.
+
 The only updatable field through the SDK is `Name`. The Platform UI also lets you edit the wallet's **Description** in the same flow.
 
 **Platform UI**
@@ -5870,6 +6039,12 @@ curl -sS -X PATCH "$CREC_BASE_URL/wallets/$WALLET_ID" \
 Signer-set changes go through a separate flow; see [Manage Wallet Signers](/crec/guides/wallets/manage-signers).
 
 ## Archive a wallet
+
+**Required role:** CRE Connect Admin. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Archiving a wallet requires `crec:wallet:archive:write` in your API key. Wallet write access alone does not include
+archival. This changes the CRE Connect wallet record, not ownership or signer permissions on the onchain Smart
+Account.
 
 Archive is **synchronous**. The wallet transitions to `archived` and stops accepting new operations. The on-chain account is **not** destroyed; you can re-import it via a fresh `Create` if needed.
 
@@ -5922,7 +6097,7 @@ curl -sS -X PATCH "$CREC_BASE_URL/wallets/$WALLET_ID" \
 
 # Manage Wallet Signers
 Source: https://docs.chain.link/crec/guides/wallets/manage-signers
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 A wallet's **signer set** is the list of keys CRE Connect will accept signatures from when executing operations against the wallet's Smart Account. The set is typed: `ecdsa` wallets accept EVM addresses, `rsa` wallets accept RSA public keys.
 
@@ -5937,6 +6112,12 @@ A wallet's **signer set** is the list of keys CRE Connect will accept signatures
 | Archive wallet                  | Yes                  | `Wallets.Archive` is synchronous (PATCHes status to `archived`); the on-chain Smart Account contract is not modified.           |
 
 ## Set the signer set at creation time
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Provisioning a wallet with its initial signer set requires `crec:wallet:write` in your API key. The allowed signer
+addresses or public keys are onchain authorization settings; assigning a member a CRE Connect role does not add the
+member's key to this signer set.
 
 `StatusChannelId` is optional on `Create` (the SDK rejects a zero-UUID value with `wallets.ErrStatusChannelIDZero`); pass the channel where you want `wallet.status` events to land.
 
@@ -5988,6 +6169,11 @@ Service limits enforced by the API (`RSASignersList` / `ECDSASignersList` schema
 
 ## Read the current signer set
 
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Reading a wallet's signer set requires `crec:wallet:read` in your API key. Reading the set does not grant access to
+the private signing keys.
+
 ```go
 w, err := client.Wallets.Get(ctx, walletID)
 if err != nil { return err }
@@ -6014,7 +6200,7 @@ curl -sS "$CREC_BASE_URL/wallets/$WALLET_ID" \
 
 ## Changing the signer set after creation
 
-The signer set is fixed at creation. To use a different signer set, provision a new wallet with `Wallets.Create` and (when the old wallet is no longer needed) archive it with `Wallets.Archive`. Both APIs are the same ones documented above.
+The signer set is fixed at creation. To use a different signer set, provision a new wallet with `Wallets.Create` using `crec:wallet:write` (CRE Connect Operator or higher). If you also archive the old wallet with `Wallets.Archive`, that separate action requires `crec:wallet:archive:write` (CRE Connect Admin or the organization Owner). See [Archive a wallet](/crec/guides/wallets/create-and-manage#archive-a-wallet). These API actions do not transfer ownership of the original onchain Smart Account.
 
 ## Choosing signer addresses up front
 
@@ -6047,7 +6233,7 @@ For **RSA** signers the modulus `n` and exponent `e` must be **`0x`-prefixed hex
 
 # Local ECDSA Signer
 Source: https://docs.chain.link/crec/guides/signers/local
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 The local signer (`github.com/smartcontractkit/crec-sdk/transact/signer/local`) signs CRE Connect operations with a secp256k1 private key held in process memory. It is the simplest signer and the right choice for local development, integration tests, and CI.
 
@@ -6113,6 +6299,11 @@ The result is suitable for `ecrecover` on chain: exactly what the Smart Account 
 
 ## Provision the wallet's signer set
 
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+The wallet creation call below requires `crec:wallet:write` in your API key. Deriving the address and producing
+signatures locally do not require this permission; the signer key must separately be authorized by the wallet.
+
 The signer's address is the keccak256-derived address of its public key:
 
 ```go
@@ -6153,7 +6344,7 @@ w, err := client.Wallets.Create(ctx, wallets.CreateInput{
 
 # AWS KMS Signer
 Source: https://docs.chain.link/crec/guides/signers/aws-kms
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 The KMS signer (`github.com/smartcontractkit/crec-sdk/transact/signer/kms`) signs CRE Connect operations using a secp256k1 key held in AWS Key Management Service. The private key never leaves the AWS HSM; the signer asks KMS to sign a digest and returns an Ethereum-canonical 65-byte signature.
 
@@ -6248,6 +6439,12 @@ The result is a 65-byte `(r ∥ s ∥ v)` signature that the Smart Account verif
 
 ## End-to-end flow
 
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+`ExecuteOperation` submits to CRE Connect and reads the created operation, so your API key needs
+`crec:operation:write` and `crec:operation:read`. KMS permissions to use the signing key are separate from these CRE
+Connect permissions.
+
 ```go
 import (
     "github.com/smartcontractkit/crec-sdk/transact/signer/kms"
@@ -6302,7 +6499,7 @@ Avoid wildcard resources: bind the policy to the specific key ARN your service i
 
 # HashiCorp Vault Signer
 Source: https://docs.chain.link/crec/guides/signers/hashicorp-vault
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 The Vault signer (`github.com/smartcontractkit/crec-sdk/transact/signer/vault`) signs CRE Connect payloads using HashiCorp Vault's **Transit** secrets engine. Vault holds the key (optionally backed by an HSM) and signs digests on request.
 
@@ -6380,6 +6577,11 @@ s, err := vault.NewSigner("http://127.0.0.1:8200", "dev-only-token", "transit", 
 ```
 
 ## Provision the wallet's signer set
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Creating the CRE Connect wallet below requires `crec:wallet:write` in your API key. Access to the Vault key is
+controlled separately by your Vault policy; a CRE Connect role does not grant permission to use that key.
 
 Read back the key's hex-encoded modulus and pass it (with hex-encoded exponent for RSA-65537) into `wallets.Create`. Both `e` and `n` must be **`0x`-prefixed hex** strings. `GetRSAModulus()` returns hex **without** the prefix, so prepend `0x` before passing it to the API:
 
@@ -6695,7 +6897,7 @@ If you need the user to physically click "Sign" before each operation, surface a
 
 # Custom Signer
 Source: https://docs.chain.link/crec/guides/signers/custom
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 The built-in signers (local, AWS KMS, HashiCorp Vault, Fireblocks, Privy) cover the most common production cases. For anything else, implement the `signer.Signer` interface yourself: the CRE Connect SDK will wire your custody system into the operation flow with no further changes.
 
@@ -6803,6 +7005,12 @@ func (s *MultisigSigner) verifyRecover(hash, sig []byte) error {
 }
 ```
 
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Using `ExecuteOperation` below requires `crec:operation:write` and `crec:operation:read` in your CRE Connect API key.
+Implementing or invoking the signer itself is governed by your custody system's authorization, not by a Platform
+member role.
+
 Use it exactly like a built-in signer:
 
 ```go
@@ -6827,6 +7035,11 @@ func (s *MultisigSigner) SignTypedData(ctx context.Context, td *signer.TypedData
 The CRE Connect SDK's `Transact.SignOperation` always calls `Sign(ctx, hash)` today. If you want to use `SignTypedData`, build the typed-data document yourself with `op.TypedData(chainID)` and call `SignTypedData` directly, then submit the resulting signature with `Transact.SendSignedOperation`.
 
 ## Register the signer's address
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Creating a wallet with this signer address requires `crec:wallet:write` in your API key. The wallet's allowed signers
+determine which signatures it accepts; Platform roles do not replace that signer authorization.
 
 Whatever address your custody system signs as must appear in the wallet's `AllowedEcdsaSigners` (or `AllowedRsaSigners` for RSA). When you provision the wallet, derive the address up front:
 
@@ -6958,7 +7171,7 @@ for _, ev := range events {
 
 # DTA v2 Overview
 Source: https://docs.chain.link/crec/extensions/dta
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 > **NOTE: New to DTA?**
 >
@@ -7039,6 +7252,12 @@ The 23 `PrepareXxxOperation` methods split into four groups:
 
 ## Sample flow
 
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Submitting the prepared DTA operations with `ExecuteOperation` requires `crec:operation:write` and
+`crec:operation:read` in your API key. The event polling in this sample requires `crec:event:read`. DTA actor roles
+and contract permissions are separate from CRE Connect member roles.
+
 End-to-end: register a distributor, subscribe to a fund token, watch for the resulting events.
 
 ```go
@@ -7069,6 +7288,11 @@ for _, ev := range events {
 ```
 
 ## Watcher provisioning
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Provisioning a `dta.v2` watcher requires `crec:watcher:write` in your API key. Include `crec:watcher:read` if you
+check its lifecycle, and `crec:event:read` to consume the events it produces.
 
 Pass `Service: "dta.v2"` to `Watchers.CreateWithService` along with the events you want to subscribe to. The DTA service publishes 11 events you can subscribe to (the full list is exposed via `bundle.Get().Events`); list whichever subset your integration needs.
 
@@ -7105,7 +7329,7 @@ CRE Connect owns the ABIs: you only need to know the event names you want to rec
 
 # DTA Subscriptions and Redemptions
 Source: https://docs.chain.link/crec/extensions/dta/subscriptions-redemptions
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 > **NOTE: DTA semantics live in the DTA standard docs**
 >
@@ -7142,6 +7366,12 @@ ext, err := dtaop.New(&dtaop.Options{
 ```
 
 ## Request a subscription
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+Submitting the subscription, redemption, and processing operations on this page requires `crec:operation:write` in
+your API key, plus `crec:operation:read` for `ExecuteOperation`. The `Prepare...Operation` builders run locally. CRE
+Connect roles do not grant the DTA actor permissions or token approvals required by the underlying contracts.
 
 Two flavours: with and without an inline token approval.
 
@@ -7236,6 +7466,12 @@ type RedemptionRequested struct {
 ```
 
 ## Cancel a request
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+A DTA request cancellation is a contract call submitted as a new operation, requiring `crec:operation:write` (and
+`crec:operation:read` for `ExecuteOperation`). It is distinct from cancelling an unsigned CRE Connect draft, which
+uses `crec:operation:signature:write`. DTA contract authorization still applies.
 
 Investors (or the distributor on their behalf) can cancel a request before it is picked up:
 
@@ -7355,7 +7591,7 @@ copy(refArr[:], referenceID.Bytes())
 
 # DTA Fund and Distributor Management
 Source: https://docs.chain.link/crec/extensions/dta/fund-and-distributors
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 > **NOTE: DTA roles live in the DTA standard docs**
 >
@@ -7377,6 +7613,15 @@ ext, _ := dtaop.New(&dtaop.Options{
     DTARequestSettlementAddress: settleAddr.Hex(),
 })
 ```
+
+## Submit prepared DTA operations
+
+**Required role:** CRE Connect Operator or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+The `Prepare...Operation` builders on this page construct payloads locally. Submitting those payloads through CRE
+Connect requires `crec:operation:write` in your API key, plus `crec:operation:read` for `ExecuteOperation`. The Smart
+Account and signer must separately have the DTA actor or owner authority required by each contract call. CRE Connect
+Admin is not the same role as DTA Fund Administrator.
 
 ## Fund admin onboarding
 
@@ -8065,7 +8310,7 @@ Several event payloads reference enum types from `events/types.go`:
 
 # REST API Reference
 Source: https://docs.chain.link/crec/reference/rest-api
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 > **NOTE: Beta: permissioned access**
 >
@@ -8118,6 +8363,14 @@ security:
 > directly (for example, with `curl`).
 
 Treat API keys as secrets: they grant full access to your organisation's channels, watchers, wallets, and operations. Rotate any key that may have been exposed.
+
+## Roles and API key permissions
+
+Member roles and API key scopes serve different purposes. Role callouts identify the member role needed for a UI task or to grant the corresponding permissions to a key. API calls are authorized by the permissions selected for the key.
+
+CRE Connect Viewer includes read permissions. Operator adds resource creation and updates, query creation, and operation submission, finalization, or cancellation. Admin also includes wallet, channel, and watcher archival. The organization Owner has every permission, but a key remains limited to its selected scopes. See [RBAC](/chainlink-platform/rbac?parent=crec#cre-connect) and [API Keys](/chainlink-platform/api-keys?parent=crec#cre-connect).
+
+Signer authorization on a Smart Account and DTA contract roles are separate from Platform member roles. A chain query also needs `crec:query:write` to create the query resource even though the EVM call is read-only.
 
 ## Endpoint groups
 
@@ -8224,6 +8477,11 @@ When `has_more: true`, paginate using the endpoint-specific cursor parameters (`
 The OpenAPI document declares `info.version`. The current spec is **`0.8.0`**. Backwards-incompatible changes are limited to major-version bumps; minor bumps may add new optional fields and endpoints. Pin your dependencies (Go SDK, generated clients) to a known minor.
 
 ## Try it
+
+**Required role:** CRE Connect Viewer or higher. [What each role can do](/chainlink-platform/rbac?parent=crec#cre-connect)
+
+The `GET /networks` smoke test requires `crec:network:read` in your API key. A successful response confirms network
+read access; it does not prove that the key can create or archive resources.
 
 The fastest way to validate authentication is to call `ListNetworks`:
 
@@ -9060,7 +9318,7 @@ See [Decode Event Data](/crec/guides/events/decode-data).
 
 # Error Handling
 Source: https://docs.chain.link/crec/reference/error-handling
-Last Updated: 2026-08-31
+Last Updated: 2026-11-10
 
 This page collects every sentinel error exposed by the Go SDK, the REST error envelope, and the transient-vs-permanent error classification used by the SDK's polling loops.
 
@@ -9077,6 +9335,12 @@ Every non-2xx HTTP response uses the same shape:
 ```
 
 `type` ∈ `NOT_FOUND | VALIDATION_ERROR | CONFLICT | INTERNAL_ERROR | ORGANIZATION_NOT_FOUND`. The `code` field provides a machine-readable error code for `NOT_FOUND` and `CONFLICT` responses (e.g. `CHANNEL_NOT_FOUND`, `OPERATION_NOT_FINALIZABLE`, `IDEMPOTENCY_KEY_MISMATCH`). See the [REST API Reference](/crec/reference/rest-api#error-responses) for the full table.
+
+## Missing permissions
+
+If a request reports a missing permission, compare its permission ID with the scopes selected for your API key. A valid key can authenticate successfully while lacking permission for an action. Read access does not include writes, and wallet, channel, and watcher archival use separate `archive:write` permissions.
+
+Only permissions included in your member roles can be added to a key. If you need a different CRE Connect role, ask your Owner, Platform Admin, or CRE Connect Admin to [assign it](/chainlink-platform/assigning-and-modifying-roles?parent=crec). See [API Keys](/chainlink-platform/api-keys?parent=crec#cre-connect) for the available scopes. Fix the permissions before retrying. An onchain signature or contract-authorization failure is a separate issue; changing an API key scope does not authorize a signer on the Smart Account.
 
 ## Transient vs permanent errors
 

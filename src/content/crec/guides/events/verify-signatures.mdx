@@ -5,12 +5,18 @@ date: Last Modified
 metadata:
   description: "Cryptographically authenticate every Chainlink CRE Connect event before processing it: Verify / VerifyWithOrgID / VerifyWithWorkflowOwner for watcher events, plus the equivalents for `operation.status` events."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-26"
+  lastModified: "2026-11-10"
 ---
 
 import { Aside } from "@components"
 
 Every event the SDK consumes carries an Off-Chain Reporting (OCR) proof from the Chainlink DON, and the SDK refuses to trust an event that does not check out cryptographically. This guide covers the three verification helpers, their per-call variants, and the sentinel errors they return. The deeper algorithm is documented in [Concepts: Event Verification](/crec/concepts/event-verification).
+
+<Aside type="note" title="Local verification and API access">
+  Verifying an event you already have runs locally and does not require an API key permission. Fetching events from CRE
+  Connect requires `crec:event:read`, available to CRE Connect Viewer and higher roles. See [Poll and Search
+  Events](/crec/guides/events/poll-and-search) for that API access step.
+</Aside>
 
 ## The verification methods
 

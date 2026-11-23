@@ -6,7 +6,7 @@ metadata:
   description: "Explicit Disclosure Services for CCIP on Canton: global CCIP API, token pool operator APIs, CNS discovery, and reference EDS deployment."
   excerpt: "CCIP Canton EDS, explicit disclosure, token pool API, Global CCIP API, CNS discovery, chainlink-canton"
   datePublished: "2026-06-27"
-  lastModified: "2026-06-27"
+  lastModified: "2026-10-13"
   difficulty: "intermediate"
   estimatedTime: "10 minutes"
 whatsnext:
@@ -38,7 +38,7 @@ curl --request POST \
   --header 'content-type: application/json' \
   --data '{
   "addresses": [
-    "tokenadminregistry-lzrnd@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
+    "tokenadminregistry-nbehb@ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"
   ]
 }'
 ```
@@ -80,16 +80,77 @@ Most issuers only need the `token_pool_api` block. Set `type = ""` or omit the b
 
 ### Configuration reference
 
-| Field                        | Meaning                                                                                       |
-| :--------------------------- | :-------------------------------------------------------------------------------------------- |
-| `chain_selector`             | Local Canton chain selector (distinct from remote selectors in `ApplyChainUpdates`).          |
-| `[node].url`                 | Participant gRPC Ledger API endpoint. EDS reads the Active Contract Set over this connection. |
-| `[node.auth].type`           | `static`, `insecureStatic`, `clientCredentials`, or `authorizationCode`.                      |
-| `map key / instance_address` | Each pool keyed by instance address hex; map key **must** equal `instance_address`.           |
-| `type`                       | `burnMint` or `lockRelease`.                                                                  |
-| `pool_owner`                 | Pool owner party (should equal `instrumentId.admin`).                                         |
+| Field                        | Meaning                                                                                                                                                                                                                                                                                                                                                                            |
+| :--------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `chain_selector`             | Local Canton chain selector (distinct from remote selectors in `ApplyChainUpdates`).                                                                                                                                                                                                                                                                                               |
+| `[node].url`                 | Participant gRPC Ledger API endpoint. EDS reads the Active Contract Set over this connection.                                                                                                                                                                                                                                                                                      |
+| `[node.auth].type`           | `static`, `insecureStatic`, `clientCredentials`, or `authorizationCode`.                                                                                                                                                                                                                                                                                                           |
+| `map key / instance_address` | Each pool keyed by instance address hex; map key **must** equal `instance_address`.                                                                                                                                                                                                                                                                                                |
+| `type`                       | `burnMint` or `lockRelease`.                                                                                                                                                                                                                                                                                                                                                       |
+| `pool_owner`                 | Pool owner party (should equal `instrumentId.admin`).                                                                                                                                                                                                                                                                                                                              |
+| `[factory].type`             | BurnMint pools only: `address` (EDS reads the factory directly from the ACS — needs `template_id`, `party`, `instance_address`) or `url` (EDS calls the DA registry backend's `getBurnMintFactory` endpoint at serve time — needs `token_standard_url`). See the [BurnMint guide](/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool#serve-the-factory-from-your-eds). |
 
 Operators using the provided token pool contracts can run the reference implementation without custom code. **Custom pool implementations** must implement the standardized API endpoints or adapt the reference.
+
+### Example config (BurnMint pool, URL-mode factory)
+
+A minimal EDS config for a single BurnMint pool whose factory is resolved via the DA registry backend. Secrets (`client_secret`, JWTs) do **not** go in this file — pass a second, secrets-only TOML via `CONFIG_FILE=config.toml,config_secrets.toml` (later files override earlier ones):
+
+```toml filename="config.toml"
+chain_selector = "9268731218649498074" # local Canton chain selector
+
+[server]
+  host = "0.0.0.0"
+  port = 8088
+
+[node]
+  url = "participant.grpc-ledger-api.example.com:443"
+  max_retries = 10
+
+[node.auth]
+  type = "clientCredentials"
+  user_id = "user-eds"
+  auth_url = "https://auth.example.com" # OIDC issuer; EDS discovers the token endpoint via RFC 8414
+  client_id = "eds-client"
+  # client_secret is set in the layered secrets file (config_secrets.toml), not here
+
+# ccip_api, ccv_api, and executor_api are not needed when serving only your own pool.
+[ccip_api]
+  enabled = false
+
+[ccv_api]
+  enabled = false
+
+[executor_api]
+  enabled = false
+
+[token_pool_api]
+  enabled = true
+
+  # Map key must equal instance_address: the Keccak256 hash of "<pool_instance_id>@<pool_owner_party>"
+  [token_pool_api.token_pools."0x…"]
+    party_id = "<party with ACS visibility of the pool>" # stakeholder used for ACS reads; not necessarily the pool owner
+    instance_address = "0x…"
+    type = "burnMint"
+    pool_owner = "<pool owner party>"
+
+    # Factory resolution via the DA registry backend (registry instruments only).
+    [token_pool_api.token_pools."0x…".factory]
+      type = "url"
+      token_standard_url = "https://api.utilities.digitalasset.com" # mainnet; testnet: https://api.utilities.digitalasset-staging.com
+      # token_standard_auth is omitted — the DA endpoint is public
+```
+
+```toml filename="config_secrets.toml"
+[node.auth]
+  client_secret = "<injected from your secret manager>"
+```
+
+<Aside type="note" title="Auth discovery">
+
+`clientCredentials` auth requires `auth_url` and discovers the token endpoint via RFC 8414 (`.well-known/oauth-authorization-server`). If your authorization server only serves the OIDC `openid-configuration` document, ask Chainlink ops — an explicit token-endpoint override is not yet exposed in the config.
+
+</Aside>
 
 ## Operator responsibilities
 

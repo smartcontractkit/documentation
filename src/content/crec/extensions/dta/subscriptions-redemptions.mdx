@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Use the DTA v2 extension to request subscriptions (with optional token approval), request redemptions, and drive the request-processing lifecycle."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 <Aside type="note" title="DTA semantics live in the DTA standard docs">
   What a subscription / redemption is, the [request
@@ -45,6 +45,12 @@ ext, err := dtaop.New(&dtaop.Options{
 ```
 
 ## Request a subscription
+
+<RequiredRole product="crec" role="operator">
+  Submitting the subscription, redemption, and processing operations on this page requires `crec:operation:write` in
+  your API key, plus `crec:operation:read` for `ExecuteOperation`. The `Prepare...Operation` builders run locally. CRE
+  Connect roles do not grant the DTA actor permissions or token approvals required by the underlying contracts.
+</RequiredRole>
 
 Two flavours: with and without an inline token approval.
 
@@ -139,6 +145,12 @@ type RedemptionRequested struct {
 ```
 
 ## Cancel a request
+
+<RequiredRole product="crec" role="operator">
+  A DTA request cancellation is a contract call submitted as a new operation, requiring `crec:operation:write` (and
+  `crec:operation:read` for `ExecuteOperation`). It is distinct from cancelling an unsigned CRE Connect draft, which
+  uses `crec:operation:signature:write`. DTA contract authorization still applies.
+</RequiredRole>
 
 Investors (or the distributor on their behalf) can cancel a request before it is picked up:
 

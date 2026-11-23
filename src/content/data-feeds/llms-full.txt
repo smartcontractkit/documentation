@@ -1132,20 +1132,22 @@ Source: https://docs.chain.link/data-feeds/getting-started
 
 You can use Chainlink Data Feeds to connect your smart contracts to asset pricing data like the [ETH / USD feed](https://data.chain.link/feeds/ethereum/mainnet/eth-usd). These data feeds use data aggregated from many independent Chainlink node operators. Each price feed has an onchain address and functions that enable contracts to read pricing data from that address.
 
-This guide shows you how to read Data Feeds and store the value onchain using Solidity. To learn how to read feeds offchain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana), [StarkNet](/data-feeds/starknet), or [Stellar](/data-feeds/stellar).
+This guide shows you how to read Data Feeds and store the value onchain using Solidity. To learn how to read feeds offchain or use different languages, see the [Using Data Feeds on EVM Chains](/data-feeds/using-data-feeds) guide. Alternatively, you can also learn how to use Data Feeds on [Solana](/data-feeds/solana), [Starknet](/data-feeds/starknet), or [Stellar](/data-feeds/stellar).
 
-The code for reading Data Feeds on Ethereum or other EVM-compatible blockchains is the same for each chain and each Data Feed types. You choose different types of feeds for different uses, but the request and response format are the same. The answer decimal length and expected value ranges might change depending on what feed you use.
+The code for reading Data Feeds on Ethereum or other EVM-compatible blockchains is the same for each chain and each Data Feed type. You choose different types of feeds for different uses, but the request and response format are the same. The answer decimal length and expected value ranges might change depending on what feed you use.
 
 > **CAUTION: Using Data Feeds on L2 networks**
 >
-> If you are using Chainlink Data Feeds on L2 networks like Arbitrum, OP, and Metis, you must also check the latest
-> answer from the L2 Sequencer Uptime Feed to ensure that the data is accurate in the event of an L2 sequencer outage.
-> See the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) page to learn how to use Data Feeds on L2
-> networks.
+> If you are using Chainlink Data Feeds on L2 networks like Arbitrum, BASE, OP, and Metis, you must also check the
+> latest answer from the L2 Sequencer Uptime Feed to ensure that the data is accurate in the event of an L2 sequencer
+> outage. See the [L2 Sequencer Uptime Feeds](/data-feeds/l2-sequencer-feeds) page for the complete list of supported
+> networks and how to use Data Feeds on L2 networks.
 
 ## Before you begin
 
-If you are new to smart contract development, learn how to [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract) before you start this guide.
+Before you start, make sure you have a wallet configured for the Sepolia testnet and funded with testnet ETH. Deploying the contract costs testnet ETH, but reading data from a deployed contract is free. You can get testnet ETH from one of the available [Sepolia faucets](/resources/link-token-contracts/#sepolia-testnet). If you are new to smart contract development, follow [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract#install-and-fund-your-metamask-wallet) to install and fund a MetaMask wallet first.
+
+You do not need LINK tokens. Reading Data Feeds does not cost LINK.
 
 ## Examine the sample contract
 
@@ -1212,11 +1214,13 @@ The contract has the following components:
 
 - The `getChainlinkDataFeedLatestAnswer()` function calls your `dataFeed` object and runs the `latestRoundData()` function. When you deploy the contract, it initializes the `dataFeed` object to point to the aggregator at `0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43`, which is the proxy address for the Sepolia BTC / USD data feed. Your contract connects to that address and executes the function. The aggregator connects with several oracle nodes and aggregates the pricing data from those nodes. The response from the aggregator includes several variables, but `getChainlinkDataFeedLatestAnswer()` returns only the `answer` variable.
 
+This example ignores the `updatedAt` and `answeredInRound` values returned by `latestRoundData()` for clarity. `answeredInRound` is deprecated, but `updatedAt` is not: in a production contract, check that it is recent enough for your use case before you rely on an answer, and pause or fall back to an alternate operation mode when it is not. See [Check the timestamp of the latest answer](/data-feeds/overview#check-the-timestamp-of-the-latest-answer) for details.
+
 ## Compile, deploy, and run the contract
 
 > **CAUTION: Configure and fund your wallet**
 >
-> If you have not already configured your MetaMask wallet and funded it with testnet ETH, follow the instructions in [Deploy Your First Smart Contract](/quickstarts/deploy-your-first-contract#install-and-fund-your-metamask-wallet) to set that up. You can get testnet ETH at one of the available [Sepolia faucets](/resources/link-token-contracts/#sepolia-testnet).
+> If you have not configured and funded a wallet yet, see [Before you begin](#before-you-begin).
 
 Deploy the `DataConsumerV3` smart contract on the Sepolia testnet.
 
@@ -1252,7 +1256,7 @@ Deploy the `DataConsumerV3` smart contract on the Sepolia testnet.
 
    ![Remix Deployed Contracts Section](/images/getting-started/deployedContractDataConsumerV3.png)
 
-9. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by clicking the **More Details** checkbox. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed can use a different number of decimal places, so always read the `decimals()` value from the feed contract instead of hardcoding it. See [Decimal precision](/data-feeds/price-feeds#decimal-precision) for details.
+9. Click **getChainlinkDataFeedLatestAnswer** to show the latest answer from the aggregator contract. In this example, the answer is the latest price, which appears just below the button. The returned answer is an integer, so it is missing its decimal point. You can find the correct number of decimal places for this answer on the [Price Feed addresses](/data-feeds/price-feeds/addresses) page by selecting **More Details**. The answer on the BTC / USD feed uses 8 decimal places, so an answer of `3030914000000` indicates a BTC / USD price of `30309.14`. Each feed can use a different number of decimal places, so always read the `decimals()` value from the feed contract instead of hardcoding it. The sample contract in this guide does not expose that function, but in your own contracts you can read it by calling [`decimals()`](/data-feeds/api-reference#decimals) on the feed's proxy contract. See [Decimal precision](/data-feeds/price-feeds#decimal-precision) for details.
 
    ![A screenshot showing the deployed contract and the latest answer.](/images/getting-started/getLatestPrice.png)
 
@@ -4255,7 +4259,7 @@ Solana provides a [Testnet cluster](https://docs.solana.com/clusters#testnet) th
 
 See the [Solana Data Feeds](/data-feeds/price-feeds/addresses?network=solana) page for a full list of Chainlink data feeds that are available on Solana.
 
-To learn when more Chainlink services become available, follow us on [Twitter](https://twitter.com/chainlink) or sign up for our [mailing list](/resources/developer-communications?parent=dataFeeds).
+To learn when more Chainlink services become available, follow us on [X](https://x.com/chainlink) or sign up for our [mailing list](/resources/developer-communications?parent=dataFeeds).
 
 ## Languages, tools, and frameworks
 

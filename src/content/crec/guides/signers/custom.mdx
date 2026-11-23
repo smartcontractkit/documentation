@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Implement signer.Signer (and optionally signer.TypedDataSigner) to bridge Chainlink CRE Connect to any custody system: multisig service, in-house HSM, off-chain MPC, etc."
   datePublished: "2026-05-01"
-  lastModified: "2026-08-31"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 The built-in signers (local, AWS KMS, HashiCorp Vault, Fireblocks, Privy) cover the most common production cases. For anything else, implement the `signer.Signer` interface yourself: the CRE Connect SDK will wire your custody system into the operation flow with no further changes.
 
@@ -116,6 +116,12 @@ func (s *MultisigSigner) verifyRecover(hash, sig []byte) error {
 }
 ```
 
+<RequiredRole product="crec" role="operator">
+  Using `ExecuteOperation` below requires `crec:operation:write` and `crec:operation:read` in your CRE Connect API key.
+  Implementing or invoking the signer itself is governed by your custody system's authorization, not by a Platform
+  member role.
+</RequiredRole>
+
 Use it exactly like a built-in signer:
 
 ```go
@@ -140,6 +146,11 @@ func (s *MultisigSigner) SignTypedData(ctx context.Context, td *signer.TypedData
 The CRE Connect SDK's `Transact.SignOperation` always calls `Sign(ctx, hash)` today. If you want to use `SignTypedData`, build the typed-data document yourself with `op.TypedData(chainID)` and call `SignTypedData` directly, then submit the resulting signature with `Transact.SendSignedOperation`.
 
 ## Register the signer's address
+
+<RequiredRole product="crec" role="operator">
+  Creating a wallet with this signer address requires `crec:wallet:write` in your API key. The wallet's allowed signers
+  determine which signatures it accepts; Platform roles do not replace that signer authorization.
+</RequiredRole>
 
 Whatever address your custody system signs as must appear in the wallet's `AllowedEcdsaSigners` (or `AllowedRsaSigners` for RSA). When you provision the wallet, derive the address up front:
 

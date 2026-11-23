@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Write, deploy, and register your own ACE policy contract, then use it like any pre-built policy: the IPolicy contract, the config schema, registering an implementation, and creating instances."
   datePublished: "2026-07-17"
-  lastModified: "2026-07-17"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 In addition to the [pre-built Policy Library](/ace/reference/policy-library), you can write and deploy **your own policy contract** and register it with the ACE Platform. Once registered, a custom policy behaves exactly like a library policy — you create instances of it, configure them, and attach them to protected functions.
 
@@ -109,6 +109,12 @@ Deploy your policy contract on each chain where you intend to use it. This deplo
 </Aside>
 
 ## Step 3: Register the implementation
+
+<RequiredRole product="ace" role="operator">
+  Registering and updating a custom policy implementation requires `ace:policy_manager:implementation:write`. Your API
+  key must include this permission. Creating and configuring instances later requires `ace:policy_manager:policy:write`;
+  attaching them to targets requires `ace:policy_manager:target:write`.
+</RequiredRole>
 
 Register the deployed implementation with the Coordinator API so the platform can manage it. Provide a name, description, the on-chain addresses, and a **config schema**.
 
@@ -212,8 +218,18 @@ From here, a custom policy is used exactly like a library policy:
 
 ## Manage a custom implementation
 
-- **Update** name, description, or on-chain addresses with `PUT /policy-implementations/{id}`.
-- **Archive** with `PATCH /policy-implementations/{id}` (`{"status":"archived"}`). All instances of the implementation must be archived first.
+Update the name, description, or on-chain addresses with `PUT /policy-implementations/{id}` using
+`ace:policy_manager:implementation:write` in your API key.
+
+### Archive a custom implementation
+
+<RequiredRole product="ace" role="admin">
+  Archiving an implementation requires `ace:policy_manager:implementation:archive:write`. Your API key must include this
+  permission. ACE Operators can update implementations and archive their instances, but cannot archive the
+  implementation itself.
+</RequiredRole>
+
+Archive with `PATCH /policy-implementations/{id}` (`{"status":"archived"}`). All instances of the implementation must be archived first.
 
 ## Security considerations
 

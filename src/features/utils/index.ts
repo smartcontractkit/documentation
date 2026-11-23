@@ -792,7 +792,7 @@ export const supportedChainToChainInRdd = (supportedChain: SupportedChain): stri
     case "XLAYER_MAINNET":
       return "ethereum-mainnet-xlayer-1"
     case "XLAYER_TESTNET":
-      return "ethereum-testnet-sepolia-xlayer-1"
+      return "xlayer-testnet"
     case "BITLAYER_MAINNET":
       return "bitcoin-mainnet-bitlayer-1"
     case "BITLAYER_TESTNET":

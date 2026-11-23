@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Prepare a token for Chainlink ACE Active Monitoring: grant the CRE Connect Wallet the onchain role that each enforcement function requires, and prepare the JSON ABI you upload."
   datePublished: "2026-10-05"
-  lastModified: "2026-10-05"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 import AceCallout from "@features/ace/callouts/AceCallout.astro"
 
 <AceCallout callout="privateBeta" />
@@ -27,7 +27,8 @@ An **enforcement function** is a function on your token or on an associated cont
   Active Monitoring needs only one thing: your CRE Connect Wallet must be allowed to call the enforcement functions. How
   you allow it depends on the contract. This guide uses a standard ERC-3643 (T-REX) token, where the owner adds the
   wallet as an agent. Other contracts use an OpenZeppelin `AccessControl` role, an owner-only function, or another
-  check. Use the access check your contract implements.
+  check. Use the access check your contract implements. These are onchain permissions on your contracts. Assigning a
+  Platform or ACE role to a member does not grant these permissions to the member or the CRE Connect Wallet.
 </Aside>
 
 ## Grant the role to your CRE Connect Wallet
@@ -69,6 +70,12 @@ cast send <BLOCKLIST_ADDRESS> "setOperator(address,bool)" <CRE_CONNECT_WALLET_AD
 ```
 
 ### Example: a token that uses ACE policies
+
+<RequiredRole product="ace" role="operator">
+  Creating and configuring an ACE role-based policy requires `ace:policy_manager:policy:write`; attaching it to
+  functions requires `ace:policy_manager:target:write`. Include these permissions in your API key when using the API.
+  This ACE role is separate from the onchain role assigned to the CRE Connect Wallet.
+</RequiredRole>
 
 If your token also uses ACE for preventive enforcement, a [RoleBasedAccessControlPolicy](/ace/reference/policy-library/role-based-access-control-policy) on its policy engine can decide who calls each function. In that case, [create the policy](/ace/guides/policy-manager/manage-policies#create-a-policy-instance), assign the role to your CRE Connect Wallet, and [attach the policy](/ace/guides/policy-manager/manage-protections#create-a-target-protection) to each enforcement function. Active Monitoring does not require ACE policies on your token.
 

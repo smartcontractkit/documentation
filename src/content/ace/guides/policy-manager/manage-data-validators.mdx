@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Create, configure, and attach Credential Data Validators in Chainlink ACE to enforce rules on credential contents — such as jurisdiction allow/deny lists — using the Coordinator API."
   datePublished: "2026-07-17"
-  lastModified: "2026-07-17"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside } from "@components"
+import { Aside, RequiredRole } from "@components"
 
 A **Data Validator** is an on-chain contract that inspects the **contents** of a credential — not just whether it exists. Attaching a Data Validator to an identity-validation policy lets you enforce rules on credential data, such as "only allow investors whose credential says they are in the US or Canada" or "reject any account whose credential country is on a sanctions list".
 
@@ -63,6 +63,11 @@ Before creating a Data Validator:
 1. Credentials issued **with data** against that credential type. See [Managing Credentials](/ace/guides/identity-manager/manage-credentials#issue-a-credential-with-data).
 
 ## Create a Data Validator
+
+<RequiredRole product="ace" role="operator">
+  Creating Data Validator instances and updating their configuration requires `ace:policy_manager:policy:write`. Your
+  API key must include this permission. ACE Viewers can list and view instances with `ace:policy_manager:policy:read`.
+</RequiredRole>
 
 A **Data Validator instance** is a deployed copy of a Data Validator implementation (such as the AllowDenyList country-code validator), configured with your specific allow and deny lists and scoped to one or more chains — the same shape as a policy instance.
 
@@ -173,6 +178,11 @@ curl https://ace.api.chain.link/v1/data-validators/<DATA_VALIDATOR_ID> \
 ```
 
 ## Archive a Data Validator
+
+<RequiredRole product="ace" role="operator">
+  Archiving an instance requires `ace:policy_manager:policy:archive:write`. Include this permission in your API key.
+  Updating a credential source to detach the validator also requires `ace:policy_manager:policy:write`.
+</RequiredRole>
 
 Archiving a Data Validator deactivates the instance. Before archiving, detach it from any credential source that references it (set that source's `dataValidator` back to the zero address).
 

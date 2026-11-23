@@ -5,10 +5,10 @@ date: Last Modified
 metadata:
   description: "Browse policy implementations, create and configure policy instances, and update policy configurations in Chainlink ACE using the Platform UI or the Coordinator API."
   datePublished: "2026-04-15"
-  lastModified: "2026-04-15"
+  lastModified: "2026-11-10"
 ---
 
-import { Aside, ClickToZoom, MethodTabs } from "@components"
+import { Aside, ClickToZoom, MethodTabs, RequiredRole } from "@components"
 import PolicyInstanceBuilder from "../../../../components/ACE/PolicyInstanceBuilder/PolicyInstanceBuilder.tsx"
 
 This guide covers how to browse available policy types, create policy instances, and configure their parameters. For attaching policies to specific functions on your contracts, see [Protecting Target Functions](/ace/guides/policy-manager/manage-protections).
@@ -58,6 +58,11 @@ For example, the "Allow List Policy" implementation can be instantiated multiple
 </MethodTabs>
 
 ## Create a policy instance
+
+<RequiredRole product="ace" role="operator">
+  Creating instances and updating their configuration requires `ace:policy_manager:policy:write`. Include it in your key
+  for API calls. ACE Viewers can browse implementations and instances with the corresponding read permissions.
+</RequiredRole>
 
 A policy instance is created from a policy implementation and deployed on-chain within a policy engine.
 
@@ -168,6 +173,11 @@ After deploying a policy instance, you can update its on-chain configuration par
 </MethodTabs>
 
 ## Archive a policy
+
+<RequiredRole product="ace" role="operator">
+  Archiving a policy instance requires `ace:policy_manager:policy:archive:write`. Your API key must include this
+  permission. Archiving a policy implementation instead requires ACE Admin.
+</RequiredRole>
 
 Archiving a policy instance removes it from active use. All target protections that reference this policy must be archived first.
 

@@ -217,6 +217,14 @@ describe("shouldHideStreamFeedId", () => {
     ).toBe(true)
   })
 
+  it("leaves futures stream feed IDs visible", () => {
+    expect(
+      shouldHideStreamFeedId(
+        verifierStream({ attributeType: "FuturesPrice", feedType: "Futures", assetClass: "Futures", schema: "v14" })
+      )
+    ).toBe(false)
+  })
+
   it("leaves regular TWAP and ordinary streams alone", () => {
     expect(shouldHideStreamFeedId(verifierStream({ attributeType: "TWAP", feedType: "Crypto", schema: "v2" }))).toBe(
       false
