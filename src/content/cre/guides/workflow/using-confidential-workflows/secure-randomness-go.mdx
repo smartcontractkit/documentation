@@ -1,0 +1,181 @@
+---
+section: cre
+title: "Secure Randomness in Confidential Workflows"
+date: Last Modified
+sdkLang: "go"
+pageId: "guides-workflow-confidential-workflows-secure-randomness"
+metadata:
+  description: "Generate unpredictable, cryptographically secure random values in Go by running your handler in a Confidential Workflow and using crypto/rand."
+  datePublished: "2026-11-16"
+  lastModified: "2026-11-23"
+---
+
+import { Aside } from "@components"
+
+[Randomness in regular workflows](/cre/guides/workflow/using-randomness-go) is **deterministic by design**: every node derives the same values from the execution ID so the DON can reach consensus. That makes it predictable, so it can't be used for private keys, secrets, or tokens.
+
+If you need randomness that nobody can predict, including node operators, run your handler in a [Confidential Workflow](/cre/guides/workflow/using-confidential-workflows) and read randomness with Go's standard-library `crypto/rand`. In a Confidential Workflow, `crypto/rand` draws entropy from the secure [enclave](/cre/key-terms#enclave) that runs your handler.
+
+<Aside type="caution" title="Private beta">
+  Confidential Workflows is in private beta and requires enrollment through your Chainlink account team—see [Requesting
+  Confidential Workflows Access](/cre/guides/operations/confidential-workflows-access).
+</Aside>
+
+<Aside type="caution" title="Do not use Rand() for cryptographic purposes">
+  Do **not** use `rt.Rand()` or `rt.UsingTheDons().Rand()` on a `cre.TeeRuntime` for keys, secrets, tokens, or any other
+  cryptographic purpose, even inside a Confidential Workflow. `rt.UsingTheDons().Rand()` is derived from the execution
+  ID and is predictable. `rt.Rand()` is a `math/rand` generator that is not seeded with enough entropy to be
+  cryptographically secure. Use `crypto/rand` as shown below.
+</Aside>
+
+## Regular vs. Confidential Workflows
+
+|                                             | Regular workflow (DON mode)                       | Confidential Workflow (enclave)                                                               |
+| ------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| API                                         | `runtime.Rand()`                                  | `crypto/rand` (not `rt.Rand()`)                                                               |
+| Entropy source                              | Hash of the execution ID, identical on every node | The enclave's entropy source, read through the WASI `random_get` call that `crypto/rand` uses |
+| Same value on every node?                   | Yes. Required for consensus                       | No. The handler runs once, inside an enclave, rather than on every node                       |
+| Predictable by node operators or observers? | Yes, given the code and the execution ID          | Not when you use `crypto/rand` as described here                                              |
+| Safe for keys, secrets, and tokens?         | **No**                                            | Yes, with `crypto/rand`                                                                       |
+| Typical use                                 | Consensus-safe selection, sampling, tests         | Key generation, nonces, tokens, unpredictable draws                                           |
+
+## Generate secure random values
+
+Import the standard-library `crypto/rand` package, not `math/rand`. Your handler must be registered with [`cre.HandlerInTee`](/cre/reference/sdk/confidential-workflows-client-go#crehandlerintee) so that it runs in an enclave. See [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go) for the full setup.
+
+```go
+import (
+	"crypto/rand"
+	"math/big"
+)
+
+func onCronTrigger(config *Config, rt cre.TeeRuntime, _ *cron.Payload) (string, error) {
+	// Raw random bytes, for example a 256-bit secret
+	secret := make([]byte, 32)
+	if _, err := rand.Read(secret); err != nil {
+		return "", fmt.Errorf("failed to read entropy: %w", err)
+	}
+
+	// Uniform integer in [0, 1000)
+	n, err := rand.Int(rand.Reader, big.NewInt(1000))
+	if err != nil {
+		return "", fmt.Errorf("failed to draw random integer: %w", err)
+	}
+
+	// Random URL-safe string with about 128 bits of randomness
+	token := rand.Text()
+
+	// ...use secret and token inside the enclave. Never log or return them.
+	_ = secret
+	_ = token
+
+	return fmt.Sprintf("draw=%s", n.String()), nil
+}
+```
+
+`rand.Text()` requires Go 1.24 or later.
+
+If you need the `math/rand/v2` API, seed a ChaCha8 generator with a full 32 bytes from `crypto/rand`:
+
+```go
+import (
+	"crypto/rand"
+	mrand "math/rand/v2"
+)
+
+var seed [32]byte
+if _, err := rand.Read(seed[:]); err != nil {
+	return "", err
+}
+r := mrand.New(mrand.NewChaCha8(seed))
+_ = r.IntN(1000)
+```
+
+## Example: generate a key pair
+
+The following snippet derives an Ed25519 key pair from 32 random bytes. Only the public key is returned. The private key stays inside the enclave.
+
+```go
+import (
+	"crypto/ed25519"
+	"crypto/rand"
+	"encoding/hex"
+)
+
+func onCronTrigger(config *Config, rt cre.TeeRuntime, _ *cron.Payload) (string, error) {
+	seed := make([]byte, ed25519.SeedSize)
+	if _, err := rand.Read(seed); err != nil {
+		return "", fmt.Errorf("failed to read entropy: %w", err)
+	}
+
+	privateKey := ed25519.NewKeyFromSeed(seed)
+	publicKey := privateKey.Public().(ed25519.PublicKey)
+
+	// Return only public values.
+	return hex.EncodeToString(publicKey), nil
+}
+```
+
+<Aside type="caution" title="Do not leak secrets through logs or outputs">
+  Anything you log, return from the handler, send in an external request, or write onchain leaves the enclave and is no
+  longer confidential. Never log or return private keys, seeds, or other secret values in plaintext. See
+  [Confidentiality boundary](/cre/concepts/confidential-workflows#confidentiality-boundary).
+</Aside>
+
+## What not to do
+
+```go
+// ❌ Not cryptographically secure, even inside a Confidential Workflow:
+rnd, _ := rt.Rand()                  // math/rand generator, not seeded with enough entropy
+_ = rnd.Uint64()
+
+rndDon, _ := rt.UsingTheDons().Rand() // Derived from the execution ID, predictable
+_ = rndDon.Uint64()
+
+// ❌ Also wrong: math/rand seeded with the time or another small value
+_ = mrand1.New(mrand1.NewSource(time.Now().UnixNano())) // where mrand1 is "math/rand"
+```
+
+- **Don't** import `math/rand` and seed it with a small value or the current time.
+- **Don't** use `crypto/rand` in a regular (non-confidential) workflow. Each node would draw a different value, so the DON couldn't reach consensus, and the value would not be secret from node operators.
+
+## Security considerations
+
+- **Trust assumptions.** Confidential Workflows rely on the attestation of the enclave and the trust assumptions of the underlying [TEE](/cre/key-terms#tee-trusted-execution-environment), currently AWS Nitro. Attestation lets consumers verify which code ran. It doesn't prove the randomness itself. This is a different trust model from [Chainlink VRF](/vrf), which provides an onchain cryptographic proof.
+- **Your code is not confidential.** Anyone can read your handler's source, so never rely on the secrecy of your algorithm. Rely on the entropy from `crypto/rand`.
+- **Randomness doesn't prevent front-running.** An unpredictable value does not stop participants from exploiting information before a result is final. Design the consuming contract, for example with commit/reveal or an ordering that prevents late participation, so nobody can profit from information they have before the result is final.
+- **Don't treat simulated values as secure.** The simulator is not a real TEE: it runs your handler in a simulated enclave for debugging and says so in its output. Use `cre workflow simulate` to test your logic, not to generate real keys or secrets.
+
+## FAQ
+
+**Is randomness in regular workflows cryptographically secure?**
+
+No. It is derived from the execution ID so every node produces the same value and the DON can reach consensus. It is predictable. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-go).
+
+**Why can't regular workflows have unpredictable randomness?**
+
+Consensus requires all nodes to agree on the result. If each node drew its own random value, the values would differ and the nodes could not agree.
+
+**How do I get unpredictable randomness?**
+
+Run the handler in a Confidential Workflow with `cre.HandlerInTee` and use `crypto/rand`.
+
+**Can node operators see or predict the value?**
+
+Not when you use `crypto/rand` in a Confidential Workflow, subject to the trust assumptions of the TEE described above. Node operators can't see inside the enclave, and the code that ran is attested.
+
+**Does this replace Chainlink VRF?**
+
+No. [Chainlink VRF](/vrf) provides randomness with an onchain cryptographic proof, so consumers don't need to trust any single party. Randomness from a Confidential Workflow relies on enclave attestation and the TEE's trust assumptions.
+
+**Is `rt.Rand()` safe in a Confidential Workflow?**
+
+Not for cryptographic use. Use `crypto/rand` instead.
+
+**Does it prevent front-running?**
+
+No. Design your consuming contract so that no one can exploit information before the result is final.
+
+**Can I use TypeScript?**
+
+Not currently. See [Secure Randomness in Confidential Workflows (TypeScript)](/cre/guides/workflow/using-confidential-workflows/secure-randomness-ts).

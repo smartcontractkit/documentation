@@ -5,9 +5,9 @@ sdkLang: "go"
 pageId: "using-randomness"
 date: Last Modified
 metadata:
-  description: "Generate random numbers safely in CRE: use runtime.Rand() to ensure all nodes get the same values and maintain consensus."
+  description: "Generate consensus-safe random numbers in CRE with runtime.Rand(), so all nodes get the same values and maintain consensus. These values are not cryptographically secure."
   datePublished: "2025-11-04"
-  lastModified: "2026-07-17"
+  lastModified: "2026-11-23"
 ---
 
 import { Aside } from "@components"
@@ -15,12 +15,19 @@ import { Aside } from "@components"
 <Aside type="note" title="TL;DR">
   Use `runtime.Rand()` to generate random numbers in your workflows. This provides deterministic randomness that ensures
   all nodes in the network generate the same values and can reach consensus. Do **not** use Go's global `rand`
-  package—it can break consensus. Note that `runtime.Rand()` is **not** cryptographically secure.
+  package—it can break consensus. Because the values are derived from the execution ID, they are **predictable** and
+  **not** cryptographically secure. Never use them for private keys, secrets, or tokens.
+</Aside>
+
+<Aside type="caution" title="Need unpredictable, cryptographically secure randomness?">
+  Randomness in regular workflows is deterministic by design. If you need randomness that nobody (including node
+  operators) can predict, run your handler in a Confidential Workflow and use `crypto/rand`. See [Secure Randomness in
+  Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
 </Aside>
 
 ## The problem: Why randomness needs special handling
 
-Workflows often need randomness for various purposes: generating nonces, selecting winners from a list, or creating unpredictable values. However, in a decentralized network, naive use of random number generators creates a critical problem:
+Workflows often need randomness for various purposes: selecting winners from a list, sampling, or adding jitter. However, in a decentralized network, naive use of random number generators creates a critical problem:
 
 **If each node generates different random values, they cannot reach consensus on the workflow's output.**
 
@@ -28,7 +35,7 @@ For example, if your workflow selects a lottery winner using each node's local r
 
 ## The solution: Consensus-safe randomness
 
-CRE provides randomness through the `runtime.Rand()` method, which returns a standard Go `*rand.Rand` object. This random generator is managed by the CRE platform to ensure all nodes generate the same sequence of random values, enabling consensus while still providing unpredictability across different workflow executions.
+CRE provides randomness through the `runtime.Rand()` method, which returns a standard Go `*rand.Rand` object. This random generator is managed by the CRE platform to ensure all nodes generate the same sequence of random values, enabling consensus. The generator is seeded from a hash of the workflow execution ID, so in production each execution gets a different sequence, but anyone who knows the execution ID and your workflow code can recompute the same values. The output is **verifiable** (anyone can re-derive it), not **secret** or **unpredictable**.
 
 ### Usage
 
@@ -46,10 +53,12 @@ randomBigInt := new(big.Int).Rand(rnd, big.NewInt(1000))  // Random big.Int
 
 ## Common use cases
 
-- Selecting a winner from a lottery or pool
-- Generating nonces for transactions
-- Creating random identifiers or values
-- Any random selection that needs to be agreed upon by all nodes
+- Selecting an item from a pool or list where the choice only needs to be agreed upon by all nodes
+- Sampling and load distribution
+- Adding jitter or randomized ordering
+- Tests and simulations
+
+Do **not** use `runtime.Rand()` for private keys, secrets, tokens, or signature nonces. See [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
 
 ## Working with big.Int random values
 
@@ -72,6 +81,14 @@ randomAmount := new(big.Int).Rand(rnd, max)
 ## Complete example: Random lottery
 
 Here's a complete example that demonstrates using DON mode randomness to select a lottery winner and generate a prize amount:
+
+<Aside type="caution" title="This example is deterministic, not secret">
+  The winner and prize in this example are derived from the execution ID, so anyone who knows the participants, the
+  execution ID, and the code can compute the result before it is published. It shows how to reach consensus on a random
+  selection, not how to build a tamper-proof or front-run-resistant lottery. If participants can profit from knowing the
+  outcome early, design your consuming contract accordingly (for example with commit/reveal) and see [Secure Randomness
+  in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
+</Aside>
 
 ```go
 //go:build wasip1
@@ -154,7 +171,7 @@ func main() {
 
 1. **Error handling**: Properly checks for errors when calling `runtime.Rand()`.
 
-When you run this workflow multiple times, each execution will select different winners and prize amounts (because each execution gets a different seed), but within a single execution, all nodes in the DON would arrive at the same winner.
+In production, each execution has its own execution ID and therefore its own seed, so repeated executions select different winners and prize amounts. Within a single execution, all nodes in the DON arrive at the same winner. In simulation, the execution ID can be fixed, so running the same workflow twice may return the same result—don't rely on simulation for fresh randomness.
 
 ## Best practices
 
@@ -172,6 +189,7 @@ When you run this workflow multiple times, each execution will select different 
 ### Don't:
 
 - **Don't use Go's global `rand` package** directly. Always get your random generator from `runtime.Rand()` first.
+- **Don't use `runtime.Rand()` for private keys, secrets, or tokens.** The values are predictable by design.
 
 ## Mode-aware behavior
 
@@ -192,6 +210,7 @@ When using `cre.RunInNodeMode`, you can access Node mode randomness:
 - Each node generates **different** random values
 - Useful for scenarios where per-node variability is accepted
 - Access via `nodeRuntime.Rand()` inside the Node mode function
+- **Not cryptographically secure.** Do not use it for keys, secrets, or tokens
 
 **Example:**
 
@@ -217,7 +236,15 @@ Random generators are tied to the mode they were created in. **Do not** attempt 
 
 **Is the randomness cryptographically secure?**
 
-No. `runtime.Rand()` returns a seeded pseudo-random number generator (Go's `math/rand`). The seed is coordinated by the CRE platform so that all nodes in the DON produce the same sequence — that is what makes consensus possible — but it is not cryptographically secure. Do not use it for key generation, signature nonces, or any security-sensitive purpose. For cryptographic randomness, use Go's `crypto/rand` package.
+No. `runtime.Rand()` returns a seeded pseudo-random number generator (Go's `math/rand`). In DON mode the seed is derived from a hash of the execution ID, so every node produces the same sequence. That is what makes consensus possible, and it is also why the values are predictable by anyone who knows the execution ID and your code. Do not use it for key generation, signature nonces, tokens, or any security-sensitive purpose.
+
+**How do I get unpredictable, cryptographically secure randomness?**
+
+Regular workflows can't provide it, because consensus requires every node to compute the same value. Run your handler in a [Confidential Workflow](/cre/guides/workflow/using-confidential-workflows) and use Go's `crypto/rand`, as described in [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go). Don't call `crypto/rand` in a regular workflow: nodes would draw different values and could not reach consensus, and the result would not be secret from node operators.
+
+**Does Chainlink VRF replace this?**
+
+They solve different problems. [Chainlink VRF](/vrf) delivers randomness with an onchain cryptographic proof, so consumers don't need to trust any single party. Use it when you need onchain-verifiable randomness.
 
 **What happens if I try to use randomness in the wrong mode?**
 

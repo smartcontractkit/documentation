@@ -5471,7 +5471,7 @@ For **why** you might need Confidential HTTP—what stays off Workflow DON nodes
 
 # Confidential Workflows
 Source: https://docs.chain.link/cre/guides/workflow/using-confidential-workflows
-Last Updated: 2026-07-28
+Last Updated: 2026-11-16
 
 The CRE SDK is designed to run a handler's callback inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [Trusted Execution Environment (TEE)](/cre/key-terms#tee-trusted-execution-environment)—instead of on Workflow DON nodes, so that the sensitive computation it performs, and any secrets it fetches (from the [Vault DON](/cre/key-terms#vault-don)), are intended to remain confidential from node operators during execution. A workflow that does this is called a **Confidential Workflow**: the same kind of workflow you're already building with CRE, with an explicit confidential execution path added where you need it.
 
@@ -5487,6 +5487,7 @@ For **why** you might need a Confidential Workflow, see [Confidential Workflows 
 ## Guides
 
 - **[Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential)**: Register a TEE handler, fetch secrets dynamically, and cross back to the DON for anything that needs consensus.
+- **[Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness)**: Generate unpredictable, cryptographically secure random values in Go with `crypto/rand`. Not currently supported in TypeScript.
 
 > **NOTE: Minimal example**
 >
@@ -13989,7 +13990,7 @@ Set the commitment on a Solana read through the `Commitment` field of `GetAccoun
 
 # Avoiding Non-Determinism in Workflows
 Source: https://docs.chain.link/cre/concepts/non-determinism-go
-Last Updated: 2026-04-20
+Last Updated: 2026-11-16
 
 > **NOTE: TL;DR**
 >
@@ -14085,7 +14086,7 @@ Go's built-in `rand` package generates different random sequences on each node, 
 
 **The problem:** Each node generates different random values, breaking consensus.
 
-**The solution:** Use `runtime.Rand()` from the CRE SDK, which provides consensus-safe random number generation. All nodes generate the same sequence of random values, enabling consensus. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for details.
+**The solution:** Use `runtime.Rand()` from the CRE SDK, which provides consensus-safe random number generation. All nodes generate the same sequence of random values, enabling consensus. These values are predictable, so don't use them for keys, secrets, or tokens. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for details, and [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go) if you need cryptographic randomness.
 
 ## 6. Working with LLMs
 
@@ -14104,7 +14105,7 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 - Use `proto.MarshalOptions{Deterministic: true}` for Protocol Buffers
 - Process channels in a fixed, deterministic order
 - Use `runtime.Now()` for all time operations
-- Use `runtime.Rand()` for random number generation
+- Use `runtime.Rand()` for random number generation (not for keys, secrets, or tokens)
 - Request structured output from LLMs
 
 ### Don't:
@@ -14127,7 +14128,7 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 
 # Before You Build
 Source: https://docs.chain.link/cre/getting-started/before-you-build-go
-Last Updated: 2026-10-19
+Last Updated: 2026-11-23
 
 You've completed the Getting Started guide and built a workflow that fetches offchain data, reads from a smart contract, performs calculations, and writes results onchain. You're ready to build your own workflows.
 
@@ -14143,11 +14144,11 @@ If your workflow uses timestamps (e.g., for API authentication or time-based que
 
 ## Working with randomness
 
-If your workflow needs random values (e.g., selecting a winner or generating nonces), use `runtime.Rand()` instead of Go's `rand` package. This ensures all nodes generate the same random sequence and can reach consensus.
+If your workflow needs random values (for example, to select an item, sample, or add jitter), use `runtime.Rand()` instead of Go's `rand` package. This ensures all nodes generate the same random sequence and can reach consensus. The values are derived from the execution ID, so they are predictable and not cryptographically secure—don't use them for private keys, secrets, or tokens.
 
 > **TIP: Learn more**
 >
-> See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for usage examples and best practices.
+> See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for usage examples and best practices, and [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go) if you need cryptographically secure randomness.
 
 > **NOTE: Going deeper**
 >
@@ -16313,7 +16314,7 @@ Go workflows are verifiable by default and do not require a template or Docker.
 
 # Building a Reusable Library
 Source: https://docs.chain.link/cre/guides/workflow/building-a-library-go
-Last Updated: 2026-08-14
+Last Updated: 2026-11-23
 
 This guide shows you how to package reusable integration logic (for example, a Slack notifier, a PagerDuty client, or a price-feed parser) as a standard Go module that other developers can `go get` and import directly into their own CRE workflows.
 
@@ -16457,7 +16458,7 @@ The pitfall specific to Go: don't reach for goroutines, channels, or `sync` prim
 Every trigger callback in a CRE workflow runs independently on every DON node and must produce identical results (DON mode), except inside `cre.RunInNodeMode()` blocks, which are explicitly for non-deterministic, per-node work that then gets aggregated. If nodes diverge, they generate different request IDs for capability calls and consensus fails outright.
 
 - **Never call `time.Now()` or any other `time` package clock function.** Always use `runtime.Now()` instead, so you don't need to branch on whether you're inside a `RunInNodeMode` block.
-- **Never use `math/rand` (or `crypto/rand`) directly.** Use `runtime.Rand()` from the CRE SDK, which provides a consensus-safe generator so every node produces the same sequence.
+- **Never use `math/rand` (or `crypto/rand`) directly in DON-mode code.** Use `runtime.Rand()` from the CRE SDK, which provides a consensus-safe generator so every node produces the same sequence. These values are predictable and not cryptographically secure; for keys or secrets, run the logic in a Confidential Workflow and use `crypto/rand`. See [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
 - **Never iterate a Go map directly** when the order affects your output. Go maps intentionally randomize iteration order. Use [`cre.OrderedEntries`](/cre/reference/sdk/core-go#creorderedentries-and-creorderedentriesfunc) (or `cre.OrderedEntriesFunc` for non-`cmp.Ordered` keys) instead of `for k, v := range someMap`.
 - **Use `encoding/json` v1, not v2.** The v2 library uses randomized hashing for field ordering, which serializes the same struct differently across nodes. If you serialize Protocol Buffers, use `proto.MarshalOptions{Deterministic: true}.Marshal()` too, since the default `proto.Marshal` doesn't guarantee field order.
 - **Never use `select` with multiple ready channels** to make a decision, see [`Promise`/`Await` concurrency, not goroutines](#promiseawait-concurrency-not-goroutines).
@@ -17868,6 +17869,180 @@ func main() {
 ## API reference
 
 For the full list of types and methods available on [`cre.TeeRuntime`](/cre/reference/sdk/confidential-workflows-client-go#creteeruntime) and [`cre.HandlerInTee`](/cre/reference/sdk/confidential-workflows-client-go#crehandlerintee), see the [Confidential Workflows Client SDK Reference](/cre/reference/sdk/confidential-workflows-client-go).
+
+---
+
+# Secure Randomness in Confidential Workflows
+Source: https://docs.chain.link/cre/guides/workflow/using-confidential-workflows/secure-randomness-go
+Last Updated: 2026-11-23
+
+[Randomness in regular workflows](/cre/guides/workflow/using-randomness-go) is **deterministic by design**: every node derives the same values from the execution ID so the DON can reach consensus. That makes it predictable, so it can't be used for private keys, secrets, or tokens.
+
+If you need randomness that nobody can predict, including node operators, run your handler in a [Confidential Workflow](/cre/guides/workflow/using-confidential-workflows) and read randomness with Go's standard-library `crypto/rand`. In a Confidential Workflow, `crypto/rand` draws entropy from the secure [enclave](/cre/key-terms#enclave) that runs your handler.
+
+> **CAUTION: Private beta**
+>
+> Confidential Workflows is in private beta and requires enrollment through your Chainlink account team—see [Requesting
+> Confidential Workflows Access](/cre/guides/operations/confidential-workflows-access).
+
+> **CAUTION: Do not use Rand() for cryptographic purposes**
+>
+> Do **not** use `rt.Rand()` or `rt.UsingTheDons().Rand()` on a `cre.TeeRuntime` for keys, secrets, tokens, or any other
+> cryptographic purpose, even inside a Confidential Workflow. `rt.UsingTheDons().Rand()` is derived from the execution
+> ID and is predictable. `rt.Rand()` is a `math/rand` generator that is not seeded with enough entropy to be
+> cryptographically secure. Use `crypto/rand` as shown below.
+
+## Regular vs. Confidential Workflows
+
+|                                             | Regular workflow (DON mode)                       | Confidential Workflow (enclave)                                                               |
+| ------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| API                                         | `runtime.Rand()`                                  | `crypto/rand` (not `rt.Rand()`)                                                               |
+| Entropy source                              | Hash of the execution ID, identical on every node | The enclave's entropy source, read through the WASI `random_get` call that `crypto/rand` uses |
+| Same value on every node?                   | Yes. Required for consensus                       | No. The handler runs once, inside an enclave, rather than on every node                       |
+| Predictable by node operators or observers? | Yes, given the code and the execution ID          | Not when you use `crypto/rand` as described here                                              |
+| Safe for keys, secrets, and tokens?         | **No**                                            | Yes, with `crypto/rand`                                                                       |
+| Typical use                                 | Consensus-safe selection, sampling, tests         | Key generation, nonces, tokens, unpredictable draws                                           |
+
+## Generate secure random values
+
+Import the standard-library `crypto/rand` package, not `math/rand`. Your handler must be registered with [`cre.HandlerInTee`](/cre/reference/sdk/confidential-workflows-client-go#crehandlerintee) so that it runs in an enclave. See [Making a Workflow Confidential](/cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go) for the full setup.
+
+```go
+import (
+	"crypto/rand"
+	"math/big"
+)
+
+func onCronTrigger(config *Config, rt cre.TeeRuntime, _ *cron.Payload) (string, error) {
+	// Raw random bytes, for example a 256-bit secret
+	secret := make([]byte, 32)
+	if _, err := rand.Read(secret); err != nil {
+		return "", fmt.Errorf("failed to read entropy: %w", err)
+	}
+
+	// Uniform integer in [0, 1000)
+	n, err := rand.Int(rand.Reader, big.NewInt(1000))
+	if err != nil {
+		return "", fmt.Errorf("failed to draw random integer: %w", err)
+	}
+
+	// Random URL-safe string with about 128 bits of randomness
+	token := rand.Text()
+
+	// ...use secret and token inside the enclave. Never log or return them.
+	_ = secret
+	_ = token
+
+	return fmt.Sprintf("draw=%s", n.String()), nil
+}
+```
+
+`rand.Text()` requires Go 1.24 or later.
+
+If you need the `math/rand/v2` API, seed a ChaCha8 generator with a full 32 bytes from `crypto/rand`:
+
+```go
+import (
+	"crypto/rand"
+	mrand "math/rand/v2"
+)
+
+var seed [32]byte
+if _, err := rand.Read(seed[:]); err != nil {
+	return "", err
+}
+r := mrand.New(mrand.NewChaCha8(seed))
+_ = r.IntN(1000)
+```
+
+## Example: generate a key pair
+
+The following snippet derives an Ed25519 key pair from 32 random bytes. Only the public key is returned. The private key stays inside the enclave.
+
+```go
+import (
+	"crypto/ed25519"
+	"crypto/rand"
+	"encoding/hex"
+)
+
+func onCronTrigger(config *Config, rt cre.TeeRuntime, _ *cron.Payload) (string, error) {
+	seed := make([]byte, ed25519.SeedSize)
+	if _, err := rand.Read(seed); err != nil {
+		return "", fmt.Errorf("failed to read entropy: %w", err)
+	}
+
+	privateKey := ed25519.NewKeyFromSeed(seed)
+	publicKey := privateKey.Public().(ed25519.PublicKey)
+
+	// Return only public values.
+	return hex.EncodeToString(publicKey), nil
+}
+```
+
+> **CAUTION: Do not leak secrets through logs or outputs**
+>
+> Anything you log, return from the handler, send in an external request, or write onchain leaves the enclave and is no
+> longer confidential. Never log or return private keys, seeds, or other secret values in plaintext. See
+> [Confidentiality boundary](/cre/concepts/confidential-workflows#confidentiality-boundary).
+
+## What not to do
+
+```go
+// ❌ Not cryptographically secure, even inside a Confidential Workflow:
+rnd, _ := rt.Rand()                  // math/rand generator, not seeded with enough entropy
+_ = rnd.Uint64()
+
+rndDon, _ := rt.UsingTheDons().Rand() // Derived from the execution ID, predictable
+_ = rndDon.Uint64()
+
+// ❌ Also wrong: math/rand seeded with the time or another small value
+_ = mrand1.New(mrand1.NewSource(time.Now().UnixNano())) // where mrand1 is "math/rand"
+```
+
+- **Don't** import `math/rand` and seed it with a small value or the current time.
+- **Don't** use `crypto/rand` in a regular (non-confidential) workflow. Each node would draw a different value, so the DON couldn't reach consensus, and the value would not be secret from node operators.
+
+## Security considerations
+
+- **Trust assumptions.** Confidential Workflows rely on the attestation of the enclave and the trust assumptions of the underlying [TEE](/cre/key-terms#tee-trusted-execution-environment), currently AWS Nitro. Attestation lets consumers verify which code ran. It doesn't prove the randomness itself. This is a different trust model from [Chainlink VRF](/vrf), which provides an onchain cryptographic proof.
+- **Your code is not confidential.** Anyone can read your handler's source, so never rely on the secrecy of your algorithm. Rely on the entropy from `crypto/rand`.
+- **Randomness doesn't prevent front-running.** An unpredictable value does not stop participants from exploiting information before a result is final. Design the consuming contract, for example with commit/reveal or an ordering that prevents late participation, so nobody can profit from information they have before the result is final.
+- **Don't treat simulated values as secure.** The simulator is not a real TEE: it runs your handler in a simulated enclave for debugging and says so in its output. Use `cre workflow simulate` to test your logic, not to generate real keys or secrets.
+
+## FAQ
+
+**Is randomness in regular workflows cryptographically secure?**
+
+No. It is derived from the execution ID so every node produces the same value and the DON can reach consensus. It is predictable. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-go).
+
+**Why can't regular workflows have unpredictable randomness?**
+
+Consensus requires all nodes to agree on the result. If each node drew its own random value, the values would differ and the nodes could not agree.
+
+**How do I get unpredictable randomness?**
+
+Run the handler in a Confidential Workflow with `cre.HandlerInTee` and use `crypto/rand`.
+
+**Can node operators see or predict the value?**
+
+Not when you use `crypto/rand` in a Confidential Workflow, subject to the trust assumptions of the TEE described above. Node operators can't see inside the enclave, and the code that ran is attested.
+
+**Does this replace Chainlink VRF?**
+
+No. [Chainlink VRF](/vrf) provides randomness with an onchain cryptographic proof, so consumers don't need to trust any single party. Randomness from a Confidential Workflow relies on enclave attestation and the TEE's trust assumptions.
+
+**Is `rt.Rand()` safe in a Confidential Workflow?**
+
+Not for cryptographic use. Use `crypto/rand` instead.
+
+**Does it prevent front-running?**
+
+No. Design your consuming contract so that no one can exploit information before the result is final.
+
+**Can I use TypeScript?**
+
+Not currently. See [Secure Randomness in Confidential Workflows (TypeScript)](/cre/guides/workflow/using-confidential-workflows/secure-randomness-ts).
 
 ---
 
@@ -21306,17 +21481,24 @@ After a successful [`cre.ParseReport()`](/cre/reference/sdk/core-go#creparserepo
 
 # Using Randomness in Workflows
 Source: https://docs.chain.link/cre/guides/workflow/using-randomness-go
-Last Updated: 2026-07-17
+Last Updated: 2026-11-23
 
 > **NOTE: TL;DR**
 >
 > Use `runtime.Rand()` to generate random numbers in your workflows. This provides deterministic randomness that ensures
 > all nodes in the network generate the same values and can reach consensus. Do **not** use Go's global `rand`
-> package—it can break consensus. Note that `runtime.Rand()` is **not** cryptographically secure.
+> package—it can break consensus. Because the values are derived from the execution ID, they are **predictable** and
+> **not** cryptographically secure. Never use them for private keys, secrets, or tokens.
+
+> **CAUTION: Need unpredictable, cryptographically secure randomness?**
+>
+> Randomness in regular workflows is deterministic by design. If you need randomness that nobody (including node
+> operators) can predict, run your handler in a Confidential Workflow and use `crypto/rand`. See [Secure Randomness in
+> Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
 
 ## The problem: Why randomness needs special handling
 
-Workflows often need randomness for various purposes: generating nonces, selecting winners from a list, or creating unpredictable values. However, in a decentralized network, naive use of random number generators creates a critical problem:
+Workflows often need randomness for various purposes: selecting winners from a list, sampling, or adding jitter. However, in a decentralized network, naive use of random number generators creates a critical problem:
 
 **If each node generates different random values, they cannot reach consensus on the workflow's output.**
 
@@ -21324,7 +21506,7 @@ For example, if your workflow selects a lottery winner using each node's local r
 
 ## The solution: Consensus-safe randomness
 
-CRE provides randomness through the `runtime.Rand()` method, which returns a standard Go `*rand.Rand` object. This random generator is managed by the CRE platform to ensure all nodes generate the same sequence of random values, enabling consensus while still providing unpredictability across different workflow executions.
+CRE provides randomness through the `runtime.Rand()` method, which returns a standard Go `*rand.Rand` object. This random generator is managed by the CRE platform to ensure all nodes generate the same sequence of random values, enabling consensus. The generator is seeded from a hash of the workflow execution ID, so in production each execution gets a different sequence, but anyone who knows the execution ID and your workflow code can recompute the same values. The output is **verifiable** (anyone can re-derive it), not **secret** or **unpredictable**.
 
 ### Usage
 
@@ -21342,10 +21524,12 @@ randomBigInt := new(big.Int).Rand(rnd, big.NewInt(1000))  // Random big.Int
 
 ## Common use cases
 
-- Selecting a winner from a lottery or pool
-- Generating nonces for transactions
-- Creating random identifiers or values
-- Any random selection that needs to be agreed upon by all nodes
+- Selecting an item from a pool or list where the choice only needs to be agreed upon by all nodes
+- Sampling and load distribution
+- Adding jitter or randomized ordering
+- Tests and simulations
+
+Do **not** use `runtime.Rand()` for private keys, secrets, tokens, or signature nonces. See [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
 
 ## Working with big.Int random values
 
@@ -21368,6 +21552,14 @@ randomAmount := new(big.Int).Rand(rnd, max)
 ## Complete example: Random lottery
 
 Here's a complete example that demonstrates using DON mode randomness to select a lottery winner and generate a prize amount:
+
+> **CAUTION: This example is deterministic, not secret**
+>
+> The winner and prize in this example are derived from the execution ID, so anyone who knows the participants, the
+> execution ID, and the code can compute the result before it is published. It shows how to reach consensus on a random
+> selection, not how to build a tamper-proof or front-run-resistant lottery. If participants can profit from knowing the
+> outcome early, design your consuming contract accordingly (for example with commit/reveal) and see [Secure Randomness
+> in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
 
 ```go
 //go:build wasip1
@@ -21450,7 +21642,7 @@ func main() {
 
 4. **Error handling**: Properly checks for errors when calling `runtime.Rand()`.
 
-When you run this workflow multiple times, each execution will select different winners and prize amounts (because each execution gets a different seed), but within a single execution, all nodes in the DON would arrive at the same winner.
+In production, each execution has its own execution ID and therefore its own seed, so repeated executions select different winners and prize amounts. Within a single execution, all nodes in the DON arrive at the same winner. In simulation, the execution ID can be fixed, so running the same workflow twice may return the same result—don't rely on simulation for fresh randomness.
 
 ## Best practices
 
@@ -21468,6 +21660,7 @@ When you run this workflow multiple times, each execution will select different 
 ### Don't:
 
 - **Don't use Go's global `rand` package** directly. Always get your random generator from `runtime.Rand()` first.
+- **Don't use `runtime.Rand()` for private keys, secrets, or tokens.** The values are predictable by design.
 
 ## Mode-aware behavior
 
@@ -21488,6 +21681,7 @@ When using `cre.RunInNodeMode`, you can access Node mode randomness:
 - Each node generates **different** random values
 - Useful for scenarios where per-node variability is accepted
 - Access via `nodeRuntime.Rand()` inside the Node mode function
+- **Not cryptographically secure.** Do not use it for keys, secrets, or tokens
 
 **Example:**
 
@@ -21513,7 +21707,15 @@ Random generators are tied to the mode they were created in. **Do not** attempt 
 
 **Is the randomness cryptographically secure?**
 
-No. `runtime.Rand()` returns a seeded pseudo-random number generator (Go's `math/rand`). The seed is coordinated by the CRE platform so that all nodes in the DON produce the same sequence — that is what makes consensus possible — but it is not cryptographically secure. Do not use it for key generation, signature nonces, or any security-sensitive purpose. For cryptographic randomness, use Go's `crypto/rand` package.
+No. `runtime.Rand()` returns a seeded pseudo-random number generator (Go's `math/rand`). In DON mode the seed is derived from a hash of the execution ID, so every node produces the same sequence. That is what makes consensus possible, and it is also why the values are predictable by anyone who knows the execution ID and your code. Do not use it for key generation, signature nonces, tokens, or any security-sensitive purpose.
+
+**How do I get unpredictable, cryptographically secure randomness?**
+
+Regular workflows can't provide it, because consensus requires every node to compute the same value. Run your handler in a [Confidential Workflow](/cre/guides/workflow/using-confidential-workflows) and use Go's `crypto/rand`, as described in [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go). Don't call `crypto/rand` in a regular workflow: nodes would draw different values and could not reach consensus, and the result would not be secret from node operators.
+
+**Does Chainlink VRF replace this?**
+
+They solve different problems. [Chainlink VRF](/vrf) delivers randomness with an onchain cryptographic proof, so consumers don't need to trust any single party. Use it when you need onchain-verifiable randomness.
 
 **What happens if I try to use randomness in the wrong mode?**
 
@@ -25326,7 +25528,7 @@ For a complete decryption example, see the [Making Confidential Requests guide](
 
 # SDK Reference: Confidential Workflows Client
 Source: https://docs.chain.link/cre/reference/sdk/confidential-workflows-client-go
-Last Updated: 2026-07-28
+Last Updated: 2026-11-23
 
 `cre.HandlerInTee` registers a handler whose callback runs inside a secure [enclave](/cre/key-terms#enclave)—a running instance of a [TEE](/cre/key-terms#tee-trusted-execution-environment)—receiving a `cre.TeeRuntime` instead of a `cre.Runtime`. Unlike the regular `cre.Handler`, secrets are fetched dynamically at runtime from the [Vault DON](/cre/key-terms#vault-don) with `runtime.GetSecret()` and any operation that needs Workflow DON consensus must explicitly cross over with `runtime.UsingTheDons()`.
 
@@ -25369,7 +25571,13 @@ type TeeRuntime interface {
 }
 ```
 
-`RuntimeBase` provides `Logger()`, `Now()`, and `Rand()`, same as on a regular `cre.Runtime`. `SecretsProvider` provides `GetSecret()` and `GetSecrets()`.
+`RuntimeBase` provides `Logger()`, `Now()`, and `Rand()`, with the same signatures as on a regular `cre.Runtime`. `Rand()` is not cryptographically secure—see the caution below. `SecretsProvider` provides `GetSecret()` and `GetSecrets()`.
+
+> **CAUTION: Rand() is not cryptographically secure**
+>
+> Do not use `Rand()` on `cre.TeeRuntime`, or on the runtime returned by `UsingTheDons()`, for keys, secrets, or tokens.
+> For cryptographically secure randomness, use Go's `crypto/rand` inside your handler. See [Secure Randomness in
+> Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
 
 ### `cre.TeeConstraint`
 

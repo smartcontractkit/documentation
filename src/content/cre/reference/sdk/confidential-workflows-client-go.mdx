@@ -7,7 +7,7 @@ pageId: "reference-sdk-confidential-workflows-client"
 metadata:
   description: "Reference for the Go Confidential Workflows client: cre.HandlerInTee, cre.TeeRuntime, and TEE constraint types for running workflow logic inside a secure enclave."
   datePublished: "2026-07-21"
-  lastModified: "2026-07-28"
+  lastModified: "2026-11-23"
 ---
 
 import { Aside } from "@components"
@@ -53,7 +53,13 @@ type TeeRuntime interface {
 }
 ```
 
-`RuntimeBase` provides `Logger()`, `Now()`, and `Rand()`, same as on a regular `cre.Runtime`. `SecretsProvider` provides `GetSecret()` and `GetSecrets()`.
+`RuntimeBase` provides `Logger()`, `Now()`, and `Rand()`, with the same signatures as on a regular `cre.Runtime`. `Rand()` is not cryptographically secure—see the caution below. `SecretsProvider` provides `GetSecret()` and `GetSecrets()`.
+
+<Aside type="caution" title="Rand() is not cryptographically secure">
+  Do not use `Rand()` on `cre.TeeRuntime`, or on the runtime returned by `UsingTheDons()`, for keys, secrets, or tokens.
+  For cryptographically secure randomness, use Go's `crypto/rand` inside your handler. See [Secure Randomness in
+  Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
+</Aside>
 
 ### `cre.TeeConstraint`
 

@@ -699,6 +699,14 @@ export const SIDEBAR_WITH_SUNSET_PRODUCTS: Partial<Record<Sections, SectionEntry
                 "cre/guides/workflow/using-confidential-workflows/making-workflow-confidential-go",
               ],
             },
+            {
+              title: "Secure Randomness",
+              url: "cre/guides/workflow/using-confidential-workflows/secure-randomness",
+              highlightAsCurrent: [
+                "cre/guides/workflow/using-confidential-workflows/secure-randomness-ts",
+                "cre/guides/workflow/using-confidential-workflows/secure-randomness-go",
+              ],
+            },
           ],
         },
         {
