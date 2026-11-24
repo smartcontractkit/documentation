@@ -5,9 +5,9 @@ sdkLang: "ts"
 pageId: "using-randomness"
 date: Last Modified
 metadata:
-  description: "Generate random numbers safely in CRE: use Math.random() in the CRE WASM runtime to ensure all nodes get the same values and maintain consensus."
+  description: "Generate consensus-safe random numbers in CRE with Math.random() in the CRE WASM runtime, so all nodes get the same values and maintain consensus. These values are not cryptographically secure."
   datePublished: "2025-11-04"
-  lastModified: "2026-07-17"
+  lastModified: "2026-11-23"
 ---
 
 import { Aside } from "@components"
@@ -15,13 +15,20 @@ import { Aside } from "@components"
 <Aside type="note" title="TL;DR">
   Use `Math.random()` inside the CRE WASM runtime to generate random numbers in your TypeScript workflows. The runtime
   overrides `Math.random()` with a consensus-safe generator that ensures all nodes in the network produce the same
-  sequence and can reach consensus. Do **not** rely on Node.js or browser-specific random APIs. Note that this
-  randomness is **not** cryptographically secure.
+  sequence and can reach consensus. Do **not** rely on Node.js or browser-specific random APIs. Because the values are
+  derived from the execution ID, they are **predictable** and **not** cryptographically secure. Never use them for
+  private keys, secrets, or tokens.
+</Aside>
+
+<Aside type="caution" title="Cryptographically secure randomness is not supported in TypeScript">
+  Randomness in regular workflows is deterministic by design, and there is currently no supported way to get
+  cryptographically secure randomness in TypeScript workflows, including in Confidential Workflows. For details, see
+  [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-ts).
 </Aside>
 
 ## The problem: Why randomness needs special handling
 
-Workflows often need randomness for various purposes: generating nonces, selecting winners from a list, or creating unpredictable values. However, in a decentralized network, naive use of random number generators creates a critical problem:
+Workflows often need randomness for various purposes: selecting winners from a list, sampling, or adding jitter. However, in a decentralized network, naive use of random number generators creates a critical problem:
 
 **If each node generates different random values, they cannot reach consensus on the workflow's output.**
 
@@ -29,7 +36,7 @@ For example, if your workflow selects a lottery winner using each node's local r
 
 ## The solution: Consensus-safe randomness
 
-CRE provides randomness through the `Math.random()` function inside the CRE WASM runtime. The SDK's WASM plugin overrides `Math.random()` with a seeded pseudo-random generator managed by the CRE platform. This ensures all nodes generate the same sequence of random values, enabling consensus while still providing unpredictability across different workflow executions.
+CRE provides randomness through the `Math.random()` function inside the CRE WASM runtime. The SDK's WASM plugin overrides `Math.random()` with a seeded pseudo-random generator managed by the CRE platform. This ensures all nodes generate the same sequence of random values, enabling consensus. The generator is seeded from a hash of the workflow execution ID, so in production each execution gets a different sequence, but anyone who knows the execution ID and your workflow code can recompute the same values. The output is **verifiable** (anyone can re-derive it), not **secret** or **unpredictable**.
 
 ### Usage
 
@@ -47,10 +54,12 @@ const randomBigInt = BigInt(Math.floor(Number(max) * Math.random()))
 
 ## Common use cases
 
-- Selecting a winner from a lottery or pool
-- Generating nonces for transactions
-- Creating random identifiers or values
-- Any random selection that needs to be agreed upon by all nodes
+- Selecting an item from a pool or list where the choice only needs to be agreed upon by all nodes
+- Sampling and load distribution
+- Adding jitter or randomized ordering
+- Tests and simulations
+
+Do **not** use `Math.random()` for private keys, secrets, tokens, or signature nonces. See [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-ts).
 
 ## Working with bigint random values
 
@@ -64,11 +73,19 @@ const randomAmount = BigInt(Math.floor(Number(max) * Math.random()))
 // randomAmount is a random value between 0 and 1 ETH
 ```
 
-Because `Math.random()` returns a JavaScript `number`, be careful not to exceed `Number.MAX_SAFE_INTEGER` when scaling. For ranges larger than `Number.MAX_SAFE_INTEGER`, scale the float by a safe integer first, then combine with additional random draws, or use a deterministic multi-precision approach. For most workflow use cases (nonces, lottery prizes, identifiers), the safe-integer range is sufficient.
+Because `Math.random()` returns a JavaScript `number`, be careful not to exceed `Number.MAX_SAFE_INTEGER` when scaling. For ranges larger than `Number.MAX_SAFE_INTEGER`, scale the float by a safe integer first, then combine with additional random draws, or use a deterministic multi-precision approach. For most workflow use cases (sampling, selection, prize amounts), the safe-integer range is sufficient.
 
 ## Complete example: Random lottery
 
 Here's a complete example that demonstrates using DON mode randomness to select a lottery winner and generate a prize amount:
+
+<Aside type="caution" title="This example is deterministic, not secret">
+  The winner and prize in this example are derived from the execution ID, so anyone who knows the participants, the
+  execution ID, and the code can compute the result before it is published. It shows how to reach consensus on a random
+  selection, not how to build a tamper-proof or front-run-resistant lottery. If participants can profit from knowing the
+  outcome early, design your consuming contract accordingly (for example with commit/reveal) and see [Secure Randomness
+  in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-ts).
+</Aside>
 
 ```typescript
 import { CronCapability, handler, Runner, type Runtime, type CronPayload } from "@chainlink/cre-sdk"
@@ -133,7 +150,7 @@ export async function main() {
 
 1. **Logging**: Uses `runtime.log()` for output in the WASM environment.
 
-When you run this workflow multiple times, each execution will select different winners and prize amounts (because each execution gets a different seed), but within a single execution, all nodes in the DON would arrive at the same winner.
+In production, each execution has its own execution ID and therefore its own seed, so repeated executions select different winners and prize amounts. Within a single execution, all nodes in the DON arrive at the same winner. In simulation, the execution ID can be fixed, so running the same workflow twice may return the same result—don't rely on simulation for fresh randomness.
 
 ## Best practices
 
@@ -145,6 +162,7 @@ When you run this workflow multiple times, each execution will select different 
 ### Don't:
 
 - **Don't use Node.js or browser random APIs** directly. Always use `Math.random()` inside the CRE WASM runtime.
+- **Don't use `Math.random()` for private keys, secrets, or tokens.** The values are predictable by design.
 
 ## Mode-aware behavior
 
@@ -165,6 +183,7 @@ When using `runtime.runInNodeMode()`, you can access Node mode randomness:
 - Each node generates **different** random values
 - Useful for scenarios where per-node variability is accepted
 - `Math.random()` inside the Node mode function uses the node-mode seed
+- **Not cryptographically secure.** Do not use it for keys, secrets, or tokens
 
 **Example:**
 
@@ -187,7 +206,15 @@ Random generators are tied to the mode they are called in. **Do not** attempt to
 
 **Is the randomness cryptographically secure?**
 
-No. `Math.random()` returns values from a seeded pseudo-random number generator. The seed is coordinated by the CRE platform so that all nodes in the DON produce the same sequence — that is what makes consensus possible — but it is not cryptographically secure. Do not use it for key generation, signature nonces, or any security-sensitive purpose. For cryptographic randomness, use a vetted library that works in the QuickJS/WASM environment, such as <a href="https://paulmillr.com/noble/" target="_blank" rel="noopener noreferrer">Noble</a>, and verify it in simulation before deploying.
+No. `Math.random()` returns values from a seeded pseudo-random number generator. In DON mode the seed is derived from a hash of the execution ID, so every node produces the same sequence. That is what makes consensus possible, and it is also why the values are predictable by anyone who knows the execution ID and your code. Do not use it for key generation, signature nonces, tokens, or any security-sensitive purpose.
+
+**Is there a way to get cryptographically secure randomness in TypeScript?**
+
+Not currently. Regular workflows can't provide it, because consensus requires every node to compute the same value. Confidential Workflows run in a secure enclave, but the TypeScript SDK does not yet expose a supported source of cryptographic randomness there. See [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-ts). If you need cryptographic randomness today, use the Go SDK.
+
+**Does Chainlink VRF replace this?**
+
+They solve different problems. [Chainlink VRF](/vrf) delivers randomness with an onchain cryptographic proof, so consumers don't need to trust any single party. Use it when you need onchain-verifiable randomness.
 
 **What happens if I try to use randomness in the wrong mode?**
 

@@ -7,7 +7,7 @@ date: Last Modified
 metadata:
   description: "Learn how to avoid non-deterministic behaviors in CRE Go workflows that prevent nodes from reaching consensus."
   datePublished: "2025-11-04"
-  lastModified: "2026-04-20"
+  lastModified: "2026-11-16"
 ---
 
 import { Aside } from "@components"
@@ -106,7 +106,7 @@ Go's built-in `rand` package generates different random sequences on each node, 
 
 **The problem:** Each node generates different random values, breaking consensus.
 
-**The solution:** Use `runtime.Rand()` from the CRE SDK, which provides consensus-safe random number generation. All nodes generate the same sequence of random values, enabling consensus. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for details.
+**The solution:** Use `runtime.Rand()` from the CRE SDK, which provides consensus-safe random number generation. All nodes generate the same sequence of random values, enabling consensus. These values are predictable, so don't use them for keys, secrets, or tokens. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness) for details, and [Secure Randomness in Confidential Workflows](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go) if you need cryptographic randomness.
 
 ## 6. Working with LLMs
 
@@ -125,7 +125,7 @@ Large Language Models (LLMs) generate different responses for the same prompt, e
 - Use `proto.MarshalOptions{Deterministic: true}` for Protocol Buffers
 - Process channels in a fixed, deterministic order
 - Use `runtime.Now()` for all time operations
-- Use `runtime.Rand()` for random number generation
+- Use `runtime.Rand()` for random number generation (not for keys, secrets, or tokens)
 - Request structured output from LLMs
 
 ### Don't:

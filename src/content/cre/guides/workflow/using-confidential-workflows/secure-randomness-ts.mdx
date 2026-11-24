@@ -1,0 +1,78 @@
+---
+section: cre
+title: "Secure Randomness in Confidential Workflows"
+date: Last Modified
+sdkLang: "ts"
+pageId: "guides-workflow-confidential-workflows-secure-randomness"
+metadata:
+  description: "Cryptographically secure randomness is not currently supported in the TypeScript SDK. Use the Go SDK in a Confidential Workflow with crypto/rand."
+  datePublished: "2026-11-16"
+  lastModified: "2026-11-23"
+---
+
+import { Aside } from "@components"
+
+[Randomness in regular workflows](/cre/guides/workflow/using-randomness-ts) is **deterministic by design**: every node derives the same values from the execution ID so the DON can reach consensus. That makes it predictable, so it can't be used for private keys, secrets, or tokens.
+
+<Aside type="caution" title="Not supported for cryptographic use in TypeScript">
+  Cryptographically secure randomness is **not currently supported in the TypeScript SDK**, in regular workflows or in
+  Confidential Workflows. Do **not** use `Math.random()` to generate private keys, secrets, tokens, or any other value
+  that must be unpredictable. If you need cryptographically secure randomness, use the [Go
+  SDK](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
+</Aside>
+
+<Aside type="caution" title="Private beta">
+  Confidential Workflows is in private beta and requires enrollment through your Chainlink account team—see [Requesting
+  Confidential Workflows Access](/cre/guides/operations/confidential-workflows-access).
+</Aside>
+
+## Why `Math.random()` isn't suitable
+
+- **Regular workflows (DON mode):** `Math.random()` is seeded from a hash of the execution ID. Anyone who knows the execution ID and your code can recompute every value.
+- **Confidential Workflows (`handlerInTee`):** `Math.random()` uses a node-mode generator. It's a ChaCha8-based generator, but its seed is a small, fixed-size value that doesn't provide enough entropy for cryptographic use.
+- **Other APIs:** Node.js built-in modules such as `node:crypto` are not available in the CRE WASM runtime, and the runtime does not provide `crypto.getRandomValues`. See [TypeScript WASM runtime](/cre/concepts/typescript-wasm-runtime).
+
+The TypeScript SDK doesn't currently expose another source of enclave entropy, so there is no supported alternative in TypeScript.
+
+## Regular vs. Confidential Workflows
+
+|                                             | Regular workflow (DON mode)                       | Confidential Workflow (enclave)                                                 |
+| ------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
+| API                                         | `Math.random()`                                   | None that is safe for cryptographic use in TypeScript. In Go, use `crypto/rand` |
+| Entropy source                              | Hash of the execution ID, identical on every node | `Math.random()` uses a small seed. Not suitable for cryptographic use           |
+| Same value on every node?                   | Yes. Required for consensus                       | No. The handler runs once, inside an enclave, rather than on every node         |
+| Predictable by node operators or observers? | Yes, given the code and the execution ID          | Treat as yes. Don't rely on `Math.random()` for unpredictability                |
+| Safe for keys, secrets, and tokens?         | **No**                                            | **No** in TypeScript. Go with `crypto/rand`: yes                                |
+| Typical use                                 | Consensus-safe selection, sampling, tests         | Not for cryptographic use in TypeScript                                         |
+
+## Security considerations
+
+- **Randomness doesn't prevent front-running.** Even a verifiably random value doesn't stop participants from exploiting information before a result is final. Design the consuming contract, for example with commit/reveal or an ordering that prevents late participation.
+- **Need onchain-verifiable randomness?** [Chainlink VRF](/vrf) provides randomness with an onchain cryptographic proof, so consumers don't need to trust any single party.
+- **Don't treat simulated values as secure.** The simulator is not a real TEE: it runs your handler in a simulated enclave for debugging and says so in its output. Use `cre workflow simulate` to test your logic, not to generate real keys or secrets.
+
+## FAQ
+
+**Is randomness in regular workflows cryptographically secure?**
+
+No. It is derived from the execution ID so every node produces the same value and the DON can reach consensus. It is predictable. See [Using Randomness in Workflows](/cre/guides/workflow/using-randomness-ts).
+
+**Can I generate private keys or secrets in a TypeScript Confidential Workflow?**
+
+Not safely with the randomness available in the TypeScript SDK today. Use the Go SDK with `crypto/rand` for this. See [Secure Randomness in Confidential Workflows (Go)](/cre/guides/workflow/using-confidential-workflows/secure-randomness-go).
+
+**Can I use `crypto.getRandomValues()` or `node:crypto`?**
+
+No. `node:crypto` is not available in the CRE WASM runtime, and `crypto.getRandomValues` is not provided. Don't rely on either being present, including inside a Confidential Workflow.
+
+**Can I use a library such as Noble?**
+
+Cryptography libraries such as <a href="https://paulmillr.com/noble/" target="_blank" rel="noopener noreferrer">Noble</a> are useful for hashing, signing, and verification, but generating keys also requires a secure source of randomness, and the TypeScript SDK doesn't currently provide a supported one. Don't seed a library from `Math.random()`, because the result is only as unpredictable as `Math.random()`.
+
+**Does this replace Chainlink VRF?**
+
+No. [Chainlink VRF](/vrf) provides randomness with an onchain cryptographic proof, so consumers don't need to trust any single party.
+
+**Does it prevent front-running?**
+
+No. Design your consuming contract so that no one can exploit information before the result is final.
