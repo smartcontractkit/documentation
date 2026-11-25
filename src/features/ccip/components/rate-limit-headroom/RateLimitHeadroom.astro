@@ -172,7 +172,8 @@ const height = (px: number) => `height: ${px}px`
   /*
    * Colors come only from the site's design tokens (@chainlink/blocks); each fallback is the token's value.
    * Dark mode: the site adds `dark` to <html> and the tokens switch; the raw steps that don't switch get dark values
-   * below. Every text element sets its own size and line height, because the docs article styles p and span globally.
+   * below. Global styles from @chainlink/design-system make every button inline-flex, give every span a font and
+   * every p the body text color, so the buttons, spans and paragraphs here set those themselves.
    */
   .rlh {
     --rlh-slice: var(--foreground, #141921);
@@ -201,6 +202,7 @@ const height = (px: number) => `height: ${px}px`
 
   .rlh-title {
     margin: 0;
+    color: inherit;
     font-size: 18px;
     font-weight: 600;
     line-height: 26px;
@@ -230,6 +232,9 @@ const height = (px: number) => `height: ${px}px`
   }
 
   .rlh button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin: 0;
     font-family: inherit;
     font-size: 14px;
@@ -275,9 +280,6 @@ const height = (px: number) => `height: ${px}px`
   }
 
   .rlh-playback button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
     width: 96px;
     height: 40px;
     box-sizing: border-box;
@@ -293,6 +295,10 @@ const height = (px: number) => `height: ${px}px`
 
   .rlh-main:hover {
     background: var(--primary-hover, #0036c9);
+  }
+
+  .rlh-main-label {
+    font: inherit;
   }
 
   .rlh-playback .rlh-reset,
@@ -566,9 +572,10 @@ const height = (px: number) => `height: ${px}px`
     display: grid;
     grid-template-columns: 20px minmax(0, 1fr);
     gap: 12px;
+    align-content: center;
     align-items: start;
     box-sizing: border-box;
-    min-height: 88px;
+    min-height: 90px;
     padding: 12px;
     border: 1px solid var(--rlh-tone-border);
     border-radius: 4px;
@@ -638,6 +645,7 @@ const height = (px: number) => `height: ${px}px`
   }
 
   .rlh-status-title {
+    color: inherit;
     font-weight: 600;
   }
 
