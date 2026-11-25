@@ -71,7 +71,7 @@ Create one [`LockReleaseTokenPool`](https://github.com/smartcontractkit/chainlin
 ```bash filename="Terminal"
 npm run cct:deploy-lock-release -- \
   --instanceId acme-eur-lr-pool \
-  --instrument 'yourParty::1220…::token-id'
+  --instrument 'token-id@yourParty::1220…'
 ```
 
 **Flags:**
@@ -79,7 +79,7 @@ npm run cct:deploy-lock-release -- \
 | Flag           | Required | Description                                                                   |
 | :------------- | :------- | :---------------------------------------------------------------------------- |
 | `--instanceId` | Yes      | Unique pool instance ID (e.g. `acme-eur-lr-pool`)                             |
-| `--instrument` | Yes      | Canton instrument ID: `party::fingerprint::tokenId`                           |
+| `--instrument` | Yes      | Canton instrument ID: `tokenId@party`                                         |
 | `--poolOwner`  | No       | Party that holds pool liquidity (defaults to `party` in `canton-config.json`) |
 | `--ccipOwner`  | No       | Defaults to `ccipParty` in `canton-config.json`                               |
 | `--decimals`   | No       | Token decimals on Canton (default `10`)                                       |
@@ -89,7 +89,7 @@ npm run cct:deploy-lock-release -- \
 ```text
 Deploying LockRelease token pool on Canton
    instanceId: acme-eur-lr-pool
-   instrument: yourParty::1220…::token-id
+   instrument: token-id@yourParty::1220…
    poolOwner:  yourParty::1220…
 ✅ LockReleaseTokenPool contract ID: 00abc…
    Pool address: acme-eur-lr-pool@yourParty::1220…
@@ -222,7 +222,7 @@ TAR maps each instrument to a single token pool. Registration: **propose → acc
 
 ```bash filename="Terminal"
 npm run cct:set-token -- \
-  --instrument 'yourParty::1220…::token-id' \
+  --instrument 'token-id@yourParty::1220…' \
   --poolInstanceId acme-eur-lr-pool
 ```
 

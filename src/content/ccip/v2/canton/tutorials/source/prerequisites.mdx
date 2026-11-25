@@ -34,7 +34,7 @@ These tutorials use **Canton testnet** and **Ethereum Sepolia** only. The starte
 
 ## Development Environment
 
-- **Node.js v20 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
+- **Node.js v22 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
 
   ```bash filename="Terminal"
   node -v
@@ -70,19 +70,19 @@ These tutorials use **Canton testnet** and **Ethereum Sepolia** only. The starte
    npm install
    ```
 
-The starter kit uses [`@chainlink/ccip-sdk`](https://www.npmjs.com/package/@chainlink/ccip-sdk) v1.10+ for Canton and Ethereum Sepolia interactions.
+The starter kit uses [`@chainlink/ccip-sdk`](https://www.npmjs.com/package/@chainlink/ccip-sdk) v1.18+ for Canton and Ethereum Sepolia interactions.
 
 ## Understanding Canton Configuration (`canton-config.json`)
 
-Canton deployment fields live in `config/canton-config.json`. Copy the example file and replace the **two placeholder fields**:
+Canton deployment fields live in `config/canton-config.json`. Copy the example file and replace the **`party`** placeholder:
 
 ```bash filename="Terminal"
 cp config/canton-config.example.json config/canton-config.json
 ```
 
-Replace **`party`** with your Canton testnet party ID (it must match your validator user). Replace **`transferInstructionUrl`** with your validator's transfer-instruction API (Amulet fee transfers and token metadata — not EDS). Chainlink provides shared CCIP endpoints (`edsUrl`, `indexerUrl`, `ccipParty`, `ccvs`, etc.) in the starter kit; you supply your own participant Ledger API access and validator configuration.
+Replace **`party`** with your Canton testnet party ID (it must match your validator user). Chainlink provides shared CCIP endpoints (`ccipParty`, `indexerUrl`, `ccvs`, etc.) in the starter kit; you supply your own participant Ledger API access and validator configuration.
 
-All other fields (`edsUrl`, `indexerUrl`, `ccipParty`, `ccvs`, `senderInstanceId`, etc.) are pre-configured for the Canton CCIP testnet lane in `canton-config.example.json`.
+All other fields (`ccipParty`, `indexerUrl`, `ccvs`, `chainId`, `auth`) are pre-configured for the Canton CCIP testnet lane in `canton-config.example.json`.
 
 **Example `canton-config.json`:**
 
@@ -90,22 +90,24 @@ All other fields (`edsUrl`, `indexerUrl`, `ccipParty`, `ccvs`, `senderInstanceId
 {
   "party": "YOUR_LEDGER_PARTY::1220…",
   "ccipParty": "ccipOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551",
-  "edsUrl": "https://eds.testnet.ccip.chain.link",
-  "transferInstructionUrl": "https://validator.example.com/api/validator",
+  "auth": {
+    "type": "authorizationCode",
+    "authUrl": "https://auth.example.com"
+  },
   "indexerUrl": "https://indexer-1.testnet.ccip.chain.link",
   "chainId": "canton:TestNet",
-  "senderInstanceId": "prod-ccipsender",
-  "ccvs": ["0xec1e288bcf8bbf034ac2d31b67f9b15a3f1f828d086c5b9d8fc2866129cd02fe"]
+  "ccvs": ["committeeverifier-pttst@ccvOwner::1220e382f4e57b0815e6be737006e381e6b7de448e06bd033ece6df498017879f551"]
 }
 ```
 
 Key fields:
 
 - **`party`**: Your ledger party — the sender for `canton2any` scripts and the default Canton receiver for `any2canton` scripts.
-- **`transferInstructionUrl`**: Your validator's transfer-instruction API. Depends on which validator hosts your party (not the Global CCIP EDS at `edsUrl`).
-- **`senderInstanceId`**: The `CCIPSender` instance used when sending from Canton.
-- **`ccvs`**: CommitteeVerifier contract IDs required for message validation.
-- **`edsUrl`** / **`indexerUrl`**: Global CCIP Explicit Disclosure Service and indexer endpoints for proofs and disclosures.
+- **`auth`**: Selects the OIDC scheme and carries the non-secret parameters; credentials come from `.env` (see [Canton Ledger Access](#canton-ledger-access)).
+- **`ccvs`**: CommitteeVerifier contract addresses in raw `instanceId@party` form, required for message validation.
+- **`indexerUrl`**: Global CCIP indexer endpoint for proofs and disclosures.
+
+EDS endpoints are resolved from the SDK's per-network defaults; override per owner with `externalEdsUrlsByOwner` in `canton-config.json` if you host your own EDS.
 
 Network selectors, router addresses, token instruments, and the default **`--gasLimit`** (`200000` for destination `ccipReceive`) are defined in [`helperConfig.ts`](https://github.com/smartcontractkit/ccip-starter-kit-canton/blob/main/helperConfig.ts).
 
@@ -132,15 +134,17 @@ Canton sends and executes use **OIDC bearer-token authentication** and direct le
 
 Canton uses standard [OpenID Connect (OIDC)](https://openid.net/connect/). You can authenticate with any compatible identity provider (Okta, Keycloak, Microsoft Azure, Auth0, and others) or a local user on development nodes — see the [Canton validator documentation](https://docs.canton.network/) for setup. Local or development nodes do not require an external identity provider.
 
-The starter kit resolves a bearer token from `.env` before each run:
+The starter kit resolves a bearer token before each run:
 
-1. `CANTON_JWT` in `.env` (explicit override)
-2. OIDC client credentials (`CANTON_AUTH_URL`, `CANTON_CLIENT_ID`, `CANTON_CLIENT_SECRET`)
-3. `jwt` field in `canton-config.json` (fallback only)
+1. `auth` block in `canton-config.json` — `authorizationCode` (interactive browser login, the default), `clientCredentials` (machine-to-machine), or `static`
+2. `CANTON_JWT` in `.env` (pre-fetched token, when no `auth` block is set)
+3. `CANTON_AUTH_URL` + `CANTON_CLIENT_ID` (+ `CANTON_CLIENT_SECRET` for client credentials) in `.env` (when no `auth` block is set)
+
+With the default `authorizationCode` scheme, the first ledger-connected script run opens your browser for login, waits for the callback on `http://localhost:8400/callback`, and exchanges the authorization code (with PKCE) for a bearer token.
 
 <Aside type="tip" title="What Chainlink provides">
 
-Chainlink provides shared CCIP infrastructure for Canton lanes — **EDS**, **indexer**, and on-ledger contract references. These are pre-filled in `canton-config.example.json`. Contact Chainlink ops for contract references (owner party, TAR, RMNRemote, FeeQuoter). You supply your own participant Ledger API access, validator user, and `transferInstructionUrl`.
+Chainlink provides shared CCIP infrastructure for Canton lanes — **EDS**, **indexer**, and on-ledger contract references. These are pre-filled in `canton-config.example.json`. Contact Chainlink ops for contract references (owner party, TAR, RMNRemote, FeeQuoter). You supply your own participant Ledger API access and validator user.
 
 </Aside>
 
@@ -158,15 +162,15 @@ Create `.env` from the example and replace every placeholder:
 cp .env.example .env
 ```
 
-| Variable                   | Description                                                           |
-| :------------------------- | :-------------------------------------------------------------------- |
-| `EVM_PRIVATE_KEY`          | Sepolia signer private key (hex, with or without `0x`)                |
-| `ETHEREUM_SEPOLIA_RPC_URL` | Your Sepolia JSON-RPC URL                                             |
-| `CANTON_LEDGER_URL`        | Canton participant **JSON Ledger API** URL (not EDS or the validator) |
-| `CANTON_CONFIG_PATH`       | Path to `canton-config.json` (default: `./config/canton-config.json`) |
-| `CANTON_AUTH_URL`          | OIDC authorization server URL (from your validator setup)             |
-| `CANTON_CLIENT_ID`         | OIDC client ID for your validator user                                |
-| `CANTON_CLIENT_SECRET`     | OIDC client secret — scripts fetch a fresh bearer token on each run   |
+| Variable                   | Description                                                                                                  |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `EVM_PRIVATE_KEY`          | Sepolia signer private key (hex, with or without `0x`)                                                       |
+| `ETHEREUM_SEPOLIA_RPC_URL` | Your Sepolia JSON-RPC URL                                                                                    |
+| `CANTON_LEDGER_URL`        | Canton participant **JSON Ledger API** URL (not EDS or the validator)                                        |
+| `CANTON_CONFIG_PATH`       | Path to `canton-config.json` (default: `./config/canton-config.json`)                                        |
+| `CANTON_CLIENT_ID`         | OIDC client ID for your validator user (required unless `CANTON_JWT` is set)                                 |
+| `CANTON_CLIENT_SECRET`     | OIDC client secret — set for the client-credentials flow; omit for the browser-based authorization-code flow |
+| `CANTON_JWT`               | Optional pre-fetched bearer token (skips the OIDC flow)                                                      |
 
 **Example `.env` file:**
 
@@ -175,9 +179,7 @@ EVM_PRIVATE_KEY=0xYourSepoliaPrivateKey
 ETHEREUM_SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
 CANTON_LEDGER_URL=https://your-canton-ledger-api.example.com
 CANTON_CONFIG_PATH=./config/canton-config.json
-CANTON_AUTH_URL=https://auth.example.com
 CANTON_CLIENT_ID=your_client_id
-CANTON_CLIENT_SECRET=your_client_secret
 ```
 
 <Aside type="caution" title="Keep your secrets safe">

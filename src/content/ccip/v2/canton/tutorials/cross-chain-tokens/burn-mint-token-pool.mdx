@@ -70,7 +70,7 @@ From the starter kit root:
 ```bash filename="Terminal"
 npm run cct:deploy-burn-mint -- \
   --instanceId acme-eur-bm-pool \
-  --instrument 'yourParty::1220…::token-id'
+  --instrument 'token-id@yourParty::1220…'
 ```
 
 **Flags:**
@@ -78,7 +78,7 @@ npm run cct:deploy-burn-mint -- \
 | Flag           | Required | Description                                                               |
 | :------------- | :------- | :------------------------------------------------------------------------ |
 | `--instanceId` | Yes      | Unique pool instance ID for your party (e.g. `acme-eur-bm-pool`)          |
-| `--instrument` | Yes      | Canton instrument ID: `party::fingerprint::tokenId`                       |
+| `--instrument` | Yes      | Canton instrument ID: `tokenId@party`                                     |
 | `--poolOwner`  | No       | Defaults to `party` in `canton-config.json` (must equal instrument admin) |
 | `--ccipOwner`  | No       | Defaults to `ccipParty` in `canton-config.json`                           |
 | `--decimals`   | No       | Token decimals on Canton (default `10`)                                   |
@@ -88,7 +88,7 @@ npm run cct:deploy-burn-mint -- \
 ```text
 Deploying BurnMint token pool on Canton
    instanceId: acme-eur-bm-pool
-   instrument: yourParty::1220…::token-id
+   instrument: token-id@yourParty::1220…
    poolOwner:  yourParty::1220…
 Canton bearer token obtained via OIDC client credentials.
 ✅ BurnMintTokenPool contract ID: 00abc…
@@ -96,7 +96,7 @@ Canton bearer token obtained via OIDC client credentials.
    Update: https://lighthouse.testnet.cantonloop.com/transactions/…
 
 Next step: register the pool on the Token Admin Registry:
-   npm run cct:set-token -- --instrument "yourParty::1220…::token-id" --poolInstanceId "acme-eur-bm-pool" --poolOwner "yourParty::1220…"
+   npm run cct:set-token -- --instrument "token-id@yourParty::1220…" --poolInstanceId "acme-eur-bm-pool" --poolOwner "yourParty::1220…"
 ```
 
 Save the **pool address** (`{instanceId}@{poolOwner}`) and contract ID for verification.
@@ -161,7 +161,7 @@ TAR maps each instrument to a single token pool. Registration: **propose → acc
 
 ```bash filename="Terminal"
 npm run cct:set-token -- \
-  --instrument 'yourParty::1220…::token-id' \
+  --instrument 'token-id@yourParty::1220…' \
   --poolInstanceId acme-eur-bm-pool
 ```
 
@@ -183,14 +183,14 @@ The script fetches TAR disclosures from Global EDS, then submits all three TAR c
 
 ```text
 Registering token pool on the Token Admin Registry (TAR)
-   instrument:     yourParty::1220…::token-id
+   instrument:     token-id@yourParty::1220…
    poolInstanceId: acme-eur-bm-pool
    pool address:   acme-eur-bm-pool@yourParty::1220…
 Step 1/3 — ProposeAdministrator on Token Admin Registry
    tokenConfigCid: 00def…
 Step 2/3 — AcceptAdminRole on Token Admin Registry
 Step 3/3 — SetPool on Token Admin Registry
-✅ Token pool registered for yourParty::1220…::token-id
+✅ Token pool registered for token-id@yourParty::1220…
    tokenConfigCid: 00ghi…
 
 Next step: enable a cross-chain lane (remote pool + token are required):

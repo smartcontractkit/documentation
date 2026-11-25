@@ -28,7 +28,7 @@ These tutorials use **Canton testnet** and **Ethereum Sepolia** only. The starte
 
 ## Development Environment
 
-- **Node.js v20 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
+- **Node.js v22 or higher**: You can use the [nvm package](http://nvm.sh/) to install and switch between Node.js versions. Once installed, verify the node version with:
 
   ```bash filename="Terminal"
   node -v
@@ -64,7 +64,7 @@ These tutorials use **Canton testnet** and **Ethereum Sepolia** only. The starte
    npm install
    ```
 
-The starter kit uses [`@chainlink/ccip-sdk`](https://www.npmjs.com/package/@chainlink/ccip-sdk) v1.10+ for sending from Ethereum Sepolia and executing on Canton.
+The starter kit uses [`@chainlink/ccip-sdk`](https://www.npmjs.com/package/@chainlink/ccip-sdk) v1.18+ for sending from Ethereum Sepolia and executing on Canton.
 
 ## Understanding Network Configuration
 
@@ -74,7 +74,7 @@ Lane defaults live in [`helperConfig.ts`](https://github.com/smartcontractkit/cc
 - **Ethereum Sepolia** chain selector: `16015286601757825753`
 - **Token lane**: Canton LINK ↔ Sepolia TEST (`0xeEe6675b20fE5950eb51361b93021D076289F612`)
 
-Canton deployment fields live in `config/canton-config.json` — see the [Canton as Source prerequisites](/ccip/canton/tutorials/source/prerequisites#understanding-canton-configuration-canton-configjson) for the full file reference. Replace **`party`** and **`transferInstructionUrl`**; other fields are pre-configured for the Canton CCIP testnet lane.
+Canton deployment fields live in `config/canton-config.json` — see the [Canton as Source prerequisites](/ccip/canton/tutorials/source/prerequisites#understanding-canton-configuration-canton-configjson) for the full file reference. Replace **`party`**; other fields are pre-configured for the Canton CCIP testnet lane.
 
 ## Wallets and Accounts
 
@@ -99,16 +99,16 @@ cp config/canton-config.example.json config/canton-config.json
 
 Fill in the following values:
 
-| Variable                                    | Description                                                                                              |
-| :------------------------------------------ | :------------------------------------------------------------------------------------------------------- |
-| `EVM_PRIVATE_KEY`                           | Sepolia signer hex key (with or without `0x` prefix)                                                     |
-| `ETHEREUM_SEPOLIA_RPC_URL`                  | Sepolia JSON-RPC URL                                                                                     |
-| `CANTON_LEDGER_URL`                         | Canton participant JSON Ledger API URL (required for `any2canton:manual-exec`; not EDS or the validator) |
-| `CANTON_CONFIG_PATH`                        | Path to `canton-config.json`                                                                             |
-| `CANTON_AUTH_URL`                           | OIDC authorization server URL (from your validator setup)                                                |
-| `CANTON_CLIENT_ID` / `CANTON_CLIENT_SECRET` | OIDC credentials for ledger auth on Canton                                                               |
+| Variable                   | Description                                                                                                  |
+| :------------------------- | :----------------------------------------------------------------------------------------------------------- |
+| `EVM_PRIVATE_KEY`          | Sepolia signer hex key (with or without `0x` prefix)                                                         |
+| `ETHEREUM_SEPOLIA_RPC_URL` | Sepolia JSON-RPC URL                                                                                         |
+| `CANTON_LEDGER_URL`        | Canton participant JSON Ledger API URL (required for `any2canton:manual-exec`; not EDS or the validator)     |
+| `CANTON_CONFIG_PATH`       | Path to `canton-config.json`                                                                                 |
+| `CANTON_CLIENT_ID`         | OIDC client ID for your validator user (required unless `CANTON_JWT` is set)                                 |
+| `CANTON_CLIENT_SECRET`     | OIDC client secret — set for the client-credentials flow; omit for the browser-based authorization-code flow |
 
-In `canton-config.json`, set **`party`** to your Canton testnet party ID and **`transferInstructionUrl`** to your validator's transfer-instruction API. See [source prerequisites](/ccip/canton/tutorials/source/prerequisites#understanding-canton-configuration-canton-configjson) for field reference.
+In `canton-config.json`, set **`party`** to your Canton testnet party ID. See [source prerequisites](/ccip/canton/tutorials/source/prerequisites#understanding-canton-configuration-canton-configjson) for field reference.
 
 **Example `.env` file:**
 
@@ -117,9 +117,7 @@ EVM_PRIVATE_KEY=0xYourSepoliaPrivateKey
 ETHEREUM_SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
 CANTON_LEDGER_URL=https://your-canton-ledger-api.example.com
 CANTON_CONFIG_PATH=./config/canton-config.json
-CANTON_AUTH_URL=https://auth.example.com
 CANTON_CLIENT_ID=your_client_id
-CANTON_CLIENT_SECRET=your_client_secret
 ```
 
 <Aside type="caution" title="Keep your secrets safe">
