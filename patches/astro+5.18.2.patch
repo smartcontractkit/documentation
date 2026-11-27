@@ -1,0 +1,21 @@
+diff --git a/node_modules/astro/dist/vite-plugin-astro-server/vite.js b/node_modules/astro/dist/vite-plugin-astro-server/vite.js
+index 81bb5cf..e2f060c 100644
+--- a/node_modules/astro/dist/vite-plugin-astro-server/vite.js
++++ b/node_modules/astro/dist/vite-plugin-astro-server/vite.js
+@@ -60,6 +60,16 @@ async function* crawlGraph(loader, _id, isRootFile, scanned = /* @__PURE__ */ ne
+   }
+ }
+ function isImportedBy(parent, entry) {
++  // Vite 6's backward-compatible ModuleNode rebuilds a union Set (and looks up a compat
++  // node for every importer) each time `importers` is read. With ~3.7k icons importing
++  // one module that is ~27M iterations per request. Read the per-environment Sets directly.
++  const client = entry._clientModule;
++  const ssr = entry._ssrModule;
++  if (client || ssr) {
++    if (client) for (const importer of client.importers) if (importer.id === parent) return true;
++    if (ssr) for (const importer of ssr.importers) if (importer.id === parent) return true;
++    return false;
++  }
+   for (const importer of entry.importers) {
+     if (importer.id === parent) {
+       return true;
