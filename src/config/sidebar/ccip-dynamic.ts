@@ -89,6 +89,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         chainTypes: ["canton"],
       },
       {
+        title: "FAQ",
+        url: "ccip/canton/faq",
+        chainTypes: ["canton"],
+      },
+      {
         title: "Develop with CCIP",
         type: "separator",
         // Every entry under this separator is EVM-only
@@ -736,6 +741,11 @@ export const CCIP_SIDEBAR_CONTENT: SectionEntry[] = [
         url: "ccip/canton/tutorials/cross-chain-tokens",
         chainTypes: ["canton"],
         children: [
+          {
+            title: "Registry SDK Quick Start",
+            url: "ccip/canton/tutorials/cross-chain-tokens/registry-sdk-quick-start",
+            chainTypes: ["canton"],
+          },
           {
             title: "BurnMint Token Pool Deployment",
             url: "ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool",

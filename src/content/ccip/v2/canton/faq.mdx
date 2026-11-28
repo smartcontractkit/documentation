@@ -1,0 +1,161 @@
+---
+section: ccip
+date: Last Modified
+title: "CCIP on Canton — FAQ"
+metadata:
+  description: "Answers to common issuer questions about CCIP on Canton: token pool hosting, DARs, party setup, EDS operation, token standards, lanes, and transfer UX."
+  excerpt: "CCIP Canton FAQ, issuer onboarding, token pool hosting, EDS operation, DAR vetting, party decentralization, CIP-56, CIP-112, Transporter, lanes"
+  datePublished: "2026-11-27"
+  lastModified: "2026-11-27"
+whatsnext:
+  "Getting Started (Canton)": "/ccip/canton/getting-started"
+  "Token pool concepts": "/ccip/canton/concepts/token-pools"
+  "Explicit Disclosure API": "/ccip/canton/concepts/explicit-disclosure"
+  "BurnMint Token Pool Deployment": "/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool"
+---
+
+import { Aside } from "@components"
+import CcipCommon from "@features/ccip/CcipCommon.astro"
+
+<CcipCommon callout="cantonAddressesBanner" />
+
+Answers to questions raised by token issuers connecting to CCIP on the Canton Network. For the underlying model (parties, token pools, explicit disclosure, manual execution), read [Key Concepts](/ccip/canton/concepts/key-concepts) first.
+
+<Aside type="note" title="Pre-launch">
+
+CCIP on Canton is in early onboarding. The process described here is still being stood up and reviewed, so details may change as the deployment matures.
+
+</Aside>
+
+## Responsibilities
+
+### Who hosts the token pool?
+
+The issuer hosts the token pool, or delegates hosting to a party of their choosing. Chainlink does not host issuer pools.
+
+Deploy one pool per token, matching how the token manages supply: a [BurnMint](/ccip/canton/concepts/token-pools#burnmint-token-pool) pool for supply that expands and contracts against real-world reserves, a [LockRelease](/ccip/canton/concepts/token-pools#lockrelease-token-pool) pool for fixed-supply instruments.
+
+### Which components does Chainlink operate, and which do I run?
+
+Chainlink operates the core CCIP contracts and the [Global CCIP EDS](/ccip/canton/concepts/explicit-disclosure#global-ccip-api). You need nothing beyond your Canton participant, your token instrument, the token pool, and an [Explicit Disclosure Service (EDS)](/ccip/canton/concepts/explicit-disclosure) for the pool. You also upload and vet the pool DARs (the Daml archive packages that carry the pool contracts) on your participant. See [CCIP Service Responsibility](/ccip/concepts/service-responsibility) for the full split between Chainlink and operators.
+
+### What does onboarding a token involve?
+
+Deploy and own the token pool, then complete the three-step registration on the global Token Admin Registry (TAR): `ProposeAdministrator` → `AcceptAdminRole` → `SetPool`. The TAR is owned by the CCIP owner party. After registration, call `ApplyChainUpdates` on the pool to add the remote chain and pool information for each lane.
+
+The [BurnMint deployment guide](/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool) walks through each step with the starter kit and the Ledger API. The [Registry SDK Quick Start](/ccip/canton/tutorials/cross-chain-tokens/registry-sdk-quick-start) performs the deploy, registration, and lane setup in a single transaction.
+
+### Does CCIP require changes to my token contract?
+
+No. No token contract changes are required, and the design goal is to keep it that way. Chainlink flags any change to this immediately.
+
+One interface requirement applies to BurnMint pools: the token must implement the [`BurnMintFactory` splice](https://github.com/canton-network/splice/blob/main/token-standard/splice-api-token-burn-mint-v1/docs/Splice-Api-Token-BurnMintV1.rst), which CIP-56 instruments implement as standard.
+
+## DARs and upgrades
+
+### Which DARs do I need, and who installs them?
+
+Install and vet the pool DAR for your pool type on your own participant: the latest version from the official [chainlink-canton releases](https://github.com/smartcontractkit/chainlink-canton/releases). Do not take DARs from the `contracts/dars/released` folder in the repository — it holds staged artifacts that are not necessarily officially released and may still change. The pool operator also vets `ccip-runtime-v2`, and users who send or execute transfers need the runtime and CommitteeVerifier DARs. See [CCT prerequisites](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides) for the full list.
+
+Canton contracts are immutable, so upgrades ship as new DAR versions. Chainlink publishes new versions and coordinates migration guidance. See [Upgradability](/ccip/canton/concepts/upgradability).
+
+### Are the pools tested against the DA Registry Utility factories?
+
+Testing against the DA Registry Utility's `AllocationFactory` and `BurnMintFactory` is in progress.
+
+## Party setup and roles
+
+### Must the token and the pool be owned by the same party?
+
+For BurnMint pools, yes. The pool template enforces `instrumentId.admin == poolOwner`: the party that administers the instrument must own the pool, and the TAR and the pool do not recognize the token otherwise. The registrar, instrument admin, and pool owner should therefore be the same party.
+
+BurnMint pools check no credentials for minting: only the issuer can mint, so the issuer must be the pool owner. This constraint is deliberate, and splitting the roles for BurnMint pools is not supported today. For LockRelease pools, the token and the pool can be hosted by different parties.
+
+### Is asset-issuance Featured App status required?
+
+No. CCIP imposes no Featured App requirement on the registrar, the instrument admin, or the pool owner. Featured App classification affects Canton reward economics only.
+
+### Should I decentralize the pool owner party?
+
+Decentralize only if your risk profile calls for it. A single-node party is a valid setup; do not decentralize before the risk justifies it.
+
+To decentralize, run a party ceremony as described in [Canton's decentralized party overview](https://docs.canton.network/global-synchronizer/production-operations/party-management#decentralized-party-overview), or use [Bitsafe](https://www.bitsafe.finance/)'s managed decentralized-party service. Chainlink can arrange an introduction. If you tokenize through the Registry app, also review the [Covalidation Service](https://docs.digitalasset.com/covalidation/overview).
+
+A multisig or external party strengthens key custody on a single participant. It is not the same as decentralizing the validator set backing the party.
+
+## Explicit Disclosure Service (EDS)
+
+### What resources does the EDS need?
+
+EDS is not compute-heavy, and there are no particular hardware requirements. It subscribes to your Canton participant for transaction updates on the token pool, so it only incurs traffic when a message is sent or executed through the pool. Throughput depends on the number of messages you expect through the pool, and other factors (Canton itself) bottleneck before the gRPC API does.
+
+A reference Kubernetes setup, not a production deployment, allocates:
+
+| Setting  | CPU  | Memory |
+| :------- | :--- | :----- |
+| Limits   | 500m | 512Mi  |
+| Requests | 100m | 256Mi  |
+
+### Can I use the global CCIP EDS instead of running my own?
+
+No. The Global CCIP EDS serves core CCIP contracts only; it does not cover your token pool. Every token pool operator runs an EDS implementing the standardized endpoints `POST /ccip/v1/external/tokenPool/{address}/send` and `POST /ccip/v1/external/tokenPool/{address}/execute`. Run the [reference EDS](/ccip/canton/concepts/explicit-disclosure#reference-implementation) for your pools, with each pool keyed by instance address in a single TOML file.
+
+The EDS does not have to connect to the participant hosting the pool owner party. It can connect to any participant whose ledger user can see the relevant contracts in its Active Contract Set, as long as visibility is held by provider Observer rights on the issued pools.
+
+### Can one EDS serve multiple pools?
+
+Yes. One EDS can back every pool owned by the same Canton party, provided the user standing up the EDS can observe as that party. It can also serve pools owned by different parties: since the EDS only needs read access to a party that is an observer on the pools, a single instance can cover any set of pools it can observe. Each pool is identified by a unique `instanceId`, so a single process and config file serve them all.
+
+### Is the reference EDS image production-ready?
+
+The published [Docker image](https://github.com/smartcontractkit/chainlink-canton/blob/main/eds/eds.Dockerfile) is the reference implementation. It supports BurnMint and LockRelease pools and the standardized APIs out of the box, configured via a single TOML file, and operators using the standard pool contracts run it without custom code. It does not require auth: restrict it at a reverse proxy if needed. Monitor and recover it as you would any other HTTP API.
+
+Chainlink is evaluating operating EDS instances as redundancy for issuers. That pipeline is not ready yet.
+
+### Which endpoints must be publicly reachable?
+
+Only the EDS token-pool endpoints: `/ccip/v1/external/tokenPool/{address}/send` and `/execute`. Anyone transferring your token must be able to reach them.
+
+Keep the participant gRPC endpoint private. The EDS reaches it using scoped credentials (`clientCredentials` per the [configuration reference](/ccip/canton/concepts/explicit-disclosure#configuration-reference)) with read-only ACS permissions.
+
+For EDS URL registration and discoverability, Chainlink is tracking the push toward [standardized application and metadata discovery](https://github.com/meiersi-da/cips/blob/5d2a99e369583a035370a81e2ca08962436b29ea/cn-credentials-standard/cip-canton-network-credentials-standard.md#standardized-application-and-metadata-discovery) in the Canton Network credentials standard. Until then, publish your EDS URL through [CNS or out-of-band coordination](/ccip/canton/concepts/explicit-disclosure#eds-url-discovery).
+
+### Can parties outside my participant use my pool through the EDS?
+
+Yes. The EDS serves explicit disclosures, so anyone with access to it can interact with the token pool without being a stakeholder of the contract. This mirrors what the Token Standard API does for assets, applied to token pools.
+
+## Token standards
+
+### Which Canton token standards are supported?
+
+Both CIP-56 (V1) and CIP-112 (V2) are supported by CCIP token pool deployments. Amulet and Canton Coin use CIP-112.
+
+CCIP token pools are currently built against the V1 interface: `HoldingV1`, `BurnMintV1`, `TransferInstructionV1`, `MetadataV1`. CIP-112 is backwards compatible and recommends implementing both the V1 and V2 interfaces. If your token needs specific V2 features to work with the pools, coordinate with Chainlink operations.
+
+### Is 18-decimal precision supported?
+
+The Canton pool's `decimals` field defaults to 10, which matches Daml's native `Decimal` representation. An 18-decimal token faces truncation issues on Canton.
+
+## Lanes and testing
+
+### How do I test my token on testnet?
+
+Once your token is deployed, the token owner (typically also the pool owner) deploys the token pool, registers the token on the TAR, and calls `ApplyChainUpdates` on the pool to add the remote chain and pool information. Then run end-to-end transfers on the Canton CCIP testnet.
+
+The [Registry SDK Quick Start](/ccip/canton/tutorials/cross-chain-tokens/registry-sdk-quick-start) and the [BurnMint deployment guide](/ccip/canton/tutorials/cross-chain-tokens/burn-mint-token-pool) cover each step. The starter kit `cct:*` scripts are testnet-only; on mainnet, submit the same on-ledger steps directly via the Ledger API using mainnet addresses. Chainlink operations confirms testnet lane access for your token and walks through the deployment with you.
+
+### Can I add Canton to my existing EVM CCIP setup?
+
+Yes. Deploy the Canton pool and your registrar-side config, then add Canton as a remote chain on your existing EVM pool via `applyChainUpdates`, and mirror it on Canton via `ApplyChainUpdates` with the EVM pool and token addresses. Your existing lane configurations (for example Ethereum, Polygon, and BNB Chain) are untouched, and no pool replacement is required.
+
+Canton lanes are enabled progressively. Confirm the availability of your specific lane (for example Base ↔ Canton on testnet and mainnet) with Chainlink operations.
+
+## Transfer UX
+
+### Is there a bridge UI or Transporter support for Canton?
+
+Native [Transporter](https://www.transporter.io/) support for Canton is in the design phase, slated for the second half of 2026. Once live, it will support every token issued via the DA Registry, across every lane CCIP has connected to Canton. Arbitrary and third-party token or token pool implementations are out of scope. Transporter will handle URL discovery and manual execution automatically. Acceptance of an incoming transfer always stays with the receiving party on Canton: they connect their wallet and accept the transfer.
+
+Until then, build your own UI with the [CCIP SDK](https://github.com/smartcontractkit/ccip-tools-ts/tree/main/ccip-sdk) and Canton Wallet Connect support. Expect a manual UX: the user signs a transaction on the source chain (for example EVM), then signs another transaction on Canton to request the tokens to their party. Institutional and enterprise partners can also drive transfers directly with the CCIP SDK or [CLI](https://github.com/smartcontractkit/ccip-tools-ts/tree/main/ccip-cli).
+
+<CcipCommon callout="talkToExpert" />
