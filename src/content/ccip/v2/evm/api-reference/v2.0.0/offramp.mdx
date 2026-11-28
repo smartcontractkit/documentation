@@ -47,7 +47,7 @@ All inbound message execution flows through this contract.
 ## Import
 
 ```solidity
-import {OffRamp} from "chainlink-ccip/offRamp/OffRamp.sol";
+import {OffRamp} from "@chainlink/contracts-ccip/contracts/offRamp/OffRamp.sol";
 ```
 
 ## Inheritance
@@ -229,7 +229,7 @@ For a cross-contract error index, see [Errors](/ccip/evm/api-reference/v2.0.0/er
 - Each entry in `verifierResults` must correspond to the CCV at the same index in `ccvs`.
 - CCV ordering does not affect validation but must align with provided verifier results.
 - Each message can only be executed once.
-- `gasLimitOverride` must not exceed the message-defined gas limit.
+- A non-zero `gasLimitOverride` must be greater than or equal to the message-defined gas limit.
 - Messages from chains not explicitly enabled in source chain configuration will be rejected.
 - Execution will revert if validation fails, gas limits are insufficient, or token handling fails.
 - Receiver execution failures are captured and emitted but still update execution state.
