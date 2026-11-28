@@ -1,6 +1,7 @@
 import { transformPageBodyToMarkdown } from "./buildMarkdownArtifact.js"
 import { unescapeMarkdown } from "./formatters.js"
 import type { MarkdownArtifact, TransformConfig } from "./types.js"
+import { renderSunsetNotice } from "./sunset.js"
 import {
   extractFrontmatter,
   getIsoStringOrUndefined,
@@ -24,6 +25,11 @@ export async function renderLlmsPageMarkdown(
   const relFromContent = toContentRelative(absFile)
   const sourceUrl = toCanonicalUrl(section, relFromContent, SITE_BASE)
   const title = fmTitle || inferTitleFromPath(relFromContent)
+  const notice = renderSunsetNotice(relFromContent.replace(/\.(?:md|mdx)$/i, "").replace(/\/index$/, ""), {
+    title,
+    sourceUrl,
+  })
+  if (notice) return { markdown: notice.trimEnd(), transformMode: "replacement" }
   const lastModified = getIsoStringOrUndefined(fmLastModified)
   const transformed = await transformPageBodyToMarkdown(body, absFile, {
     siteBase: SITE_BASE,

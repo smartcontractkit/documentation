@@ -1,6 +1,6 @@
 /**
  * Sunset pages stay reachable at their old URLs.
- * Site menus, search, and Markdown output leave them out.
+ * Site menus and search leave them out. Markdown output contains deprecation notices only.
  * Functions and Automation pages still show the left sidebar from SIDEBAR_WITH_SUNSET_PRODUCTS.
  * VRF v1 and VRF v2 pages still show the legacy left sidebar, including the v2.5 migration links.
  * Pages send noindex. They stay in the sitemap so a crawler can recrawl and see noindex.
@@ -16,6 +16,44 @@
 export const SUNSET_PAGES_STAY_IN_SITEMAP = true
 
 export const SUNSET_DOC_ROOTS = ["any-api", "chainlink-automation", "chainlink-functions", "vrf/v1", "vrf/v2"] as const
+
+type SunsetReplacement = { name: string; replacement: string; docsPath: string; indexPath: string }
+
+const CRE_REPLACEMENT = {
+  replacement: "Chainlink Runtime Environment (CRE)",
+  docsPath: "cre",
+  indexPath: "cre/llms.txt",
+}
+
+export const SUNSET_REPLACEMENTS: Record<(typeof SUNSET_DOC_ROOTS)[number], SunsetReplacement> = {
+  "any-api": { name: "Any API", ...CRE_REPLACEMENT },
+  "chainlink-automation": { name: "Chainlink Automation", ...CRE_REPLACEMENT },
+  "chainlink-functions": { name: "Chainlink Functions", ...CRE_REPLACEMENT },
+  "vrf/v1": {
+    name: "Chainlink VRF v1",
+    replacement: "Chainlink VRF v2.5",
+    docsPath: "vrf/v2-5/migration-from-v1",
+    indexPath: "vrf/llms.txt",
+  },
+  "vrf/v2": {
+    name: "Chainlink VRF v2",
+    replacement: "Chainlink VRF v2.5",
+    docsPath: "vrf/v2-5/migration-from-v2",
+    indexPath: "vrf/llms.txt",
+  },
+}
+
+/** Uses the same sunset scope as menus/search; replacement metadata never marks a new page deprecated. */
+export function getSunsetReplacement(pathname: string): SunsetReplacement | null {
+  const clean = normalizeDocsPath(pathname)
+  if (!isSunsetDocsPath(clean)) return null
+  const root = SUNSET_DOC_ROOTS.find((root) => clean === root || clean.startsWith(`${root}/`))
+  if (root) return SUNSET_REPLACEMENTS[root]
+  if (clean === "quickstarts/chainlink-demo-app" || clean === "quickstarts/vrf-enabled-lootbox-pack") {
+    return { ...SUNSET_REPLACEMENTS["vrf/v2"], name: "This VRF v2 example" }
+  }
+  return { name: "This legacy documentation", ...CRE_REPLACEMENT }
+}
 
 export const SUNSET_SIDEBAR_SECTIONS = ["automation", "chainlinkFunctions"] as const
 

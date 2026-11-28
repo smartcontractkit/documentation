@@ -5,6 +5,7 @@ import path from "path"
 import { fileURLToPath } from "node:url"
 import { LLM_SECTIONS_CONFIG, SUPPORTED_LLM_SECTIONS, type LlmsSectionConfig } from "../config/llms.js"
 import { SIDEBAR } from "../config/sidebar.js"
+import { renderSunsetNotice } from "../lib/markdown/sunset.js"
 import { isSunsetContentFile } from "../config/sunset.js"
 import type { SectionEntry, SectionContent } from "../config/sidebar.js"
 import { assembleLlmsDocument, renderLlmsPageMarkdown } from "../lib/markdown/llms.js"
@@ -54,6 +55,11 @@ export function selectLlmsTargets(section?: string): { sections: string[]; solut
   return { sections: [section], solutions: [] }
 }
 
+export function filterLlmsPages(section: string, pages: string[]): string[] {
+  // Nodes is still active. Keep its retired job specs and external initiators out of the product bundle.
+  return section === "chainlink-nodes" ? pages.filter((file) => !isSunsetContentFile(file)) : pages
+}
+
 export async function generateSolutionLlmsFiles(
   solutions: readonly Solution[],
   outputRoot?: string
@@ -84,6 +90,32 @@ export async function generateSolutionLlmsFiles(
   return reports
 }
 
+export async function generateSunsetLlmsFiles(
+  section: string,
+  contentRoot = path.resolve("src/content")
+): Promise<SectionReport> {
+  const notice = renderSunsetNotice(section)
+  if (!notice) throw new Error(`[llms] Section is not deprecated: ${section}`)
+  const directory = path.join(contentRoot, section)
+  const outPath = path.join(directory, "llms-full.txt")
+  let prevBytes: number | undefined
+  try {
+    prevBytes = (await fs.stat(outPath)).size
+  } catch {}
+  await fs.mkdir(directory, { recursive: true })
+  await fs.writeFile(path.join(directory, "llms.txt"), notice, "utf8")
+  await fs.writeFile(outPath, notice, "utf8")
+  const bytes = Buffer.byteLength(notice, "utf8")
+  return {
+    section,
+    pagesProcessed: 0,
+    outputPath: path.relative(process.cwd(), outPath),
+    bytes,
+    prevBytes,
+    deltaBytes: prevBytes === undefined ? undefined : bytes - prevBytes,
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2))
   const { sections, solutions } = selectLlmsTargets(args.section)
@@ -101,11 +133,16 @@ async function main() {
     const cfg = LLM_SECTIONS_CONFIG[section as keyof typeof LLM_SECTIONS_CONFIG] as LlmsSectionConfig | undefined
     if (!cfg) continue
 
+    if (renderSunsetNotice(section)) {
+      report.sections.push(await generateSunsetLlmsFiles(section))
+      continue
+    }
+
     const pages = args.pagesFile ? await readPagesList(args.pagesFile) : await discoverMdxFiles(cfg.root)
 
     // Deterministic order
     const explicitOrder = cfg.order || getSidebarFileOrder(section)
-    const orderedPages = orderPages(section, pages, explicitOrder)
+    const orderedPages = orderPages(section, filterLlmsPages(section, pages), explicitOrder)
 
     // Check if this section has language-specific files
     const languages = cfg.languages || []
@@ -118,7 +155,6 @@ async function main() {
 
         for (const absFile of orderedPages) {
           if (!absFile.endsWith(".mdx") && !absFile.endsWith(".md")) continue
-          if (isSunsetContentFile(absFile)) continue
 
           const raw = await fs.readFile(absFile, "utf-8")
           const { sdkLang } = extractFrontmatter(raw)
@@ -167,7 +203,6 @@ async function main() {
 
       for (const absFile of orderedPages) {
         if (!absFile.endsWith(".mdx") && !absFile.endsWith(".md")) continue
-        if (isSunsetContentFile(absFile)) continue
         const raw = await fs.readFile(absFile, "utf-8")
         const rendered = await renderLlmsPageMarkdown(raw, absFile, section)
         if (rendered.transformMode !== "normal") {

@@ -23,7 +23,7 @@ describe("astro middleware", () => {
     },
     {
       pathname: "/chainlink-functions/getting-started",
-      link: null,
+      link: '</chainlink-functions/getting-started.md>; rel="alternate"; type="text/markdown"',
       robotsTag: "noindex, follow",
     },
   ])("prerenders $pathname without reading request headers", async ({ pathname, link, robotsTag }) => {
@@ -98,7 +98,7 @@ describe("astro middleware", () => {
     )
   })
 
-  it("keeps sunset pages out of markdown output", async () => {
+  it("advertises deprecation Markdown while keeping sunset pages noindex", async () => {
     const request = pageRequest("/chainlink-functions/getting-started", "text/html")
     const response = await onRequest(
       {
@@ -115,10 +115,12 @@ describe("astro middleware", () => {
     expect(response).toBeInstanceOf(Response)
     if (!(response instanceof Response)) return
     expect(response.headers.get("x-robots-tag")).toBe("noindex, follow")
-    expect(response.headers.get("link")).toBeNull()
+    expect(response.headers.get("link")).toBe(
+      '</chainlink-functions/getting-started.md>; rel="alternate"; type="text/markdown"'
+    )
   })
 
-  it("keeps VRF v1 and v2 out of markdown output and keeps v2.5", async () => {
+  it("advertises Markdown for deprecated and current VRF versions", async () => {
     const hidden = pageRequest("/vrf/v2/subscription", "text/html")
     const hiddenResponse = await onRequest(
       {
@@ -133,7 +135,7 @@ describe("astro middleware", () => {
     expect(hiddenResponse).toBeInstanceOf(Response)
     if (!(hiddenResponse instanceof Response)) return
     expect(hiddenResponse.headers.get("x-robots-tag")).toBe("noindex, follow")
-    expect(hiddenResponse.headers.get("link")).toBeNull()
+    expect(hiddenResponse.headers.get("link")).toBe('</vrf/v2/subscription.md>; rel="alternate"; type="text/markdown"')
 
     const current = pageRequest("/vrf/v2-5/getting-started", "text/html")
     const currentResponse = await onRequest(
@@ -189,18 +191,20 @@ describe("vercel middleware", () => {
     expect(response.headers.get("x-middleware-next")).toBe("1")
   })
 
-  it("keeps sunset pages out of markdown output", () => {
+  it("advertises deprecation Markdown while keeping sunset pages noindex", () => {
     const response = middleware(pageRequest("/chainlink-automation/getting-started", "text/html"))
     expect(response.headers.get("x-middleware-next")).toBe("1")
     expect(response.headers.get("x-robots-tag")).toBe("noindex, follow")
-    expect(response.headers.get("link")).toBeNull()
+    expect(response.headers.get("link")).toBe(
+      '</chainlink-automation/getting-started.md>; rel="alternate"; type="text/markdown"'
+    )
   })
 
-  it("keeps VRF v1 and v2 out of markdown output and keeps v2.5", () => {
+  it("advertises Markdown for deprecated and current VRF versions", () => {
     const hidden = middleware(pageRequest("/vrf/v1/introduction", "text/html"))
     expect(hidden.headers.get("x-middleware-next")).toBe("1")
     expect(hidden.headers.get("x-robots-tag")).toBe("noindex, follow")
-    expect(hidden.headers.get("link")).toBeNull()
+    expect(hidden.headers.get("link")).toBe('</vrf/v1/introduction.md>; rel="alternate"; type="text/markdown"')
 
     const current = middleware(pageRequest("/vrf/v2-5/migration-from-v1", "text/html"))
     expect(current.headers.get("x-middleware-next")).toBe("1")

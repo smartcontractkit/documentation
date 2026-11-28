@@ -6,8 +6,9 @@ import { SUPPORTED_LLM_SECTIONS, LLM_SECTIONS_CONFIG } from "../config/llms.js"
 import { SOLUTIONS, toPagePath, type Solution } from "../config/solutions/index.ts"
 import { SOLUTION_DISCLAIMER } from "../config/solutions/disclaimer.ts"
 import { solutionLlmsOutputPath } from "../lib/markdown/solutionLlms.js"
+import { renderSunsetNotice } from "../lib/markdown/sunset.js"
 
-type LlmsFile = { path: string; label: string; maxBytes: number; solution?: Solution }
+type LlmsFile = { path: string; label: string; maxBytes: number; solution?: Solution; sunsetSection?: string }
 const SOFT_LIMIT_BYTES = 3_000_000 // ~3 MB warn threshold
 const HARD_LIMIT_BYTES = 5_000_000 // ~5 MB fail threshold
 
@@ -21,6 +22,7 @@ export function llmsFilesToValidate(): LlmsFile[] {
         path: path.resolve("src/content", section, filename),
         label: filename === "llms-full.txt" ? section : `${section}-${filename.slice(10, -4)}`,
         maxBytes: cfg.maxBytes ?? HARD_LIMIT_BYTES,
+        ...(renderSunsetNotice(section) ? { sunsetSection: section } : {}),
       })
     }
   }
@@ -50,6 +52,9 @@ export async function validateLlmsFile(file: LlmsFile): Promise<{ errors: string
   else if (sizeBytes > SOFT_LIMIT_BYTES)
     warnings.push(`${label}: file size ${sizeBytes} bytes exceeds soft limit ${SOFT_LIMIT_BYTES}`)
   if (!content.trim()) errors.push(`${label}: file is empty`)
+  if (file.sunsetSection && content !== renderSunsetNotice(file.sunsetSection)) {
+    errors.push(`${label}: deprecated section must contain only the standard deprecation notice`)
+  }
 
   const links = Array.from(content.matchAll(/\((https?:[^)]+)\)/g)).map((match) => match[1])
   if (links.some((url) => /[?&]utm_/i.test(url))) warnings.push(`${label}: found tracking params in links`)
