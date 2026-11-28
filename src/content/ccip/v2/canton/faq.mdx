@@ -55,7 +55,7 @@ One interface requirement applies to BurnMint pools: the token must implement th
 
 ### Which DARs do I need, and who installs them?
 
-Install and vet the pool DAR for your pool type on your own participant: the latest release from [`contracts/dars/released`](https://github.com/smartcontractkit/chainlink-canton/tree/main/contracts/dars/released) in the `chainlink-canton` repository. The pool operator also vets `ccip-runtime-v2`, and users who send or execute transfers need the runtime and CommitteeVerifier DARs. See [CCT prerequisites](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides) for the full list.
+Install and vet the pool DAR for your pool type on your own participant: the latest version from the official [chainlink-canton releases](https://github.com/smartcontractkit/chainlink-canton/releases). Do not take DARs from the `contracts/dars/released` folder in the repository — it holds staged artifacts that are not necessarily officially released and may still change. The pool operator also vets `ccip-runtime-v2`, and users who send or execute transfers need the runtime and CommitteeVerifier DARs. See [CCT prerequisites](/ccip/canton/tutorials/cross-chain-tokens#prerequisites-all-cct-guides) for the full list.
 
 Canton contracts are immutable, so upgrades ship as new DAR versions. Chainlink publishes new versions and coordinates migration guidance. See [Upgradability](/ccip/canton/concepts/upgradability).
 
@@ -81,7 +81,7 @@ Decentralize only if your risk profile calls for it. A single-node party is a va
 
 To decentralize, run a party ceremony as described in [Canton's decentralized party overview](https://docs.canton.network/global-synchronizer/production-operations/party-management#decentralized-party-overview), or use [Bitsafe](https://www.bitsafe.finance/)'s managed decentralized-party service. Chainlink can arrange an introduction. If you tokenize through the Registry app, also review the [Covalidation Service](https://docs.digitalasset.com/covalidation/overview).
 
-A Fireblocks-backed multisig strengthens key custody on a single participant. It is not the same as decentralizing the validator set backing the party.
+A multisig or external party strengthens key custody on a single participant. It is not the same as decentralizing the validator set backing the party.
 
 ## Explicit Disclosure Service (EDS)
 
@@ -104,7 +104,7 @@ The EDS does not have to connect to the participant hosting the pool owner party
 
 ### Can one EDS serve multiple pools?
 
-Yes. One EDS can back every pool owned by the same Canton party, provided the user standing up the EDS can observe as that party. Each pool is identified by a unique `instanceId`, so a single process and config file serve them all.
+Yes. One EDS can back every pool owned by the same Canton party, provided the user standing up the EDS can observe as that party. It can also serve pools owned by different parties: since the EDS only needs read access to a party that is an observer on the pools, a single instance can cover any set of pools it can observe. Each pool is identified by a unique `instanceId`, so a single process and config file serve them all.
 
 ### Is the reference EDS image production-ready?
 
@@ -154,7 +154,7 @@ Canton lanes are enabled progressively. Confirm the availability of your specifi
 
 ### Is there a bridge UI or Transporter support for Canton?
 
-Native [Transporter](https://www.transporter.io/) support for Canton is in the design phase, slated for the second half of 2026. Once live, it will support every token and lane CCIP has connected to Canton. Transporter will handle URL discovery and manual execution automatically. Acceptance of an incoming transfer always stays with the receiving party on Canton: they connect their wallet and accept the transfer.
+Native [Transporter](https://www.transporter.io/) support for Canton is in the design phase, slated for the second half of 2026. Once live, it will support every token issued via the DA Registry, across every lane CCIP has connected to Canton. Arbitrary and third-party token or token pool implementations are out of scope. Transporter will handle URL discovery and manual execution automatically. Acceptance of an incoming transfer always stays with the receiving party on Canton: they connect their wallet and accept the transfer.
 
 Until then, build your own UI with the [CCIP SDK](https://github.com/smartcontractkit/ccip-tools-ts/tree/main/ccip-sdk) and Canton Wallet Connect support. Expect a manual UX: the user signs a transaction on the source chain (for example EVM), then signs another transaction on Canton to request the tokens to their party. Institutional and enterprise partners can also drive transfers directly with the CCIP SDK or [CLI](https://github.com/smartcontractkit/ccip-tools-ts/tree/main/ccip-cli).
 
