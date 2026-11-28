@@ -11,6 +11,7 @@ metadata:
 
 import { Aside } from "@components"
 import CcipCommon from "@features/ccip/CcipCommon.astro"
+import RateLimitHeadroom from "@features/ccip/components/rate-limit-headroom/RateLimitHeadroom.astro"
 
 This page describes updating limits on `TokenPool` v2.0 contracts. Differences for **v1.x pools** are noted inline.
 
@@ -92,13 +93,17 @@ The pool **owner** or `rateLimitAdmin` (from `getDynamicConfig()` on v2.0; `getR
 
 ## Inbound and outbound configuration guidance
 
-Inbound and outbound limits are configured independently, but they are related across the lane: a transfer consumes outbound capacity on the source pool and inbound capacity on the destination pool.
+A transfer consumes capacity from the source pool's outbound bucket when it is sent, and from the destination pool's inbound bucket when it executes. Press **Play** below, then switch to **Same as outbound** and play it again.
+
+<RateLimitHeadroom />
+
+Many chains finalize blocks in batches, so transfers sent at different times on the source chain can become executable on the destination chain together. The inbound bucket then has less time to refill between them than the outbound bucket had. If it comes up short, a transfer fails on the destination chain after its tokens have already left the source chain. Someone has to retry it with [manual execution](/ccip/concepts/manual-execution) once the bucket refills.
 
 Recommended practice:
 
 - set **outbound** on the **source** chain pool
 - set **inbound** on the **destination** chain pool
-- make destination **inbound ~5–10% higher** than source **outbound**
+- make destination **inbound 10% higher** than source **outbound**, for both capacity and rate
 
 ## Updating default and fast-finality buckets (v2.0 only)
 

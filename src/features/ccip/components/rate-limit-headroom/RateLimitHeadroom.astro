@@ -1,0 +1,695 @@
+---
+/**
+ * Interactive diagram: the inbound limit on the destination token pool should be 10% higher than the outbound limit
+ * on the source pool. It plays two transfers from Chain A to Chain B, with pause, resume and reset.
+ * Usage in MDX: import RateLimitHeadroom from "@features/ccip/components/rate-limit-headroom/RateLimitHeadroom.astro"
+ * then <RateLimitHeadroom />. It takes no props and can be used more than once on a page.
+ */
+import { viewAt } from "./rateLimitHeadroom.ts"
+
+const uid = `rlh-${Math.random().toString(36).slice(2, 10)}`
+const view = viewAt("ten", "idle", 0)
+const height = (px: number) => `height: ${px}px`
+---
+
+<ccip-rate-limit-headroom
+  class="rlh"
+  role="group"
+  aria-labelledby={`${uid}-title`}
+  data-copy-exclude
+  data-mode="ten"
+  data-run="idle"
+>
+  <p class="rlh-title" id={`${uid}-title`}>
+    The inbound limit on Chain B's token pool (destination) should be 10% higher than the outbound limit on Chain A's
+    token pool (source).
+  </p>
+
+  <div class="rlh-controls">
+    <div class="rlh-limits">
+      <span class="rlh-limits-label" id={`${uid}-limits`}>Inbound limits</span>
+      <div class="rlh-segments" role="group" aria-labelledby={`${uid}-limits`}>
+        <button type="button" class="rlh-segment" data-part="pick" data-mode="ten" aria-pressed="true">
+          10% higher
+        </button>
+        <button type="button" class="rlh-segment" data-part="pick" data-mode="same" aria-pressed="false">
+          Same as outbound
+        </button>
+      </div>
+    </div>
+    <div class="rlh-playback">
+      <button type="button" class="rlh-main" data-part="main" aria-label={view.button.name} title={view.button.tip}>
+        <span class="rlh-main-label" data-part="main-label">{view.button.label}</span>
+        <svg class="rlh-icon rlh-pause" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+          <rect x="3.5" y="2.5" width="3" height="11" rx="1"></rect>
+          <rect x="9.5" y="2.5" width="3" height="11" rx="1"></rect>
+        </svg>
+        <svg class="rlh-icon rlh-play" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+          <path d="M4.5 2.5 12.5 8 4.5 13.5Z"></path>
+        </svg>
+      </button>
+      <button type="button" class="rlh-reset" data-part="reset" aria-label="Reset" title="Reset">
+        <svg class="rlh-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false">
+          <rect x="3.5" y="3.5" width="9" height="9" rx="1.5"></rect>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="rlh-stage">
+    <div class="rlh-band">
+      <span class="rlh-band-name">Chain A token pool</span>
+      <div class="rlh-cell">
+        <div class="rlh-bucket" data-part="outA" style={height(view.outA.height)}>
+          <div class="rlh-liquid" data-part="outA-liquid" style={height(view.outA.liquid)}></div>
+        </div>
+        <div class="rlh-text">
+          <span class="rlh-label">Outbound to Chain B</span>
+          <span class="rlh-amount" data-part="outA-amount">{view.outA.amount}</span>
+          <span class="rlh-rate" data-part="outA-rate" data-refilling="false">+1,000/s</span>
+        </div>
+      </div>
+      <div class="rlh-cell rlh-other">
+        <div class="rlh-bucket" data-part="inA" style={height(view.inA.height)}>
+          <div class="rlh-liquid" data-part="inA-liquid" style={height(view.inA.liquid)}></div>
+          <div class="rlh-slice"></div>
+        </div>
+        <div class="rlh-text">
+          <span class="rlh-label">Inbound from Chain B</span>
+          <span class="rlh-amount" data-part="inA-amount">{view.inA.amount}</span>
+          <span class="rlh-extra">+10%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rlh-gap">
+      <svg class="rlh-arrow" viewBox="0 0 10 94" width="10" height="94" aria-hidden="true" focusable="false">
+        <path class="rlh-arrow-line" d="M5 0V84"></path>
+        <path class="rlh-arrow-head" d="M0 84H10L5 94Z"></path>
+      </svg>
+      <span class="rlh-clock" data-part="clock">{view.clock}</span>
+      <svg class="rlh-arrow rlh-other" viewBox="0 0 10 94" width="10" height="94" aria-hidden="true" focusable="false">
+        <path class="rlh-arrow-head" d="M0 10H10L5 0Z"></path>
+        <path class="rlh-arrow-line rlh-dashed" d="M5 10V94"></path>
+      </svg>
+      <span class="rlh-note rlh-other">Same rule the other way</span>
+    </div>
+
+    <div class="rlh-band">
+      <span class="rlh-band-name">Chain B token pool</span>
+      <div class="rlh-cell">
+        <div class="rlh-bucket" data-part="inB" style={height(view.inB.height)}>
+          <div class="rlh-liquid" data-part="inB-liquid" style={height(view.inB.liquid)}></div>
+          <div class="rlh-slice"></div>
+        </div>
+        <div class="rlh-text">
+          <span class="rlh-label">Inbound from Chain A</span>
+          <span class="rlh-amount" data-part="inB-amount">{view.inB.amount}</span>
+          <span class="rlh-rate" data-part="inB-rate" data-refilling="false">{view.rateB}</span>
+          <span class="rlh-extra">+10%</span>
+        </div>
+      </div>
+      <div class="rlh-cell rlh-other">
+        <div class="rlh-bucket" data-part="outB" style={height(view.outB.height)}>
+          <div class="rlh-liquid" data-part="outB-liquid" style={height(view.outB.liquid)}></div>
+        </div>
+        <div class="rlh-text">
+          <span class="rlh-label">Outbound to Chain A</span>
+          <span class="rlh-amount" data-part="outB-amount">{view.outB.amount}</span>
+        </div>
+      </div>
+    </div>
+
+    {
+      view.transfers.map((transfer, index) => (
+        <span
+          class="rlh-transfer"
+          data-part={`transfer-${index}`}
+          data-state={transfer.state}
+          style={`top: ${transfer.top}px; opacity: ${transfer.opacity}`}
+          hidden={transfer.hidden}
+        >
+          <svg
+            class="rlh-transfer-icon"
+            viewBox="0 0 20 20"
+            width="14"
+            height="14"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle cx="10" cy="10" r="10" />
+            <path data-glyph="check" d="M6 10.5l2.75 2.75L14 7.75" />
+            <path data-glyph="cross" d="M7 7l6 6M13 7l-6 6" />
+          </svg>
+          {transfer.amount}
+        </span>
+      ))
+    }
+  </div>
+
+  <div
+    class="rlh-status"
+    data-part="status"
+    data-tone={view.status.tone}
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    <svg class="rlh-status-icon" viewBox="0 0 20 20" width="20" height="20" aria-hidden="true" focusable="false">
+      <circle class="rlh-status-dot" cx="10" cy="10" r="10"></circle>
+      <g data-glyph="info"><path d="M10 9v5"></path><circle cx="10" cy="6" r="1.25"></circle></g>
+      <path data-glyph="check" d="M6 10.5l2.75 2.75L14 7.75"></path>
+      <path data-glyph="cross" d="M7 7l6 6M13 7l-6 6"></path>
+    </svg>
+    <div class="rlh-status-body">
+      <p class="rlh-status-title" data-part="status-title">{view.status.title}</p>
+      <p class="rlh-status-detail" data-part="status-detail">{view.status.detail}</p>
+    </div>
+  </div>
+</ccip-rate-limit-headroom>
+
+<style>
+  /*
+   * Colors come only from the site's design tokens (@chainlink/blocks); each fallback is the token's value.
+   * Dark mode: the site adds `dark` to <html> and the tokens switch; the raw steps that don't switch get dark values
+   * below. Global styles from @chainlink/design-system make every button inline-flex, give every span a font and
+   * every p the body text color, so the buttons, spans and paragraphs here set those themselves.
+   */
+  .rlh {
+    --rlh-slice: var(--foreground, #141921);
+    --rlh-transfer: var(--blue-100, #dcebff);
+    --rlh-ok: var(--green-700, #267e46);
+    --rlh-fail: var(--red-700, #b91c1c);
+    container: rlh / inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px;
+    border: 1px solid var(--border, #e4e8ed);
+    border-radius: 4px;
+    background: var(--background, #ffffff);
+    color: var(--foreground, #141921);
+    font-family: var(--font-family-text, "Inter", Arial, sans-serif);
+    text-align: left;
+  }
+
+  :global(html.dark) .rlh {
+    --rlh-slice: var(--gray-500, #6c7585);
+    --rlh-transfer: var(--progress, #001a62);
+    --rlh-ok: var(--green-300, #95e5b0);
+    --rlh-fail: var(--red-300, #fca5a5);
+  }
+
+  .rlh-title {
+    margin: 0;
+    color: inherit;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 26px;
+  }
+
+  /* Controls */
+  .rlh-controls,
+  .rlh-limits {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .rlh-controls {
+    justify-content: space-between;
+  }
+
+  .rlh-limits-label {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+  }
+
+  .rlh-segments {
+    display: inline-flex;
+  }
+
+  .rlh button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    cursor: pointer;
+  }
+
+  .rlh button:focus-visible {
+    position: relative;
+    z-index: 1;
+    outline: 2px solid var(--brand, #0847f7);
+    outline-offset: 2px;
+  }
+
+  .rlh-segment {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border, #e4e8ed);
+    border-radius: 4px 0 0 4px;
+    background: var(--background, #ffffff);
+    color: var(--foreground, #141921);
+    white-space: nowrap;
+  }
+
+  .rlh-segment + .rlh-segment {
+    border-left-width: 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .rlh-segment[aria-pressed="true"] {
+    border-color: var(--primary, #0847f7);
+    background: var(--primary, #0847f7);
+    color: var(--primary-foreground, #ffffff);
+  }
+
+  /* Play, then pause or resume plus reset in the same 96 by 40 box while the run plays, then Replay. */
+  .rlh-playback {
+    display: flex;
+    flex: none;
+    width: 96px;
+    height: 40px;
+  }
+
+  .rlh-playback button {
+    width: 96px;
+    height: 40px;
+    box-sizing: border-box;
+    padding: 0;
+  }
+
+  .rlh-main {
+    border: 0;
+    border-radius: 4px;
+    background: var(--primary, #0847f7);
+    color: var(--primary-foreground, #ffffff);
+  }
+
+  .rlh-main:hover {
+    background: var(--primary-hover, #0036c9);
+  }
+
+  .rlh-main-label {
+    font: inherit;
+  }
+
+  .rlh-playback .rlh-reset,
+  .rlh-icon {
+    display: none;
+  }
+
+  .rlh-icon {
+    fill: currentColor;
+  }
+
+  .rlh:is([data-run="playing"], [data-run="paused"]) .rlh-playback button {
+    width: 48px;
+    border: 1px solid var(--border, #e4e8ed);
+    background: var(--background, #ffffff);
+    color: var(--foreground, #141921);
+  }
+
+  .rlh:is([data-run="playing"], [data-run="paused"]) .rlh-playback button:hover {
+    background: var(--muted, #f5f7fa);
+  }
+
+  .rlh:is([data-run="playing"], [data-run="paused"]) .rlh-main {
+    border-radius: 4px 0 0 4px;
+  }
+
+  .rlh:is([data-run="playing"], [data-run="paused"]) .rlh-reset {
+    display: flex;
+    border-left-width: 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .rlh:is([data-run="playing"], [data-run="paused"]) .rlh-main-label {
+    display: none;
+  }
+
+  .rlh[data-run="playing"] .rlh-pause,
+  .rlh[data-run="paused"] .rlh-play,
+  .rlh-reset .rlh-icon {
+    display: block;
+  }
+
+  /* Stage: two token pool bands, 144 px tall, 96 px apart. Transfers move in its coordinates. */
+  .rlh-stage {
+    position: relative;
+    padding-top: 10px;
+  }
+
+  .rlh-band {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    box-sizing: border-box;
+    height: 144px;
+    padding: 15px 0;
+    border: 1px solid var(--border-active, #9fa7b2);
+    border-radius: 6px;
+  }
+
+  .rlh-band-name {
+    position: absolute;
+    top: -11px;
+    left: 94px;
+    padding: 0 6px;
+    background: var(--background, #ffffff);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    white-space: nowrap;
+  }
+
+  .rlh-cell {
+    display: flex;
+    gap: 12px;
+    min-width: 0;
+    padding-left: 24px;
+  }
+
+  .rlh-bucket {
+    position: relative;
+    flex: none;
+    align-self: flex-end;
+    box-sizing: border-box;
+    width: 64px;
+    overflow: hidden;
+    border: 2px solid var(--foreground, #141921);
+    border-top: 0;
+    border-radius: 0 0 4px 4px;
+  }
+
+  .rlh-liquid,
+  .rlh-slice {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+  }
+
+  .rlh-liquid {
+    border-top: 2px solid var(--brand, #0847f7);
+    background: var(--blue-200, #c1dbff);
+    transition: height 400ms ease-out;
+  }
+
+  .rlh-slice {
+    height: 10px;
+    border-top: 2px dashed var(--rlh-slice);
+  }
+
+  .rlh-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .rlh-label {
+    color: var(--color-text-primary, #4e5560);
+    font-size: 13px;
+    line-height: 18px;
+    white-space: nowrap;
+  }
+
+  .rlh-amount {
+    margin-top: 2px;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+  }
+
+  .rlh-rate,
+  .rlh-extra {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+  }
+
+  .rlh-rate {
+    margin-top: 4px;
+    color: var(--muted-foreground, #6c7585);
+  }
+
+  .rlh-rate[data-refilling="true"],
+  .rlh-extra {
+    color: var(--color-text-link, #0847f7);
+  }
+
+  .rlh-extra {
+    margin-top: auto;
+  }
+
+  .rlh[data-mode="same"] :is(.rlh-slice, .rlh-extra) {
+    display: none;
+  }
+
+  .rlh-amount,
+  .rlh-rate,
+  .rlh-clock,
+  .rlh-transfer {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rlh-gap {
+    position: relative;
+    height: 96px;
+  }
+
+  .rlh-arrow {
+    position: absolute;
+    top: 0;
+    left: 52px;
+  }
+
+  .rlh-arrow.rlh-other {
+    top: 2px;
+    left: calc(50% + 51px);
+  }
+
+  .rlh-arrow-line {
+    fill: none;
+    stroke: var(--muted-foreground, #6c7585);
+    stroke-width: 2;
+  }
+
+  .rlh-dashed {
+    stroke-dasharray: 6 4;
+  }
+
+  .rlh-arrow-head {
+    fill: var(--muted-foreground, #6c7585);
+  }
+
+  .rlh-clock {
+    position: absolute;
+    top: 39px;
+    right: calc(50% + 8px);
+    left: 112px;
+    color: var(--color-text-primary, #4e5560);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    text-align: center;
+  }
+
+  .rlh-note {
+    position: absolute;
+    top: 39px;
+    left: calc(50% + 72px);
+    color: var(--muted-foreground, #6c7585);
+    font-size: 12px;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+
+  .rlh-transfer {
+    --rlh-edge: var(--brand, #0847f7);
+    position: absolute;
+    left: 13px;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-sizing: border-box;
+    width: 88px;
+    height: 24px;
+    border: 1px solid var(--rlh-edge);
+    border-radius: 12px;
+    background: var(--rlh-transfer);
+    color: var(--foreground, #141921);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    white-space: nowrap;
+  }
+
+  .rlh-transfer[hidden] {
+    display: none;
+  }
+
+  .rlh-transfer[data-state="ok"] {
+    --rlh-edge: var(--success-foreground, #30a059);
+    background: var(--success, #f1fcf5);
+    color: var(--rlh-ok);
+  }
+
+  .rlh-transfer[data-state="fail"] {
+    --rlh-edge: var(--error-foreground, #dc2626);
+    background: var(--error, #fef2f2);
+    color: var(--rlh-fail);
+  }
+
+  .rlh-transfer-icon {
+    display: none;
+    flex: none;
+  }
+
+  .rlh-transfer:not([data-state="flight"]) .rlh-transfer-icon {
+    display: block;
+  }
+
+  .rlh-transfer-icon circle {
+    fill: var(--rlh-edge);
+  }
+
+  /* Status */
+  .rlh-status {
+    --rlh-tone-bg: var(--progress, #eff6ff);
+    --rlh-tone-border: var(--progress-border, #c1dbff);
+    --rlh-tone-icon: var(--progress-foreground, #0d5dff);
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 12px;
+    align-content: center;
+    align-items: start;
+    box-sizing: border-box;
+    min-height: 90px;
+    padding: 12px;
+    border: 1px solid var(--rlh-tone-border);
+    border-radius: 4px;
+    background: var(--rlh-tone-bg);
+  }
+
+  .rlh-status[data-tone="success"] {
+    --rlh-tone-bg: var(--success, #f1fcf5);
+    --rlh-tone-border: var(--success-border, #b9f1cc);
+    --rlh-tone-icon: var(--success-foreground, #30a059);
+  }
+
+  .rlh-status[data-tone="error"] {
+    --rlh-tone-bg: var(--error, #fef2f2);
+    --rlh-tone-border: var(--error-border, #fca5a5);
+    --rlh-tone-icon: var(--error-foreground, #dc2626);
+  }
+
+  /* Dark mode: a neutral surface with a tone bar, like the rate limit bucket's status box (see dark.css). */
+  :global(html.dark) .rlh-status {
+    --rlh-tone-bg: var(--muted, #212732);
+    --rlh-tone-border: var(--border, #3c414c);
+    box-shadow: inset 3px 0 0 var(--rlh-tone-icon);
+  }
+
+  .rlh-status-dot {
+    fill: var(--rlh-tone-icon);
+  }
+
+  [data-glyph] {
+    display: none;
+    fill: none;
+    stroke: var(--background, #ffffff);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .rlh-status-icon [data-glyph] {
+    stroke-width: 2;
+  }
+
+  [data-glyph] circle {
+    fill: var(--background, #ffffff);
+    stroke: none;
+  }
+
+  .rlh-status[data-tone="info"] [data-glyph="info"],
+  .rlh-status[data-tone="success"] [data-glyph="check"],
+  .rlh-status[data-tone="error"] [data-glyph="cross"],
+  .rlh-transfer[data-state="ok"] [data-glyph="check"],
+  .rlh-transfer[data-state="fail"] [data-glyph="cross"] {
+    display: inline;
+  }
+
+  .rlh-status-body {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .rlh-status-title,
+  .rlh-status-detail {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  .rlh-status-title {
+    color: inherit;
+    font-weight: 600;
+  }
+
+  .rlh-status-detail {
+    color: var(--color-text-primary, #4e5560);
+  }
+
+  /* Narrow screens: only the A → B lane, which is the one that plays. */
+  @container rlh (max-width: 479px) {
+    .rlh-band {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .rlh-other {
+      display: none;
+    }
+
+    .rlh-clock {
+      right: 8px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rlh-liquid {
+      transition: none;
+    }
+  }
+
+  /* Windows High Contrast and other forced-colors modes: keep the drawing's colors and show the chosen option. */
+  @media (forced-colors: active) {
+    .rlh-stage,
+    .rlh-status {
+      forced-color-adjust: none;
+    }
+
+    .rlh-segment[aria-pressed="true"] {
+      outline: 2px solid Highlight;
+      outline-offset: -4px;
+    }
+  }
+</style>
+
+<script>
+  import { defineRateLimitHeadroom } from "./rateLimitHeadroom.ts"
+
+  defineRateLimitHeadroom()
+</script>
